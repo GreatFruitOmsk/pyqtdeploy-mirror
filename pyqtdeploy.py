@@ -38,7 +38,7 @@ else:
     from PyQt5.QtWidgets import QApplication
     from pyqtdeploy import ProjectGUI
 
-    app = QApplication(sys.argv)
+    app = QApplication(sys.argv, organizationName='Riverbank Computing')
 
     gui = ProjectGUI()
     gui.show()
