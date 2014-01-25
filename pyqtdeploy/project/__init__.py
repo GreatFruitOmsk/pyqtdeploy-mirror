@@ -13,7 +13,6 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-# Publish the package's API.
-from .freeze import freeze_as_c
-from .gui import ProjectGUI
-from .project import Project, ProjectException
+# Publish the sub-package's API.
+from .project import Project
+from .project_exception import ProjectException

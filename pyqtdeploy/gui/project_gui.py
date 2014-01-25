@@ -15,21 +15,34 @@
 
 from PyQt5.QtCore import QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
+
+from ..project import Project, ProjectException
 
 
 class ProjectGUI(QMainWindow):
     """ The GUI for a project. """
 
+    # The filter string to use with file dialogs.
+    file_dialog_filter = "Projects (*.pdy)"
+
     def __init__(self):
-        """ Initialise the project GUI. """
+        """ Initialise the GUI for an empty project. """
 
         super().__init__()
 
-        self._project = None
+        self._set_project(Project())
 
         self._create_menus()
         self._load_settings()
+
+    def load(self, filename):
+        """ Load a project from the given file. """
+
+        try:
+            self._set_project(Project.load(filename))
+        except ProjectException as e:
+            self._handle_exception(e, "Open")
 
     def closeEvent(self, event):
         """ Handle a close event. """
@@ -40,35 +53,125 @@ class ProjectGUI(QMainWindow):
         else:
             event.ignore()
 
+    def _set_project(self, project):
+        """ Set the GUI's project. """
+
+        self._project = project
+
+        self._project.modified_changed.connect(self.setWindowModified)
+        self._project.name_changed.connect(self._name_changed)
+
+        self._set_window_title(self._project.name)
+
+    def _set_window_title(self, name):
+        """ Set the window title. """
+
+        if name == "":
+            name = "Unnamed"
+
+        self.setWindowTitle(name + '[*]')
+
+    def _name_changed(self, name):
+        """ Invoked when the project's name changes. """
+
+        self._set_window_title(name)
+        self._update_actions()
+
     def _create_menus(self):
         """ Create the menus. """
 
-        # TODO - set the inttial state of the actions.
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction("&New", self._new_project, QKeySequence.New)
         file_menu.addAction("&Open...", self._open_project, QKeySequence.Open)
-        file_menu.addAction("&Save", self._save_project, QKeySequence.Save)
+        self._save_action = file_menu.addAction("&Save", self._save_project,
+                QKeySequence.Save)
         file_menu.addAction("Save &As...", self._save_as_project,
                 QKeySequence.SaveAs)
         file_menu.addSeparator()
         file_menu.addAction("E&xit", self.close, QKeySequence.Quit)
 
+        self._update_actions()
+
+    def _update_actions(self):
+        """ Update the state of the actions. """
+
+        self._save_action.setEnabled(self._project.name != "")
+
     def _new_project(self):
-        print("Handle new project")
+        """ Create a new, unnamed project. """
+
+        if self._current_project_done():
+            self._set_project(Project())
 
     def _open_project(self):
-        print("Handle open project")
+        """ Open an existing project. """
+
+        if self._current_project_done():
+            filename, _ = QFileDialog.getOpenFileName(self, "Open",
+                    filter=self.file_dialog_filter)
+
+            if filename != '':
+                self.load(filename)
 
     def _save_project(self):
-        print("Handle save project")
+        """ Save the project and return True if it was saved. """
+
+        try:
+            self._project.save()
+        except ProjectException as e:
+            self._handle_exception(e, "Save")
+            return False
+
+        return True
 
     def _save_as_project(self):
-        print("Handle save as project")
+        """ Save the project under a new name and return True if it was saved.
+        """
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save As",
+                    filter=self.file_dialog_filter)
+
+        if filename == '':
+            return False
+
+        try:
+            self._project.save_as(filename)
+        except ProjectException as e:
+            self._handle_exception(e, "Save")
+            return False
+
+        return True
+
+    def _handle_exception(self, e, title):
+        """ Handle a ProjectException. """
+
+        msg_box = QMessageBox(QMessageBox.Warning, title, e.text, parent=self)
+
+        if e.detail != '':
+            msg_box.setDetailedText(e.detail)
+
+        msg_box.exec()
 
     def _current_project_done(self):
         """ Return True if the user has finished with any current project. """
 
-        # TODO
+        if self._project.modified:
+            msg_box = QMessageBox(QMessageBox.Question, "Save",
+                    "The project has been modified.",
+                    QMessageBox.Save|QMessageBox.Discard|QMessageBox.Cancel,
+                    parent=self)
+
+            msg_box.setDefaultButton(QMessageBox.Save)
+            msg_box.setInformativeText("Do you want to save your changes?")
+
+            ans = msg_box.exec()
+
+            if ans == QMessageBox.Cancel:
+                return False
+
+            if ans == QMessageBox.Save:
+                return self._save_project() if self._project.name != "" else self._save_as_project()
+
         return True
 
     def _load_settings(self):

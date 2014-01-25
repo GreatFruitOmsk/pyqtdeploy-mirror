@@ -13,7 +13,15 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-# Publish the package's API.
-from .freeze import freeze_as_c
-from .gui import ProjectGUI
-from .project import Project, ProjectException
+class ProjectException(Exception):
+    """ A project-related exception. """
+
+    def __init__(self, text, detail=''):
+        """ Initialise the exception with its user friendly text and the
+        optional detail.
+        """
+
+        super().__init__()
+
+        self.text = text
+        self.default = detail

@@ -23,7 +23,7 @@ import sys
 parser = argparse.ArgumentParser()
 
 parser.add_argument("in_file", help="the input file, usually a project file",
-        metavar='FILE')
+        nargs='?', metavar='FILE')
 parser.add_argument("--freeze", help="freeze FILE to the C file C-FILE",
         metavar='C-FILE')
 
@@ -33,6 +33,12 @@ args = parser.parse_args()
 if args.freeze is not None:
     from pyqtdeploy import freeze_as_c
 
+    if args.in_file is None:
+        # Mimic the argparse message.
+        print("{0}: error: the following arguments are required: FILE".format(sys.argv[0]),
+                file=sys.stderr)
+        sys.exit(1)
+
     freeze_as_c(args.in_file, args.freeze)
 else:
     from PyQt5.QtWidgets import QApplication
@@ -41,6 +47,10 @@ else:
     app = QApplication(sys.argv, organizationName='Riverbank Computing')
 
     gui = ProjectGUI()
+
+    if args.in_file is not None:
+        gui.load(args.in_file)
+
     gui.show()
 
     app.exec()
