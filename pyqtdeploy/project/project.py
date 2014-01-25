@@ -18,7 +18,7 @@ from xml.etree.ElementTree import Element, ElementTree
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from .project_exception import ProjectException
+from ..user_exception import UserException
 
 
 class Project(QObject):
@@ -74,7 +74,7 @@ class Project(QObject):
     @classmethod
     def load(cls, filename):
         """ Return a new project loaded from the given file.  Raise a
-        ProjectException if there was an error.
+        UserException if there was an error.
         """
 
         abs_filename = os.path.abspath(filename)
@@ -84,7 +84,7 @@ class Project(QObject):
         try:
             root = tree.parse(abs_filename)
         except Exception as e:
-            raise ProjectException(
+            raise UserException(
                 "There was an error reading the project file.", str(e))
 
         cls._assert(root.tag == 'project',
@@ -103,7 +103,7 @@ class Project(QObject):
         cls._assert(version is not None, "Invalid 'version'.")
 
         if version != cls.version:
-            raise ProjectError(
+            raise UserException(
                     "The project's format is version {0} but only version {1} is supported.".format(version, cls.version))
 
         # Create the project and populate it.
@@ -113,15 +113,14 @@ class Project(QObject):
         return project
 
     def save(self):
-        """ Save the project.  Raise a ProjectException if there was an error.
-        """
+        """ Save the project.  Raise a UserException if there was an error. """
 
         self._save_project(self._abs_filename)
 
     def save_as(self, filename):
         """ Save the project to the given file and make the file the
-        destination of subsequent saves.  Raise a ProjectException if there was
-        an error.
+        destination of subsequent saves.  Raise a UserException if there was an
+        error.
         """
 
         abs_filename = os.path.abspath(filename)
@@ -138,8 +137,8 @@ class Project(QObject):
         self.name = os.path.basename(abs_filename)
 
     def _save_project(self, abs_filename):
-        """ Save the project to the given file.  Raise a ProjectException if
-        there was an error.
+        """ Save the project to the given file.  Raise a UserException if there
+        was an error.
         """
 
         root = Element('project')
@@ -150,15 +149,14 @@ class Project(QObject):
         try:
             tree.write(abs_filename, encoding='unicode', xml_declaration=True)
         except Exception as e:
-            raise ProjectException(
+            raise UserException(
                     "There was an error writing the project file.", str(e))
 
         self.modified = False
 
     @staticmethod
     def _assert(ok, detail):
-        """ Validate an assertion and raise a ProjectException if it failed.
-        """
+        """ Validate an assertion and raise a UserException if it failed. """
 
         if not ok:
-            raise ProjectException("The project file is invalid.", detail)
+            raise UserException("The project file is invalid.", detail)

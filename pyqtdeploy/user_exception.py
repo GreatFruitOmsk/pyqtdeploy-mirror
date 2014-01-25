@@ -13,8 +13,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-class ProjectException(Exception):
-    """ A project-related exception. """
+class UserException(Exception):
+    """ An exception capturing user friendly information. """
 
     def __init__(self, text, detail=''):
         """ Initialise the exception with its user friendly text and the

@@ -16,4 +16,5 @@
 # Publish the package's API.
 from .builder import Builder
 from .gui import ProjectGUI
-from .project import Project, ProjectException
+from .project import Project
+from .user_exception import UserException

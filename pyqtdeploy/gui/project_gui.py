@@ -17,7 +17,8 @@ from PyQt5.QtCore import QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
-from ..project import Project, ProjectException
+from ..project import Project
+from ..user_exception import UserException
 
 
 class ProjectGUI(QMainWindow):
@@ -26,23 +27,23 @@ class ProjectGUI(QMainWindow):
     # The filter string to use with file dialogs.
     file_dialog_filter = "Projects (*.pdy)"
 
-    def __init__(self):
-        """ Initialise the GUI for an empty project. """
+    def __init__(self, project):
+        """ Initialise the GUI for a project. """
 
         super().__init__()
 
         self._create_menus()
         self._load_settings()
 
-        self._set_project(Project())
+        self._set_project(project)
 
-    def load(self, filename):
-        """ Load a project from the given file. """
+    @classmethod
+    def load(cls, filename):
+        """ Create a project from the given file.  Return None if there was an
+        error.
+        """
 
-        try:
-            self._set_project(Project.load(filename))
-        except ProjectException as e:
-            self._handle_exception(e, "Open")
+        return cls._load_project(filename)
 
     def closeEvent(self, event):
         """ Handle a close event. """
@@ -66,11 +67,9 @@ class ProjectGUI(QMainWindow):
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
 
-        # Update the window title and the state of the actions.
-        if name == '':
-            name = "Unnamed"
-
-        self.setWindowTitle(name + '[*]')
+        # Update the window title.
+        title = name if name != '' else "Unnamed"
+        self.setWindowTitle(title + '[*]')
 
         # Update the state of the actions.
         self._save_action.setEnabled(name != '')
@@ -102,15 +101,17 @@ class ProjectGUI(QMainWindow):
                     filter=self.file_dialog_filter)
 
             if filename != '':
-                self.load(filename)
+                project = self._load_project(filename, self)
+                if project is not None:
+                    self._set_project(project)
 
     def _save_project(self):
         """ Save the project and return True if it was saved. """
 
         try:
             self._project.save()
-        except ProjectException as e:
-            self._handle_exception(e, "Save")
+        except UserException as e:
+            self._handle_exception(e, "Save", self)
             return False
 
         return True
@@ -127,16 +128,32 @@ class ProjectGUI(QMainWindow):
 
         try:
             self._project.save_as(filename)
-        except ProjectException as e:
-            self._handle_exception(e, "Save")
+        except UserException as e:
+            self._handle_exception(e, "Save", self)
             return False
 
         return True
 
-    def _handle_exception(self, e, title):
-        """ Handle a ProjectException. """
+    @classmethod
+    def _load_project(cls, filename, parent=None):
+        """ Create a project from the given file.  Return None if there was an
+        error.
+        """
 
-        msg_box = QMessageBox(QMessageBox.Warning, title, e.text, parent=self)
+        try:
+            project = Project.load(filename)
+        except UserException as e:
+            cls._handle_exception(e, "Open", parent)
+            project = None
+
+        return project
+
+    @staticmethod
+    def _handle_exception(e, title, parent):
+        """ Handle a UserException. """
+
+        msg_box = QMessageBox(QMessageBox.Warning, title, e.text,
+                parent=parent)
 
         if e.detail != '':
             msg_box.setDetailedText(e.detail)

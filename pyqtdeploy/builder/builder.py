@@ -13,6 +13,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+from ..user_exception import UserException
+
+
 class Builder():
     """ The builder for a project. """
 
@@ -24,6 +27,8 @@ class Builder():
         self._project = project
 
     def build(self, build_dir):
-        """ Build the project in a given directory. """
+        """ Build the project in a given directory.  Raise a UserException if
+        there is an error.
+        """
 
-        print("Building in", build_dir)
+        raise UserException("Building in %s not yet implemented." % build_dir)

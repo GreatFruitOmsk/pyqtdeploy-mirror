@@ -15,4 +15,3 @@
 
 # Publish the sub-package's API.
 from .project import Project
-from .project_exception import ProjectException
