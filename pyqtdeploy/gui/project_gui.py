@@ -15,10 +15,13 @@
 
 from PyQt5.QtCore import QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
 
+from ..builder import Builder
 from ..project import Project
 from ..user_exception import UserException
+
+from .application_page import ApplicationPage
 
 
 class ProjectGUI(QMainWindow):
@@ -33,6 +36,7 @@ class ProjectGUI(QMainWindow):
         super().__init__()
 
         self._create_menus()
+        self._create_central_widget()
         self._load_settings()
 
         self._set_project(project)
@@ -59,25 +63,39 @@ class ProjectGUI(QMainWindow):
 
         self._project = project
 
+        self._project.application_name_changed.connect(
+                self._application_name_changed)
         self._project.modified_changed.connect(self.setWindowModified)
         self._project.name_changed.connect(self._name_changed)
 
+        self._application_name_changed(self._project.application_name)
         self._name_changed(self._project.name)
+
+        tabs = self.centralWidget()
+
+        for p in range(tabs.count()):
+            page = tabs.widget(p)
+            page.project = self._project
+
+    def _application_name_changed(self, name):
+        """ Invoked when the project's application name changes. """
+
+        self._build_action.setEnabled(name != '')
 
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
 
-        # Update the window title.
         title = name if name != '' else "Unnamed"
         self.setWindowTitle(title + '[*]')
 
-        # Update the state of the actions.
         self._save_action.setEnabled(name != '')
 
     def _create_menus(self):
         """ Create the menus. """
 
-        file_menu = self.menuBar().addMenu("&File")
+        menu_bar = self.menuBar()
+
+        file_menu = menu_bar.addMenu("&File")
         file_menu.addAction("&New", self._new_project, QKeySequence.New)
         file_menu.addAction("&Open...", self._open_project, QKeySequence.Open)
         self._save_action = file_menu.addAction("&Save", self._save_project,
@@ -86,6 +104,21 @@ class ProjectGUI(QMainWindow):
                 QKeySequence.SaveAs)
         file_menu.addSeparator()
         file_menu.addAction("E&xit", self.close, QKeySequence.Quit)
+
+        build_menu = menu_bar.addMenu("&Build")
+        self._build_action = build_menu.addAction("Build Project...",
+                self._build_project)
+
+    def _create_central_widget(self):
+        """ Create the central widget. """
+
+        tabs = QTabWidget()
+
+        for page_factory in (ApplicationPage, ):
+            page = page_factory()
+            tabs.addTab(page, page.label)
+
+        self.setCentralWidget(tabs)
 
     def _new_project(self):
         """ Create a new, unnamed project. """
@@ -133,6 +166,19 @@ class ProjectGUI(QMainWindow):
             return False
 
         return True
+
+    def _build_project(self):
+        """ Build the project. """
+
+        build_dir = QFileDialog.getExistingDirectory(self, "Build Project")
+
+        if build_dir != '':
+            builder = Builder(self._project)
+
+            try:
+                builder.build(build_dir)
+            except UserException as e:
+                self._handle_exception(e, "Build Project", self)
 
     @classmethod
     def _load_project(cls, filename, parent=None):

@@ -14,7 +14,7 @@
 
 
 import os
-from xml.etree.ElementTree import Element, ElementTree
+from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -26,6 +26,23 @@ class Project(QObject):
 
     # The current project version.
     version = 0
+
+    # Emitted when the application name of the project changes.
+    application_name_changed = pyqtSignal(str)
+
+    @property
+    def application_name(self):
+        """ The application name property getter. """
+
+        return self._application_name
+
+    @application_name.setter
+    def application_name(self, value):
+        """ The application name property setter. """
+
+        if self._application_name != value:
+            self._application_name = value
+            self.application_name_changed.emit(value)
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -71,6 +88,8 @@ class Project(QObject):
         self._abs_filename = ''
         self._name = ''
 
+        self._application_name = ''
+
     @classmethod
     def load(cls, filename):
         """ Return a new project loaded from the given file.  Raise a
@@ -110,6 +129,14 @@ class Project(QObject):
         project = cls()
         project._set_project_name(abs_filename)
 
+        application = root.find('application')
+        cls._assert(application is not None, "Missing 'application' tag.")
+
+        application_name = application.get('name')
+        cls._assert(application_name is not None, "Missing 'name'.")
+
+        project._application_name = application_name
+
         return project
 
     def save(self):
@@ -141,8 +168,11 @@ class Project(QObject):
         was an error.
         """
 
-        root = Element('project')
-        root.set('version', str(self.version))
+        root = Element('project', attrib={
+            'version': str(self.version)})
+
+        application = SubElement(root, 'application', attrib={
+            'name': self.application_name})
 
         tree = ElementTree(root)
 

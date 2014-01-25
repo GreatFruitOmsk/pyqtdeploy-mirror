@@ -13,6 +13,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import os
+
 from ..user_exception import UserException
 
 
@@ -31,4 +33,8 @@ class Builder():
         there is an error.
         """
 
-        raise UserException("Building in %s not yet implemented." % build_dir)
+        try:
+            os.makedirs(build_dir, exist_ok=True)
+        except Exception as e:
+            raise UserException("Unable to create the build directory.",
+                    str(e))
