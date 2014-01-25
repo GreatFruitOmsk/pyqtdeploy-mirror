@@ -24,4 +24,4 @@ class ProjectException(Exception):
         super().__init__()
 
         self.text = text
-        self.default = detail
+        self.detail = detail

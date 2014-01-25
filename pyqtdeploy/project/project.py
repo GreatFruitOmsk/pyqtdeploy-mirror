@@ -13,6 +13,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import os
+from xml.etree.ElementTree import Element, ElementTree
+
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
 
 from .project_exception import ProjectException
@@ -20,6 +23,9 @@ from .project_exception import ProjectException
 
 class Project(QObject):
     """ The encapsulation of a project. """
+
+    # The current project version.
+    version = 0
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -62,7 +68,8 @@ class Project(QObject):
 
         # Initialise the properties.
         self._modified = False
-        self._name = ""
+        self._abs_filename = ''
+        self._name = ''
 
     @classmethod
     def load(cls, filename):
@@ -80,11 +87,36 @@ class Project(QObject):
         """ Save the project.  Raise a ProjectException if there was an error.
         """
 
-        # TODO
+        self._save_project(self._abs_filename)
 
     def save_as(self, filename):
+        """ Save the project to the given file and make the file the
+        destination of subsequent saves.  Raise a ProjectException if there was
+        an error.
+        """
+
+        abs_filename = os.path.abspath(filename)
+
+        self._save_project(abs_filename)
+
+        # Now that the save has been successful, update the project.
+        self._abs_filename = abs_filename
+        self.name = os.path.basename(abs_filename)
+
+    def _save_project(self, abs_filename):
         """ Save the project to the given file.  Raise a ProjectException if
         there was an error.
         """
 
-        # TODO
+        root = Element('application')
+        root.set('version', str(self.version))
+
+        tree = ElementTree(root)
+
+        try:
+            tree.write(abs_filename, encoding='unicode', xml_declaration=True)
+        except Exception as e:
+            raise ProjectException(
+                    "There was an error writing the project file.", str(e))
+
+        self.modified = False
