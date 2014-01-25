@@ -15,7 +15,8 @@
 
 from PyQt5.QtCore import QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox, QTabWidget
+from PyQt5.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QTabWidget,
+        QWhatsThis)
 
 from ..builder import Builder
 from ..project import Project
@@ -109,6 +110,11 @@ class ProjectGUI(QMainWindow):
         self._build_action = build_menu.addAction("Build Project...",
                 self._build_project)
 
+        menu_bar.addSeparator()
+
+        help_menu = menu_bar.addMenu("&Help")
+        help_menu.addAction(QWhatsThis.createAction(help_menu))
+
     def _create_central_widget(self):
         """ Create the central widget. """
 
@@ -177,6 +183,8 @@ class ProjectGUI(QMainWindow):
 
             try:
                 builder.build(build_dir)
+                QMessageBox.information(self, "Build Project",
+                        "The project was built successfully.")
             except UserException as e:
                 self._handle_exception(e, "Build Project", self)
 

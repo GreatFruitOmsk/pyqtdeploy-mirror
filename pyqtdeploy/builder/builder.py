@@ -38,3 +38,26 @@ class Builder():
         except Exception as e:
             raise UserException("Unable to create the build directory.",
                     str(e))
+
+        self._write_qmake(build_dir)
+
+    def _write_qmake(self, build_dir):
+        """ Create the .pro file for qmake. """
+
+        f = self._create_file(build_dir,
+                self._project.application_name + '.pro')
+
+        f.write("TEMPLATE = app\n")
+
+        f.close()
+
+    def _create_file(self, build_dir, filename):
+        """ Create a text file in the build directory. """
+
+        pathname = os.path.join(build_dir, filename)
+
+        try:
+            return open(pathname, 'wt')
+        except Exception as e:
+            raise UserException("Unable to create file {0}.".format(pathname),
+                    str(e))

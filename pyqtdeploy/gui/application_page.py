@@ -47,6 +47,8 @@ class ApplicationPage(QWidget):
         form = QFormLayout()
 
         self._name_edit = QLineEdit(placeholderText="Application name",
+                whatsThis="The name of the application executable without any "
+                        "platform-specific extension.",
                 textEdited=self._name_changed)
         form.addRow("Name", self._name_edit)
 
