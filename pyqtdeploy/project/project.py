@@ -16,7 +16,7 @@
 import os
 from xml.etree.ElementTree import Element, ElementTree
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from .project_exception import ProjectException
 
@@ -30,7 +30,7 @@ class Project(QObject):
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
 
-    @pyqtProperty(bool)
+    @property
     def modified(self):
         """ The modified property getter. """
 
@@ -47,7 +47,7 @@ class Project(QObject):
     # Emitted when the name of the project changes.
     name_changed = pyqtSignal(str)
 
-    @pyqtProperty(str)
+    @property
     def name(self):
         """ The name property getter. """
 

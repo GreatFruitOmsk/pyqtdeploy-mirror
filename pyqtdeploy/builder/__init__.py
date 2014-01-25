@@ -13,7 +13,5 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-# Publish the package's API.
+# Publish the sub-package's API.
 from .builder import Builder
-from .gui import ProjectGUI
-from .project import Project, ProjectException

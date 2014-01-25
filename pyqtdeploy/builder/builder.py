@@ -13,7 +13,17 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-# Publish the package's API.
-from .builder import Builder
-from .gui import ProjectGUI
-from .project import Project, ProjectException
+class Builder():
+    """ The builder for a project. """
+
+    def __init__(self, project):
+        """ Initialise the builder for a project. """
+
+        super().__init__()
+
+        self._project = project
+
+    def build(self, build_dir):
+        """ Build the project in a given directory. """
+
+        print("Building in", build_dir)
