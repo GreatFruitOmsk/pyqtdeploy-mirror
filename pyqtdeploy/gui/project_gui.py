@@ -31,10 +31,10 @@ class ProjectGUI(QMainWindow):
 
         super().__init__()
 
-        self._set_project(Project())
-
         self._create_menus()
         self._load_settings()
+
+        self._set_project(Project())
 
     def load(self, filename):
         """ Load a project from the given file. """
@@ -61,21 +61,19 @@ class ProjectGUI(QMainWindow):
         self._project.modified_changed.connect(self.setWindowModified)
         self._project.name_changed.connect(self._name_changed)
 
-        self._set_window_title(self._project.name)
-
-    def _set_window_title(self, name):
-        """ Set the window title. """
-
-        if name == "":
-            name = "Unnamed"
-
-        self.setWindowTitle(name + '[*]')
+        self._name_changed(self._project.name)
 
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
 
-        self._set_window_title(name)
-        self._update_actions()
+        # Update the window title and the state of the actions.
+        if name == '':
+            name = "Unnamed"
+
+        self.setWindowTitle(name + '[*]')
+
+        # Update the state of the actions.
+        self._save_action.setEnabled(name != '')
 
     def _create_menus(self):
         """ Create the menus. """
@@ -89,13 +87,6 @@ class ProjectGUI(QMainWindow):
                 QKeySequence.SaveAs)
         file_menu.addSeparator()
         file_menu.addAction("E&xit", self.close, QKeySequence.Quit)
-
-        self._update_actions()
-
-    def _update_actions(self):
-        """ Update the state of the actions. """
-
-        self._save_action.setEnabled(self._project.name != "")
 
     def _new_project(self):
         """ Create a new, unnamed project. """
