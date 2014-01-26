@@ -83,12 +83,14 @@ class Project(QObject):
 
         super().__init__()
 
-        # Initialise the properties.
+        # Initialise the project meta-data.
         self._modified = False
         self._abs_filename = ''
         self._name = ''
 
+        # Initialise the project data.
         self._application_script = ''
+        self.pyqt_modules = []
 
     @classmethod
     def load(cls, filename):
@@ -106,8 +108,8 @@ class Project(QObject):
             raise UserException(
                 "There was an error reading the project file.", str(e))
 
-        cls._assert(root.tag == 'project',
-                "Unexpected root tag '{0}', 'project' expected.".format(
+        cls._assert(root.tag == 'Project',
+                "Unexpected root tag '{0}', 'Project' expected.".format(
                         root.tag))
 
         # Check the project version number.
@@ -129,13 +131,18 @@ class Project(QObject):
         project = cls()
         project._set_project_name(abs_filename)
 
-        application = root.find('application')
-        cls._assert(application is not None, "Missing 'application' tag.")
+        application = root.find('Application')
+        cls._assert(application is not None, "Missing 'Application' tag.")
 
         application_script = application.get('script')
         cls._assert(application_script is not None, "Missing 'script'.")
 
         project._application_script = application_script
+
+        for pyqt_m in application.iterfind('PyQtModule'):
+            name = pyqt_m.get('name')
+            cls._assert(name is not None, "Missing 'name'.")
+            project.pyqt_modules.append(name)
 
         return project
 
@@ -168,11 +175,15 @@ class Project(QObject):
         was an error.
         """
 
-        root = Element('project', attrib={
+        root = Element('Project', attrib={
             'version': str(self.version)})
 
-        application = SubElement(root, 'application', attrib={
+        application = SubElement(root, 'Application', attrib={
             'script': self.application_script})
+
+        for pyqt_m in self.pyqt_modules:
+            SubElement(application, 'PyQtModule', attrib={
+                'name': pyqt_m})
 
         tree = ElementTree(root)
 
