@@ -84,6 +84,8 @@ class Builder():
         f.write('TEMPLATE = app\n')
 
         # Configure the QT value.
+        f.write('\n')
+
         no_gui = True
         qmake_qt = []
 
@@ -104,6 +106,24 @@ class Builder():
 
         if len(qmake_qt) != 0:
             f.write('QT += {0}\n'.format(' '.join(qmake_qt)))
+
+        # Configure the target Python interpreter.
+        f.write('\n')
+
+        if project.python_target_include_dir != '':
+            f.write(
+                    'INCLUDEPATH += {0}\n'.format(
+                            project.python_target_include_dir))
+
+        if project.python_target_library != '':
+            lib_dir = os.path.dirname(project.python_target_library)
+            lib, _ = os.path.splitext(
+                    os.path.basename(project.python_target_library))
+
+            if lib.startswith('lib'):
+                lib = lib[3:]
+
+            f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
         # All done.
         f.close()

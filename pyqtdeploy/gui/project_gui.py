@@ -24,6 +24,7 @@ from ..user_exception import UserException
 
 from .application_page import ApplicationPage
 from .pyqt_page import PyQtPage
+from .python_page import PythonPage
 
 
 class ProjectGUI(QMainWindow):
@@ -121,7 +122,7 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        for page_factory in (ApplicationPage, PyQtPage):
+        for page_factory in (ApplicationPage, PythonPage, PyQtPage):
             page = page_factory()
             tabs.addTab(page, page.label)
 

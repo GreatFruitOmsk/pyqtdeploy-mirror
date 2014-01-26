@@ -91,6 +91,8 @@ class Project(QObject):
         # Initialise the project data.
         self._application_script = ''
         self.pyqt_modules = []
+        self.python_target_include_dir = ''
+        self.python_target_library = ''
 
     @classmethod
     def load(cls, filename):
@@ -134,15 +136,18 @@ class Project(QObject):
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
 
-        application_script = application.get('script')
-        cls._assert(application_script is not None, "Missing 'script'.")
-
-        project._application_script = application_script
+        project._application_script = application.get('script', '')
 
         for pyqt_m in application.iterfind('PyQtModule'):
             name = pyqt_m.get('name')
             cls._assert(name is not None, "Missing 'name'.")
             project.pyqt_modules.append(name)
+
+        python = root.find('Python')
+        cls._assert(application is not None, "Missing 'Python' tag.")
+
+        project.python_target_include_dir = python.get('targetincludedir', '')
+        project.python_target_library = python.get('targetlibrary', '')
 
         return project
 
@@ -184,6 +189,10 @@ class Project(QObject):
         for pyqt_m in self.pyqt_modules:
             SubElement(application, 'PyQtModule', attrib={
                 'name': pyqt_m})
+
+        SubElement(root, 'Python', attrib={
+            'targetincludedir': self.python_target_include_dir,
+            'targetlibrary': self.python_target_library})
 
         tree = ElementTree(root)
 
