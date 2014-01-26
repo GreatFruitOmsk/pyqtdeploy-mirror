@@ -21,6 +21,36 @@ from ..user_exception import UserException
 class Builder():
     """ The builder for a project. """
 
+    # Map PyQt modules to the corresponding qmake QT values.
+    pyqt_module_map = {
+        'QAxContainer':         ('axcontainer', ),
+        'QtBluetooth':          ('bluetooth', ),
+        'QtCore':               ('-gui', ),
+        'QtDBus':               ('dbus', '-gui'),
+        'QtDesigner':           ('designer', ),
+        'QtHelp':               ('help', ),
+        'QtMacExtras':          ('macextras', ),
+        'QtMultimedia':         ('multimedia', ),
+        'QtMultimediaWidgets':  ('multimediawidgets', 'multimedia'),
+        'QtNetwork':            ('network', '-gui'),
+        'QtOpenGL':             ('opengl', ),
+        'QtPositioning':        ('positioning', ),
+        'QtPrintSupport':       ('printsupport', ),
+        'QtQml':                ('qml', ),
+        'QtQuick':              ('quick', ),
+        'QtSensors':            ('sensors', ),
+        'QtSerialPort':         ('serialport', ),
+        'QtSql':                ('sql', 'widgets'),
+        'QtSvg':                ('svg', ),
+        'QtTest':               ('testlib', 'widgets'),
+        'QtWebKit':             ('webKit', 'network'),
+        'QtWebKitWidgets':      ('webkitwidgets', ),
+        'QtWidgets':            ('widgets', ),
+        'QtWinExtras':          ('winextras', 'widgets'),
+        'QtX11Extras':          ('x11extras', ),
+        'QtXmlPatterns':        ('xmlpatterns', '-gui', 'network')
+    }
+
     def __init__(self, project):
         """ Initialise the builder for a project. """
 
@@ -44,13 +74,38 @@ class Builder():
     def _write_qmake(self, build_dir):
         """ Create the .pro file for qmake. """
 
-        app_name = os.path.basename(self._project.application_script)
+        project = self._project
+
+        app_name = os.path.basename(project.application_script)
         app_name, _ = os.path.splitext(app_name)
 
         f = self._create_file(build_dir, app_name + '.pro')
 
-        f.write("TEMPLATE = app\n")
+        f.write('TEMPLATE = app\n')
 
+        # Configure the QT value.
+        no_gui = True
+        qmake_qt = []
+
+        for pyqt_m in project.pyqt_modules:
+            needs_gui = True
+
+            for qt in self.pyqt_module_map[pyqt_m]:
+                if qt == '-gui':
+                    needs_gui = False
+                elif qt not in qmake_qt:
+                    qmake_qt.append(qt)
+
+            if needs_gui:
+                no_gui = False
+
+        if no_gui:
+            f.write('QT -= gui\n')
+
+        if len(qmake_qt) != 0:
+            f.write('QT += {0}\n'.format(' '.join(qmake_qt)))
+
+        # All done.
         f.close()
 
     def _create_file(self, build_dir, filename):
