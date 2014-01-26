@@ -44,8 +44,10 @@ class Builder():
     def _write_qmake(self, build_dir):
         """ Create the .pro file for qmake. """
 
-        f = self._create_file(build_dir,
-                self._project.application_name + '.pro')
+        app_name = os.path.basename(self._project.application_script)
+        app_name, _ = os.path.splitext(app_name)
+
+        f = self._create_file(build_dir, app_name + '.pro')
 
         f.write("TEMPLATE = app\n")
 

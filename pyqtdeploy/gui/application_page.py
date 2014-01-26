@@ -20,7 +20,7 @@ class ApplicationPage(QWidget):
     """ The GUI for the application page of a project. """
 
     # The page's label.
-    label = "Application Configuration"
+    label = "Application Source"
 
     @property
     def project(self):
@@ -46,11 +46,10 @@ class ApplicationPage(QWidget):
         # Create the page's GUI.
         form = QFormLayout()
 
-        self._name_edit = QLineEdit(placeholderText="Application name",
-                whatsThis="The name of the application executable without any "
-                        "platform-specific extension.",
-                textEdited=self._name_changed)
-        form.addRow("Name", self._name_edit)
+        self._script_edit = QLineEdit(placeholderText="Application script",
+                whatsThis="The name of the application's main script file.",
+                textEdited=self._script_changed)
+        form.addRow("Main script file", self._script_edit)
 
         self.setLayout(form)
 
@@ -59,10 +58,10 @@ class ApplicationPage(QWidget):
 
         project = self.project
 
-        self._name_edit.setText(project.application_name)
+        self._script_edit.setText(project.application_script)
 
-    def _name_changed(self, value):
-        """ Invoked when the user edits the application name. """
+    def _script_changed(self, value):
+        """ Invoked when the user edits the application script name. """
 
-        self.project.application_name = value
+        self.project.application_script = value
         self.project.modified = True

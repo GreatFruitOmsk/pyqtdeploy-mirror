@@ -27,22 +27,22 @@ class Project(QObject):
     # The current project version.
     version = 0
 
-    # Emitted when the application name of the project changes.
-    application_name_changed = pyqtSignal(str)
+    # Emitted when the application script of the project changes.
+    application_script_changed = pyqtSignal(str)
 
     @property
-    def application_name(self):
-        """ The application name property getter. """
+    def application_script(self):
+        """ The application script property getter. """
 
-        return self._application_name
+        return self._application_script
 
-    @application_name.setter
-    def application_name(self, value):
-        """ The application name property setter. """
+    @application_script.setter
+    def application_script(self, value):
+        """ The application script property setter. """
 
-        if self._application_name != value:
-            self._application_name = value
-            self.application_name_changed.emit(value)
+        if self._application_script != value:
+            self._application_script = value
+            self.application_script_changed.emit(value)
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -88,7 +88,7 @@ class Project(QObject):
         self._abs_filename = ''
         self._name = ''
 
-        self._application_name = ''
+        self._application_script = ''
 
     @classmethod
     def load(cls, filename):
@@ -132,10 +132,10 @@ class Project(QObject):
         application = root.find('application')
         cls._assert(application is not None, "Missing 'application' tag.")
 
-        application_name = application.get('name')
-        cls._assert(application_name is not None, "Missing 'name'.")
+        application_script = application.get('script')
+        cls._assert(application_script is not None, "Missing 'script'.")
 
-        project._application_name = application_name
+        project._application_script = application_script
 
         return project
 
@@ -172,7 +172,7 @@ class Project(QObject):
             'version': str(self.version)})
 
         application = SubElement(root, 'application', attrib={
-            'name': self.application_name})
+            'script': self.application_script})
 
         tree = ElementTree(root)
 

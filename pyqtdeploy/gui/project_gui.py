@@ -64,12 +64,12 @@ class ProjectGUI(QMainWindow):
 
         self._project = project
 
-        self._project.application_name_changed.connect(
-                self._application_name_changed)
+        self._project.application_script_changed.connect(
+                self._application_script_changed)
         self._project.modified_changed.connect(self.setWindowModified)
         self._project.name_changed.connect(self._name_changed)
 
-        self._application_name_changed(self._project.application_name)
+        self._application_script_changed(self._project.application_script)
         self._name_changed(self._project.name)
 
         tabs = self.centralWidget()
@@ -78,10 +78,10 @@ class ProjectGUI(QMainWindow):
             page = tabs.widget(p)
             page.project = self._project
 
-    def _application_name_changed(self, name):
-        """ Invoked when the project's application name changes. """
+    def _application_script_changed(self, script):
+        """ Invoked when the project's application script changes. """
 
-        self._build_action.setEnabled(name != '')
+        self._build_action.setEnabled(script != '')
 
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
