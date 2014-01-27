@@ -53,6 +53,8 @@ class QtPage(QWidget):
                 stateChanged=self._shared_changed)
         layout.addWidget(self._shared_edit)
 
+        layout.addStretch()
+
         self.setLayout(layout)
 
     def _update_page(self):

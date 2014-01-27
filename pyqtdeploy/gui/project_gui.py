@@ -67,12 +67,9 @@ class ProjectGUI(QMainWindow):
 
         self._project = project
 
-        self._project.application_script_changed.connect(
-                self._application_script_changed)
         self._project.modified_changed.connect(self.setWindowModified)
         self._project.name_changed.connect(self._name_changed)
 
-        self._application_script_changed(self._project.application_script)
         self._name_changed(self._project.name)
 
         tabs = self.centralWidget()
@@ -80,11 +77,6 @@ class ProjectGUI(QMainWindow):
         for p in range(tabs.count()):
             page = tabs.widget(p)
             page.project = self._project
-
-    def _application_script_changed(self, script):
-        """ Invoked when the project's application script changes. """
-
-        self._build_action.setEnabled(script != '')
 
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
@@ -110,8 +102,7 @@ class ProjectGUI(QMainWindow):
         file_menu.addAction("E&xit", self.close, QKeySequence.Quit)
 
         build_menu = menu_bar.addMenu("&Build")
-        self._build_action = build_menu.addAction("Build Project...",
-                self._build_project)
+        build_menu.addAction("Build Project...", self._build_project)
 
         menu_bar.addSeparator()
 
@@ -179,17 +170,44 @@ class ProjectGUI(QMainWindow):
     def _build_project(self):
         """ Build the project. """
 
+        project = self._project
+
+        # Check the prerequisites.  Note that we don't disable the menu option
+        # if these are missing because (as they are spread across the GUI) the
+        # user would have difficulty knowing what needed fixing.
+        if project.application_script == '':
+            self._missing_prereq("main script file")
+            return
+
+        if project.python_host_interpreter == '':
+            self._missing_prereq("host interpreter")
+            return
+
+        if project.application_script == '':
+            self._missing_prereq("target Python include directory")
+            return
+
+        if project.application_script == '':
+            self._missing_prereq("target Python library")
+            return
+
         build_dir = QFileDialog.getExistingDirectory(self, "Build Project")
+        if build_dir == '':
+            return
 
-        if build_dir != '':
-            builder = Builder(self._project)
+        try:
+            Builder(project).build(build_dir)
+            QMessageBox.information(self, "Build Project",
+                    "The project was built successfully.")
+        except UserException as e:
+            self._handle_exception(e, "Build Project", self)
 
-            try:
-                builder.build(build_dir)
-                QMessageBox.information(self, "Build Project",
-                        "The project was built successfully.")
-            except UserException as e:
-                self._handle_exception(e, "Build Project", self)
+    def _missing_prereq(self, missing):
+        """ Tell the user about a missing prerequisite. """
+
+        QMessageBox.warning(self, "Build Project",
+                "The project cannot be built because the name of the {0} has "
+                        "not been set.".format(missing))
 
     @classmethod
     def _load_project(cls, filename, parent=None):

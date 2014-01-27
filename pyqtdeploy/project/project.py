@@ -27,23 +27,6 @@ class Project(QObject):
     # The current project version.
     version = 0
 
-    # Emitted when the application script of the project changes.
-    application_script_changed = pyqtSignal(str)
-
-    @property
-    def application_script(self):
-        """ The application script property getter. """
-
-        return self._application_script
-
-    @application_script.setter
-    def application_script(self, value):
-        """ The application script property setter. """
-
-        if self._application_script != value:
-            self._application_script = value
-            self.application_script_changed.emit(value)
-
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
 
@@ -89,8 +72,9 @@ class Project(QObject):
         self._name = ''
 
         # Initialise the project data.
-        self._application_script = ''
+        self.application_script = ''
         self.pyqt_modules = []
+        self.python_host_interpreter = ''
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.qt_is_shared = False
@@ -138,7 +122,7 @@ class Project(QObject):
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
 
-        project._application_script = application.get('script', '')
+        project.application_script = application.get('script', '')
 
         for pyqt_m in application.iterfind('PyQtModule'):
             name = pyqt_m.get('name')
@@ -149,6 +133,7 @@ class Project(QObject):
         python = root.find('Python')
         cls._assert(python is not None, "Missing 'Python' tag.")
 
+        project.python_host_interpreter = python.get('hostinterpreter', '')
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
 
@@ -208,6 +193,7 @@ class Project(QObject):
                 'name': pyqt_m})
 
         SubElement(root, 'Python', attrib={
+            'hostinterpreter': self.python_host_interpreter,
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library})
 

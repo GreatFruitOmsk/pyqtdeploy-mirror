@@ -48,6 +48,13 @@ class PythonPage(QWidget):
         # Create the page's GUI.
         form = QFormLayout()
 
+        self._host_interp_edit = FileNameEdit("Host Interpreter",
+                placeholderText="Interpreter executable",
+                whatsThis="The name of the host interpreter's executable. "
+                        "This must be on PATH or be an absolute pathname.",
+                textEdited=self._host_interp_changed)
+        form.addRow("Host interpreter", self._host_interp_edit)
+
         self._target_inc_edit = FileNameEdit("Target Include Directory",
                 placeholderText="Directory name",
                 whatsThis="The target interpreter's include directory.",
@@ -67,8 +74,15 @@ class PythonPage(QWidget):
 
         project = self.project
 
+        self._host_interp_edit.setText(project.python_host_interpreter)
         self._target_inc_edit.setText(project.python_target_include_dir)
         self._target_lib_edit.setText(project.python_target_library)
+
+    def _host_interp_changed(self, value):
+        """ Invoked when the user edits the host interpreter name. """
+
+        self.project.python_host_interpreter = value
+        self.project.modified = True
 
     def _target_inc_changed(self, value):
         """ Invoked when the user edits the target include directory name. """
