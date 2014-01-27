@@ -93,6 +93,7 @@ class Project(QObject):
         self.pyqt_modules = []
         self.python_target_include_dir = ''
         self.python_target_library = ''
+        self.qt_is_shared = False
 
     @classmethod
     def load(cls, filename):
@@ -133,6 +134,7 @@ class Project(QObject):
         project = cls()
         project._set_project_name(abs_filename)
 
+        # The application specific configuration.
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
 
@@ -143,11 +145,26 @@ class Project(QObject):
             cls._assert(name is not None, "Missing 'name'.")
             project.pyqt_modules.append(name)
 
+        # The Python specific configuration.
         python = root.find('Python')
-        cls._assert(application is not None, "Missing 'Python' tag.")
+        cls._assert(python is not None, "Missing 'Python' tag.")
 
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
+
+        # The Qt specific configuration.
+        qt = root.find('Qt')
+        cls._assert(qt is not None, "Missing 'Qt' tag.")
+
+        isshared = qt.get('isshared', '0')
+        try:
+            isshared = int(isshared)
+        except:
+            isshared = None
+
+        cls._assert(isshared is not None, "Invalid 'isshared'.")
+
+        project.qt_is_shared = bool(isshared)
 
         return project
 
@@ -193,6 +210,9 @@ class Project(QObject):
         SubElement(root, 'Python', attrib={
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library})
+
+        SubElement(root, 'Qt', attrib={
+            'isshared': str(int(self.qt_is_shared))})
 
         tree = ElementTree(root)
 
