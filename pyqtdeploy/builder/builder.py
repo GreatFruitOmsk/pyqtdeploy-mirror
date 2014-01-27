@@ -14,6 +14,8 @@
 
 
 import os
+import subprocess
+import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo
 
@@ -71,9 +73,11 @@ class Builder():
             raise UserException("Unable to create the build directory.",
                     str(e))
 
-        self._write_qmake(build_dir)
+        freeze = self._copy_lib_file('freeze.py')
+        self._write_qmake(build_dir, freeze)
+        os.remove(freeze)
 
-    def _write_qmake(self, build_dir):
+    def _write_qmake(self, build_dir, freeze):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -129,18 +133,24 @@ class Builder():
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
-        # Specify the source files.
+        # Specify the source and header files.
         f.write('\n')
-        f.write('SOURCES = \\\n')
 
-        f.write('    mfsimport.cpp \\\n')
-        self._copy_file(build_dir, 'mfsimport.cpp')
-
-        f.write('    pyqtdeploy_main.c \\\n')
-        self._copy_file(build_dir, 'pyqtdeploy_main.c')
-
-        f.write('    main.c\n')
+        f.write('SOURCES = main.c pyqtdeploy_main.c mfsimport.cpp\n')
         self._write_main_c(build_dir, app_name)
+        self._copy_lib_file('pyqtdeploy_main.c', build_dir)
+        self._copy_lib_file('mfsimport.cpp', build_dir)
+
+        f.write('HEADERS = frozen_bootstrap.h frozen_main.h\n')
+
+        bootstrap = self._copy_lib_file('__bootstrap__.py')
+        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
+                freeze)
+        os.remove(bootstrap)
+
+        self._freeze(os.path.join(build_dir, 'frozen_main.h'),
+                self._file_from_project(project.application_script), freeze,
+                main=True)
 
         # All done.
         f.close()
@@ -163,15 +173,50 @@ int main(int argc, char **argv)
 
         f.close()
 
-    def _copy_file(cls, build_dir, filename):
-        """ Copy a file to the build directory. """
+    def _freeze(self, h_filename, py_filename, freeze, main=False):
+        """ Freeze a Python source file to a C header file. """
+
+        args = [self._project.python_host_interpreter, freeze]
+        
+        if main:
+            args.append('--main')
+            
+        args.extend(['--as-c', h_filename, py_filename])
+
+        try:
+            subprocess.check_output(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            raise UserException("Unable to freeze {0}.".format(py_filename),
+                    e.output)
+
+    def _file_from_project(self, filename):
+        """ Return the full pathname of a file.  A relative name is resolved
+        against the directory containing the project file.
+        """
+
+        if os.path.isabs(filename):
+            return filename
+
+        prj_dir = os.path.dirname(self._project.filename)
+        filename = os.path.join(prj_dir, filename)
+
+        return os.path.abspath(filename)
+
+    @staticmethod
+    def _copy_lib_file(filename, dirname=None):
+        """ Copy a library file to a directory and return the full pathname of
+        the copy.  If the directory wasn't specified then copy it to a
+        temporary directory.
+        """
 
         # Note that we use the Qt file operations to support the possibility
         # that pyqtdeploy itself has been deployed as a single executable.
 
         # The destination filename.
-        d_filename = QDir.fromNativeSeparators(
-                os.path.join(build_dir, filename))
+        if dirname is None:
+            dirname = tempfile.gettempdir()
+
+        d_filename = os.path.join(dirname, filename)
 
         # The source filename.
         s_dir = QFileInfo(__file__).dir()
@@ -181,8 +226,10 @@ int main(int argc, char **argv)
         # Make sure the destination doesn't exist.
         QFile.remove(d_filename)
 
-        if not QFile.copy(s_filename, d_filename):
+        if not QFile.copy(s_filename, QDir.fromNativeSeparators(d_filename)):
             raise UserException("Unable to copy file {0}.".format(filename))
+
+        return d_filename
 
     @staticmethod
     def _create_file(build_dir, filename):

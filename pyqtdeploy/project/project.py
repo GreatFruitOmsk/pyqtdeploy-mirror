@@ -68,7 +68,7 @@ class Project(QObject):
 
         # Initialise the project meta-data.
         self._modified = False
-        self._abs_filename = ''
+        self.filename = ''
         self._name = ''
 
         # Initialise the project data.
@@ -156,7 +156,7 @@ class Project(QObject):
     def save(self):
         """ Save the project.  Raise a UserException if there was an error. """
 
-        self._save_project(self._abs_filename)
+        self._save_project(self.filename)
 
     def save_as(self, filename):
         """ Save the project to the given file and make the file the
@@ -174,7 +174,7 @@ class Project(QObject):
     def _set_project_name(self, abs_filename):
         """ Set the name of the project. """
 
-        self._abs_filename = abs_filename
+        self.filename = abs_filename
         self.name = os.path.basename(abs_filename)
 
     def _save_project(self, abs_filename):

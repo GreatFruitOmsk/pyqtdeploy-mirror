@@ -30,15 +30,20 @@ def freeze_as_data(py_filename, data_filename):
     data_file.close()
 
 
-def freeze_as_c(py_filename, c_filename):
+def freeze_as_c(py_filename, c_filename, main):
     """ Freeze a Python source file and save it as C source code. """
 
     code, name = _get_marshalled_code(py_filename)
 
+    if main:
+        name = '__main__'
+    else:
+        name = name.replace('.', '_')
+
     c_file = open(c_filename, 'wt')
 
     c_file.write(
-            'static unsigned char frozen_%s[] = {' % name.replace('.', '_'))
+            'static unsigned char frozen_%s[] = {' % name)
 
     for i in range(0, len(code), 16):
         c_file.write('\n    ')
@@ -61,6 +66,9 @@ def _get_marshalled_code(py_filename):
 
     # Find the module corresponding to the Python file.
     for name, mod in mf.modules.items():
+        if mod.__code__ is None:
+            continue
+
         if mod.__code__.co_filename == py_filename:
             return marshal.dumps(mod.__code__), name
 
@@ -76,12 +84,14 @@ parser.add_argument('--as-c',
         help="freeze the Python source as C code in FILE", metavar="FILE")
 parser.add_argument('--as-data',
         help="freeze the Python source as data in FILE", metavar="FILE")
+parser.add_argument('--main', help="the frozen module is __main__",
+        action='store_true')
 
 args = parser.parse_args()
 
 # Handle the specific actions.
 if args.as_c is not None:
-    freeze_as_c(args.py_file, args.as_c)
+    freeze_as_c(args.py_file, args.as_c, args.main)
 
 if args.as_data is not None:
     freeze_as_data(args.py_file, args.as_data)
