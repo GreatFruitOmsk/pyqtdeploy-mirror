@@ -15,6 +15,8 @@
 
 import os
 
+from PyQt5.QtCore import QDir, QFile, QFileInfo
+
 from ..user_exception import UserException
 
 
@@ -127,10 +129,63 @@ class Builder():
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
+        # Specify the source files.
+        f.write('\n')
+        f.write('SOURCES = \\\n')
+
+        f.write('    mfsimport.cpp \\\n')
+        self._copy_file(build_dir, 'mfsimport.cpp')
+
+        f.write('    pyqtdeploy_main.c \\\n')
+        self._copy_file(build_dir, 'pyqtdeploy_main.c')
+
+        f.write('    main.c\n')
+        self._write_main_c(build_dir, app_name)
+
         # All done.
         f.close()
 
-    def _create_file(self, build_dir, filename):
+    @classmethod
+    def _write_main_c(cls, build_dir, app_name):
+        """ Create the application specific main.c file. """
+
+        f = cls._create_file(build_dir, 'main.c')
+
+        f.write('''#include <wchar.h>
+
+int main(int argc, char **argv)
+{
+    extern int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main);
+
+    return pyqtdeploy_main(argc, argv, L"%s");
+}
+''' % app_name)
+
+        f.close()
+
+    def _copy_file(cls, build_dir, filename):
+        """ Copy a file to the build directory. """
+
+        # Note that we use the Qt file operations to support the possibility
+        # that pyqtdeploy itself has been deployed as a single executable.
+
+        # The destination filename.
+        d_filename = QDir.fromNativeSeparators(
+                os.path.join(build_dir, filename))
+
+        # The source filename.
+        s_dir = QFileInfo(__file__).dir()
+        s_dir.cd('lib')
+        s_filename = s_dir.filePath(filename)
+
+        # Make sure the destination doesn't exist.
+        QFile.remove(d_filename)
+
+        if not QFile.copy(s_filename, d_filename):
+            raise UserException("Unable to copy file {0}.".format(filename))
+
+    @staticmethod
+    def _create_file(build_dir, filename):
         """ Create a text file in the build directory. """
 
         pathname = os.path.join(build_dir, filename)
