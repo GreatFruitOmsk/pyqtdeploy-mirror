@@ -49,7 +49,7 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
     {
         if (strcmp(fm->name, "_frozen_importlib") == 0)
         {
-            modules[1] = *fm;
+            modules[2] = *fm;
             break;
         }
     }
