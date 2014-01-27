@@ -22,9 +22,9 @@ import sys
 # Parse the command line.
 parser = argparse.ArgumentParser()
 
-parser.add_argument("project_file", help="the project file", nargs='?',
-        metavar='FILE')
-parser.add_argument("--build", help="build the project in DIR", metavar='DIR')
+parser.add_argument('project_file', help="the project file", nargs='?',
+        metavar="FILE")
+parser.add_argument('--build', help="build the project in DIR", metavar="DIR")
 
 args = parser.parse_args()
 

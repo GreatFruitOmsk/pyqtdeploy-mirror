@@ -34,9 +34,6 @@ typedef struct _mfsimporter
 
     // The path that the importer handles.  It will be the name of a directory.
     QString *path;
-
-    // The name of the module that implements __main__.
-    PyObject *main;
 } MfsImporter;
 
 
@@ -53,13 +50,6 @@ static PyMethodDef mfsimporter_methods[] = {
     {"find_loader", mfsimporter_find_loader, METH_VARARGS, NULL},
     {"load_module", mfsimporter_load_module, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
-};
-
-
-// The members table.
-static PyMemberDef mfsimporter_members[] = {
-    {(char *)"main", T_OBJECT, offsetof(MfsImporter, main), 0, NULL},
-    {NULL, 0, 0, 0, NULL}
 };
 
 
@@ -93,7 +83,7 @@ static PyTypeObject MfsImporter_Type = {
     0,                                          // tp_iter
     0,                                          // tp_iternext
     mfsimporter_methods,                        // tp_methods
-    mfsimporter_members,                        // tp_members
+    0,                                          // tp_members
     0,                                          // tp_getset
     0,                                          // tp_base
     0,                                          // tp_dict
@@ -183,8 +173,6 @@ static void mfsimporter_dealloc(PyObject *self)
         delete ((MfsImporter *)self)->path;
         ((MfsImporter *)self)->path = 0;
     }
-
-    Py_CLEAR(((MfsImporter *)self)->main);
 
     Py_TYPE(self)->tp_free(self);
 }
@@ -294,21 +282,6 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
 
         if (rc != 0)
             goto error;
-    }
-
-    // Replace the module name with __main__ if it is the entry point.
-    if (((MfsImporter *)self)->main && PyUnicode_Compare(py_fqmn, ((MfsImporter *)self)->main) == 0)
-    {
-        static PyObject *main = NULL;
-
-        if (!main)
-        {
-            main = PyUnicode_FromString("__main__");
-            if (!main)
-                goto error;
-        }
-
-        py_fqmn = main;
     }
 
     py_filename = qstring_to_unicode(filename);

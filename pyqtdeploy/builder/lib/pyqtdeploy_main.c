@@ -20,6 +20,7 @@
 #include <Python.h>
 
 #include "frozen_bootstrap.h"
+#include "frozen_main.h"
 
 
 // Forward declarations.
@@ -33,10 +34,11 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
     int i;
     char *saved_locale;
 
-    // The replacement table of from modules with a reserved place for
+    // The replacement table of frozen modules with a reserved place for
     // _frozen_importlib.
     static struct _frozen modules[] = {
         {"__bootstrap__", frozen___bootstrap__, sizeof (frozen___bootstrap__)},
+        {"__main__", frozen___main__, sizeof (frozen___main__)},
         {NULL, NULL, 0},
         {NULL, NULL, 0}
     };
@@ -111,59 +113,17 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
     if (PyImport_ImportFrozenModule("__bootstrap__") <= 0)
     {
         fprintf(stderr, "Unable to import __bootstrap__\n");
-        return -1;
-    }
-
-    // Get the importer that will handle the main module and tell it the main
-    // module's name so that it can import it as __main__.
-    PyObject *py_argv0 = PyUnicode_FromWideChar(w_argv[0], -1);
-    if (!py_argv0)
-    {
-        fprintf(stderr, "Unable to objectify application name\n");
         return 1;
     }
-
-    PyObject *application_path = PyUnicode_FromString(":/application");
-    if (!application_path)
-    {
-        fprintf(stderr, "Unable to objectify application path\n");
-        return 1;
-    }
-
-    PyObject *importer = PyImport_GetImporter(application_path);
-    if (!importer)
-    {
-        fprintf(stderr, "Error finding importer for application\n");
-        return 1;
-    }
-
-    if (importer == Py_None)
-    {
-        fprintf(stderr, "Unable to find importer for application\n");
-        return 1;
-    }
-
-    if (PyObject_SetAttrString(importer, "main", py_argv0) < 0)
-    {
-        fprintf(stderr, "Unable to set entry point\n");
-        return 1;
-    }
-
-    Py_DECREF(application_path);
-    Py_DECREF(importer);
 
     // Import the main module, ie. execute the application.
-    PyObject *main_mod = PyImport_Import(py_argv0);
-    if (!main_mod)
+    if (PyImport_ImportFrozenModule("__main__") <= 0)
     {
         fprintf(stderr, "Unable to import main module\n");
         return 1;
     }
 
     // Tidy up.
-    Py_DECREF(py_argv0);
-    Py_DECREF(main_mod);
-
     Py_Finalize();
 
     return 0;

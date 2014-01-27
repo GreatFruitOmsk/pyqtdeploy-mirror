@@ -13,18 +13,15 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import argparse
 import marshal
 import modulefinder
-
-
-# The default for Python v3.3 is 2, v3.4 is 4.
-MARSHAL_VERSION = 2
 
 
 def freeze_as_data(py_filename, data_filename):
     """ Freeze a Python source file and save it as data. """
 
-    code, _ = _get_marshalled_code(py_file)
+    code, _ = _get_marshalled_code(py_filename)
 
     data_file = open(data_filename, 'wb')
 
@@ -64,7 +61,27 @@ def _get_marshalled_code(py_filename):
 
     # Find the module corresponding to the Python file.
     for name, mod in mf.modules.items():
-        if mod.__code__.co_filename == py_file:
-            return marshal.dumps(mod.__code__, MARSHAL_VERSION), name
+        if mod.__code__.co_filename == py_filename:
+            return marshal.dumps(mod.__code__), name
 
     return None, None
+
+
+# Parse the command line.
+parser = argparse.ArgumentParser()
+
+parser.add_argument('py_file', help="the name of the Python source file",
+        metavar="PYFILE")
+parser.add_argument('--as-c',
+        help="freeze the Python source as C code in FILE", metavar="FILE")
+parser.add_argument('--as-data',
+        help="freeze the Python source as data in FILE", metavar="FILE")
+
+args = parser.parse_args()
+
+# Handle the specific actions.
+if args.as_c is not None:
+    freeze_as_c(args.py_file, args.as_c)
+
+if args.as_data is not None:
+    freeze_as_data(args.py_file, args.as_data)
