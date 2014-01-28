@@ -72,6 +72,7 @@ class Project(QObject):
         self._name = ''
 
         # Initialise the project data.
+        self.application_package = MfsPackage()
         self.application_script = ''
         self.pyqt_modules = []
         self.python_host_interpreter = ''
@@ -101,7 +102,7 @@ class Project(QObject):
 
         # Check the project version number.
         version = root.get('version')
-        cls._assert(version is not None, "Missing 'version'.")
+        cls._assert(version is not None, "Missing 'version' attribute.")
 
         try:
             version = int(version)
@@ -124,9 +125,15 @@ class Project(QObject):
 
         project.application_script = application.get('script', '')
 
+        app_package = application.find('Package')
+        cls._assert(app_package is not None,
+                "Missing 'Application.Package' tag.")
+        cls._load_package(app_package, project.application_package)
+
         for pyqt_m in application.iterfind('PyQtModule'):
-            name = pyqt_m.get('name')
-            cls._assert(name is not None, "Missing 'name'.")
+            name = pyqt_m.get('name', '')
+            cls._assert(name != '',
+                    "Missing or empty 'PyQtModule.name' attribute.")
             project.pyqt_modules.append(name)
 
         # The Python specific configuration.
@@ -141,15 +148,7 @@ class Project(QObject):
         qt = root.find('Qt')
         cls._assert(qt is not None, "Missing 'Qt' tag.")
 
-        isshared = qt.get('isshared', '0')
-        try:
-            isshared = int(isshared)
-        except:
-            isshared = None
-
-        cls._assert(isshared is not None, "Invalid 'isshared'.")
-
-        project.qt_is_shared = bool(isshared)
+        project.qt_is_shared = cls._get_bool(qt, 'isshared', 'Qt')
 
         return project
 
@@ -170,6 +169,66 @@ class Project(QObject):
 
         # Only do this after the project has been successfully saved.
         self._set_project_name(abs_filename)
+
+    @classmethod
+    def _load_package(cls, package_element, package):
+        """ Populate an MfsPackage instance. """
+
+        package.name = package_element.get('name')
+        cls._assert(package.name is not None,
+                "Missing 'Package.name' attribute.")
+
+        package.contents = cls._load_mfs_contents(package_element)
+
+        package.exclusions = []
+
+        for exclude_element in package_element.iterfind('Exclude'):
+            name = exclude_element.get('name', '')
+            cls._assert(name != '',
+                    "Missing or empty 'Package.Exclude.name' attribute.")
+            project.pyqt_modules.append(name)
+
+    @classmethod
+    def _load_mfs_contents(cls, mfs_element):
+        """ Return a list of contents for a memory-filesystem container. """
+
+        contents = []
+
+        for content_element in mfs_element.iterfind('PackageContent'):
+            isdir = cls._get_bool(content_element, 'isdirectory',
+                    'Package.PackageContent')
+
+            content = MfsDirectory() if isdir else MfsFile()
+
+            content.name = content_element.get('name', '')
+            cls._assert(content.name != '',
+                    "Missing or empty 'Package.PackageContent.name' attribute.")
+
+            content.included = cls._get_bool(content_element, 'included',
+                    'Package.PackageContent')
+
+            if isdir:
+                content.contents = cls._load_mfs_contents(container_element)
+
+            contents.append(content)
+
+        return contents
+
+    @classmethod
+    def _get_bool(cls, element, name, context):
+        """ Get a boolean attribute from an element. """
+
+        value = element.get(name)
+        try:
+            value = int(value)
+        except:
+            value = None
+
+        cls._assert(value is not None,
+                "Missing or Invalid boolean value of '{0}.{1}'.".format(
+                        context, name))
+
+        return bool(value)
 
     def _set_project_name(self, abs_filename):
         """ Set the name of the project. """
@@ -210,9 +269,69 @@ class Project(QObject):
 
         self.modified = False
 
+    @classmethod
+    def _save_package(cls, container, package):
+        """ Save a package in a container element. """
+
+        package_element = SubElement(container, 'Package', attrib={
+            'name': package.name})
+
+        cls._save_mfs_contents(package_element, package.contents)
+
+        for exclude in package.exclusions:
+            SubElement(package_element, 'Exclude', attrib={
+                'name': exclude})
+
+    @classmethod
+    def _save_mfs_contents(cls, container, contents):
+        """ Save the contents of a memory-filesystem container. """
+
+        for content in contents:
+            isdir = isinstance(content, MfsDirectory)
+
+            subcontainer = SubElement(container, 'PackageContent', attrib={
+                'name': content.name,
+                'included': str(int(content.included)),
+                'isdirectory': str(int(isdir))})
+
+            if isdir:
+                cls._save_mfs_contents(subcontainer, content.contents)
+
     @staticmethod
     def _assert(ok, detail):
         """ Validate an assertion and raise a UserException if it failed. """
 
         if not ok:
             raise UserException("The project file is invalid.", detail)
+
+
+class MfsPackage():
+    """ The encapsulation of a memory-filesystem package. """
+
+    def __init__(self):
+        """ Initialise the project. """
+
+        self.name = ''
+        self.contents = []
+        self.exclusions = ['*.pyc', '*.pyo', '__pycache__']
+
+
+class MfsFile():
+    """ The encapsulation of a memory-filesystem file. """
+
+    def __init__(self):
+        """ Initialise the file. """
+
+        self.name = ''
+        self.included = True
+
+
+class MfsDirectory(MfsFile):
+    """ The encapsulation of a memory-filesystem directory. """
+
+    def __init__(self):
+        """ Initialise the directory. """
+
+        super().__init__()
+
+        self.contents = []
