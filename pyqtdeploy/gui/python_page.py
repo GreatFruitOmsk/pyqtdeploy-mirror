@@ -15,7 +15,7 @@
 
 from PyQt5.QtWidgets import QFormLayout, QWidget
 
-from .file_name_edit import FileNameEdit
+from .filename_editor import FilenameEditor
 
 
 class PythonPage(QWidget):
@@ -48,20 +48,20 @@ class PythonPage(QWidget):
         # Create the page's GUI.
         form = QFormLayout()
 
-        self._host_interp_edit = FileNameEdit("Host Interpreter",
+        self._host_interp_edit = FilenameEditor("Host Interpreter",
                 placeholderText="Interpreter executable",
                 whatsThis="The name of the host interpreter's executable. "
                         "This must be on PATH or be an absolute pathname.",
                 textEdited=self._host_interp_changed)
         form.addRow("Host interpreter", self._host_interp_edit)
 
-        self._target_inc_edit = FileNameEdit("Target Include Directory",
+        self._target_inc_edit = FilenameEditor("Target Include Directory",
                 placeholderText="Directory name",
                 whatsThis="The target interpreter's include directory.",
                 textEdited=self._target_inc_changed, directory=True)
         form.addRow("Target include directory", self._target_inc_edit)
 
-        self._target_lib_edit = FileNameEdit("Python Library",
+        self._target_lib_edit = FilenameEditor("Python Library",
                 placeholderText="Library name",
                 whatsThis="The target interpreter's Python library.",
                 textEdited=self._target_lib_changed)

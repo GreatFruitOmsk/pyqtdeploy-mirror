@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (QFileDialog, QHBoxLayout, QLineEdit, QStyle,
         QToolButton)
 
 
-class FileNameEdit(QHBoxLayout):
+class FilenameEditor(QHBoxLayout):
     """ A simple file name editor suitable to be added to a layout. """
 
     def __init__(self, caption, directory=False, **kwds):
