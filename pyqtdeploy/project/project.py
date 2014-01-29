@@ -198,14 +198,14 @@ class Project(QObject):
             isdir = cls._get_bool(content_element, 'isdirectory',
                     'Package.PackageContent')
 
-            content = MfsDirectory() if isdir else MfsFile()
-
-            content.name = content_element.get('name', '')
-            cls._assert(content.name != '',
+            name = content_element.get('name', '')
+            cls._assert(name != '',
                     "Missing or empty 'Package.PackageContent.name' attribute.")
 
-            content.included = cls._get_bool(content_element, 'included',
+            included = cls._get_bool(content_element, 'included',
                     'Package.PackageContent')
+
+            content = MfsDirectory(name, included) if isdir else MfsFile(name, included)
 
             if isdir:
                 content.contents = cls._load_mfs_contents(container_element)
@@ -321,19 +321,19 @@ class MfsPackage():
 class MfsFile():
     """ The encapsulation of a memory-filesystem file. """
 
-    def __init__(self):
+    def __init__(self, name, included):
         """ Initialise the file. """
 
-        self.name = ''
-        self.included = True
+        self.name = name
+        self.included = included
 
 
 class MfsDirectory(MfsFile):
     """ The encapsulation of a memory-filesystem directory. """
 
-    def __init__(self):
+    def __init__(self, name, included):
         """ Initialise the directory. """
 
-        super().__init__()
+        super().__init__(name, included)
 
         self.contents = []
