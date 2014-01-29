@@ -186,7 +186,7 @@ class Project(QObject):
             name = exclude_element.get('name', '')
             cls._assert(name != '',
                     "Missing or empty 'Package.Exclude.name' attribute.")
-            project.pyqt_modules.append(name)
+            package.exclusions.append(name)
 
     @classmethod
     def _load_mfs_contents(cls, mfs_element):
@@ -246,6 +246,8 @@ class Project(QObject):
 
         application = SubElement(root, 'Application', attrib={
             'script': self.application_script})
+
+        self._save_package(application, self.application_package)
 
         for pyqt_m in self.pyqt_modules:
             SubElement(application, 'PyQtModule', attrib={

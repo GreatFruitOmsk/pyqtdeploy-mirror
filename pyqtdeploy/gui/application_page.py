@@ -58,6 +58,7 @@ class ApplicationPage(QWidget):
         layout.addLayout(form)
 
         self._package_edit = MfsPackageEditor("Application Package")
+        self._package_edit.package_changed.connect(self._package_changed)
         layout.addWidget(self._package_edit)
 
         self.setLayout(layout)
@@ -74,4 +75,9 @@ class ApplicationPage(QWidget):
         """ Invoked when the user edits the application script name. """
 
         self.project.application_script = value
+        self.project.modified = True
+
+    def _package_changed(self):
+        """ Invoked when the user edits the application package. """
+
         self.project.modified = True
