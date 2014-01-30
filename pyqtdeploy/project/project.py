@@ -178,6 +178,9 @@ class Project(QObject):
         cls._assert(package.name is not None,
                 "Missing 'Package.name' attribute.")
 
+        package.sequence = cls._get_int(package_element, 'sequence',
+                'Package.sequence')
+
         package.contents = cls._load_mfs_contents(package_element)
 
         package.exclusions = []
@@ -215,6 +218,22 @@ class Project(QObject):
         return contents
 
     @classmethod
+    def _get_int(cls, element, name, context):
+        """ Get an interger attribute from an element. """
+
+        value = element.get(name)
+        try:
+            value = int(value)
+        except:
+            value = None
+
+        cls._assert(value is not None,
+                "Missing or invalid integer value of '{0}.{1}'.".format(
+                        context, name))
+
+        return value
+
+    @classmethod
     def _get_bool(cls, element, name, context):
         """ Get a boolean attribute from an element. """
 
@@ -225,7 +244,7 @@ class Project(QObject):
             value = None
 
         cls._assert(value is not None,
-                "Missing or Invalid boolean value of '{0}.{1}'.".format(
+                "Missing or invalid boolean value of '{0}.{1}'.".format(
                         context, name))
 
         return bool(value)
@@ -276,7 +295,8 @@ class Project(QObject):
         """ Save a package in a container element. """
 
         package_element = SubElement(container, 'Package', attrib={
-            'name': package.name})
+            'name': package.name,
+            'sequence': str(package.sequence)})
 
         cls._save_mfs_contents(package_element, package.contents)
 
@@ -314,6 +334,7 @@ class MfsPackage():
         """ Initialise the project. """
 
         self.name = ''
+        self.sequence = 0
         self.contents = []
         self.exclusions = ['*.pyc', '*.pyo', '__pycache__']
 
