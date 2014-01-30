@@ -182,14 +182,14 @@ class MfsPackageEditor(QGroupBox):
             full_name = os.path.join(path, name)
 
             if os.path.isdir(full_name):
-                mfs = MfsDirectory(name, included)
-
                 # Look ahead to see if the directory is a sub-package.  If not,
                 # and it is new in this scan, then we exclude it.
                 new_path_contents = os.listdir(full_name)
 
                 if included is None:
                     included = ('__init__.py' in new_path_contents)
+
+                mfs = MfsDirectory(name, included)
 
                 self._add_to_container(mfs, full_name, new_path_contents,
                         dir_stack, old_state)
@@ -235,7 +235,7 @@ class MfsPackageEditor(QGroupBox):
 
             if isinstance(content, MfsDirectory):
                 self._visualise_contents(content.contents, itm)
-                itm.setExpanded(True)
+                itm.setExpanded(content.included)
 
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
