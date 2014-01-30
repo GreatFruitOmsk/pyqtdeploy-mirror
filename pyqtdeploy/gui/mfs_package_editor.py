@@ -126,7 +126,7 @@ class MfsPackageEditor(QGroupBox):
 
         # Save the included state of any existing contents so that they can be
         # restored after the scan.
-        old_excluded = []
+        old_state = {}
         it = QTreeWidgetItemIterator(self._package_edit)
 
         # Skip the root of the tree.
@@ -134,29 +134,29 @@ class MfsPackageEditor(QGroupBox):
 
         itm = it.value()
         while itm is not None:
-            if not itm._mfs_item.included:
-                rel_path = [itm.data(0, Qt.DisplayRole)]
+            rel_path = [itm.data(0, Qt.DisplayRole)]
 
-                parent = itm.parent()
-                while parent is not None:
-                    rel_path.append(parent.data(0, Qt.DisplayRole))
-                    parent = parent.parent()
+            parent = itm.parent()
+            while parent is not None:
+                rel_path.append(parent.data(0, Qt.DisplayRole))
+                parent = parent.parent()
 
-                rel_path.reverse()
+            rel_path.reverse()
 
-                old_excluded.append(os.path.join(*rel_path))
+            old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
 
             it += 1
             itm = it.value()
 
         # Walk the package.
         self._package.name = os.path.basename(root)
-        self._add_to_container(self._package, root, [], old_excluded)
+        self._add_to_container(self._package, root, os.listdir(root), [],
+                old_state)
         self._visualise()
 
         self.package_changed.emit()
 
-    def _add_to_container(self, container, path, dir_stack, old_excluded):
+    def _add_to_container(self, container, path, path_contents, dir_stack, old_state):
         """ Add the files and directories of a package or sub-package to a
         container.
         """
@@ -164,7 +164,7 @@ class MfsPackageEditor(QGroupBox):
         dir_stack.append(os.path.basename(path))
         contents = []
 
-        for name in os.listdir(path):
+        for name in path_contents:
             # Apply any exclusions.
             for exc in self._package.exclusions:
                 if fnmatch.fnmatch(name, exc):
@@ -176,15 +176,27 @@ class MfsPackageEditor(QGroupBox):
 
             # See if we already know the included state.
             rel_path = os.path.join(os.path.join(*dir_stack), name)
-            included = (rel_path not in old_excluded)
+            included = old_state.get(rel_path)
 
             # Add the content.
             full_name = os.path.join(path, name)
 
             if os.path.isdir(full_name):
                 mfs = MfsDirectory(name, included)
-                self._add_to_container(mfs, full_name, dir_stack, old_excluded)
+
+                # Look ahead to see if the directory is a sub-package.  If not,
+                # and it is new in this scan, then we exclude it.
+                new_path_contents = os.listdir(full_name)
+
+                if included is None:
+                    included = ('__init__.py' in new_path_contents)
+
+                self._add_to_container(mfs, full_name, new_path_contents,
+                        dir_stack, old_state)
             elif os.path.isfile(full_name):
+                if included is None:
+                    included = True
+
                 mfs = MfsFile(name, included)
             else:
                 continue
