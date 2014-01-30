@@ -41,14 +41,8 @@ class MfsPackageEditor(QGroupBox):
         layout = QHBoxLayout()
 
         self._package_edit = QTreeWidget()
-        self._package_edit.setHeaderLabels(["Name", "Included"])
+        self._package_edit.header().hide()
         self._package_edit.itemChanged.connect(self._package_changed)
-
-        header = self._package_edit.header()
-        header.setStretchLastSection(False)
-        header.setSectionResizeMode(0, header.Stretch)
-        header.setSectionResizeMode(1, header.ResizeToContents)
-
         layout.addWidget(self._package_edit, stretch=1)
 
         scan_layout = QVBoxLayout()
@@ -224,7 +218,7 @@ class MfsPackageEditor(QGroupBox):
 
         for content in contents:
             itm = QTreeWidgetItem(parent, [content.name])
-            itm.setCheckState(1, Qt.Checked if content.included else Qt.Unchecked)
+            itm.setCheckState(0, Qt.Checked if content.included else Qt.Unchecked)
             itm._mfs_item = content
 
             if isinstance(content, MfsDirectory):
@@ -234,6 +228,6 @@ class MfsPackageEditor(QGroupBox):
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
 
-        itm._mfs_item.included = (itm.checkState(1) == Qt.Checked)
+        itm._mfs_item.included = (itm.checkState(0) == Qt.Checked)
 
         self.package_changed.emit()
