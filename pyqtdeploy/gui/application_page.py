@@ -13,8 +13,9 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt5.QtWidgets import QFormLayout, QLineEdit, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QWidget
 
+from .filename_editor import FilenameEditor
 from .mfs_package_editor import MfsPackageEditor
 
 
@@ -36,6 +37,7 @@ class ApplicationPage(QWidget):
 
         if self._project != value:
             self._project = value
+            self._script_edit.setProject(value)
             self._update_page()
 
     def __init__(self):
@@ -50,7 +52,8 @@ class ApplicationPage(QWidget):
 
         form = QFormLayout()
 
-        self._script_edit = QLineEdit(placeholderText="Application script",
+        self._script_edit = FilenameEditor("Application Script",
+                placeholderText="Application script",
                 whatsThis="The name of the application's main script file.",
                 textEdited=self._script_changed)
         form.addRow("Main script file", self._script_edit)
@@ -69,7 +72,7 @@ class ApplicationPage(QWidget):
         project = self.project
 
         self._script_edit.setText(project.application_script)
-        self._package_edit.setPackage(project.application_package)
+        self._package_edit.setPackage(project.application_package, project)
 
     def _script_changed(self, value):
         """ Invoked when the user edits the application script name. """

@@ -35,8 +35,8 @@ class MfsPackageEditor(QGroupBox):
         super().__init__(title)
 
         self._package = None
+        self._project = None
         self._title = title
-        self._previous_scan = ''
 
         layout = QHBoxLayout()
 
@@ -47,7 +47,12 @@ class MfsPackageEditor(QGroupBox):
 
         scan_layout = QVBoxLayout()
 
-        scan_layout.addWidget(QPushButton("Scan...", clicked=self._scan))
+        # TODO - Have an argument that changes this to "Scan directory..." and
+        # doesn't show the directory as the root in the tree (as it won't
+        # appear in the path in the resource file).  Actually it should
+        # probably be a flag in the package object itself.
+        scan_layout.addWidget(QPushButton("Scan package...",
+                clicked=self._scan))
 
         self._exclusions_edit = QTreeWidget()
         self._exclusions_edit.setHeaderLabels(["Exclusions"])
@@ -63,11 +68,14 @@ class MfsPackageEditor(QGroupBox):
 
         self.setLayout(layout)
 
-    def setPackage(self, package):
-        """ Update the editor with the contents of the given package. """
+    def setPackage(self, package, project):
+        """ Update the editor with the contents of the given package and
+        project.
+        """
 
-        # Save the package.
+        # Save the package and project.
         self._package = package
+        self._project = project
 
         # Set the package itself.
         self._visualise()
@@ -116,13 +124,18 @@ class MfsPackageEditor(QGroupBox):
     def _scan(self, value):
         """ Invoked when the user clicks on the scan button. """
 
+        package = self._package
+        project = self._project
+
+        orig = default = package.name
+        if default != '':
+            default = project.absolute_path(default)
+
         root = QFileDialog.getExistingDirectory(self._package_edit,
-                self._title, self._previous_scan)
+                self._title, default)
 
         if root == '':
             return
-
-        self._previous_scan = root
 
         # Save the included state of any existing contents so that they can be
         # restored after the scan.
@@ -149,9 +162,8 @@ class MfsPackageEditor(QGroupBox):
             itm = it.value()
 
         # Walk the package.
-        self._package.name = os.path.basename(root)
-        self._add_to_container(self._package, root, os.listdir(root), [],
-                old_state)
+        package.name = project.relative_path(root)
+        self._add_to_container(package, root, os.listdir(root), [], old_state)
         self._visualise()
 
         self.package_changed.emit()

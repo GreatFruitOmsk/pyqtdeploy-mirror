@@ -68,7 +68,6 @@ class Project(QObject):
 
         # Initialise the project meta-data.
         self._modified = False
-        self.filename = ''
         self._name = ''
 
         # Initialise the project data.
@@ -79,6 +78,29 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.qt_is_shared = False
+
+    def relative_path(self, filename):
+        """ Convert a filename to one that is relative to the project
+        name if possible.
+        """
+
+        if os.path.isabs(filename):
+            if self._name != '':
+                project_dir = os.path.dirname(self._name)
+                if filename.startswith(project_dir):
+                    filename = os.path.relpath(filename, project_dir)
+
+        return filename
+
+    def absolute_path(self, filename):
+        """ Convert a filename that might be relative to the project name to an
+        absolute filename.
+        """
+
+        if not os.path.isabs(filename):
+            filename = os.path.join(os.path.dirname(self._name), filename)
+
+        return filename
 
     @classmethod
     def load(cls, filename):
@@ -117,7 +139,7 @@ class Project(QObject):
 
         # Create the project and populate it.
         project = cls()
-        project._set_project_name(abs_filename)
+        project.name = abs_filename
 
         # The application specific configuration.
         application = root.find('Application')
@@ -155,7 +177,7 @@ class Project(QObject):
     def save(self):
         """ Save the project.  Raise a UserException if there was an error. """
 
-        self._save_project(self.filename)
+        self._save_project(self.name)
 
     def save_as(self, filename):
         """ Save the project to the given file and make the file the
@@ -168,7 +190,7 @@ class Project(QObject):
         self._save_project(abs_filename)
 
         # Only do this after the project has been successfully saved.
-        self._set_project_name(abs_filename)
+        self.name = abs_filename
 
     @classmethod
     def _load_package(cls, package_element, package):
@@ -248,12 +270,6 @@ class Project(QObject):
                         context, name))
 
         return bool(value)
-
-    def _set_project_name(self, abs_filename):
-        """ Set the name of the project. """
-
-        self.filename = abs_filename
-        self.name = os.path.basename(abs_filename)
 
     def _save_project(self, abs_filename):
         """ Save the project to the given file.  Raise a UserException if there

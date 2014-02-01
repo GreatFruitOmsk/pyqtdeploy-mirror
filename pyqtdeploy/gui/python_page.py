@@ -36,6 +36,9 @@ class PythonPage(QWidget):
 
         if self._project != value:
             self._project = value
+            self._host_interp_edit.setProject(value)
+            self._target_inc_edit.setProject(value)
+            self._target_lib_edit.setProject(value)
             self._update_page()
 
     def __init__(self):

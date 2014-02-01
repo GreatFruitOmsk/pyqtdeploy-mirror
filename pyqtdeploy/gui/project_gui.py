@@ -13,6 +13,8 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+import os
+
 from PyQt5.QtCore import QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QTabWidget,
@@ -81,7 +83,7 @@ class ProjectGUI(QMainWindow):
     def _name_changed(self, name):
         """ Invoked when the project's name changes. """
 
-        title = name if name != '' else "Unnamed"
+        title = os.path.basename(name) if name != '' else "Unnamed"
         self.setWindowTitle(title + '[*]')
 
         self._save_action.setEnabled(name != '')

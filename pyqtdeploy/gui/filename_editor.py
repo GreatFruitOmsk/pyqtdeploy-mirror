@@ -18,13 +18,16 @@ from PyQt5.QtWidgets import (QFileDialog, QHBoxLayout, QLineEdit, QStyle,
 
 
 class FilenameEditor(QHBoxLayout):
-    """ A simple file name editor suitable to be added to a layout. """
+    """ A simple file name editor suitable to be added to a layout. Filenames
+    are relative to the project if possbile.
+    """
 
     def __init__(self, caption, directory=False, **kwds):
         """ Initialise the editor. """
 
         super().__init__()
 
+        self._project = None
         self._caption = caption
         self._directory = directory
 
@@ -36,6 +39,11 @@ class FilenameEditor(QHBoxLayout):
 
         self.addWidget(QToolButton(icon=icon, clicked=self._browse))
 
+    def setProject(self, project):
+        """ Set the project. """
+
+        self._project = project
+
     def setText(self, text):
         """ Set the text of the embedded QLineEdit. """
 
@@ -44,13 +52,21 @@ class FilenameEditor(QHBoxLayout):
     def _browse(self, value):
         """ Invoked when the user clicks on the browse button. """
 
+        orig = default = self._line_edit.text()
+        if default != '' and self._project is not None:
+            default = self._project.absolute_path(default)
+
         if self._directory:
             name = QFileDialog.getExistingDirectory(self._line_edit,
-                    self._caption, self._line_edit.text())
+                    self._caption, default)
         else:
             name, _ = QFileDialog.getOpenFileName(self._line_edit,
-                    self._caption, self._line_edit.text())
+                    self._caption, default)
 
         if name != '':
-            self._line_edit.setText(name)
-            self._line_edit.textEdited.emit(name)
+            if self._project is not None:
+                name = self._project.relative_path(name)
+
+            if name != orig:
+                self._line_edit.setText(name)
+                self._line_edit.textEdited.emit(name)

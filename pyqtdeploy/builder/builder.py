@@ -19,6 +19,7 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo
 
+from ..project import MfsDirectory
 from ..user_exception import UserException
 
 
@@ -67,6 +68,8 @@ class Builder():
         there is an error.
         """
 
+        project = self._project
+
         try:
             os.makedirs(build_dir, exist_ok=True)
         except Exception as e:
@@ -74,7 +77,12 @@ class Builder():
                     str(e))
 
         freeze = self._copy_lib_file('freeze.py')
+
         self._write_qmake(build_dir, freeze)
+
+        if project.application_package.name != '':
+            self._write_package(build_dir, project.application_package, freeze)
+
         os.remove(freeze)
 
     def _write_qmake(self, build_dir, freeze):
@@ -133,6 +141,24 @@ class Builder():
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
+        # Specify any resource files.
+        packages = []
+
+        if project.application_package.name != '':
+            packages.append(project.application_package)
+
+        # TODO - add any other packages.
+
+        if len(packages) != 0:
+            f.write('\n')
+
+            f.write('RESOURCES =')
+
+            for package in packages:
+                f.write(' \\\n    mfs_{0}.qrc'.format(package.sequence))
+
+            f.write('\n')
+
         # Specify the source and header files.
         f.write('\n')
 
@@ -143,17 +169,90 @@ class Builder():
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h\n')
 
-        bootstrap = self._copy_lib_file('__bootstrap__.py')
-        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
-                freeze)
-        os.remove(bootstrap)
+        bootstrap_f = self._create_file(build_dir, '__bootstrap__.py')
+        bootstrap_f.write('''import sys
+import mfsimport
+
+sys.path = [{0}]
+sys.path_hooks = [mfsimport.mfsimporter]
+'''.format(','.join(["':/mfs_{0}'".format(p.sequence) for p in packages])))
+
+        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'),
+                os.path.join(build_dir, '__bootstrap__.py'), freeze)
 
         self._freeze(os.path.join(build_dir, 'frozen_main.h'),
-                self._file_from_project(project.application_script), freeze,
+                project.absolute_path(project.application_script), freeze,
                 main=True)
 
         # All done.
         f.close()
+
+    def _write_package(self, build_dir, package, freeze):
+        """ Create a .qrc file for a package and the corresponding contents.
+        """
+
+        dst_root = 'mfs_{0}'.format(package.sequence)
+
+        f = self._create_file(build_dir, dst_root + '.qrc')
+
+        f.write('''<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+''')
+
+        dst_root_dir = os.path.join(build_dir, dst_root)
+        self._create_directory(dst_root_dir)
+
+        src_root = os.path.basename(package.name)
+        src_root_dir = os.path.dirname(
+                self._project.absolute_path(package.name))
+
+        self._write_package_contents(package.contents, dst_root_dir,
+                src_root_dir, [src_root], freeze, f)
+
+        f.write('''    </qresource>
+</RCC>
+''')
+
+        f.close()
+
+    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, f):
+        """ Write the contents of a single package directory. """
+
+        dir_tail = os.path.join(*dir_stack)
+
+        dst_dir = os.path.join(dst_root_dir, dir_tail)
+        self._create_directory(dst_dir)
+
+        prefix = os.path.basename(dst_root_dir)
+
+        for content in contents:
+            if not content.included:
+                continue
+
+            if isinstance(content, MfsDirectory):
+                dir_stack.append(content.name)
+                self._write_package_contents(content.contents, dst_root_dir,
+                        src_root_dir, dir_stack, freeze, f)
+                dir_stack.pop()
+            else:
+                src_file = content.name
+                src_path = os.path.join(src_root_dir, dir_tail, src_file)
+
+                if src_file.endswith('.py'):
+                    dst_file = src_file[:-3]
+                elif src_file.endswith('.pyw'):
+                    dst_file = src_file[:-4]
+                else:
+                    continue
+
+                dst_file += '.pyf'
+                dst_path = os.path.join(dst_dir, dst_file)
+
+                f.write('        <file>{0}/{1}/{2}</file>\n'.format(prefix,
+                        '/'.join(dir_stack), dst_file))
+
+                self._freeze(dst_path, src_path, freeze, as_data=True)
 
     @classmethod
     def _write_main_c(cls, build_dir, app_name):
@@ -173,34 +272,23 @@ int main(int argc, char **argv)
 
         f.close()
 
-    def _freeze(self, h_filename, py_filename, freeze, main=False):
-        """ Freeze a Python source file to a C header file. """
+    def _freeze(self, output, py_filename, freeze, main=False, as_data=False):
+        """ Freeze a Python source file to a C header file or a data file. """
 
         args = [self._project.python_host_interpreter, freeze]
         
         if main:
             args.append('--main')
-            
-        args.extend(['--as-c', h_filename, py_filename])
+
+        args.append('--as-data' if as_data else '--as-c')
+        args.append(output)
+        args.append(py_filename)
 
         try:
             subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             raise UserException("Unable to freeze {0}.".format(py_filename),
                     e.output)
-
-    def _file_from_project(self, filename):
-        """ Return the full pathname of a file.  A relative name is resolved
-        against the directory containing the project file.
-        """
-
-        if os.path.isabs(filename):
-            return filename
-
-        prj_dir = os.path.dirname(self._project.filename)
-        filename = os.path.join(prj_dir, filename)
-
-        return os.path.abspath(filename)
 
     @staticmethod
     def _copy_lib_file(filename, dirname=None):
@@ -242,3 +330,12 @@ int main(int argc, char **argv)
         except Exception as e:
             raise UserException("Unable to create file {0}.".format(pathname),
                     str(e))
+
+    @staticmethod
+    def _create_directory(dir_name):
+        """ Create a directory which may already exist. """
+
+        try:
+            os.mkdir(dir_name)
+        except FileExistsError:
+            pass
