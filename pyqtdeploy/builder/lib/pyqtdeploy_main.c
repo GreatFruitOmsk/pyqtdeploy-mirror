@@ -110,16 +110,16 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
     PySys_SetArgv(argc, w_argv);
 
     // Initialise the path hooks.
-    if (PyImport_ImportFrozenModule("__bootstrap__") <= 0)
+    if (PyImport_ImportFrozenModule("__bootstrap__") < 0)
     {
-        fprintf(stderr, "Unable to import __bootstrap__\n");
+        PyErr_Print();
         return 1;
     }
 
     // Import the main module, ie. execute the application.
-    if (PyImport_ImportFrozenModule("__main__") <= 0)
+    if (PyImport_ImportFrozenModule("__main__") < 0)
     {
-        fprintf(stderr, "Unable to import main module\n");
+        PyErr_Print();
         return 1;
     }
 
