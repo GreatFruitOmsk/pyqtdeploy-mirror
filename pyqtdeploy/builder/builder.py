@@ -14,6 +14,7 @@
 
 
 import os
+import shutil
 import subprocess
 import tempfile
 
@@ -245,6 +246,8 @@ sys.path_hooks = [mfsimport.mfsimporter]
                 elif src_file.endswith('.pyw'):
                     dst_file = src_file[:-4]
                 else:
+                    # Just copy the file.
+                    shutil.copyfile(src_path, os.path.join(dst_dir, src_file))
                     continue
 
                 dst_file += '.pyf'
