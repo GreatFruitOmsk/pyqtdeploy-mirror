@@ -176,6 +176,7 @@ import mfsimport
 sys.path = [{0}]
 sys.path_hooks = [mfsimport.mfsimporter]
 '''.format(','.join(["':/mfs_{0}'".format(p.sequence) for p in packages])))
+        bootstrap_f.close()
 
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'),
                 os.path.join(build_dir, '__bootstrap__.py'), freeze)
