@@ -364,7 +364,7 @@ static PyObject *qstring_to_unicode(const QString &qstring)
 
 
 // The module initialisation function.
-PyMODINIT_FUNC PyInit_mfsimport()
+PyObject *PyInit_mfsimport()
 {
     PyObject *mod;
 

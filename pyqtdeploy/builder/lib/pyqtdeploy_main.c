@@ -24,10 +24,11 @@
 
 
 // Forward declarations.
-extern PyMODINIT_FUNC PyInit_mfsimport();
+extern PyObject *PyInit_mfsimport(void);
 
 
-int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
+int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
+        struct _inittab *extension_modules)
 {
     struct _frozen *fm;
     wchar_t **w_argv;
@@ -62,6 +63,14 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main)
         fprintf(stderr, "PyImport_AppendInittab() failed\n");
         return 1;
     }
+
+    // Add any extension modules.
+    if (extension_modules != NULL)
+        if (PyImport_ExtendInittab(extension_modules) < 0)
+        {
+            fprintf(stderr, "PyImport_ExtendInittab() failed\n");
+            return 1;
+        }
 
     // Convert the argument list to wide characters.
     if ((w_argv = PyMem_Malloc(sizeof (wchar_t *) * argc)) == NULL)

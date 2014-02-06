@@ -77,6 +77,7 @@ class Project(QObject):
         self.python_host_interpreter = ''
         self.python_target_include_dir = ''
         self.python_target_library = ''
+        self.python_target_stdlib_dir = ''
         self.qt_is_shared = False
 
     def relative_path(self, filename):
@@ -165,6 +166,7 @@ class Project(QObject):
         project.python_host_interpreter = python.get('hostinterpreter', '')
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
+        project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
 
         # The Qt specific configuration.
         qt = root.find('Qt')
@@ -291,7 +293,8 @@ class Project(QObject):
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,
             'targetincludedir': self.python_target_include_dir,
-            'targetlibrary': self.python_target_library})
+            'targetlibrary': self.python_target_library,
+            'targetstdlibdir': self.python_target_stdlib_dir})
 
         SubElement(root, 'Qt', attrib={
             'isshared': str(int(self.qt_is_shared))})

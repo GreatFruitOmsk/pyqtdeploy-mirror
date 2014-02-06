@@ -142,6 +142,34 @@ class Builder():
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
+        # Determine the extension modules and link against them.
+        # TODO - add any others.
+        extensions = {}
+
+        if len(project.pyqt_modules) > 0:
+            sitepackages = project.absolute_path(
+                    project.python_target_stdlib_dir) + '/site-packages'
+
+            for pyqt in project.pyqt_modules:
+                extensions[pyqt] = sitepackages + '/PyQt5'
+
+            # Add the implicit sip module.
+            extensions['sip'] = sitepackages
+
+        if len(extensions) > 0:
+            # Get the list of unique module directories.
+            mod_dirs = []
+            for mod_dir in extensions.values():
+                if mod_dir not in mod_dirs:
+                    mod_dirs.append(mod_dir)
+
+            mod_dir_flags = ['-L' + md for md in mod_dirs]
+            mod_flags = ['-l' + m for m in extensions.keys()]
+
+            f.write(
+                    'LIBS += {0} {1}\n'.format(' '.join(mod_dir_flags),
+                            ' '.join(mod_flags)))
+
         # Specify any resource files.
         packages = []
 
@@ -164,7 +192,7 @@ class Builder():
         f.write('\n')
 
         f.write('SOURCES = main.c pyqtdeploy_main.c mfsimport.cpp\n')
-        self._write_main_c(build_dir, app_name)
+        self._write_main_c(build_dir, app_name, extensions.keys())
         self._copy_lib_file('pyqtdeploy_main.c', build_dir)
         self._copy_lib_file('mfsimport.cpp', build_dir)
 
@@ -259,20 +287,44 @@ sys.path_hooks = [mfsimport.mfsimporter]
                 self._freeze(dst_path, src_path, freeze, as_data=True)
 
     @classmethod
-    def _write_main_c(cls, build_dir, app_name):
+    def _write_main_c(cls, build_dir, app_name, extension_names):
         """ Create the application specific main.c file. """
 
         f = cls._create_file(build_dir, 'main.c')
 
         f.write('''#include <wchar.h>
+#include <Python.h>
 
 int main(int argc, char **argv)
 {
-    extern int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main);
+''')
 
-    return pyqtdeploy_main(argc, argv, L"%s");
+        if len(extension_names) > 0:
+            inittab = 'extension_modules'
+
+            for ext in extension_names:
+                f.write('    extern PyObject *PyInit_%s(void);\n' % ext)
+
+            f.write('''
+    static struct _inittab %s[] = {
+''' % inittab)
+
+            for ext in extension_names:
+                f.write('        {"%s", PyInit_%s},\n' % (ext, ext))
+
+            f.write('''        {NULL, NULL}
+    };
+
+''')
+        else:
+            inittab = 'NULL'
+
+        f.write('''    extern int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
+            struct _inittab *extension_modules);
+
+    return pyqtdeploy_main(argc, argv, L"%s", %s);
 }
-''' % app_name)
+''' % (app_name, inittab))
 
         f.close()
 
