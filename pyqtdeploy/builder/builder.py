@@ -146,6 +146,36 @@ class Builder():
         if len(qmake_qt) != 0:
             f.write('QT += {0}\n'.format(' '.join(qmake_qt)))
 
+        # Determine the extension modules and link against them.
+        # TODO - add any others.
+        extensions = {}
+
+        if len(project.pyqt_modules) > 0:
+            sitepackages = project.absolute_path(
+                    project.python_target_stdlib_dir) + '/site-packages'
+
+            for pyqt in project.pyqt_modules:
+                extensions['PyQt5.' + pyqt] = sitepackages + '/PyQt5'
+
+            # Add the implicit sip module.
+            extensions['sip'] = sitepackages
+
+        if len(extensions) > 0:
+            f.write('\n')
+
+            # Get the list of unique module directories.
+            mod_dirs = []
+            for mod_dir in extensions.values():
+                if mod_dir not in mod_dirs:
+                    mod_dirs.append(mod_dir)
+
+            mod_dir_flags = ['-L' + md for md in mod_dirs]
+            mod_flags = ['-l' + m.split('.')[-1] for m in extensions.keys()]
+
+            f.write(
+                    'LIBS += {0} {1}\n'.format(' '.join(mod_dir_flags),
+                            ' '.join(mod_flags)))
+
         # Configure the target Python interpreter.
         f.write('\n')
 
@@ -163,34 +193,6 @@ class Builder():
                 lib = lib[3:]
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
-
-        # Determine the extension modules and link against them.
-        # TODO - add any others.
-        extensions = {}
-
-        if len(project.pyqt_modules) > 0:
-            sitepackages = project.absolute_path(
-                    project.python_target_stdlib_dir) + '/site-packages'
-
-            for pyqt in project.pyqt_modules:
-                extensions[pyqt] = sitepackages + '/PyQt5'
-
-            # Add the implicit sip module.
-            extensions['sip'] = sitepackages
-
-        if len(extensions) > 0:
-            # Get the list of unique module directories.
-            mod_dirs = []
-            for mod_dir in extensions.values():
-                if mod_dir not in mod_dirs:
-                    mod_dirs.append(mod_dir)
-
-            mod_dir_flags = ['-L' + md for md in mod_dirs]
-            mod_flags = ['-l' + m for m in extensions.keys()]
-
-            f.write(
-                    'LIBS += {0} {1}\n'.format(' '.join(mod_dir_flags),
-                            ' '.join(mod_flags)))
 
         # Specify any resource files.
         resources = self.resources()
@@ -339,14 +341,16 @@ int main(int argc, char **argv)
             inittab = 'extension_modules'
 
             for ext in extension_names:
-                f.write('    extern PyObject *PyInit_%s(void);\n' % ext)
+                base_ext = ext.split('.')[-1]
+
+                f.write('    extern PyObject *PyInit_%s(void);\n' % base_ext)
 
             f.write('''
     static struct _inittab %s[] = {
 ''' % inittab)
 
             for ext in extension_names:
-                f.write('        {"%s", PyInit_%s},\n' % (ext, ext))
+                f.write('        {"%s", PyInit_%s},\n' % (ext, base_ext))
 
             f.write('''        {NULL, NULL}
     };
