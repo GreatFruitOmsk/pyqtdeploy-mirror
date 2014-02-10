@@ -20,7 +20,7 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo
 
-from ..project import MfsDirectory
+from ..project import MfsDirectory, MfsFile, MfsPackage
 from ..user_exception import UserException
 
 
@@ -81,8 +81,30 @@ class Builder():
 
         self._write_qmake(build_dir, freeze)
 
-        if project.application_package.name != '':
-            self._write_package(build_dir, project.application_package, freeze)
+        for resource in self.resources():
+            packages = []
+
+            if resource == 'application':
+                packages.append(project.application_package)
+            elif resource == 'stdlib':
+                # TODO
+                pass
+            else:
+                if len(project.pyqt_modules) != 0:
+                    # Create a PyQt package on the fly.
+                    pyqt_package = MfsPackage()
+                    pyqt_package.name = os.path.join(
+                            project.python_target_stdlib_dir, 'site-packages',
+                            'PyQt5')
+                    pyqt_package.contents.append(MfsFile('__init__.py', True))
+
+                    packages.append(pyqt_package)
+
+                    # TODO - add uic if requested.
+
+                # TODO - add additional site-packages packages.
+
+            self._write_resource(build_dir, resource, packages, freeze)
 
         os.remove(freeze)
 
@@ -171,20 +193,15 @@ class Builder():
                             ' '.join(mod_flags)))
 
         # Specify any resource files.
-        packages = []
+        resources = self.resources()
 
-        if project.application_package.name != '':
-            packages.append(project.application_package)
-
-        # TODO - add any other packages.
-
-        if len(packages) != 0:
+        if len(resources) != 0:
             f.write('\n')
 
             f.write('RESOURCES =')
 
-            for package in packages:
-                f.write(' \\\n    mfs_{0}.qrc'.format(package.sequence))
+            for resource in resources:
+                f.write(' \\\n    {0}.qrc'.format(resource))
 
             f.write('\n')
 
@@ -204,7 +221,7 @@ import mfsimport
 
 sys.path = [{0}]
 sys.path_hooks = [mfsimport.mfsimporter]
-'''.format(','.join(["':/mfs_{0}'".format(p.sequence) for p in packages])))
+'''.format(','.join(["':/{0}'".format(resource) for resource in resources])))
         bootstrap_f.close()
 
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'),
@@ -217,28 +234,47 @@ sys.path_hooks = [mfsimport.mfsimporter]
         # All done.
         f.close()
 
-    def _write_package(self, build_dir, package, freeze):
-        """ Create a .qrc file for a package and the corresponding contents.
+    def resources(self):
+        """ Return the list of resources needed. """
+
+        project = self._project
+
+        resources = []
+
+        if project.application_package.name != '':
+            resources.append('application')
+
+        # TODO - check for stdlib packages.
+
+        if len(project.pyqt_modules) != 0:
+            resources.append('site-packages')
+        else:
+            # TODO - check for any additional site-packages packages.
+            pass
+
+        return resources
+
+    def _write_resource(self, build_dir, resource, packages, freeze):
+        """ Create a .qrc file for a resource and the corresponding contents.
         """
 
-        dst_root = 'mfs_{0}'.format(package.sequence)
-
-        f = self._create_file(build_dir, dst_root + '.qrc')
+        f = self._create_file(build_dir, resource + '.qrc')
 
         f.write('''<!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
 ''')
 
-        dst_root_dir = os.path.join(build_dir, dst_root)
+        dst_root_dir = os.path.join(build_dir, resource)
         self._create_directory(dst_root_dir)
 
-        src_root = os.path.basename(package.name)
-        src_root_dir = os.path.dirname(
-                self._project.absolute_path(package.name))
+        for package in packages:
+            src_root = os.path.basename(package.name)
+            src_root_dir = os.path.dirname(
+                    self._project.absolute_path(package.name))
 
-        self._write_package_contents(package.contents, dst_root_dir,
-                src_root_dir, [src_root], freeze, f)
+            self._write_package_contents(package.contents, dst_root_dir,
+                    src_root_dir, [src_root], freeze, f)
 
         f.write('''    </qresource>
 </RCC>
