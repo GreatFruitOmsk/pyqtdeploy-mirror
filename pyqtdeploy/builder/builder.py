@@ -350,6 +350,8 @@ int main(int argc, char **argv)
 ''' % inittab)
 
             for ext in extension_names:
+                base_ext = ext.split('.')[-1]
+
                 f.write('        {"%s", PyInit_%s},\n' % (ext, base_ext))
 
             f.write('''        {NULL, NULL}
