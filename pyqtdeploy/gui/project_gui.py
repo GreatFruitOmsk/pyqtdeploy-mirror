@@ -28,6 +28,7 @@ from .application_page import ApplicationPage
 from .pyqt_page import PyQtPage
 from .python_page import PythonPage
 from .qt_page import QtPage
+from .stdlib_page import StdlibPage
 
 
 class ProjectGUI(QMainWindow):
@@ -116,7 +117,7 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        for page_factory in (ApplicationPage, PyQtPage, QtPage, PythonPage):
+        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, QtPage, PythonPage):
             page = page_factory()
             tabs.addTab(page, page.label)
 

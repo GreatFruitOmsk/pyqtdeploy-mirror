@@ -13,17 +13,16 @@
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QWidget
 
-from .filename_editor import FilenameEditor
 from .mfs_package_editor import MfsPackageEditor
 
 
-class ApplicationPage(QWidget):
-    """ The GUI for the application page of a project. """
+class StdlibPage(QWidget):
+    """ The GUI for the standard library page of a project. """
 
     # The page's label.
-    label = "Application Source"
+    label = "Standard Library"
 
     @property
     def project(self):
@@ -37,7 +36,6 @@ class ApplicationPage(QWidget):
 
         if self._project != value:
             self._project = value
-            self._script_edit.setProject(value)
             self._update_page()
 
     def __init__(self):
@@ -50,18 +48,8 @@ class ApplicationPage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        form = QFormLayout()
-
-        self._script_edit = FilenameEditor("Application Script",
-                placeholderText="Application script",
-                whatsThis="The name of the application's main script file.",
-                textEdited=self._script_changed)
-        form.addRow("Main script file", self._script_edit)
-
-        layout.addLayout(form)
-
-        self._package_edit = MfsPackageEditor("Application Package",
-                scanning="application package...")
+        self._package_edit = MfsPackageEditor("Standard Library",
+                scanning="standard library")
         self._package_edit.package_changed.connect(self._package_changed)
         layout.addWidget(self._package_edit)
 
@@ -72,16 +60,10 @@ class ApplicationPage(QWidget):
 
         project = self.project
 
-        self._script_edit.setText(project.application_script)
-        self._package_edit.configure(project.application_package, project)
-
-    def _script_changed(self, value):
-        """ Invoked when the user edits the application script name. """
-
-        self.project.application_script = value
-        self.project.modified = True
+        self._package_edit.configure(project.stdlib_package, project,
+                root=project.python_target_stdlib_dir)
 
     def _package_changed(self):
-        """ Invoked when the user edits the application package. """
+        """ Invoked when the user edits the standard library package. """
 
         self.project.modified = True

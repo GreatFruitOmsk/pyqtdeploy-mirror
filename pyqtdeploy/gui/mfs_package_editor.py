@@ -29,13 +29,14 @@ class MfsPackageEditor(QGroupBox):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title):
+    def __init__(self, title, scanning=''):
         """ Initialise the editor. """
 
         super().__init__(title)
 
         self._package = None
         self._project = None
+        self._root = None
         self._title = title
 
         layout = QHBoxLayout()
@@ -47,12 +48,12 @@ class MfsPackageEditor(QGroupBox):
 
         scan_layout = QVBoxLayout()
 
-        # TODO - Have an argument that changes this to "Scan directory..." and
-        # doesn't show the directory as the root in the tree (as it won't
-        # appear in the path in the resource file).  Actually it should
-        # probably be a flag in the package object itself.
-        scan_layout.addWidget(QPushButton("Scan package...",
-                clicked=self._scan))
+        text = "Scan"
+        if scanning != '':
+            text += ' '
+            text += scanning
+
+        scan_layout.addWidget(QPushButton(text, clicked=self._scan))
 
         self._exclusions_edit = QTreeWidget()
         self._exclusions_edit.setHeaderLabels(["Exclusions"])
@@ -68,14 +69,15 @@ class MfsPackageEditor(QGroupBox):
 
         self.setLayout(layout)
 
-    def setPackage(self, package, project):
-        """ Update the editor with the contents of the given package and
-        project.
+    def configure(self, package, project, root=None):
+        """ Configure the editor with the contents of the given package,
+        project and optional root directory.
         """
 
-        # Save the package and project.
+        # Save the configuration.
         self._package = package
         self._project = project
+        self._root = root
 
         # Set the package itself.
         self._visualise()
@@ -127,15 +129,21 @@ class MfsPackageEditor(QGroupBox):
         package = self._package
         project = self._project
 
-        orig = default = package.name
-        if default != '':
-            default = project.absolute_path(default)
+        # Get the root directory to scan if there is not a fixed root.
+        if self._root is not None:
+            root = self._root
+        else:
+            orig = default = package.name
+            if default != '':
+                default = project.absolute_path(default)
 
-        root = QFileDialog.getExistingDirectory(self._package_edit,
-                self._title, default)
+            root = QFileDialog.getExistingDirectory(self._package_edit,
+                    self._title, default)
 
-        if root == '':
-            return
+            if root == '':
+                return
+
+            package.name = project.relative_path(root)
 
         # Save the included state of any existing contents so that they can be
         # restored after the scan.
@@ -162,7 +170,6 @@ class MfsPackageEditor(QGroupBox):
             itm = it.value()
 
         # Walk the package.
-        package.name = project.relative_path(root)
         self._add_to_container(package, root, os.listdir(root), [], old_state)
         self._visualise()
 
@@ -226,14 +233,14 @@ class MfsPackageEditor(QGroupBox):
 
         self._package_edit.clear()
 
-        root_itm = QTreeWidgetItem([self._package.name])
-        self._package_edit.addTopLevelItem(root_itm)
+        if self._root is not None:
+            parent = self._package_edit
+        else:
+            parent = QTreeWidgetItem([self._package.name])
+            self._package_edit.addTopLevelItem(parent)
+            parent.setExpanded(True)
 
-        self._visualise_contents(self._package.contents, root_itm)
-
-        root_itm.setExpanded(True)
-        self._package_edit.scrollToItem(root_itm,
-                self._package_edit.PositionAtTop)
+        self._visualise_contents(self._package.contents, parent)
 
         self._package_edit.blockSignals(blocked)
 

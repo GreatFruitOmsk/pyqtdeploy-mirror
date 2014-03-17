@@ -211,7 +211,47 @@ static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
         }
 
     case ModuleNotFound:
-        result = Py_BuildValue("O[]", Py_None);
+        {
+            static bool recursing = false;
+
+            // If we have failed to find a sub-package then it may be because
+            // it is a builtin so start a high-level search for it while
+            // watching for recursing back here.
+            if (fqmn.contains(QChar('.')) && !recursing)
+            {
+                static PyObject *find_loader = 0;
+
+                if (!find_loader)
+                {
+                    PyObject *importlib = PyImport_ImportModule("importlib");
+
+                    if (!importlib)
+                        return NULL;
+
+                    find_loader = PyObject_GetAttrString(importlib,
+                            "find_loader");
+
+                    Py_DECREF(importlib);
+
+                    if (!find_loader)
+                        return NULL;
+                }
+
+                recursing = true;
+                PyObject *loader = PyObject_CallObject(find_loader, args);
+                recursing = false;
+
+                if (!loader)
+                    return NULL;
+
+                result = Py_BuildValue("N[]", loader);
+            }
+            else
+            {
+                result = Py_BuildValue("O[]", Py_None);
+            }
+        }
+
         break;
     }
 

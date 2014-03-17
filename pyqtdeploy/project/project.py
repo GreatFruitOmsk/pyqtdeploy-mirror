@@ -78,6 +78,7 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
+        self.stdlib_package = MfsPackage()
         self.qt_is_shared = False
 
     def relative_path(self, filename):
@@ -159,6 +160,13 @@ class Project(QObject):
                     "Missing or empty 'PyQtModule.name' attribute.")
             project.pyqt_modules.append(name)
 
+        stdlib = application.find('Stdlib')
+        cls._assert(stdlib is not None, "Missing 'Application.Stdlib' tag.")
+        stdlib_package = stdlib.find('Package')
+        cls._assert(stdlib_package is not None,
+                "Missing 'Application.Stdlib.Package' tag.")
+        cls._load_package(stdlib_package, project.stdlib_package)
+
         # The Python specific configuration.
         python = root.find('Python')
         cls._assert(python is not None, "Missing 'Python' tag.")
@@ -232,7 +240,7 @@ class Project(QObject):
             content = MfsDirectory(name, included) if isdir else MfsFile(name, included)
 
             if isdir:
-                content.contents = cls._load_mfs_contents(container_element)
+                content.contents = cls._load_mfs_contents(content_element)
 
             contents.append(content)
 
@@ -270,6 +278,9 @@ class Project(QObject):
         for pyqt_m in self.pyqt_modules:
             SubElement(application, 'PyQtModule', attrib={
                 'name': pyqt_m})
+
+        stdlib = SubElement(application, 'Stdlib')
+        self._save_package(stdlib, self.stdlib_package)
 
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,

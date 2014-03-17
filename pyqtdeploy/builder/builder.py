@@ -87,8 +87,7 @@ class Builder():
             if resource == 'application':
                 packages.append(project.application_package)
             elif resource == 'stdlib':
-                # TODO
-                pass
+                packages.append(project.stdlib_package)
             else:
                 if len(project.pyqt_modules) != 0:
                     # Create a PyQt package on the fly.
@@ -223,7 +222,7 @@ import mfsimport
 
 sys.path = [{0}]
 sys.path_hooks = [mfsimport.mfsimporter]
-'''.format(','.join(["':/{0}'".format(resource) for resource in resources])))
+'''.format(', '.join(["':/{0}'".format(resource) for resource in resources])))
         bootstrap_f.close()
 
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'),
@@ -246,7 +245,7 @@ sys.path_hooks = [mfsimport.mfsimporter]
         if project.application_package.name != '':
             resources.append('application')
 
-        # TODO - check for stdlib packages.
+        resources.append('stdlib')
 
         if len(project.pyqt_modules) != 0:
             resources.append('site-packages')
