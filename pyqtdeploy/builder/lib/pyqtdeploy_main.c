@@ -30,7 +30,7 @@ extern PyObject *PyInit_mfsimport(void);
 int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
         struct _inittab *extension_modules)
 {
-    struct _frozen *fm;
+    const struct _frozen *fm;
     wchar_t **w_argv;
     int i;
     char *saved_locale;
