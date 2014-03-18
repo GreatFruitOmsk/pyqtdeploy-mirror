@@ -17,8 +17,8 @@ import fnmatch
 import os
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import (QFileDialog, QGroupBox, QHBoxLayout, QPushButton,
-        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout)
+from PyQt5.QtWidgets import (QFileDialog, QGridLayout, QGroupBox, QPushButton,
+        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ..project import MfsDirectory, MfsFile
 
@@ -39,21 +39,24 @@ class MfsPackageEditor(QGroupBox):
         self._root = None
         self._title = title
 
-        layout = QHBoxLayout()
+        layout = QGridLayout()
 
         self._package_edit = QTreeWidget()
         self._package_edit.header().hide()
         self._package_edit.itemChanged.connect(self._package_changed)
-        layout.addWidget(self._package_edit, stretch=1)
-
-        scan_layout = QVBoxLayout()
+        layout.addWidget(self._package_edit, 0, 0, 3, 1)
 
         text = "Scan"
         if scanning != '':
             text += ' '
             text += scanning
 
-        scan_layout.addWidget(QPushButton(text, clicked=self._scan))
+        layout.addWidget(QPushButton(text, clicked=self._scan), 0, 1, 1, 2)
+
+        layout.addWidget(QPushButton("Include all", clicked=self._include_all),
+                1, 1)
+        layout.addWidget(QPushButton("Exclude all", clicked=self._exclude_all),
+                1, 2)
 
         self._exclusions_edit = QTreeWidget()
         self._exclusions_edit.setHeaderLabels(["Exclusions"])
@@ -63,9 +66,7 @@ class MfsPackageEditor(QGroupBox):
         self._exclusions_edit.setRootIsDecorated(False)
         self._exclusions_edit.itemChanged.connect(self._exclusion_changed)
 
-        scan_layout.addWidget(self._exclusions_edit)
-
-        layout.addLayout(scan_layout)
+        layout.addWidget(self._exclusions_edit, 2, 1, 1, 2)
 
         self.setLayout(layout)
 
@@ -123,7 +124,34 @@ class MfsPackageEditor(QGroupBox):
 
         self.package_changed.emit()
 
-    def _scan(self, value):
+    def _get_items(self):
+        """ Return an iterator over the tree widget items. """
+
+        it = QTreeWidgetItemIterator(self._package_edit)
+
+        if self._root is None:
+            it += 1
+
+        itm = it.value()
+        while itm is not None:
+            yield itm
+            it += 1
+            itm = it.value()
+
+    def _include_all(self, _):
+        """ Invoked when the user clicks on the include all button. """
+
+        for itm in self._get_items():
+            itm.setCheckState(0, Qt.Checked)
+
+    def _exclude_all(self, _):
+        """ Invoked when the user clicks on the exclude all button. """
+
+        for itm in self._get_items():
+            itm.setCheckState(0, Qt.Unchecked)
+            itm.setExpanded(False)
+
+    def _scan(self, _):
         """ Invoked when the user clicks on the scan button. """
 
         package = self._package
@@ -148,13 +176,8 @@ class MfsPackageEditor(QGroupBox):
         # Save the included state of any existing contents so that they can be
         # restored after the scan.
         old_state = {}
-        it = QTreeWidgetItemIterator(self._package_edit)
 
-        # Skip the root of the tree.
-        it += 1
-
-        itm = it.value()
-        while itm is not None:
+        for itm in self._get_items():
             rel_path = [itm.data(0, Qt.DisplayRole)]
 
             parent = itm.parent()
@@ -165,9 +188,6 @@ class MfsPackageEditor(QGroupBox):
             rel_path.reverse()
 
             old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
-
-            it += 1
-            itm = it.value()
 
         # Walk the package.
         self._add_to_container(package, root, os.listdir(root), [], old_state)

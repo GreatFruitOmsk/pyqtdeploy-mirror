@@ -25,6 +25,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('project_file', help="the project file", nargs='?',
         metavar="FILE")
 parser.add_argument('--build', help="build the project in DIR", metavar="DIR")
+parser.add_argument('--verbose', help="enable build progress messages",
+        action='store_true')
 
 args = parser.parse_args()
 
@@ -40,7 +42,7 @@ if args.build is not None:
     from pyqtdeploy import Builder, Project, UserException
 
     try:
-        Builder(Project.load(args.project_file)).build(args.build)
+        Builder(Project.load(args.project_file), args.verbose).build(args.build)
     except UserException as e:
         print("{0}: {1}".format(sys.argv[0], e.text), file=sys.stderr)
         sys.exit(1)

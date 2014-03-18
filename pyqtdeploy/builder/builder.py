@@ -57,12 +57,13 @@ class Builder():
         'QtXmlPatterns':        ('xmlpatterns', '-gui', 'network')
     }
 
-    def __init__(self, project):
+    def __init__(self, project, verbose):
         """ Initialise the builder for a project. """
 
         super().__init__()
 
         self._project = project
+        self._verbose = verbose
 
     def build(self, build_dir):
         """ Build the project in a given directory.  Raise a UserException if
@@ -82,28 +83,28 @@ class Builder():
         self._write_qmake(build_dir, freeze)
 
         for resource in self.resources():
-            packages = []
-
             if resource == 'application':
-                packages.append(project.application_package)
+                package = project.application_package
+                self._write_resource(build_dir, resource, package, 
+                        project.absolute_path(package.name), freeze)
             elif resource == 'stdlib':
-                packages.append(project.stdlib_package)
+                self._write_resource(build_dir, resource,
+                        project.stdlib_package,
+                        project.python_target_stdlib_dir, freeze)
             else:
                 if len(project.pyqt_modules) != 0:
                     # Create a PyQt package on the fly.
                     pyqt_package = MfsPackage()
-                    pyqt_package.name = os.path.join(
-                            project.python_target_stdlib_dir, 'site-packages',
-                            'PyQt5')
                     pyqt_package.contents.append(MfsFile('__init__.py', True))
-
-                    packages.append(pyqt_package)
 
                     # TODO - add uic if requested.
 
-                # TODO - add additional site-packages packages.
+                    self._write_resource(build_dir, resource, pyqt_package,
+                            os.path.join(project.python_target_stdlib_dir,
+                                    'site-packages', 'PyQt5'),
+                            freeze)
 
-            self._write_resource(build_dir, resource, packages, freeze)
+                # TODO - handle additional site-packages packages.
 
         os.remove(freeze)
 
@@ -255,7 +256,7 @@ sys.path_hooks = [mfsimport.mfsimporter]
 
         return resources
 
-    def _write_resource(self, build_dir, resource, packages, freeze):
+    def _write_resource(self, build_dir, resource, package, src, freeze):
         """ Create a .qrc file for a resource and the corresponding contents.
         """
 
@@ -269,13 +270,10 @@ sys.path_hooks = [mfsimport.mfsimporter]
         dst_root_dir = os.path.join(build_dir, resource)
         self._create_directory(dst_root_dir)
 
-        for package in packages:
-            src_root = os.path.basename(package.name)
-            src_root_dir = os.path.dirname(
-                    self._project.absolute_path(package.name))
+        src_root_dir, src_root = os.path.split(src)
 
-            self._write_package_contents(package.contents, dst_root_dir,
-                    src_root_dir, [src_root], freeze, f)
+        self._write_package_contents(package.contents, dst_root_dir,
+                src_root_dir, [src_root], freeze, f)
 
         f.write('''    </qresource>
 </RCC>
@@ -381,6 +379,8 @@ int main(int argc, char **argv)
         args.append(output)
         args.append(py_filename)
 
+        self._log("Freezing {0}".format(py_filename))
+
         try:
             subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
@@ -436,3 +436,9 @@ int main(int argc, char **argv)
             os.mkdir(dir_name)
         except FileExistsError:
             pass
+
+    def _log(self, message):
+        """ Log a message if requested. """
+
+        if self._verbose:
+            print(message)
