@@ -79,7 +79,6 @@ class Project(QObject):
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
         self.stdlib_package = MfsPackage()
-        self.qt_is_shared = False
 
     def relative_path(self, filename):
         """ Convert a filename to one that is relative to the project
@@ -175,12 +174,6 @@ class Project(QObject):
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
         project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
-
-        # The Qt specific configuration.
-        qt = root.find('Qt')
-        cls._assert(qt is not None, "Missing 'Qt' tag.")
-
-        project.qt_is_shared = cls._get_bool(qt, 'isshared', 'Qt')
 
         return project
 
@@ -287,9 +280,6 @@ class Project(QObject):
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library,
             'targetstdlibdir': self.python_target_stdlib_dir})
-
-        SubElement(root, 'Qt', attrib={
-            'isshared': str(int(self.qt_is_shared))})
 
         tree = ElementTree(root)
 

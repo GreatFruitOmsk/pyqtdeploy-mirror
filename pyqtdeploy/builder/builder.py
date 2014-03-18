@@ -128,19 +128,17 @@ class Builder():
         no_gui = True
         qmake_qt = []
 
-        if not project.qt_is_shared:
-            # For static Qt builds we need to define all the modules used.
-            for pyqt_m in project.pyqt_modules:
-                needs_gui = True
+        for pyqt_m in project.pyqt_modules:
+            needs_gui = True
 
-                for qt in self.pyqt_module_map[pyqt_m]:
-                    if qt == '-gui':
-                        needs_gui = False
-                    elif qt not in qmake_qt:
-                        qmake_qt.append(qt)
+            for qt in self.pyqt_module_map[pyqt_m]:
+                if qt == '-gui':
+                    needs_gui = False
+                elif qt not in qmake_qt:
+                    qmake_qt.append(qt)
 
-                if needs_gui:
-                    no_gui = False
+            if needs_gui:
+                no_gui = False
 
         if no_gui:
             f.write('QT -= gui\n')
