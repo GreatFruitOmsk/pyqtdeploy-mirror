@@ -34,6 +34,7 @@ class Builder():
         'QtCore':               ('-gui', ),
         'QtDBus':               ('dbus', '-gui'),
         'QtDesigner':           ('designer', ),
+        'QtGui':                (),
         'QtHelp':               ('help', ),
         'QtMacExtras':          ('macextras', ),
         'QtMultimedia':         ('multimedia', ),
