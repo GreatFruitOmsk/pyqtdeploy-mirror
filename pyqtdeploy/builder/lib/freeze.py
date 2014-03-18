@@ -15,30 +15,28 @@
 
 import argparse
 import marshal
-import modulefinder
+import os
 
 
 def freeze_as_data(py_filename, data_filename):
     """ Freeze a Python source file and save it as data. """
 
-    code, _ = _get_marshalled_code(py_filename)
+    code = _get_marshalled_code(py_filename)
 
     data_file = open(data_filename, 'wb')
-
     data_file.write(code)
-
     data_file.close()
 
 
 def freeze_as_c(py_filename, c_filename, main):
     """ Freeze a Python source file and save it as C source code. """
 
-    code, name = _get_marshalled_code(py_filename)
+    code = _get_marshalled_code(py_filename)
 
     if main:
         name = '__main__'
     else:
-        name = name.replace('.', '_')
+        name, _ = os.path.splitext(os.path.basename(py_filename))
 
     c_file = open(c_filename, 'wt')
 
@@ -56,23 +54,15 @@ def freeze_as_c(py_filename, c_filename, main):
 
 
 def _get_marshalled_code(py_filename):
-    """ Convert a Python source file to a marshalled code object and the name
-    of the module.
-    """
+    """ Convert a Python source file to a marshalled code object. """
 
-    mf = modulefinder.ModuleFinder()
+    source_file = open(py_filename)
+    source = source_file.read()
+    source_file.close()
 
-    mf.load_file(py_filename)
+    co = compile(source, py_filename, 'exec')
 
-    # Find the module corresponding to the Python file.
-    for name, mod in mf.modules.items():
-        if mod.__code__ is None:
-            continue
-
-        if mod.__code__.co_filename == py_filename:
-            return marshal.dumps(mod.__code__), name
-
-    return None, None
+    return marshal.dumps(co)
 
 
 # Parse the command line.
