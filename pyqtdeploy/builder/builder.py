@@ -90,7 +90,8 @@ class Builder():
             elif resource == 'stdlib':
                 self._write_resource(build_dir, resource,
                         project.stdlib_package,
-                        project.python_target_stdlib_dir, freeze)
+                        os.path.join(project.python_target_stdlib_dir, ''),
+                        freeze)
             else:
                 if len(project.pyqt_modules) != 0:
                     # Create a PyQt package on the fly.
@@ -286,7 +287,12 @@ sys.path_hooks = [mfsimport.mfsimporter]
 
         dir_tail = os.path.join(*dir_stack)
 
-        dst_dir = os.path.join(dst_root_dir, dir_tail)
+        if dir_tail == '':
+            dir_stack = []
+            dst_dir = dst_root_dir
+        else:
+            dst_dir = os.path.join(dst_root_dir, dir_tail)
+
         self._create_directory(dst_dir)
 
         prefix = os.path.basename(dst_root_dir)
@@ -316,8 +322,16 @@ sys.path_hooks = [mfsimport.mfsimporter]
                 dst_file += '.pyf'
                 dst_path = os.path.join(dst_dir, dst_file)
 
-                f.write('        <file>{0}/{1}/{2}</file>\n'.format(prefix,
-                        '/'.join(dir_stack), dst_file))
+                file_path = [prefix]
+
+                if dir_tail != '':
+                    file_path.extend(dir_stack)
+
+                file_path.append(dst_file)
+
+                f.write(
+                        '        <file>{0}</file>\n'.format(
+                                '/'.join(file_path)))
 
                 self._freeze(dst_path, src_path, freeze, as_data=True)
 
