@@ -27,10 +27,10 @@
 PYTHON=python3
 PYTHON2=python
 
-.PHONY: doc
+.PHONY: default develop develop-uninstall wheel sdist doc doc-release clean
 
 default:
-	@echo "Specify develop, develop-uninstall, release, doc or clean"
+	@echo "Specify develop, develop-uninstall, wheel, sdist, doc or clean"
 
 develop: VERSION
 	$(PYTHON) setup.py develop
@@ -38,18 +38,25 @@ develop: VERSION
 develop-uninstall:
 	$(PYTHON) setup.py develop --uninstall
 
-release: clean doc
+wheel: clean VERSION
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel
 
+sdist: clean doc-release
+	$(PYTHON2) build.py changelog
+	$(PYTHON) setup.py sdist
+
 doc: VERSION
 	mkdir -p doc/_build
-	mkdir -p doc/modules
-	#$(MAKE) -C doc html
+	$(MAKE) -C doc html
+
+doc-release: doc
+	mv doc/_build/html doc
+	rm -rf doc/_build
 
 clean:
-	rm -rf ChangeLog* VERSION MANIFEST build dist pyqtdeploy.egg-info doc/_build doc/modules
-	find . -name '*.pyc' -exec rm -f {} \;
+	rm -rf ChangeLog* VERSION MANIFEST build dist pyqtdeploy.egg-info
+	rm -rf doc/_build doc/html doc/doctrees
 	find . -depth -name __pycache__ -exec rm -rf {} \;
 
 VERSION:
