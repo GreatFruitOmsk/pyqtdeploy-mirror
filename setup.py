@@ -32,15 +32,21 @@ version_file = open('VERSION')
 version = version_file.read().strip()
 version_file.close()
 
+# Get the long description for PyPI.
+with open('README') as readme:
+    long_description = readme.read()
 
+# Do the setup.
 setup(
         name='pyqtdeploy',
         version=version,
         description='PyQt5 Application Deployment Tool',
+        long_description=long_description,
         author='Riverbank Computing Limited',
         author_email='info@riverbankcomputing.com',
-        license='BSD',
         url='http://www.riverbankcomputing.com/software/pyqtdeploy/',
+        license='BSD',
+        platforms=['X11', 'OS/X', 'Windows'],
         packages=find_packages(),
         package_data={'pyqtdeploy.builder': ['lib/*']},
         entry_points={'gui_scripts': ['pyqtdeploy = pyqtdeploy.main:main']}
