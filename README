@@ -1,0 +1,71 @@
+pyqtdeploy - A Tool for Deploying PyQt5 Applications
+====================================================
+
+TODO
+
+If you are using a dip source package then the HTML documentation, including
+installation instructions, can be found in the doc/_build/html directory.
+
+If you are using dip from the Mercurial repositiory then the following
+commands are available under both UNIX and Windows.
+
+Note that you may need to edit the ``Makefile`` and/or ``make.bat`` files to
+set the value of ``PYTHON``, ``PYTHON3`` and ``PYTHON2`` to something
+appropriate to your system.  On windows you may also need to modify the value
+of ``SPHINXBUILD`` in ``doc\make.bat``.
+
+
+Support for Python v2.6 and v2.7
+--------------------------------
+
+Support for v2.6 and v2.7 of Python is implemented as a series of patches
+managed by Mercurial Queues (MQ).  To enable support for MQ make sure your
+``.hgrc`` contains the following::
+
+    [extensions]
+    hgext.mq =
+
+In order to apply the patches run the following command::
+
+    hg qpush -a
+
+In order to remove the patches, restoring the code to run under Python v3, run
+the following command::
+
+    hg qpop -a
+
+
+make test
+---------
+
+This runs the test suite.  This is also the default when ``make`` is run
+without arguments.
+
+If you are using Python v2.6 then you must have the ``unittest2`` package
+installed.
+
+
+make doc
+--------
+
+This creates the documentation.  You will need to have Python v2, Sphinx and
+the Mercurial Python bindings installed.
+
+
+make dist
+---------
+
+This creates distutils source packages for both UNIX and Windows.  You will
+need to have Python v2 and the Mercurial Python bindings installed.
+
+
+make clean
+----------
+
+This removes any generated files, excluding any distutils source packages.
+
+
+make dist-clean
+---------------
+
+This removes any generated files, including any distutils source packages.
