@@ -1,34 +1,59 @@
-What is pogles?
-===============
+What is pyqtdeploy?
+===================
 
-pogles is a Python package that implements bindings for OpenGL ES v2.0 for
-Python v2.3 or later and Python v3.  It comprises three modules:
+pyqtdeploy is a tool that, in conjunction with other tools provided with Qt,
+enables the deployment of PyQt5 applications.  It supports deployment to
+desktop platforms (Linux, Windows and OS/X) and to mobile platforms (iOS,
+Android and Windows RT).
 
-- :mod:`pogles.gles2` contains the bindings for Open GL ES v2.0 itself.
+pyqtdeploy works by taking the individual modules of a PyQt5 application,
+freezing them, and then placing them in a Qt resource file that is converted to
+C++ code by Qt's ``rcc`` tool.  Python's standard library is handled in the
+same way.
 
-- :mod:`pogles.egl` contains the bindings for the EGL native platform
-  interface.
+pyqtdeploy generates a simple C++ wrapper around the Python interpreter library
+that uses the Python import mechanism to enable access to the embedded frozen
+modules in a similar way that Python supports the packaging of modules in zip
+files.
 
-- :mod:`pogles.platform` contains platform specific bindings for creating
-  native windows.  Currently the Raspberry Pi and X11 platforms are supported.
-  Usually the X11 platform will be used for development before porting to a
-  specific embedded platform.
+Finally pyqtdeploy generates a Qt ``.pro`` file that describes all the
+generated C++ code.  From this Qt's ``qmake`` tool is used to generate a
+platform-specific ``Makefile`` which will then generate a single executable.
+Further Qt and/or platform specific tools can then be used to convert the
+executable to a platform specific deployable package.
 
-The full ES and EGL APIs are implemented and given a Pythonic twist where
-appropriate - for example errors raise Python exceptions.
+When run pyqtdeploy presents a GUI that allows the modules that make up the
+application to be specified, along with the PyQt5 components that the
+application requires and the parts of the Python standard library that should
+also be included.  This information is stored in a pyqtdeploy project file.
+pyqtdeploy can also be run as a command line tool to generate the C++ code from
+a project file.
 
-Standalone applications may be developed using the :mod:`pogles.gles2` module
-with the :mod:`pogles.egl` and :mod:`pogles.platform` modules.  Alternatively
-it can be used with a separate framework, e.g.
-`PyQt <http://www.riverbankcomputing.com/software/pyqt>`__, that handles the
-platform dependencies.
+Normally you would create statically compiled versions of the Python
+interpreter library, any third party extension modules, PyQt5 and Qt.  This way
+your application has no external dependencies.  In fact this approach is
+required when deploying to iOS.  However there is nothing to stop you using
+shared versions of any of these components in order to reduce the size of the
+application, but at the cost of increasing the complexity of the deployment.
+
+There are some things that pyqtdeploy does not do (although this may change in
+future versions):
+
+- It does not perform auto-discovery of Python standard library modules or
+  third party modules to be included with the application.  You must explicitly
+  specify these yourself.
+
+- It does not provide any help in creating an appropriately compiled Python
+  interpreter library.  This is particularly an issue when deploying
+  applications to non-native platforms, typically mobile platforms.  The same
+  applies to third party extension modules.
 
 
 Author
 ------
 
-pogles is copyright (c) Riverbank Computing Limited.  Its homepage is
-http://www.riverbankcomputing.com/software/pogles/.
+pyqtdeploy is copyright (c) Riverbank Computing Limited.  Its homepage is
+http://www.riverbankcomputing.com/software/pyqtdeploy/.
 
 Support may be obtained from the PyQt mailing list at
 http://www.riverbankcomputing.com/mailman/listinfo/pyqt
@@ -37,42 +62,17 @@ http://www.riverbankcomputing.com/mailman/listinfo/pyqt
 License
 -------
 
-pogles is released under the BSD license.
+pyqtdeploy is released under the BSD license.
 
 
 Installation
 ============
 
-pogles is implemented using the SIP Python bindings generator which must be
-installed first.  SIP is available for all Linux distributions but pogles
-requires v4.14.2 or later.  The current version of SIP can be found at
-http://www.riverbankcomputing.com/software/sip/download.
+pyqtdeploy can be downloaded and installed from
+`PyPi <http://pypi.python.org/pypi/pyqtdeploy/>`__::
 
-pogles itself is available from `PyPi <http://pypi.python.org/pypi/pogles/>`__.
-It is installed as a normal Python package::
+    pip3 install pyqtdeploy
 
-    python setup.py install
-
-This assumes that the :program:`sip` code generator is on your :envvar:`PATH`.
-If it isn't then you need to use the ``--sip`` option to the ``build_ext``
-sub-command, for example::
-
-    python setup.py build_ext --sip /path/to/sip install
-
-
-Building the HTML Documentation
--------------------------------
-
-If you want to build a local copy of the HTML documentation (and you have
-Sphinx installed) then run::
-
-    python setup.py build_sphinx
-
-
-Examples
-========
-
-The ``examples`` directory contains a small number of examples that should run
-on all supported platforms.
-
-More examples are always welcome.
+pyqtdeploy requires
+`PyQt5 <http://www.riverbankcomputing.com/software/pyqt/download5>`__ to be
+installed.  This is not installed automatically.
