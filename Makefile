@@ -27,7 +27,7 @@
 PYTHON=python3
 PYTHON2=python
 
-.PHONY: default develop develop-uninstall wheel sdist doc doc-release clean
+.PHONY: default develop develop-uninstall wheel sdist doc clean
 
 default:
 	@echo "Specify develop, develop-uninstall, wheel, sdist, doc or clean"
@@ -42,17 +42,13 @@ wheel: clean VERSION
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel
 
-sdist: clean doc-release
+sdist: clean doc
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py sdist
 
 doc: VERSION
 	mkdir -p doc/_build
 	$(MAKE) -C doc html
-
-doc-release: doc
-	mv doc/_build/html doc
-	rm -rf doc/_build
 
 clean:
 	rm -rf ChangeLog* VERSION MANIFEST build dist pyqtdeploy.egg-info

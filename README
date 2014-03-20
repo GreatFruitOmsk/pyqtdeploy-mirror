@@ -1,71 +1,67 @@
 pyqtdeploy - A Tool for Deploying PyQt5 Applications
 ====================================================
 
-TODO
+What is pyqtdeploy?
+-------------------
 
-If you are using a dip source package then the HTML documentation, including
-installation instructions, can be found in the doc/_build/html directory.
+pyqtdeploy is a tool that, in conjunction with other tools provided with Qt,
+enables the deployment of PyQt5 applications.  It supports deployment to
+desktop platforms (Linux, Windows and OS/X) and to mobile platforms (iOS,
+Android and Windows RT).
 
-If you are using dip from the Mercurial repositiory then the following
-commands are available under both UNIX and Windows.
+pyqtdeploy works by taking the individual modules of a PyQt5 application,
+freezing them, and then placing them in a Qt resource file that is converted to
+C++ code by Qt's ``rcc`` tool.  Python's standard library is handled in the
+same way.
 
-Note that you may need to edit the ``Makefile`` and/or ``make.bat`` files to
-set the value of ``PYTHON``, ``PYTHON3`` and ``PYTHON2`` to something
-appropriate to your system.  On windows you may also need to modify the value
-of ``SPHINXBUILD`` in ``doc\make.bat``.
+pyqtdeploy generates a simple C++ wrapper around the Python interpreter library
+that uses the Python import mechanism to enable access to the embedded frozen
+modules in a similar way that Python supports the packaging of modules in zip
+files.
 
+Finally pyqtdeploy generates a Qt ``.pro`` file that describes all the
+generated C++ code.  From this Qt's ``qmake`` tool is used to generate a
+platform-specific ``Makefile`` which will then generate a single executable.
+Further Qt and/or platform specific tools can then be used to convert the
+executable to a platform specific deployable package.
 
-Support for Python v2.6 and v2.7
---------------------------------
-
-Support for v2.6 and v2.7 of Python is implemented as a series of patches
-managed by Mercurial Queues (MQ).  To enable support for MQ make sure your
-``.hgrc`` contains the following::
-
-    [extensions]
-    hgext.mq =
-
-In order to apply the patches run the following command::
-
-    hg qpush -a
-
-In order to remove the patches, restoring the code to run under Python v3, run
-the following command::
-
-    hg qpop -a
+When run pyqtdeploy presents a GUI that allows the modules that make up the
+application to be specified, along with the PyQt5 components that the
+application requires and the parts of the Python standard library that should
+also be included.  This information is stored in a pyqtdeploy project file.
+pyqtdeploy can also be run as a command line tool to generate the C++ code from
+a project file.
 
 
-make test
----------
+Author
+------
 
-This runs the test suite.  This is also the default when ``make`` is run
-without arguments.
+pyqtdeploy is copyright (c) Riverbank Computing Limited.  Its homepage is
+http://www.riverbankcomputing.com/software/pyqtdeploy/.
 
-If you are using Python v2.6 then you must have the ``unittest2`` package
-installed.
-
-
-make doc
---------
-
-This creates the documentation.  You will need to have Python v2, Sphinx and
-the Mercurial Python bindings installed.
+Support may be obtained from the PyQt mailing list at
+http://www.riverbankcomputing.com/mailman/listinfo/pyqt
 
 
-make dist
----------
+License
+-------
 
-This creates distutils source packages for both UNIX and Windows.  You will
-need to have Python v2 and the Mercurial Python bindings installed.
-
-
-make clean
-----------
-
-This removes any generated files, excluding any distutils source packages.
+pyqtdeploy is released under the BSD license.
 
 
-make dist-clean
----------------
+Installation
+------------
 
-This removes any generated files, including any distutils source packages.
+pyqtdeploy can be dowloaded an installed from PyPI::
+
+    pip3 install pyqtdeploy
+
+pyqtdeploy requires PyQt5 to be installed.  This is not installed
+automatically.
+
+
+Documentation
+-------------
+
+The documentation for the latest release can be found
+`here <http://pyqt.sourceforge.net/Docs/pyqtdeploy/>`__.
