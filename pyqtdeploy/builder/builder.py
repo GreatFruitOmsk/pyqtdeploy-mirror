@@ -38,35 +38,47 @@ from ..user_exception import UserException
 class Builder():
     """ The builder for a project. """
 
-    # Map PyQt modules to the corresponding qmake QT values.
-    pyqt_module_map = {
-        'QAxContainer':         ('axcontainer', ),
-        'QtBluetooth':          ('bluetooth', ),
-        'QtCore':               ('-gui', ),
-        'QtDBus':               ('dbus', '-gui'),
-        'QtDesigner':           ('designer', ),
-        'QtGui':                (),
-        'QtHelp':               ('help', ),
-        'QtMacExtras':          ('macextras', ),
-        'QtMultimedia':         ('multimedia', ),
-        'QtMultimediaWidgets':  ('multimediawidgets', 'multimedia'),
-        'QtNetwork':            ('network', '-gui'),
-        'QtOpenGL':             ('opengl', ),
-        'QtPositioning':        ('positioning', ),
-        'QtPrintSupport':       ('printsupport', ),
-        'QtQml':                ('qml', ),
-        'QtQuick':              ('quick', ),
-        'QtSensors':            ('sensors', ),
-        'QtSerialPort':         ('serialport', ),
-        'QtSql':                ('sql', 'widgets'),
-        'QtSvg':                ('svg', ),
-        'QtTest':               ('testlib', 'widgets'),
-        'QtWebKit':             ('webKit', 'network'),
-        'QtWebKitWidgets':      ('webkitwidgets', ),
-        'QtWidgets':            ('widgets', ),
-        'QtWinExtras':          ('winextras', 'widgets'),
-        'QtX11Extras':          ('x11extras', ),
-        'QtXmlPatterns':        ('xmlpatterns', '-gui', 'network')
+    # Map PyQt modules to the corresponding qmake QT or CONFIG values.
+    class QtMetaData:
+        def __init__(self, qt=None, config=None):
+            self.qt = qt
+            self.config = config
+
+    _pyqt_module_map = {
+        'QAxContainer':         QtMetaData(qt=['axcontainer']),
+        'QtBluetooth':          QtMetaData(qt=['bluetooth']),
+        'QtCore':               QtMetaData(qt=['-gui']),
+        'QtDBus':               QtMetaData(qt=['dbus', '-gui']),
+        'QtDesigner':           QtMetaData(qt=['designer']),
+        'QtGui':                QtMetaData(),
+        'QtHelp':               QtMetaData(qt=['help']),
+        'QtMacExtras':          QtMetaData(qt=['macextras']),
+        'QtMultimedia':         QtMetaData(qt=['multimedia']),
+        'QtMultimediaWidgets':  QtMetaData(
+                                        qt=['multimediawidgets',
+                                                'multimedia']),
+        'QtNetwork':            QtMetaData(qt=['network', '-gui']),
+        'QtOpenGL':             QtMetaData(qt=['opengl']),
+        'QtPositioning':        QtMetaData(qt=['positioning']),
+        'QtPrintSupport':       QtMetaData(qt=['printsupport']),
+        'QtQml':                QtMetaData(qt=['qml']),
+        'QtQuick':              QtMetaData(qt=['quick']),
+        'QtSensors':            QtMetaData(qt=['sensors']),
+        'QtSerialPort':         QtMetaData(qt=['serialport']),
+        'QtSql':                QtMetaData(qt=['sql', 'widgets']),
+        'QtSvg':                QtMetaData(qt=['svg']),
+        'QtTest':               QtMetaData(qt=['testlib', 'widgets']),
+        'QtWebKit':             QtMetaData(qt=['webKit', 'network']),
+        'QtWebKitWidgets':      QtMetaData(qt=['webkitwidgets']),
+        'QtWidgets':            QtMetaData(qt=['widgets']),
+        'QtWinExtras':          QtMetaData(qt=['winextras', 'widgets']),
+        'QtX11Extras':          QtMetaData(qt=['x11extras']),
+        'QtXmlPatterns':        QtMetaData(
+                                        qt=['xmlpatterns', '-gui', 'network']),
+
+        'QtChart':              QtMetaData(config=['qtcommercialchart']),
+        'QtDataVisualization':  QtMetaData(qt=['datavisualization']),
+        'Qsci':                 QtMetaData(config=['qscintilla2']),
     }
 
     def __init__(self, project, verbose):
@@ -139,15 +151,27 @@ class Builder():
 
         no_gui = True
         qmake_qt = []
+        qmake_config = []
 
         for pyqt_m in project.pyqt_modules:
             needs_gui = True
 
-            for qt in self.pyqt_module_map[pyqt_m]:
-                if qt == '-gui':
-                    needs_gui = False
-                elif qt not in qmake_qt:
-                    qmake_qt.append(qt)
+            try:
+                metadata = self._pyqt_module_map[pyqt_m]
+            except KeyError:
+                pass
+
+            if metadata.qt is not None:
+                for qt in metadata.qt:
+                    if qt == '-gui':
+                        needs_gui = False
+                    elif qt not in qmake_qt:
+                        qmake_qt.append(qt)
+
+            if metadata.config is not None:
+                for config in metadata.config:
+                    if config not in qmake_config:
+                        qmake_config.append(config)
 
             if needs_gui:
                 no_gui = False
@@ -157,6 +181,9 @@ class Builder():
 
         if len(qmake_qt) != 0:
             f.write('QT += {0}\n'.format(' '.join(qmake_qt)))
+
+        if len(qmake_config) != 0:
+            f.write('CONFIG += {0}\n'.format(' '.join(qmake_config)))
 
         # Determine the extension modules and link against them.
         # TODO - add any others.

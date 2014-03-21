@@ -45,6 +45,9 @@ class PyQtPage(QWidget):
     # The internal OpenGL modules.
     opengl_modules = ('_QOpenGLFunctions_ES2', '_QOpenGLFunctions_2_0')
 
+    # The add-on modules.
+    addon_modules = ('Qsci', 'QtChart', 'QtDataVisualization')
+
     @property
     def project(self):
         """ The project property getter. """
@@ -73,6 +76,8 @@ class PyQtPage(QWidget):
                 "Imported Modules", self.modules)
         self._opengl_modules_bg = self._create_button_group(layout,
                 "Internal OpenGL Modules", self.opengl_modules)
+        self._addon_modules_bg = self._create_button_group(layout,
+                "Add-on Modules", self.addon_modules)
         layout.addStretch()
 
         self.setLayout(layout)
@@ -122,7 +127,7 @@ class PyQtPage(QWidget):
 
         self._update_button_group(self._modules_bg)
         self._update_button_group(self._opengl_modules_bg)
-
+        self._update_button_group(self._addon_modules_bg)
 
     def _update_button_group(self, b_group):
         """ Update the state of a button group according to the current
