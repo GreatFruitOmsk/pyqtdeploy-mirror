@@ -1,0 +1,5 @@
+syntax: glob
+*.pyc
+doc/_build
+pyqtdeploy.egg-info
+VERSION
