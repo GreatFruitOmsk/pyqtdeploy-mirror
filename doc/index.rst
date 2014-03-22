@@ -6,3 +6,4 @@ User Guide
 
     introduction
     tutorial
+    static_builds
