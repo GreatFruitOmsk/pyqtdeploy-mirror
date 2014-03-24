@@ -306,8 +306,8 @@ class Project(QObject):
             'version': str(self.version)})
 
         application = SubElement(root, 'Application', attrib={
-            'ispyqt5': self.application_is_pyqt5,
-            'ispython3': self.application_is_python3,
+            'ispyqt5': str(int(self.application_is_pyqt5)),
+            'ispython3': str(int(self.application_is_python3)),
             'script': self.application_script})
 
         self._save_package(application, self.application_package)

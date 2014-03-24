@@ -64,7 +64,6 @@ class MfsPackageEditor(QGroupBox):
             text += scanning
 
         layout.addWidget(QPushButton(text, clicked=self._scan), 0, 1, 1, 2)
-
         layout.addWidget(QPushButton("Include all", clicked=self._include_all),
                 1, 1)
         layout.addWidget(QPushButton("Exclude all", clicked=self._exclude_all),

@@ -89,7 +89,7 @@ class ApplicationPage(QWidget):
     def _script_changed(self, value):
         """ Invoked when the user edits the application script name. """
 
-        self.project.application_script = value
+        self.project.application_script = self.project.relative_path(value)
         self.project.modified = True
 
     def _package_changed(self):

@@ -218,8 +218,11 @@ class Builder():
             f.write('CONFIG += {0}\n'.format(' '.join(qmake_config)))
 
         # Determine the extension modules and link against them.
-        # TODO - add any others.
         extensions = {}
+
+        for extension_module in project.extension_modules:
+            if extension_module.name != '':
+                extensions[extension_module.name] = extension_module.path
 
         if len(project.pyqt_modules) > 0:
             sitepackages = project.absolute_path(
