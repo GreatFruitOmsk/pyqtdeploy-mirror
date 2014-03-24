@@ -48,6 +48,12 @@ Defining the Standard Library Packages
 TODO
 
 
+Defining the ``site-packages`` Packages
+---------------------------------------
+
+TODO
+
+
 Defining the Python Configuration
 ---------------------------------
 
