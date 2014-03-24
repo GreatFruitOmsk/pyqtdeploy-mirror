@@ -82,6 +82,8 @@ class Project(QObject):
         self._name = ''
 
         # Initialise the project data.
+        self.application_is_pyqt5 = True
+        self.application_is_python3 = True
         self.application_package = MfsPackage()
         self.application_script = ''
         self.extension_modules = []
@@ -163,6 +165,10 @@ class Project(QObject):
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
 
+        project.application_is_pyqt5 = cls._get_bool(application, 'ispyqt5',
+                'Application')
+        project.application_is_python3 = cls._get_bool(application,
+                'ispython3', 'Application')
         project.application_script = application.get('script', '')
 
         app_package = application.find('Package')
@@ -300,6 +306,8 @@ class Project(QObject):
             'version': str(self.version)})
 
         application = SubElement(root, 'Application', attrib={
+            'ispyqt5': self.application_is_pyqt5,
+            'ispython3': self.application_is_python3,
             'script': self.application_script})
 
         self._save_package(application, self.application_package)
