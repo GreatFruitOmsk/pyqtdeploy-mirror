@@ -176,7 +176,7 @@ class Builder():
         f = self._create_file(build_dir, app_name + '.pro')
 
         f.write('TEMPLATE = app\n')
-        f.write('CONFIG += release\n')
+        f.write('CONFIG += release warn_on\n')
 
         # Configure the QT value.
         f.write('\n')
