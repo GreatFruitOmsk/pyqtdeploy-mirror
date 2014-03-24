@@ -380,19 +380,19 @@ sys.path_hooks = [mfsimport.mfsimporter]
                         src_root_dir, dir_stack, freeze, f)
                 dir_stack.pop()
             else:
+                freeze_file = True
                 src_file = content.name
                 src_path = os.path.join(src_root_dir, dir_tail, src_file)
 
                 if src_file.endswith('.py'):
-                    dst_file = src_file[:-3]
+                    dst_file = src_file[:-3] + '.pyf'
                 elif src_file.endswith('.pyw'):
-                    dst_file = src_file[:-4]
+                    dst_file = src_file[:-4] + '.pyf'
                 else:
                     # Just copy the file.
-                    shutil.copyfile(src_path, os.path.join(dst_dir, src_file))
-                    continue
+                    dst_file = src_file
+                    freeze_file = False
 
-                dst_file += '.pyf'
                 dst_path = os.path.join(dst_dir, dst_file)
 
                 file_path = [prefix]
@@ -406,7 +406,10 @@ sys.path_hooks = [mfsimport.mfsimporter]
                         '        <file>{0}</file>\n'.format(
                                 '/'.join(file_path)))
 
-                self._freeze(dst_path, src_path, freeze, as_data=True)
+                if freeze_file:
+                    self._freeze(dst_path, src_path, freeze, as_data=True)
+                else:
+                    shutil.copyfile(src_path, dst_path)
 
     @classmethod
     def _write_main_c(cls, build_dir, app_name, extension_names):
