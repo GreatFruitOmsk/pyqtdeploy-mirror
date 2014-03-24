@@ -360,23 +360,48 @@ class MfsPackage():
         self.contents = []
         self.exclusions = ['*.pyc', '*.pyo', '__pycache__']
 
+    def copy(self):
+        """ Return a copy of the package. """
+
+        copy = type(self)()
+
+        copy.name = self.name
+        copy.contents = [content.copy() for content in self.contents]
+        copy.exclusions = list(self.exclusions)
+
+        return copy
+
 
 class MfsFile():
     """ The encapsulation of a memory-filesystem file. """
 
-    def __init__(self, name, included):
+    def __init__(self, name, included=True):
         """ Initialise the file. """
 
         self.name = name
         self.included = included
 
+    def copy(self):
+        """ Return a copy of the file. """
+
+        return type(self)(self.name, self.included)
+
 
 class MfsDirectory(MfsFile):
     """ The encapsulation of a memory-filesystem directory. """
 
-    def __init__(self, name, included):
+    def __init__(self, name, included=True):
         """ Initialise the directory. """
 
         super().__init__(name, included)
 
         self.contents = []
+
+    def copy(self):
+        """ Return a copy of the directory. """
+
+        copy = super().copy()
+
+        copy.contents = [content.copy() for content in self.contents]
+
+        return copy

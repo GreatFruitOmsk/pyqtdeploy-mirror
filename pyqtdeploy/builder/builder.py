@@ -31,7 +31,7 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo
 
-from ..project import MfsDirectory, MfsFile, MfsPackage
+from ..project import MfsDirectory, MfsFile
 from ..user_exception import UserException
 
 
@@ -117,21 +117,53 @@ class Builder():
                         os.path.join(project.python_target_stdlib_dir, ''),
                         freeze)
             else:
+                # Add the PyQt package to a temporary copy of the site-packages
+                # package.
+                site_packages_package = project.site_packages_package.copy()
+
                 if len(project.pyqt_modules) != 0:
-                    # Create a PyQt package on the fly.
-                    pyqt_package = MfsPackage()
-                    pyqt_package.contents.append(MfsFile('__init__.py', True))
+                    pyqt_pkg_init = MfsFile('__init__.py')
+                    pyqt_pkg_dir = MfsDirectory('PyQt5')
+                    pyqt_pkg_dir.contents.append(pyqt_pkg_init)
+                    site_packages_package.contents.append(pyqt_pkg_dir)
 
-                    # TODO - add uic if requested.
+                    # Add uic if requested.
+                    if 'uic' in project.pyqt_modules:
+                        self._add_uic_dir(pyqt_pkg_dir,
+                                os.path.join(
+                                        self._project.python_target_stdlib_dir,
+                                        'site-packages', 'PyQt5'),
+                                'uic', [])
 
-                    self._write_resource(build_dir, resource, pyqt_package,
-                            os.path.join(project.python_target_stdlib_dir,
-                                    'site-packages', 'PyQt5'),
-                            freeze)
-
-                # TODO - handle additional site-packages packages.
+                self._write_resource(build_dir, resource,
+                        site_packages_package,
+                        os.path.join(project.python_target_stdlib_dir,
+                                'site-packages', ''),
+                        freeze)
 
         os.remove(freeze)
+
+    def _add_uic_dir(self, package, pyqt_dir, dirname, dir_stack):
+        """ Add a uic directory to a package. """
+
+        dir_pkg = MfsDirectory(dirname)
+        package.contents.append(dir_pkg)
+
+        dirpath = [pyqt_dir] + dir_stack + [dirname]
+        dirpath = os.path.join(*dirpath)
+
+        for content in os.listdir(dirpath):
+            if content in ('port_v2', '__pycache__'):
+                continue
+
+            content_path = os.path.join(dirpath, content)
+
+            if os.path.isfile(content_path):
+                dir_pkg.contents.append(MfsFile(content))
+            elif os.path.isdir(content_path):
+                dir_stack.append(dirname)
+                self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
+                dir_stack.pop()
 
     def _write_qmake(self, build_dir, freeze):
         """ Create the .pro file for qmake. """
@@ -194,7 +226,8 @@ class Builder():
                     project.python_target_stdlib_dir) + '/site-packages'
 
             for pyqt in project.pyqt_modules:
-                extensions['PyQt5.' + pyqt] = sitepackages + '/PyQt5'
+                if pyqt != 'uic':
+                    extensions['PyQt5.' + pyqt] = sitepackages + '/PyQt5'
 
             # Add the implicit sip module.
             extensions['sip'] = sitepackages
