@@ -323,8 +323,10 @@ sys.path_hooks = [mfsimport.mfsimporter]
         if len(project.pyqt_modules) != 0:
             resources.append('site-packages')
         else:
-            # TODO - check for any additional site-packages packages.
-            pass
+            for content in project.site_packages_package.contents:
+                if content.included:
+                    resources.append('site-packages')
+                    break
 
         return resources
 
