@@ -38,6 +38,7 @@ from ..user_exception import UserException
 from .application_page import ApplicationPage
 from .pyqt_page import PyQtPage
 from .python_page import PythonPage
+from .site_packages_page import SitePackagesPage
 from .stdlib_page import StdlibPage
 
 
@@ -127,7 +128,7 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, PythonPage):
+        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, SitePackagesPage, PythonPage):
             page = page_factory()
             tabs.addTab(page, page.label)
 

@@ -40,7 +40,7 @@ class MfsPackageEditor(QGroupBox):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title, scanning=''):
+    def __init__(self, title, scanning='', additional_exclusions=None):
         """ Initialise the editor. """
 
         super().__init__(title)
@@ -49,6 +49,7 @@ class MfsPackageEditor(QGroupBox):
         self._project = None
         self._root = None
         self._title = title
+        self._additional_exclusions = additional_exclusions
 
         layout = QGridLayout()
 
@@ -220,6 +221,16 @@ class MfsPackageEditor(QGroupBox):
                 if fnmatch.fnmatch(name, exc):
                     name = None
                     break
+
+            if name is None:
+                continue
+
+            # Apply any additional exclusions if we are at the top level.
+            if self._additional_exclusions is not None and len(dir_stack) == 1:
+                for exc in self._additional_exclusions:
+                    if fnmatch.fnmatch(name, exc):
+                        name = None
+                        break
 
             if name is None:
                 continue
