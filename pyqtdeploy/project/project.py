@@ -84,6 +84,7 @@ class Project(QObject):
         # Initialise the project data.
         self.application_package = MfsPackage()
         self.application_script = ''
+        self.extension_modules = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_target_include_dir = ''
@@ -97,6 +98,8 @@ class Project(QObject):
         name if possible.
         """
 
+        filename = filename.strip()
+
         if os.path.isabs(filename):
             if self._name != '':
                 project_dir = os.path.dirname(self._name)
@@ -109,6 +112,8 @@ class Project(QObject):
         """ Convert a filename that might be relative to the project name to an
         absolute filename.
         """
+
+        filename = filename.strip()
 
         if not os.path.isabs(filename):
             filename = os.path.join(os.path.dirname(self._name), filename)
@@ -185,6 +190,17 @@ class Project(QObject):
         cls._assert(stdlib_package is not None,
                 "Missing 'Application.Stdlib.Package' tag.")
         cls._load_package(stdlib_package, project.stdlib_package)
+
+        for extension_module_element in application.iterfind('ExtensionModule'):
+            name = extension_module_element.get('name')
+            cls._assert(name is not None,
+                    "Missing 'Application.ExtensionModule.name' attribute.")
+
+            path = extension_module_element.get('path')
+            cls._assert(path is not None,
+                    "Missing 'Application.ExtensionModule.path' attribute.")
+
+            project.extension_modules.append(ExtensionModule(name, path))
 
         # The Python specific configuration.
         python = root.find('Python')
@@ -288,15 +304,20 @@ class Project(QObject):
 
         self._save_package(application, self.application_package)
 
-        for pyqt_m in self.pyqt_modules:
+        for pyqt_module in self.pyqt_modules:
             SubElement(application, 'PyQtModule', attrib={
-                'name': pyqt_m})
+                'name': pyqt_module})
 
         site_packages = SubElement(application, 'SitePackages')
         self._save_package(site_packages, self.site_packages_package)
 
         stdlib = SubElement(application, 'Stdlib')
         self._save_package(stdlib, self.stdlib_package)
+
+        for extension_module in self.extension_modules:
+            SubElement(application, 'ExtensionModule', attrib={
+                'name': extension_module.name,
+                'path': extension_module.path})
 
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,
@@ -354,7 +375,7 @@ class MfsPackage():
     """ The encapsulation of a memory-filesystem package. """
 
     def __init__(self):
-        """ Initialise the project. """
+        """ Initialise the package. """
 
         self.name = ''
         self.contents = []
@@ -405,3 +426,13 @@ class MfsDirectory(MfsFile):
         copy.contents = [content.copy() for content in self.contents]
 
         return copy
+
+
+class ExtensionModule():
+    """ The encapsulation of an extension module. """
+
+    def __init__(self, name, path):
+        """ Initialise the extension. """
+
+        self.name = name
+        self.path = path

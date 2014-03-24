@@ -25,4 +25,5 @@
 
 
 # Publish the sub-package's API.
-from .project import MfsDirectory, MfsFile, MfsPackage, Project
+from .project import (ExtensionModule, MfsDirectory, MfsFile, MfsPackage,
+        Project)

@@ -36,6 +36,7 @@ from ..project import Project
 from ..user_exception import UserException
 
 from .application_page import ApplicationPage
+from .extension_modules_page import ExtensionModulesPage
 from .pyqt_page import PyQtPage
 from .python_page import PythonPage
 from .site_packages_page import SitePackagesPage
@@ -128,7 +129,7 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, SitePackagesPage, PythonPage):
+        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, SitePackagesPage, ExtensionModulesPage, PythonPage):
             page = page_factory()
             tabs.addTab(page, page.label)
 
@@ -276,7 +277,7 @@ class ProjectGUI(QMainWindow):
 
         settings = QSettings()
 
-        self.resize(settings.value('size', QSize(400, 400)))
+        self.resize(settings.value('size', QSize(600, 400)))
         self.move(settings.value('pos', QPoint(200, 200)))
 
     def _save_settings(self):

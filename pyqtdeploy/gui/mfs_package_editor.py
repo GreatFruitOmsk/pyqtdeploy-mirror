@@ -99,13 +99,15 @@ class MfsPackageEditor(QGroupBox):
         self._exclusions_edit.clear()
 
         for exclude in package.exclusions:
-            self._add_exclusion_item(QTreeWidgetItem([exclude]))
+            self._add_exclusion_item(exclude)
 
         # Add one to be edited to create a new entry.
-        self._add_exclusion_item(QTreeWidgetItem())
+        self._add_exclusion_item()
 
-    def _add_exclusion_item(self, itm):
+    def _add_exclusion_item(self, exclude=''):
         """ Add a QTreeWidgetItem that holds an exclusion. """
+
+        itm = QTreeWidgetItem([exclude])
 
         itm.setFlags(
                 Qt.ItemIsSelectable|Qt.ItemIsEditable|Qt.ItemIsEnabled|
@@ -113,25 +115,25 @@ class MfsPackageEditor(QGroupBox):
 
         self._exclusions_edit.addTopLevelItem(itm)
 
-    def _exclusion_changed(self, itm, column):
+    def _exclusion_changed(self, itm, _):
         """ Invoked when an exclusion has changed. """
 
         exc_edit = self._exclusions_edit
 
-        new_exc = itm.data(column, Qt.DisplayRole)
+        new_exc = itm.data(0, Qt.DisplayRole).strip()
         itm_index = exc_edit.indexOfTopLevelItem(itm)
 
         if new_exc != '':
             # See if we have added a new one.
             if itm_index == exc_edit.topLevelItemCount() - 1:
-                self._add_exclusion_item(QTreeWidgetItem())
+                self._add_exclusion_item()
         else:
             # It is empty so remove it.
             exc_edit.takeTopLevelItem(itm_index)
 
         # Save the new exclusions.
         self._package.exclusions = [
-                exc_edit.topLevelItem(i).data(column, Qt.DisplayRole)
+                exc_edit.topLevelItem(i).data(0, Qt.DisplayRole).strip()
                         for i in range(exc_edit.topLevelItemCount() - 1)]
 
         self.package_changed.emit()
