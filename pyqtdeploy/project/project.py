@@ -89,6 +89,7 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
+        self.site_packages_package = MfsPackage()
         self.stdlib_package = MfsPackage()
 
     def relative_path(self, filename):
@@ -169,6 +170,14 @@ class Project(QObject):
             cls._assert(name != '',
                     "Missing or empty 'PyQtModule.name' attribute.")
             project.pyqt_modules.append(name)
+
+        site_packages = application.find('SitePackages')
+        cls._assert(site_packages is not None,
+                "Missing 'Application.SitePackages' tag.")
+        site_packages_package = site_packages.find('Package')
+        cls._assert(site_packages_package is not None,
+                "Missing 'Application.SitePackages.Package' tag.")
+        cls._load_package(site_packages_package, project.site_packages_package)
 
         stdlib = application.find('Stdlib')
         cls._assert(stdlib is not None, "Missing 'Application.Stdlib' tag.")
@@ -282,6 +291,9 @@ class Project(QObject):
         for pyqt_m in self.pyqt_modules:
             SubElement(application, 'PyQtModule', attrib={
                 'name': pyqt_m})
+
+        site_packages = SubElement(application, 'SitePackages')
+        self._save_package(site_packages, self.site_packages_package)
 
         stdlib = SubElement(application, 'Stdlib')
         self._save_package(stdlib, self.stdlib_package)
