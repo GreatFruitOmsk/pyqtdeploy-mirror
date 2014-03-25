@@ -215,4 +215,8 @@ documentation for compiling and packaging for your target platform.
 For desktop platforms this is probably as simple as running :program:`qmake`
 followed by :program:`make` (or :program:`nmake` on Windows).
 
+.. note::
+    Make sure the version of :program:`qmake` used is the same as the one used
+    to build PyQt.
+
 For mobile platforms this will be considerably more complicated.
