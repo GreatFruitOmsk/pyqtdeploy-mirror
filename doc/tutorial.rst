@@ -75,10 +75,11 @@ The tab for defining the application source is shown below.
     excluded from the application package.
 
 **Exclusions**
-    specifies the list of *glob*-style patterns that are applied to the scanned
-    files and directories.  Those items that match are then completely ignored.
-    To edit the list just double-click on the entry to modify or delete.  To
-    add a new entry just double-click the list after the last entry.
+    is used to specify the list of *glob*-style patterns that are applied to
+    the scanned files and directories.  Those items that match are then
+    completely ignored.  To edit the list just double-click on the entry to
+    modify or delete.  To add a new entry just double-click the list after the
+    last entry.
 
 
 Defining the PyQt Modules
@@ -89,7 +90,12 @@ The tab for defining the PyQt modules used by the application is shown below.
 .. image:: /images/pyqt_modules_tab.png
     :align: center
 
-TODO
+Simply check all the PyQt modules that are used, either implicitly or
+explicitly, by the application.  pyqtdeploy does not (yet) automatically handle
+inter-module dependencies.
+
+In this example the ``wiggly.py`` script uses the :mod:`~PyQt5.QtCore`,
+:mod:`~PyQt5.QtGui` and :mod:`~PyQt5.QtWidgets` modules.
 
 
 Defining the Standard Library Packages
@@ -101,7 +107,15 @@ application is shown below.
 .. image:: /images/stdlib_packages_tab.png
     :align: center
 
-TODO
+This tab is used to scan the directory containing the Python interpreter's
+standard library.  You then specify which individual modules are needed, either
+implicitly or explicitly, by the application.  pyqtdeploy does not (yet)
+automatically handle inter-module dependencies.
+
+The ``wiggly.py`` script does not explicitly import any standard Python module
+(except for the :mod:`sys` module which is implemented as a builtin).  However,
+like any application deployed with pyqtdeploy, the :mod:`importlib`,
+:mod:`types` and :mod:`warnings` modules must be included.
 
 
 Defining the ``site-packages`` Packages
@@ -113,7 +127,12 @@ shown below.
 .. image:: /images/site_packages_tab.png
     :align: center
 
-TODO
+This tab is used to scan the the Python interpreter's ``site-packages``
+directory.  You then specify which individual modules are needed, either
+implicitly or explicitly, by the application.  pyqtdeploy does not (yet)
+automatically handle inter-module dependencies.
+
+The ``wiggly.py`` script does not use any third-party Python packages.
 
 
 Defining the Extension Modules
@@ -125,7 +144,16 @@ below.
 .. image:: /images/extension_modules_tab.png
     :align: center
 
-TODO
+This tab is used to specify any third-party C extension modules that will be
+statically linked into the Python interpreter library.  For each extension
+module its name and the directory containing it must be specified.  On Windows
+an extension module will have a ``.lib`` filename suffix.  The suffix will be
+``.a`` on most other platforms.
+
+To edit the list just double-click on the entry to modify or delete.  To add a
+new entry just double-click the list after the last entry.
+
+The ``wiggly.py`` script does not use any third-party C extension modules.
 
 
 Defining the Python Configuration
@@ -137,7 +165,24 @@ below.
 .. image:: /images/python_configuration_tab.png
     :align: center
 
-TODO
+**Host interpreter**
+    is used to specify the **host** Python interpreter used to compile all of
+    the Python modules used by the application.  This must be the same version
+    as the **target** Python installation to ensure that the compiled bytecode
+    can be executed by the deployed application.  (Of course if you are not
+    cross-compiling the application then the host and target Python
+    installations are the same.)
+
+**Target include directory**
+    is used to specify the name of the directory containing the target Python
+    installation's ``Python.h`` file.
+
+**Target Python library**
+    is used to specify the name of the target Python interpreter library.
+
+**Target standard library directory**
+    is used to specify the name of the directory containing the target Python
+    interpreter's standard library.
 
 
 Building the C++ Source Code
