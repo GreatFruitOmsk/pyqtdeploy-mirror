@@ -81,7 +81,7 @@ class Builder():
         'Qsci':                 QtMetaData(config=['qscintilla2']),
     }
 
-    def __init__(self, project, verbose):
+    def __init__(self, project, verbose=False):
         """ Initialise the builder for a project. """
 
         super().__init__()

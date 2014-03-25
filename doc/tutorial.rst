@@ -188,7 +188,20 @@ below.
 Building the C++ Source Code
 ----------------------------
 
-TODO
+Once all the relevant information has been specified the application source
+code and :program:`qmake` ``.pro`` file can be generated.  This can be done
+from the GUI by selecting the ``Build Project...`` option of the ``Build``
+menu.  You will then be asked for the name of an existing directory.
+pyqtdeploy will then create all the necessary files in that directory.
+
+The project can also be built from the command line by specifying the
+:option:`--build` with the name of an existing directory to pyqtdeploy.  For
+example::
+
+    pyqtdeploy --build builddir wiggly.pdy
+
+You may also specify the :option:`--verbose` option which will display a
+series of progress messages.
 
 
 Creating a Deployable Package
