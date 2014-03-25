@@ -72,14 +72,14 @@ class Project(QObject):
             self._name = value
             self.name_changed.emit(value)
 
-    def __init__(self):
+    def __init__(self, name=''):
         """ Initialise the project. """
 
         super().__init__()
 
         # Initialise the project meta-data.
         self._modified = False
-        self._name = ''
+        self._name = name
 
         # Initialise the project data.
         self.application_is_pyqt5 = True

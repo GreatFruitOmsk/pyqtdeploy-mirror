@@ -66,7 +66,7 @@ class ProjectGUI(QMainWindow):
         error.
         """
 
-        return cls._load_project(filename)
+        return cls._load_project(filename) if os.path.isfile(filename) else Project(filename)
 
     def closeEvent(self, event):
         """ Handle a close event. """

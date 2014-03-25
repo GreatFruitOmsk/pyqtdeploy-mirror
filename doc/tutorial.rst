@@ -5,21 +5,17 @@ Creating a pyqtdeploy Project
 -----------------------------
 
 The first stage of deploying a PyQt5 application is to create a pyqtdeploy
-project for it.  To create a new project run::
-
-    pyqtdeploy
-
-This will create an unnamed empty project.
-
-A project is simply a file with a ``.pdy`` extension.
-
-If you wish to modify an existing project then run::
+project for it by running::
 
     pyqtdeploy myproject.pdy
 
-In either case a GUI will be displayed which consists of a ``File`` menu, a
-``Build`` menu and a set of tabbed pages that handle different aspects of the
-application's specification as shown below.
+This will create a new project, or open an exiting one if the file
+``myproject.pdy`` already exists.  A project is simply a file with a ``.pdy``
+extension.
+
+A GUI will be displayed which consists of a ``File`` menu, a ``Build`` menu and
+a set of tabbed pages that handle different aspects of the application's
+specification as shown below.
 
 .. image:: /images/unnamed.png
     :align: center
