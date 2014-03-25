@@ -207,4 +207,12 @@ series of progress messages.
 Creating a Deployable Package
 -----------------------------
 
-TODO
+The build directory now contains the source of (as far as :program:`qmake` is
+concerned) the source of conventional Qt based C++ application.  To convert
+this into a deployable application you must follow the appropriate Qt
+documentation for compiling and packaging for your target platform.
+
+For desktop platforms this is probably as simple as running :program:`qmake`
+followed by :program:`make` (or :program:`nmake` on Windows).
+
+For mobile platforms this will be considerably more complicated.
