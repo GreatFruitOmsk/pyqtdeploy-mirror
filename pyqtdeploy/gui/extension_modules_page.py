@@ -28,7 +28,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget
 
 from ..project import ExtensionModule
-from .filename_editor import FilenameEditor
+from .filename_editor_delegate import FilenameEditorDelegate
 
 
 class ExtensionModulesPage(QWidget):
@@ -49,6 +49,7 @@ class ExtensionModulesPage(QWidget):
 
         if self._project != value:
             self._project = value
+            self._extension_modules_delegate.setProject(value)
             self._update_page()
 
     def __init__(self):
@@ -69,6 +70,12 @@ class ExtensionModulesPage(QWidget):
         self._extension_modules_edit.setRootIsDecorated(False)
         self._extension_modules_edit.itemChanged.connect(
                 self._extension_module_changed)
+
+        self._extension_modules_delegate = FilenameEditorDelegate(
+                "Extension Module Directory", directory=True)
+
+        self._extension_modules_edit.setItemDelegateForColumn(1,
+                self._extension_modules_delegate)
 
         layout.addWidget(self._extension_modules_edit)
 
@@ -105,7 +112,7 @@ class ExtensionModulesPage(QWidget):
 
         self._extension_modules_edit.addTopLevelItem(itm)
 
-    def _extension_module_changed(self, itm, _):
+    def _extension_module_changed(self, itm, value):
         """ Invoked when an extension module has changed. """
 
         project = self.project

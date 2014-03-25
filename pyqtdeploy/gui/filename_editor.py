@@ -25,30 +25,36 @@
 
 
 from PyQt5.QtWidgets import (QFileDialog, QHBoxLayout, QLineEdit, QStyle,
-        QToolButton)
+        QToolButton, QWidget)
 
 
-class FilenameEditor(QHBoxLayout):
+class FilenameEditor(QWidget):
     """ A simple file name editor suitable to be added to a layout. Filenames
     are relative to the project if possbile.
     """
 
-    def __init__(self, caption, directory=False, **kwds):
+    def __init__(self, caption, directory=False, parent=None, **kwds):
         """ Initialise the editor. """
 
-        super().__init__()
+        super().__init__(parent)
 
         self._project = None
         self._caption = caption
         self._directory = directory
 
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        
         self._line_edit = QLineEdit(**kwds)
-        self.addWidget(self._line_edit)
+        layout.addWidget(self._line_edit)
+        self.setFocusProxy(self._line_edit)
 
         icon = self._line_edit.style().standardIcon(
                 QStyle.SP_DirIcon if self._directory else QStyle.SP_FileIcon)
 
-        self.addWidget(QToolButton(icon=icon, clicked=self._browse))
+        layout.addWidget(QToolButton(icon=icon, clicked=self._browse))
+
+        self.setLayout(layout)
 
     def setProject(self, project):
         """ Set the project. """
@@ -59,6 +65,11 @@ class FilenameEditor(QHBoxLayout):
         """ Set the text of the embedded QLineEdit. """
 
         self._line_edit.setText(text)
+
+    def text(self):
+        """ Get the text of the embedded QLineEdit. """
+
+        return self._line_edit.text()
 
     def _browse(self, value):
         """ Invoked when the user clicks on the browse button. """
