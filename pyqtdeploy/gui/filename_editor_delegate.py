@@ -44,7 +44,7 @@ class FilenameEditorDelegate(QStyledItemDelegate):
         self._directory = directory
         self._kwds = kwds
 
-    def setProject(self, project):
+    def set_project(self, project):
         """ Set the project. """
 
         self._project = project
@@ -54,7 +54,7 @@ class FilenameEditorDelegate(QStyledItemDelegate):
 
         editor = FilenameEditor(self._caption, directory=self._directory,
                 parent=parent, **self._kwds)
-        editor.setProject(self._project)
+        editor.set_project(self._project)
 
         # Prevent the selected value showing through.
         editor.setAutoFillBackground(True)

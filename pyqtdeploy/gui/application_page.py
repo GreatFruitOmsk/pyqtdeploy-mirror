@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QFormLayout, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QFileDialog, QFormLayout, QVBoxLayout, QWidget
 
 from .filename_editor import FilenameEditor
 from .mfs_package_editor import MfsPackageEditor
@@ -48,7 +48,8 @@ class ApplicationPage(QWidget):
 
         if self._project != value:
             self._project = value
-            self._script_edit.setProject(value)
+            self._script_edit.set_project(value)
+            self._package_edit.set_project(value)
             self._update_page()
 
     def __init__(self):
@@ -71,8 +72,7 @@ class ApplicationPage(QWidget):
 
         layout.addLayout(form)
 
-        self._package_edit = MfsPackageEditor("Application Package",
-                scanning="application package...")
+        self._package_edit = _ApplicationPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
         layout.addWidget(self._package_edit)
 
@@ -96,3 +96,40 @@ class ApplicationPage(QWidget):
         """ Invoked when the user edits the application package. """
 
         self.project.modified = True
+
+
+class _ApplicationPackageEditor(MfsPackageEditor):
+    """ A memory filesystem package editor for the application package. """
+
+    # The editor title.
+    _title = "Application Package"
+
+    def __init__(self):
+        """ Initialise the editor. """
+
+        super().__init__(self._title, show_root=True,
+                scanning=self._title.lower() + '...')
+
+        self._project = None
+
+    def get_root_dir(self):
+        """ Get the name of the application directory. """
+
+        project = self._project
+        application_package = project.application_package
+
+        orig = default = application_package.name
+        if default != '':
+            default = project.absolute_path(default)
+
+        root = QFileDialog.getExistingDirectory(self, self._title, default)
+
+        if root != '':
+            application_package.name = project.relative_path(root)
+
+        return root
+
+    def set_project(self, project):
+        """ Set the project. """
+
+        self._project = project

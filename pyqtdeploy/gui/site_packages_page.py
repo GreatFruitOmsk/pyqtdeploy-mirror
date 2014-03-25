@@ -26,7 +26,7 @@
 
 import os
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QWidget
 
 from .mfs_package_editor import MfsPackageEditor
 
@@ -61,10 +61,7 @@ class SitePackagesPage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        self._package_edit = MfsPackageEditor("Site Packages",
-                scanning="site-packages",
-                additional_exclusions=('libsip.a', 'sip.so', 'sip.lib',
-                        'sip.pyd', 'PyQt5'))
+        self._package_edit = _SitePackagesPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
         layout.addWidget(self._package_edit)
 
@@ -75,11 +72,46 @@ class SitePackagesPage(QWidget):
 
         project = self.project
 
-        self._package_edit.configure(project.site_packages_package, project,
-                root=os.path.join(project.python_target_stdlib_dir,
-                        'site-packages'))
+        self._package_edit.configure(project.site_packages_package, project)
 
     def _package_changed(self):
         """ Invoked when the user edits the standard library package. """
 
         self.project.modified = True
+
+
+class _SitePackagesPackageEditor(MfsPackageEditor):
+    """ A memory filesystem package editor for the Python site packages
+    package.
+    """
+
+    # The editor title.
+    _title = "Site Packages"
+
+    def __init__(self):
+        """ Initialise the editor. """
+
+        super().__init__(self._title, scanning='site-packages',
+                additional_exclusions=('libsip.a', 'sip.so', 'sip.lib',
+                        'sip.pyd', 'PyQt5'))
+
+        self._project = None
+
+    def get_root_dir(self):
+        """ Get the name of the Python site packages directory. """
+
+        stdlib_dir = self._project.python_target_stdlib_dir
+
+        if stdlib_dir == '':
+            QMessageBox.warning(self, self._title,
+                    "site-packages cannot be scanned because the directory "
+                    "name of the standard library has not been set in the "
+                    "Python Configuration tab.")
+            return ''
+
+        return os.path.join(stdlib_dir, 'site-packages')
+
+    def set_project(self, project):
+        """ Set the project. """
+
+        self._project = project

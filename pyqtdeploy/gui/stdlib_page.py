@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QWidget
 
 from .mfs_package_editor import MfsPackageEditor
 
@@ -59,8 +59,7 @@ class StdlibPage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        self._package_edit = MfsPackageEditor("Standard Library",
-                scanning="standard library")
+        self._package_edit = _StdlibPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
         layout.addWidget(self._package_edit)
 
@@ -71,10 +70,44 @@ class StdlibPage(QWidget):
 
         project = self.project
 
-        self._package_edit.configure(project.stdlib_package, project,
-                root=project.python_target_stdlib_dir)
+        self._package_edit.configure(project.stdlib_package, project)
 
     def _package_changed(self):
         """ Invoked when the user edits the standard library package. """
 
         self.project.modified = True
+
+
+class _StdlibPackageEditor(MfsPackageEditor):
+    """ A memory filesystem package editor for the Python standard library
+    package.
+    """
+
+    # The editor title.
+    _title = "Standard Library"
+
+    def __init__(self):
+        """ Initialise the editor. """
+
+        super().__init__(self._title, scanning=self._title.lower())
+
+        self._project = None
+
+    def get_root_dir(self):
+        """ Get the name of the Python standard library directory. """
+
+        stdlib_dir = self._project.python_target_stdlib_dir
+
+        if stdlib_dir == '':
+            QMessageBox.warning(self, self._title,
+                    "The standard library cannot be scanned because its "
+                    "directory name has not been set in the Python "
+                    "Configuration tab.")
+            return ''
+
+        return stdlib_dir
+
+    def set_project(self, project):
+        """ Set the project. """
+
+        self._project = project

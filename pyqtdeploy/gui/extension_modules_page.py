@@ -49,7 +49,7 @@ class ExtensionModulesPage(QWidget):
 
         if self._project != value:
             self._project = value
-            self._extension_modules_delegate.setProject(value)
+            self._extension_modules_delegate.set_project(value)
             self._update_page()
 
     def __init__(self):

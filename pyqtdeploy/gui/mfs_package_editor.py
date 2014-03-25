@@ -28,8 +28,8 @@ import fnmatch
 import os
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import (QFileDialog, QGridLayout, QGroupBox, QPushButton,
-        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
+from PyQt5.QtWidgets import (QGridLayout, QGroupBox, QPushButton, QTreeWidget,
+        QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ..project import MfsDirectory, MfsFile
 
@@ -40,15 +40,15 @@ class MfsPackageEditor(QGroupBox):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title, scanning='', additional_exclusions=None):
+    def __init__(self, title, show_root=False, scanning='', additional_exclusions=None):
         """ Initialise the editor. """
 
         super().__init__(title)
 
         self._package = None
         self._project = None
-        self._root = None
         self._title = title
+        self._show_root = show_root
         self._additional_exclusions = additional_exclusions
 
         layout = QGridLayout()
@@ -81,15 +81,14 @@ class MfsPackageEditor(QGroupBox):
 
         self.setLayout(layout)
 
-    def configure(self, package, project, root=None):
-        """ Configure the editor with the contents of the given package,
-        project and optional root directory.
+    def configure(self, package, project):
+        """ Configure the editor with the contents of the given package and
+        project.
         """
 
         # Save the configuration.
         self._package = package
         self._project = project
-        self._root = root
 
         # Set the package itself.
         self._visualise()
@@ -102,6 +101,13 @@ class MfsPackageEditor(QGroupBox):
 
         # Add one to be edited to create a new entry.
         self._add_exclusion_item()
+
+    def get_root_dir(self):
+        """ Return the root directory to scan, or '' if there was an error or
+        the user cancelled.
+        """
+
+        raise NotImplementedError
 
     def _add_exclusion_item(self, exclude=''):
         """ Add a QTreeWidgetItem that holds an exclusion. """
@@ -142,7 +148,7 @@ class MfsPackageEditor(QGroupBox):
 
         it = QTreeWidgetItemIterator(self._package_edit)
 
-        if self._root is None:
+        if not self._show_root:
             it += 1
 
         itm = it.value()
@@ -167,24 +173,13 @@ class MfsPackageEditor(QGroupBox):
     def _scan(self, _):
         """ Invoked when the user clicks on the scan button. """
 
-        package = self._package
         project = self._project
+        package = self._package
 
-        # Get the root directory to scan if there is not a fixed root.
-        if self._root is not None:
-            root = self._root
-        else:
-            orig = default = package.name
-            if default != '':
-                default = project.absolute_path(default)
-
-            root = QFileDialog.getExistingDirectory(self._package_edit,
-                    self._title, default)
-
-            if root == '':
-                return
-
-            package.name = project.relative_path(root)
+        # Get the root directory to scan.
+        root = self.get_root_dir()
+        if root == '':
+            return
 
         # Save the included state of any existing contents so that they can be
         # restored after the scan.
@@ -276,12 +271,12 @@ class MfsPackageEditor(QGroupBox):
 
         self._package_edit.clear()
 
-        if self._root is not None:
-            parent = self._package_edit
-        else:
+        if self._show_root:
             parent = QTreeWidgetItem([self._package.name])
             self._package_edit.addTopLevelItem(parent)
             parent.setExpanded(True)
+        else:
+            parent = self._package_edit
 
         self._visualise_contents(self._package.contents, parent)
 

@@ -56,7 +56,7 @@ class FilenameEditor(QWidget):
 
         self.setLayout(layout)
 
-    def setProject(self, project):
+    def set_project(self, project):
         """ Set the project. """
 
         self._project = project
