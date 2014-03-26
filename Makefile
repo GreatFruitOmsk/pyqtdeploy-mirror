@@ -27,16 +27,21 @@
 PYTHON=python3
 PYTHON2=python
 
-.PHONY: default develop develop-uninstall wheel sdist doc clean
+.PHONY: default develop develop-uninstall release wheel sdist doc clean
 
 default:
-	@echo "Specify develop, develop-uninstall, wheel, sdist, doc or clean"
+	@echo "Specify develop, develop-uninstall, release, wheel, sdist, doc or clean"
 
 develop: VERSION
 	$(PYTHON) setup.py develop
 
 develop-uninstall:
 	$(PYTHON) setup.py develop --uninstall
+
+release: clean VERSION
+	$(PYTHON2) build.py changelog
+	$(PYTHON) setup.py bdist_wheel sdist
+	twine upload dist/*
 
 wheel: clean VERSION
 	$(PYTHON2) build.py changelog
