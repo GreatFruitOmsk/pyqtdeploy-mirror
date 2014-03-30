@@ -84,10 +84,10 @@ Installation
 ============
 
 pyqtdeploy can be downloaded and installed from
-`PyPi <http://pypi.python.org/pypi/pyqtdeploy/>`__::
+`PyPi <http://pypi.python.org/pypi/pyqtdeploy/>`_::
 
     pip3 install pyqtdeploy
 
 pyqtdeploy requires
-`PyQt5 <http://www.riverbankcomputing.com/software/pyqt/download5>`__ to be
+`PyQt5 <http://www.riverbankcomputing.com/software/pyqt/download5>`_ to be
 installed.  This is not installed automatically.
