@@ -41,7 +41,7 @@ develop-uninstall:
 release: clean VERSION
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel sdist
-	twine upload dist/*
+	twine upload -r pypi dist/*
 
 wheel: clean VERSION
 	$(PYTHON2) build.py changelog
