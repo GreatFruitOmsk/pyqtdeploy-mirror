@@ -38,7 +38,8 @@ from ..user_exception import UserException
 class Builder():
     """ The builder for a project. """
 
-    # Map PyQt modules to the corresponding qmake QT or CONFIG values.
+    # Map PyQt modules to the corresponding qmake QT or CONFIG values.  A
+    # module that doesn't need any of these values can be omitted
     class QtMetaData:
         def __init__(self, qt=None, config=None):
             self.qt = qt
@@ -50,7 +51,6 @@ class Builder():
         'QtCore':               QtMetaData(qt=['-gui']),
         'QtDBus':               QtMetaData(qt=['dbus', '-gui']),
         'QtDesigner':           QtMetaData(qt=['designer']),
-        'QtGui':                QtMetaData(),
         'QtHelp':               QtMetaData(qt=['help']),
         'QtMacExtras':          QtMetaData(qt=['macextras']),
         'QtMultimedia':         QtMetaData(qt=['multimedia']),
@@ -188,10 +188,7 @@ class Builder():
         for pyqt_m in project.pyqt_modules:
             needs_gui = True
 
-            try:
-                metadata = self._pyqt_module_map[pyqt_m]
-            except KeyError:
-                pass
+            metadata = self._pyqt_module_map.get(pyqt_m, self.QtMetaData())
 
             if metadata.qt is not None:
                 for qt in metadata.qt:
