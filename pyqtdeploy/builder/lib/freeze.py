@@ -27,6 +27,7 @@
 import argparse
 import marshal
 import os
+import sys
 
 
 def freeze_as_data(py_filename, data_filename):
@@ -54,10 +55,12 @@ def freeze_as_c(py_filename, c_filename, main):
     c_file.write(
             'static unsigned char frozen_%s[] = {' % name)
 
+    as_int = ord if sys.hexversion < 0x03000000 else lambda v: v
+
     for i in range(0, len(code), 16):
         c_file.write('\n    ')
         for j in code[i:i + 16]:
-            c_file.write('%d,' % j)
+            c_file.write('%d,' % as_int(j))
 
     c_file.write('\n};\n')
 
