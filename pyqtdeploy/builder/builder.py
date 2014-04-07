@@ -472,8 +472,10 @@ int main(int argc, char **argv)
         self._log("Running '{0}'".format(' '.join(args)))
 
         try:
-            subprocess.check_output(args, stderr=subprocess.STDOUT)
+            subprocess.check_output(args, stderr=subprocess.STDOUT,
+                    universal_newlines=True)
         except subprocess.CalledProcessError as e:
+            self._log(e.output)
             raise UserException("Unable to freeze {0}.".format(py_filename),
                     e.output)
 
