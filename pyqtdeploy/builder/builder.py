@@ -469,7 +469,7 @@ int main(int argc, char **argv)
         args.append(output)
         args.append(py_filename)
 
-        self._log("Freezing {0}".format(py_filename))
+        self._log("Running '{0}'".format(' '.join(args)))
 
         try:
             subprocess.check_output(args, stderr=subprocess.STDOUT)

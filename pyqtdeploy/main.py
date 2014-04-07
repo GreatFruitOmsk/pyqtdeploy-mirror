@@ -27,6 +27,7 @@
 
 
 import argparse
+import os
 import sys
 
 
@@ -48,7 +49,7 @@ def main():
     if args.build is not None:
         if args.project_file is None:
             # Mimic the argparse message.
-            print("{0}: error: the following arguments are required: FILE".format(sys.argv[0]),
+            print("{0}: error: the following arguments are required: FILE".format(os.path.basename(sys.argv[0])),
                     file=sys.stderr)
             return 2
 
@@ -59,7 +60,8 @@ def main():
         try:
             builder.build(args.build)
         except UserException as e:
-            print("{0}: {1}".format(sys.argv[0], e.text), file=sys.stderr)
+            print("{0}: {1}".format(os.path.basename(sys.argv[0]), e.text),
+                    file=sys.stderr)
             return 1
 
         rc = 0
