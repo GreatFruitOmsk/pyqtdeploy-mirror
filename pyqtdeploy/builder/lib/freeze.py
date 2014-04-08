@@ -74,7 +74,7 @@ def _get_marshalled_code(py_filename):
     source = source_file.read()
     source_file.close()
 
-    co = compile(source, py_filename, 'exec')
+    co = compile(source, os.path.basename(py_filename), 'exec')
 
     return marshal.dumps(co)
 
