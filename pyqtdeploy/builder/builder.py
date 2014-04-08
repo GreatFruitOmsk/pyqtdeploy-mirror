@@ -427,35 +427,68 @@ int main(int argc, char **argv)
         if len(extension_names) > 0:
             inittab = 'extension_modules'
 
-            for ext in extension_names:
-                base_ext = ext.split('.')[-1]
-
-                f.write('    extern PyObject *PyInit_%s(void);\n' % base_ext)
-
-            f.write('''
-    static struct _inittab %s[] = {
-''' % inittab)
-
-            for ext in extension_names:
-                base_ext = ext.split('.')[-1]
-
-                f.write('        {"%s", PyInit_%s},\n' % (ext, base_ext))
-
-            f.write('''        {NULL, NULL}
-    };
-
-''')
+            f.write('#if PY_MAJOR_VERSION >= 3\n')
+            cls._write_inittab(f, extension_names, inittab, py3=True)
+            f.write('#else\n')
+            cls._write_inittab(f, extension_names, inittab, py3=False)
+            f.write('#endif\n\n')
         else:
             inittab = 'NULL'
 
-        f.write('''    extern int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
-            struct _inittab *extension_modules);
-
-    return pyqtdeploy_main(argc, argv, L"%s", %s);
-}
-''' % (app_name, inittab))
+        f.write('#if PY_MAJOR_VERSION >= 3\n')
+        cls._write_main_call(f, app_name, inittab, py3=True)
+        f.write('#else\n')
+        cls._write_main_call(f, app_name, inittab, py3=False)
+        f.write('#endif\n}\n')
 
         f.close()
+
+    @staticmethod
+    def _write_inittab(f, extension_names, inittab, py3):
+        """ Write the Python version specific extension module inittab. """
+
+        if py3:
+            init_type = 'PyObject *'
+            init_prefix = 'PyInit_'
+        else:
+            init_type = 'void '
+            init_prefix = 'init'
+
+        for ext in extension_names:
+            base_ext = ext.split('.')[-1]
+
+            f.write('    extern %s%s%s(void);\n' % (init_type, init_prefix,
+                    base_ext))
+
+        f.write('''
+    static struct _inittab %s[] = {
+''' % inittab)
+
+        for ext in extension_names:
+            base_ext = ext.split('.')[-1]
+
+            f.write('        {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
+
+        f.write('''        {NULL, NULL}
+    };
+''')
+
+    @staticmethod
+    def _write_main_call(f, app_name, inittab, py3):
+        """ Write the Python version specific call to pyqtdeploy_main(). """
+
+        if py3:
+            name_type = 'wchar_t'
+            name_prefix = 'L'
+        else:
+            name_type = 'char'
+            name_prefix = ''
+
+        f.write('''    extern int pyqtdeploy_main(int argc, char **argv, %s *py_main,
+            struct _inittab *extension_modules);
+
+    return pyqtdeploy_main(argc, argv, %s"%s", %s);
+''' % (name_type, name_prefix, app_name, inittab))
 
     def _freeze(self, output, py_filename, freeze, main=False, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """

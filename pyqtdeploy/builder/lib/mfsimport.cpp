@@ -38,6 +38,42 @@
 
 extern "C" {
 
+#if PY_MAJOR_VERSION >= 3
+#if PY_MINOR_VERSION < 3
+#error "Python v3.3 or later is required"
+#endif
+
+#define MFSIMPORT_INIT      PyInit_mfsimport
+#define MFSIMPORT_TYPE      PyObject *
+#define MFSIMPORT_FATAL(s)  return NULL
+#define MFSIMPORT_RETURN(m) return (m)
+#define MFSIMPORT_PARSE_STR "U"
+
+// The module definition structure.
+static struct PyModuleDef mfsimportmodule = {
+    PyModuleDef_HEAD_INIT,
+    "mfsimport",
+    NULL,
+    -1,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+#else
+#if PY_MINOR_VERSION < 7
+#error "Python v2.7 or later is required"
+#endif
+
+#define MFSIMPORT_INIT      initmfsimport
+#define MFSIMPORT_TYPE      void
+#define MFSIMPORT_FATAL(s)  Py_FatalError(s)
+#define MFSIMPORT_RETURN(m)
+#define MFSIMPORT_PARSE_STR "S"
+#endif
+
+
 // The importer object structure.
 typedef struct _mfsimporter
 {
@@ -53,7 +89,7 @@ static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
 static void mfsimporter_dealloc(PyObject *self);
 static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args);
 static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args);
-PyMODINIT_FUNC PyInit_mfsimport();
+MFSIMPORT_TYPE MFSIMPORT_INIT();
 
 
 // The method table.
@@ -118,20 +154,6 @@ static PyTypeObject MfsImporter_Type = {
 #endif
 };
 
-
-// The module definition structure.
-static struct PyModuleDef mfsimportmodule = {
-    PyModuleDef_HEAD_INIT,
-    "mfsimport",
-    NULL,
-    -1,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-};
-
 }
 
 
@@ -147,8 +169,8 @@ enum ModuleType {
 // Other forward declarations.
 static ModuleType find_module(MfsImporter *self, const QString &fqmn,
         QString &pathname, QString &filename);
-static QString unicode_to_qstring(PyObject *unicode);
-static PyObject *qstring_to_unicode(const QString &qstring);
+static QString str_to_qstring(PyObject *str);
+static PyObject *qstring_to_str(const QString &qstring);
 
 
 // The importer initialisation function.
@@ -160,10 +182,15 @@ static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
     if (!_PyArg_NoKeywords("mfsimporter()", kwds))
         return -1;
 
+#if PY_MAJOR_VERSION >= 3
     if (!PyArg_ParseTuple(args, "O&:mfsimporter", PyUnicode_FSDecoder, &path))
         return -1;
+#else
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter", &path))
+        return -1;
+#endif
 
-    QString *q_path = new QString(unicode_to_qstring(path));
+    QString *q_path = new QString(str_to_qstring(path));
 
     if (!QFileInfo(*q_path).isDir())
     {
@@ -197,10 +224,10 @@ static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn;
 
-    if (!PyArg_ParseTuple(args, "U:mfsimporter.find_loader", &py_fqmn))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter.find_loader", &py_fqmn))
         return NULL;
 
-    QString fqmn = unicode_to_qstring(py_fqmn);
+    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
@@ -213,7 +240,7 @@ static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
 
     case ModuleIsNamespace:
         {
-            PyObject *py_pathname = qstring_to_unicode(pathname);
+            PyObject *py_pathname = qstring_to_str(pathname);
             if (!py_pathname)
                 return NULL;
 
@@ -275,18 +302,18 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *code, *py_filename, *mod_dict;
 
-    if (!PyArg_ParseTuple(args, "U:mfsimporter.load_module", &py_fqmn))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter.load_module", &py_fqmn))
         return NULL;
 
-    QString fqmn = unicode_to_qstring(py_fqmn);
+    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
 
     ModuleType mt = find_module((MfsImporter *)self, fqmn, pathname, filename);
 
     if (mt != ModuleIsModule && mt != ModuleIsPackage)
     {
-        PyErr_Format(PyExc_ImportError, "mfsimporter: can't find module %R",
-                py_fqmn);
+        PyErr_Format(PyExc_ImportError, "mfsimporter: can't find module %s",
+                fqmn.toLatin1().constData());
         return NULL;
     }
 
@@ -296,7 +323,8 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
     if (!mfile.open(QIODevice::ReadOnly))
     {
         PyErr_Format(PyExc_ImportError,
-                "mfsimporter: error opening file for module %R", py_fqmn);
+                "mfsimporter: error opening file for module %s",
+                        fqmn.toLatin1().constData());
         return NULL;
     }
 
@@ -309,7 +337,11 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
         return NULL;
 
     // Get the module object and its dict.
+#if PY_MAJOR_VERSION >= 3
     PyObject *mod = PyImport_AddModuleObject(py_fqmn);
+#else
+    PyObject *mod = PyImport_AddModule(PyString_AS_STRING(py_fqmn));
+#endif
     if (!mod)
         goto error;
 
@@ -323,7 +355,7 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
     {
         // Add __path__ to the module before the code gets executed.
 
-        PyObject *py_pathname = qstring_to_unicode(pathname);
+        PyObject *py_pathname = qstring_to_str(pathname);
         if (!py_pathname)
             goto error;
 
@@ -338,11 +370,16 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
             goto error;
     }
 
-    py_filename = qstring_to_unicode(filename);
+    py_filename = qstring_to_str(filename);
     if (!py_filename)
         goto error;
 
+#if PY_MAJOR_VERSION >= 3
     mod = PyImport_ExecCodeModuleObject(py_fqmn, code, py_filename, NULL);
+#else
+    mod = PyImport_ExecCodeModuleEx(PyString_AS_STRING(py_fqmn), code,
+            PyString_AS_STRING(py_filename));
+#endif
 
     Py_DECREF(py_filename);
     Py_DECREF(code);
@@ -385,40 +422,48 @@ static ModuleType find_module(MfsImporter *self, const QString &fqmn,
 }
 
 
-// Convert a Python unicode object to a QString.
-static QString unicode_to_qstring(PyObject *unicode)
+// Convert a Python str object to a QString.
+static QString str_to_qstring(PyObject *str)
 {
-    Py_ssize_t len = PyUnicode_GET_LENGTH(unicode);
+#if PY_MAJOR_VERSION >= 3
+    Py_ssize_t len = PyUnicode_GET_LENGTH(str);
 
-    switch (PyUnicode_KIND(unicode))
+    switch (PyUnicode_KIND(str))
     {
     case PyUnicode_1BYTE_KIND:
-        return QString::fromLatin1((char *)PyUnicode_1BYTE_DATA(unicode), len);
+        return QString::fromLatin1((char *)PyUnicode_1BYTE_DATA(str), len);
 
     case PyUnicode_2BYTE_KIND:
         // The (QChar *) cast should be safe.
-        return QString((QChar *)PyUnicode_2BYTE_DATA(unicode), len);
+        return QString((QChar *)PyUnicode_2BYTE_DATA(str), len);
 
     case PyUnicode_4BYTE_KIND:
-        return QString::fromUcs4(PyUnicode_4BYTE_DATA(unicode), len);
+        return QString::fromUcs4(PyUnicode_4BYTE_DATA(str), len);
     }
 
     return QString();
+#else
+    return QString(QLatin1String(PyString_AS_STRING(str)));
+#endif
 }
 
 
-// Convert a QString to a Python unicode object.
-static PyObject *qstring_to_unicode(const QString &qstring)
+// Convert a QString to a Python str object.
+static PyObject *qstring_to_str(const QString &qstring)
 {
+#if PY_MAJOR_VERSION >= 3
     QVector<uint> ucs4 = qstring.toUcs4();
 
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, ucs4.data(),
             ucs4.length());
+#else
+    return PyString_FromString(qstring.toLatin1().constData());
+#endif
 }
 
 
 // The module initialisation function.
-PyObject *PyInit_mfsimport()
+MFSIMPORT_TYPE MFSIMPORT_INIT()
 {
     PyObject *mod;
 
@@ -426,18 +471,22 @@ PyObject *PyInit_mfsimport()
     MfsImporter_Type.tp_new = PyType_GenericNew;
 
     if (PyType_Ready(&MfsImporter_Type) < 0)
-        return NULL;
+        MFSIMPORT_FATAL("Failed to initialise mfsimporter.mfsimporter type");
 
+#if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&mfsimportmodule);
+#else
+    mod = Py_InitModule("mfsimporter", NULL);
+#endif
     if (mod == NULL)
-        return NULL;
+        MFSIMPORT_FATAL("Failed to initialise mfsimporter module");
 
     Py_INCREF(&MfsImporter_Type);
     if (PyModule_AddObject(mod, "mfsimporter", (PyObject *)&MfsImporter_Type) < 0)
     {
         Py_DECREF(mod);
-        return NULL;
+        MFSIMPORT_FATAL("Failed to add mfsimporter type to mfsimporter module");
     }
 
-    return mod;
+    MFSIMPORT_RETURN(mod);
 }

@@ -35,16 +35,21 @@
 
 
 // Forward declarations.
+#if PY_MAJOR_VERSION >= 3
 extern PyObject *PyInit_mfsimport(void);
+#define MFSIMPORT_INIT  PyInit_mfsimport
+#define PYMAIN_TYPE     wchar_t
+#else
+extern void initmfsimport(void);
+#define MFSIMPORT_INIT  initmfsimport
+#define PYMAIN_TYPE     char
+#endif
 
 
-int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
+int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         struct _inittab *extension_modules)
 {
     const struct _frozen *fm;
-    wchar_t **w_argv;
-    int i;
-    char *saved_locale;
 
     // The replacement table of frozen modules with a reserved place for
     // _frozen_importlib.
@@ -56,7 +61,6 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
     };
 
     // Plugin _frozen_importlib.
-
     for (fm = PyImport_FrozenModules; fm->name != NULL; ++fm)
     {
         if (strcmp(fm->name, "_frozen_importlib") == 0)
@@ -69,7 +73,7 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
     PyImport_FrozenModules = modules;
 
     // Add the importer to the table of builtins.
-    if (PyImport_AppendInittab("mfsimport", PyInit_mfsimport) < 0)
+    if (PyImport_AppendInittab("mfsimport", MFSIMPORT_INIT) < 0)
     {
         fprintf(stderr, "PyImport_AppendInittab() failed\n");
         return 1;
@@ -82,6 +86,11 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
             fprintf(stderr, "PyImport_ExtendInittab() failed\n");
             return 1;
         }
+
+#if PY_MAJOR_VERSION >= 3
+    wchar_t **w_argv;
+    int i;
+    char *saved_locale;
 
     // Convert the argument list to wide characters.
     if ((w_argv = PyMem_Malloc(sizeof (wchar_t *) * argc)) == NULL)
@@ -124,10 +133,18 @@ int pyqtdeploy_main(int argc, char **argv, wchar_t *py_main,
 
     setlocale(LC_ALL, saved_locale);
 
-    // Initialise the interpreter.
+    // Initialise the Python v3 interpreter.
     Py_SetProgramName(w_argv[0]);
     Py_Initialize();
     PySys_SetArgv(argc, w_argv);
+#else
+    argv[0] = py_main;
+
+    // Initialise the Python v2 interpreter.
+    Py_SetProgramName(argv[0]);
+    Py_Initialize();
+    PySys_SetArgv(argc, argv);
+#endif
 
     // Initialise the path hooks.
     if (PyImport_ImportFrozenModule("__bootstrap__") < 0)
