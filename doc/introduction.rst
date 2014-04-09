@@ -2,9 +2,11 @@ What is pyqtdeploy?
 ===================
 
 pyqtdeploy is a tool that, in conjunction with other tools provided with Qt,
-enables the deployment of PyQt5 applications written with Python v3.x.  It
-supports deployment to desktop platforms (Linux, Windows and OS/X) and to
-mobile platforms (iOS, Android and Windows RT).
+enables the deployment of PyQt5 applications written with Python v2.7 or Python
+v3.3 or later.  It supports deployment to desktop platforms (Linux, Windows and
+OS/X) and to mobile platforms (iOS, Android and Windows RT).
+
+pyqtdeploy itself requires PyQt5 and Python v3.3 or later.
 
 pyqtdeploy works by taking the individual modules of a PyQt5 application,
 freezing them, and then placing them in a Qt resource file that is converted to
@@ -70,8 +72,6 @@ Future Versions
 
 The following enhancements may be included in future versions.  Comments and
 requests are welcome.
-
-- Support for Python v2.6 and v2.7.
 
 - Support for PyQt4 (desktop platforms only).
 
