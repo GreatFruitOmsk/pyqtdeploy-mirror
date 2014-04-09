@@ -43,11 +43,12 @@ extern "C" {
 #error "Python v3.3 or later is required"
 #endif
 
-#define MFSIMPORT_INIT      PyInit_mfsimport
-#define MFSIMPORT_TYPE      PyObject *
-#define MFSIMPORT_FATAL(s)  return NULL
-#define MFSIMPORT_RETURN(m) return (m)
-#define MFSIMPORT_PARSE_STR "U"
+#define MFSIMPORT_INIT              PyInit_mfsimport
+#define MFSIMPORT_TYPE              PyObject *
+#define MFSIMPORT_MODULE_DISCARD(m) Py_DECREF(m)
+#define MFSIMPORT_FATAL(s)          return NULL
+#define MFSIMPORT_RETURN(m)         return (m)
+#define MFSIMPORT_PARSE_STR         "U"
 
 // The module definition structure.
 static struct PyModuleDef mfsimportmodule = {
@@ -66,11 +67,12 @@ static struct PyModuleDef mfsimportmodule = {
 #error "Python v2.7 or later is required"
 #endif
 
-#define MFSIMPORT_INIT      initmfsimport
-#define MFSIMPORT_TYPE      void
-#define MFSIMPORT_FATAL(s)  Py_FatalError(s)
+#define MFSIMPORT_INIT              initmfsimport
+#define MFSIMPORT_TYPE              void
+#define MFSIMPORT_MODULE_DISCARD(m)
+#define MFSIMPORT_FATAL(s)          Py_FatalError(s)
 #define MFSIMPORT_RETURN(m)
-#define MFSIMPORT_PARSE_STR "S"
+#define MFSIMPORT_PARSE_STR         "S"
 #endif
 
 
@@ -87,14 +89,22 @@ typedef struct _mfsimporter
 // C linkage forward declarations.
 static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
 static void mfsimporter_dealloc(PyObject *self);
+#if PY_MAJOR_VERSION >= 3
 static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args);
+#else
+static PyObject *mfsimporter_find_module(PyObject *self, PyObject *args);
+#endif
 static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args);
 MFSIMPORT_TYPE MFSIMPORT_INIT();
 
 
 // The method table.
 static PyMethodDef mfsimporter_methods[] = {
+#if PY_MAJOR_VERSION >= 3
     {"find_loader", mfsimporter_find_loader, METH_VARARGS, NULL},
+#else
+    {"find_module", mfsimporter_find_module, METH_VARARGS, NULL},
+#endif
     {"load_module", mfsimporter_load_module, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
@@ -219,6 +229,7 @@ static void mfsimporter_dealloc(PyObject *self)
 }
 
 
+#if PY_MAJOR_VERSION >= 3
 // Implement the standard find_loader() method for the importer.
 static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
 {
@@ -295,6 +306,45 @@ static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
 
     return result;
 }
+#endif
+
+
+#if PY_MAJOR_VERSION < 3
+// Implement the standard find_module() method for the importer.
+static PyObject *mfsimporter_find_module(PyObject *self, PyObject *args)
+{
+    PyObject *py_fqmn, *path;
+
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR "|O:mfsimporter.find_module", &py_fqmn, &path))
+        return NULL;
+
+    QString fqmn = str_to_qstring(py_fqmn);
+    QString pathname, filename;
+    PyObject *result;
+
+    if (find_module((MfsImporter *)self, fqmn, pathname, filename) == ModuleNotFound)
+    {
+        result = Py_None;
+
+        // If we have failed to find a sub-package then it may be because it is
+        // a builtin.
+        if (fqmn.contains(QChar('.')))
+            for (struct _inittab *p = PyImport_Inittab; p->name; ++p)
+                if (fqmn == p->name)
+                {
+                    result = self;
+                    break;
+                }
+    }
+    else
+    {
+        result = self;
+    }
+
+    Py_INCREF(result);
+    return result;
+}
+#endif
 
 
 // Implement the standard load_module() method for the importer.
@@ -309,6 +359,30 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
     QString pathname, filename;
 
     ModuleType mt = find_module((MfsImporter *)self, fqmn, pathname, filename);
+
+#if PY_MAJOR_VERSION < 3
+    if (mt == ModuleNotFound)
+    {
+        // We use the imp module to load sub-packages that are statically
+        // linked extension modules.
+        static PyObject *init_builtin = 0;
+
+        if (!init_builtin)
+        {
+            PyObject *imp_module = PyImport_ImportModule("imp");
+            if (!imp_module)
+                return NULL;
+
+            init_builtin = PyObject_GetAttrString(imp_module, "init_builtin");
+            Py_DECREF(imp_module);
+
+            if (!init_builtin)
+                return NULL;
+        }
+
+        return PyObject_CallObject(init_builtin, args);
+    }
+#endif
 
     if (mt != ModuleIsModule && mt != ModuleIsPackage)
     {
@@ -471,21 +545,21 @@ MFSIMPORT_TYPE MFSIMPORT_INIT()
     MfsImporter_Type.tp_new = PyType_GenericNew;
 
     if (PyType_Ready(&MfsImporter_Type) < 0)
-        MFSIMPORT_FATAL("Failed to initialise mfsimporter.mfsimporter type");
+        MFSIMPORT_FATAL("Failed to initialise mfsimport.mfsimporter type");
 
 #if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&mfsimportmodule);
 #else
-    mod = Py_InitModule("mfsimporter", NULL);
+    mod = Py_InitModule("mfsimport", NULL);
 #endif
     if (mod == NULL)
-        MFSIMPORT_FATAL("Failed to initialise mfsimporter module");
+        MFSIMPORT_FATAL("Failed to initialise mfsimport module");
 
     Py_INCREF(&MfsImporter_Type);
     if (PyModule_AddObject(mod, "mfsimporter", (PyObject *)&MfsImporter_Type) < 0)
     {
-        Py_DECREF(mod);
-        MFSIMPORT_FATAL("Failed to add mfsimporter type to mfsimporter module");
+        MFSIMPORT_MODULE_DISCARD(mod);
+        MFSIMPORT_FATAL("Failed to add mfsimporter type to mfsimport module");
     }
 
     MFSIMPORT_RETURN(mod);

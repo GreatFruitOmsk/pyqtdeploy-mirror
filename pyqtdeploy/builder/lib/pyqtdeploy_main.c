@@ -49,10 +49,8 @@ extern void initmfsimport(void);
 int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         struct _inittab *extension_modules)
 {
-    const struct _frozen *fm;
-
     // The replacement table of frozen modules with a reserved place for
-    // _frozen_importlib.
+    // Python v3's _frozen_importlib.
     static struct _frozen modules[] = {
         {"__bootstrap__", frozen___bootstrap__, sizeof (frozen___bootstrap__)},
         {"__main__", frozen___main__, sizeof (frozen___main__)},
@@ -60,7 +58,10 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         {NULL, NULL, 0}
     };
 
+#if PY_MAJOR_VERSION >= 3
     // Plugin _frozen_importlib.
+    const struct _frozen *fm;
+
     for (fm = PyImport_FrozenModules; fm->name != NULL; ++fm)
     {
         if (strcmp(fm->name, "_frozen_importlib") == 0)
@@ -69,6 +70,7 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
             break;
         }
     }
+#endif
 
     PyImport_FrozenModules = modules;
 
