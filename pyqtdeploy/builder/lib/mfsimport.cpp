@@ -63,8 +63,8 @@ static struct PyModuleDef mfsimportmodule = {
     NULL
 };
 #else
-#if PY_MINOR_VERSION < 7
-#error "Python v2.7 or later is required"
+#if PY_MINOR_VERSION < 6
+#error "Python v2.6 or later is required"
 #endif
 
 #define MFSIMPORT_INIT              initmfsimport

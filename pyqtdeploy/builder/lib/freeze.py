@@ -24,8 +24,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import argparse
 import marshal
+import optparse
 import os
 import sys
 
@@ -80,22 +80,26 @@ def _get_marshalled_code(py_filename):
 
 
 # Parse the command line.
-parser = argparse.ArgumentParser()
+parser = optparse.OptionParser(usage="Usage: %prog [options] PYFILE")
 
-parser.add_argument('py_file', help="the name of the Python source file",
-        metavar="PYFILE")
-parser.add_argument('--as-c',
-        help="freeze the Python source as C code in FILE", metavar="FILE")
-parser.add_argument('--as-data',
-        help="freeze the Python source as data in FILE", metavar="FILE")
-parser.add_argument('--main', help="the frozen module is __main__",
+parser.add_option('--as-c', help="freeze the Python source as C code in FILE",
+        metavar="FILE")
+parser.add_option('--as-data', help="freeze the Python source as data in FILE",
+        metavar="FILE")
+parser.add_option('--main', help="the frozen module is __main__",
         action='store_true')
 
-args = parser.parse_args()
+(options, args) = parser.parse_args()
+
+if len(args) != 1:
+    parser.print_help()
+    sys.exit(1)
+
+py_file = args[0]
 
 # Handle the specific actions.
-if args.as_c is not None:
-    freeze_as_c(args.py_file, args.as_c, args.main)
+if options.as_c is not None:
+    freeze_as_c(py_file, options.as_c, options.main)
 
-if args.as_data is not None:
-    freeze_as_data(args.py_file, args.as_data)
+if options.as_data is not None:
+    freeze_as_data(py_file, options.as_data)
