@@ -129,9 +129,23 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        for page_factory in (ApplicationPage, PyQtPage, StdlibPage, SitePackagesPage, ExtensionModulesPage, PythonPage):
-            page = page_factory()
-            tabs.addTab(page, page.label)
+        page = ApplicationPage()
+        tabs.addTab(page, page.label)
+
+        page = PyQtPage()
+        tabs.addTab(page, page.label)
+
+        page = StdlibPage()
+        tabs.addTab(page, page.label)
+
+        page = SitePackagesPage()
+        tabs.addTab(page, page.label)
+
+        page = ExtensionModulesPage()
+        tabs.addTab(page, page.label)
+
+        page = PythonPage()
+        tabs.addTab(page, page.label)
 
         self.setCentralWidget(tabs)
 

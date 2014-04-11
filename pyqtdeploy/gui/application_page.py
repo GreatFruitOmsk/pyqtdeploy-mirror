@@ -24,7 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QFileDialog, QFormLayout, QVBoxLayout, QWidget
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QFormLayout,
+        QGridLayout, QHBoxLayout, QRadioButton, QWidget)
 
 from .filename_editor import FilenameEditor
 from .mfs_package_editor import MfsPackageEditor
@@ -35,6 +37,9 @@ class ApplicationPage(QWidget):
 
     # The page's label.
     label = "Application Source"
+
+    # Emitted when the user changes the PyQt version.
+    pyqt_version_changed = pyqtSignal(bool)
 
     @property
     def project(self):
@@ -60,7 +65,7 @@ class ApplicationPage(QWidget):
         self._project = None
 
         # Create the page's GUI.
-        layout = QVBoxLayout()
+        layout = QGridLayout()
 
         form = QFormLayout()
 
@@ -70,11 +75,25 @@ class ApplicationPage(QWidget):
                 textEdited=self._script_changed)
         form.addRow("Main script file", self._script_edit)
 
-        layout.addLayout(form)
+        layout.addLayout(form, 0, 0)
+
+        versions_layout = QHBoxLayout()
+        versions_group = QButtonGroup(self)
+
+        self._pyqt5_edit = rb = QRadioButton("PyQt5",
+                toggled=self._pyqt_version_changed)
+        versions_layout.addWidget(rb)
+        versions_group.addButton(rb)
+
+        rb = QRadioButton("PyQt4")
+        versions_layout.addWidget(rb)
+        versions_group.addButton(rb)
+
+        layout.addLayout(versions_layout, 0, 1)
 
         self._package_edit = _ApplicationPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
-        layout.addWidget(self._package_edit)
+        layout.addWidget(self._package_edit, 1, 0, 1, 2)
 
         self.setLayout(layout)
 
@@ -85,6 +104,18 @@ class ApplicationPage(QWidget):
 
         self._script_edit.setText(project.application_script)
         self._package_edit.configure(project.application_package, project)
+
+        self._pyqt5_edit.blockSignals(True)
+        self._pyqt5_edit.setChecked(project.application_is_pyqt5)
+        self._pyqt5_edit.blockSignals(False)
+
+    def _pyqt_version_changed(self, checked):
+        """ Invoked when the user changes the PyQt version number. """
+
+        self.project.application_is_pyqt5 = checked
+        self.project.modified = True
+
+        self.pyqt_version_changed.emit(checked)
 
     def _script_changed(self, value):
         """ Invoked when the user edits the application script name. """
