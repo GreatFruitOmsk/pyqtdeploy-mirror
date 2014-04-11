@@ -78,16 +78,15 @@ class ApplicationPage(QWidget):
         layout.addLayout(form, 0, 0)
 
         versions_layout = QHBoxLayout()
-        versions_group = QButtonGroup(self)
+        self._pyqt_versions_bg = QButtonGroup()
 
-        self._pyqt5_edit = rb = QRadioButton("PyQt5",
-                toggled=self._pyqt_version_changed)
-        versions_layout.addWidget(rb)
-        versions_group.addButton(rb)
+        for version in ("PyQt5", "PyQt4"):
+            rb = QRadioButton(version)
+            versions_layout.addWidget(rb)
+            self._pyqt_versions_bg.addButton(rb)
 
-        rb = QRadioButton("PyQt4")
-        versions_layout.addWidget(rb)
-        versions_group.addButton(rb)
+        self._pyqt_versions_bg.buttonToggled.connect(
+                self._pyqt_version_changed)
 
         layout.addLayout(versions_layout, 0, 1)
 
@@ -105,17 +104,24 @@ class ApplicationPage(QWidget):
         self._script_edit.setText(project.application_script)
         self._package_edit.configure(project.application_package, project)
 
-        self._pyqt5_edit.blockSignals(True)
-        self._pyqt5_edit.setChecked(project.application_is_pyqt5)
-        self._pyqt5_edit.blockSignals(False)
+        self._pyqt_versions_bg.blockSignals(True)
 
-    def _pyqt_version_changed(self, checked):
+        for rb in self._pyqt_versions_bg.buttons():
+            if rb.text() == "PyQt5":
+                rb.setChecked(project.application_is_pyqt5)
+            else:
+                rb.setChecked(not project.application_is_pyqt5)
+
+        self._pyqt_versions_bg.blockSignals(False)
+
+    def _pyqt_version_changed(self, button, checked):
         """ Invoked when the user changes the PyQt version number. """
 
-        self.project.application_is_pyqt5 = checked
-        self.project.modified = True
+        if button.text() == "PyQt5":
+            self.project.application_is_pyqt5 = checked
+            self.project.modified = True
 
-        self.pyqt_version_changed.emit(checked)
+            self.pyqt_version_changed.emit(checked)
 
     def _script_changed(self, value):
         """ Invoked when the user edits the application script name. """

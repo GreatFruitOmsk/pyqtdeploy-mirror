@@ -129,23 +129,26 @@ class ProjectGUI(QMainWindow):
 
         tabs = QTabWidget()
 
-        page = ApplicationPage()
-        tabs.addTab(page, page.label)
+        application_page = ApplicationPage()
+        tabs.addTab(application_page, application_page.label)
 
-        page = PyQtPage()
-        tabs.addTab(page, page.label)
+        pyqt_page = PyQtPage()
+        tabs.addTab(pyqt_page, pyqt_page.label)
 
-        page = StdlibPage()
-        tabs.addTab(page, page.label)
+        stdlib_page = StdlibPage()
+        tabs.addTab(stdlib_page, stdlib_page.label)
 
-        page = SitePackagesPage()
-        tabs.addTab(page, page.label)
+        site_packages_page = SitePackagesPage()
+        tabs.addTab(site_packages_page, site_packages_page.label)
 
-        page = ExtensionModulesPage()
-        tabs.addTab(page, page.label)
+        extension_modules_page = ExtensionModulesPage()
+        tabs.addTab(extension_modules_page, extension_modules_page.label)
 
-        page = PythonPage()
-        tabs.addTab(page, page.label)
+        python_page = PythonPage()
+        tabs.addTab(python_page, python_page.label)
+
+        application_page.pyqt_version_changed.connect(
+                pyqt_page.set_pyqt_version)
 
         self.setCentralWidget(tabs)
 
