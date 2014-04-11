@@ -80,7 +80,7 @@ class ApplicationPage(QWidget):
         versions_layout = QHBoxLayout()
         self._pyqt_versions_bg = QButtonGroup()
 
-        for version in ("PyQt5", "PyQt4"):
+        for version in ('PyQt5', 'PyQt4'):
             rb = QRadioButton(version)
             versions_layout.addWidget(rb)
             self._pyqt_versions_bg.addButton(rb)
@@ -107,7 +107,7 @@ class ApplicationPage(QWidget):
         self._pyqt_versions_bg.blockSignals(True)
 
         for rb in self._pyqt_versions_bg.buttons():
-            if rb.text() == "PyQt5":
+            if rb.text() == 'PyQt5':
                 rb.setChecked(project.application_is_pyqt5)
             else:
                 rb.setChecked(not project.application_is_pyqt5)
@@ -117,7 +117,7 @@ class ApplicationPage(QWidget):
     def _pyqt_version_changed(self, button, checked):
         """ Invoked when the user changes the PyQt version number. """
 
-        if button.text() == "PyQt5":
+        if button.text() == 'PyQt5':
             self.project.application_is_pyqt5 = checked
             self.project.modified = True
 

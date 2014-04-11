@@ -36,6 +36,11 @@
 #include <QVector>
 
 
+#if QT_VERSION < 0x040200
+#error "Qt v4.2.0 or later is required"
+#endif
+
+
 extern "C" {
 
 #if PY_MAJOR_VERSION >= 3
@@ -529,7 +534,7 @@ static PyObject *qstring_to_str(const QString &qstring)
     QVector<uint> ucs4 = qstring.toUcs4();
 
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, ucs4.data(),
-            ucs4.length());
+            ucs4.size());
 #else
     return PyString_FromString(qstring.toLatin1().constData());
 #endif

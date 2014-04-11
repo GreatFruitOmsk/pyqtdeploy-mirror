@@ -29,22 +29,21 @@ from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QGridLayout, QGroupBox,
         QStackedWidget, QVBoxLayout, QWidget)
 
 
-class _PyQtModules:
-    """ Encapsulate the PyQt modules for a particular version. """
-
-    def __init__(self, modules=(), opengl_modules=(), addon_modules=()):
-        """ Initialise the object. """
-
-        self.modules = modules
-        self.opengl_modules = opengl_modules
-        self.addon_modules = addon_modules
-
-
 class PyQtPage(QStackedWidget):
     """ The GUI for the PyQt configuration page of a project. """
 
     # The page's label.
     label = "PyQt Modules"
+
+    class _PyQtModules:
+        """ Encapsulate the PyQt modules for a particular version. """
+
+        def __init__(self, modules=(), opengl_modules=(), addon_modules=()):
+            """ Initialise the object. """
+
+            self.modules = modules
+            self.opengl_modules = opengl_modules
+            self.addon_modules = addon_modules
 
     # The PyQt5 modules.
     _pyqt5_modules = _PyQtModules(
