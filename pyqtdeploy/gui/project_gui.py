@@ -294,7 +294,7 @@ class ProjectGUI(QMainWindow):
 
         settings = QSettings()
 
-        self.resize(settings.value('size', QSize(600, 400)))
+        self.resize(settings.value('size', QSize(860, 400)))
         self.move(settings.value('pos', QPoint(200, 200)))
 
     def _save_settings(self):
