@@ -311,19 +311,19 @@ class Builder():
         # Specify the source and header files.
         f.write('\n')
 
-        f.write('SOURCES = main.c pyqtdeploy_main.c mfsimport.cpp\n')
+        f.write('SOURCES = main.c pyqtdeploy_main.c pyqtdeploy_module.cpp\n')
         self._write_main_c(build_dir, app_name, extensions.keys())
         self._copy_lib_file('pyqtdeploy_main.c', build_dir)
-        self._copy_lib_file('mfsimport.cpp', build_dir)
+        self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h\n')
 
         bootstrap_f = self._create_file(build_dir, '__bootstrap__.py')
         bootstrap_f.write('''import sys
-import mfsimport
+import pyqtdeploy
 
 sys.path = [{0}]
-sys.path_hooks = [mfsimport.qrcimporter]
+sys.path_hooks = [pyqtdeploy.qrcimporter]
 '''.format(', '.join(["':/{0}'".format(resource) for resource in resources])))
         bootstrap_f.close()
 

@@ -36,12 +36,12 @@
 
 // Forward declarations.
 #if PY_MAJOR_VERSION >= 3
-extern PyObject *PyInit_mfsimport(void);
-#define MFSIMPORT_INIT  PyInit_mfsimport
+extern PyObject *PyInit_pyqtdeploy(void);
+#define PYQTDEPLOY_INIT PyInit_pyqtdeploy
 #define PYMAIN_TYPE     wchar_t
 #else
 extern void initmfsimport(void);
-#define MFSIMPORT_INIT  initmfsimport
+#define PYQTDEPLOY_INIT initpyqtdeploy
 #define PYMAIN_TYPE     char
 #endif
 
@@ -75,7 +75,7 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     PyImport_FrozenModules = modules;
 
     // Add the importer to the table of builtins.
-    if (PyImport_AppendInittab("mfsimport", MFSIMPORT_INIT) < 0)
+    if (PyImport_AppendInittab("pyqtdeploy", PYQTDEPLOY_INIT) < 0)
     {
         fprintf(stderr, "PyImport_AppendInittab() failed\n");
         return 1;

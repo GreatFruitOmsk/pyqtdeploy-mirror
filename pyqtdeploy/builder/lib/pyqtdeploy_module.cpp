@@ -48,17 +48,17 @@ extern "C" {
 #error "Python v3.3 or later is required"
 #endif
 
-#define MFSIMPORT_INIT              PyInit_mfsimport
-#define MFSIMPORT_TYPE              PyObject *
-#define MFSIMPORT_MODULE_DISCARD(m) Py_DECREF(m)
-#define MFSIMPORT_FATAL(s)          return NULL
-#define MFSIMPORT_RETURN(m)         return (m)
-#define MFSIMPORT_PARSE_STR         "U"
+#define PYQTDEPLOY_INIT                 PyInit_pyqtdeploy
+#define PYQTDEPLOY_TYPE                 PyObject *
+#define PYQTDEPLOY_MODULE_DISCARD(m)    Py_DECREF(m)
+#define PYQTDEPLOY_FATAL(s)             return NULL
+#define PYQTDEPLOY_RETURN(m)            return (m)
+#define PYQTDEPLOY_PARSE_STR            "U"
 
 // The module definition structure.
-static struct PyModuleDef mfsimportmodule = {
+static struct PyModuleDef pyqtdeploymodule = {
     PyModuleDef_HEAD_INIT,
-    "mfsimport",
+    "pyqtdeploy",
     NULL,
     -1,
     NULL,
@@ -72,12 +72,12 @@ static struct PyModuleDef mfsimportmodule = {
 #error "Python v2.6 or later is required"
 #endif
 
-#define MFSIMPORT_INIT              initmfsimport
-#define MFSIMPORT_TYPE              void
-#define MFSIMPORT_MODULE_DISCARD(m)
-#define MFSIMPORT_FATAL(s)          Py_FatalError(s)
-#define MFSIMPORT_RETURN(m)
-#define MFSIMPORT_PARSE_STR         "S"
+#define PYQTDEPLOY_INIT                 initpyqtdeploy
+#define PYQTDEPLOY_TYPE                 void
+#define PYQTDEPLOY_MODULE_DISCARD(m)
+#define PYQTDEPLOY_FATAL(s)             Py_FatalError(s)
+#define PYQTDEPLOY_RETURN(m)
+#define PYQTDEPLOY_PARSE_STR            "S"
 #endif
 
 
@@ -100,7 +100,7 @@ static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
 static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
 #endif
 static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
-MFSIMPORT_TYPE MFSIMPORT_INIT();
+PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
 
 
 // The method table.
@@ -118,7 +118,7 @@ static PyMethodDef qrcimporter_methods[] = {
 // The importer type structure.
 static PyTypeObject QrcImporter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "mfsimport.qrcimporter",
+    "pyqtdeploy.qrcimporter",
     sizeof (QrcImporter),
     0,                                          // tp_itemsize
     qrcimporter_dealloc,                        // tp_dealloc
@@ -201,7 +201,7 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O&:qrcimporter", PyUnicode_FSDecoder, &path))
         return -1;
 #else
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter", &path))
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter", &path))
         return -1;
 #endif
 
@@ -240,7 +240,7 @@ static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter.find_loader", &py_fqmn))
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.find_loader", &py_fqmn))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
@@ -320,7 +320,7 @@ static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *path;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR "|O:qrcimporter.find_module", &py_fqmn, &path))
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR "|O:qrcimporter.find_module", &py_fqmn, &path))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
@@ -357,7 +357,7 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *code, *py_filename, *mod_dict;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter.load_module", &py_fqmn))
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.load_module", &py_fqmn))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
@@ -542,7 +542,7 @@ static PyObject *qstring_to_str(const QString &qstring)
 
 
 // The module initialisation function.
-MFSIMPORT_TYPE MFSIMPORT_INIT()
+PYQTDEPLOY_TYPE PYQTDEPLOY_INIT()
 {
     PyObject *mod;
 
@@ -550,22 +550,22 @@ MFSIMPORT_TYPE MFSIMPORT_INIT()
     QrcImporter_Type.tp_new = PyType_GenericNew;
 
     if (PyType_Ready(&QrcImporter_Type) < 0)
-        MFSIMPORT_FATAL("Failed to initialise mfsimport.qrcimporter type");
+        PYQTDEPLOY_FATAL("Failed to initialise pyqtdeploy.qrcimporter type");
 
 #if PY_MAJOR_VERSION >= 3
-    mod = PyModule_Create(&mfsimportmodule);
+    mod = PyModule_Create(&pyqtdeploymodule);
 #else
-    mod = Py_InitModule("mfsimport", NULL);
+    mod = Py_InitModule("pyqtdeploy", NULL);
 #endif
     if (mod == NULL)
-        MFSIMPORT_FATAL("Failed to initialise mfsimport module");
+        PYQTDEPLOY_FATAL("Failed to initialise pyqtdeploy module");
 
     Py_INCREF(&QrcImporter_Type);
     if (PyModule_AddObject(mod, "qrcimporter", (PyObject *)&QrcImporter_Type) < 0)
     {
-        MFSIMPORT_MODULE_DISCARD(mod);
-        MFSIMPORT_FATAL("Failed to add qrcimporter type to mfsimport module");
+        PYQTDEPLOY_MODULE_DISCARD(mod);
+        PYQTDEPLOY_FATAL("Failed to add qrcimporter type to pyqtdeploy module");
     }
 
-    MFSIMPORT_RETURN(mod);
+    PYQTDEPLOY_RETURN(mod);
 }
