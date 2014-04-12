@@ -323,7 +323,7 @@ class Builder():
 import mfsimport
 
 sys.path = [{0}]
-sys.path_hooks = [mfsimport.mfsimporter]
+sys.path_hooks = [mfsimport.qrcimporter]
 '''.format(', '.join(["':/{0}'".format(resource) for resource in resources])))
         bootstrap_f.close()
 

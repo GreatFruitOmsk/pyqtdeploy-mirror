@@ -82,46 +82,46 @@ static struct PyModuleDef mfsimportmodule = {
 
 
 // The importer object structure.
-typedef struct _mfsimporter
+typedef struct _qrcimporter
 {
     PyObject_HEAD
 
     // The path that the importer handles.  It will be the name of a directory.
     QString *path;
-} MfsImporter;
+} QrcImporter;
 
 
 // C linkage forward declarations.
-static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
-static void mfsimporter_dealloc(PyObject *self);
+static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
+static void qrcimporter_dealloc(PyObject *self);
 #if PY_MAJOR_VERSION >= 3
-static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
 #else
-static PyObject *mfsimporter_find_module(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
 #endif
-static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
 MFSIMPORT_TYPE MFSIMPORT_INIT();
 
 
 // The method table.
-static PyMethodDef mfsimporter_methods[] = {
+static PyMethodDef qrcimporter_methods[] = {
 #if PY_MAJOR_VERSION >= 3
-    {"find_loader", mfsimporter_find_loader, METH_VARARGS, NULL},
+    {"find_loader", qrcimporter_find_loader, METH_VARARGS, NULL},
 #else
-    {"find_module", mfsimporter_find_module, METH_VARARGS, NULL},
+    {"find_module", qrcimporter_find_module, METH_VARARGS, NULL},
 #endif
-    {"load_module", mfsimporter_load_module, METH_VARARGS, NULL},
+    {"load_module", qrcimporter_load_module, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
 
 
 // The importer type structure.
-static PyTypeObject MfsImporter_Type = {
+static PyTypeObject QrcImporter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "mfsimport.mfsimporter",
-    sizeof (MfsImporter),
+    "mfsimport.qrcimporter",
+    sizeof (QrcImporter),
     0,                                          // tp_itemsize
-    mfsimporter_dealloc,                        // tp_dealloc
+    qrcimporter_dealloc,                        // tp_dealloc
     0,                                          // tp_print
     0,                                          // tp_getattr
     0,                                          // tp_setattr
@@ -144,7 +144,7 @@ static PyTypeObject MfsImporter_Type = {
     0,                                          // tp_weaklistoffset
     0,                                          // tp_iter
     0,                                          // tp_iternext
-    mfsimporter_methods,                        // tp_methods
+    qrcimporter_methods,                        // tp_methods
     0,                                          // tp_members
     0,                                          // tp_getset
     0,                                          // tp_base
@@ -152,7 +152,7 @@ static PyTypeObject MfsImporter_Type = {
     0,                                          // tp_descr_get
     0,                                          // tp_descr_set
     0,                                          // tp_dictoffset
-    mfsimporter_init,                           // tp_init
+    qrcimporter_init,                           // tp_init
     0,                                          // tp_alloc
     0,                                          // tp_new
     0,                                          // tp_free
@@ -182,26 +182,26 @@ enum ModuleType {
 
 
 // Other forward declarations.
-static ModuleType find_module(MfsImporter *self, const QString &fqmn,
+static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename);
 static QString str_to_qstring(PyObject *str);
 static PyObject *qstring_to_str(const QString &qstring);
 
 
 // The importer initialisation function.
-static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
+static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject *path;
 
     // It's not clear if this is part of the public API.
-    if (!_PyArg_NoKeywords("mfsimporter()", kwds))
+    if (!_PyArg_NoKeywords("qrcimporter()", kwds))
         return -1;
 
 #if PY_MAJOR_VERSION >= 3
-    if (!PyArg_ParseTuple(args, "O&:mfsimporter", PyUnicode_FSDecoder, &path))
+    if (!PyArg_ParseTuple(args, "O&:qrcimporter", PyUnicode_FSDecoder, &path))
         return -1;
 #else
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter", &path))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter", &path))
         return -1;
 #endif
 
@@ -211,23 +211,23 @@ static int mfsimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
     {
         delete q_path;
 
-        PyErr_SetString(PyExc_ImportError, "mfsimporter: not an Mfs file");
+        PyErr_SetString(PyExc_ImportError, "qrcimporter: not a qrc file");
         return -1;
     }
 
-    ((MfsImporter *)self)->path = q_path;
+    ((QrcImporter *)self)->path = q_path;
 
     return 0;
 }
 
 
 // The importer deallocation function.
-static void mfsimporter_dealloc(PyObject *self)
+static void qrcimporter_dealloc(PyObject *self)
 {
-    if (((MfsImporter *)self)->path)
+    if (((QrcImporter *)self)->path)
     {
-        delete ((MfsImporter *)self)->path;
-        ((MfsImporter *)self)->path = 0;
+        delete ((QrcImporter *)self)->path;
+        ((QrcImporter *)self)->path = 0;
     }
 
     Py_TYPE(self)->tp_free(self);
@@ -236,18 +236,18 @@ static void mfsimporter_dealloc(PyObject *self)
 
 #if PY_MAJOR_VERSION >= 3
 // Implement the standard find_loader() method for the importer.
-static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
+static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter.find_loader", &py_fqmn))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter.find_loader", &py_fqmn))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
-    switch (find_module((MfsImporter *)self, fqmn, pathname, filename))
+    switch (find_module((QrcImporter *)self, fqmn, pathname, filename))
     {
     case ModuleIsModule:
     case ModuleIsPackage:
@@ -316,18 +316,18 @@ static PyObject *mfsimporter_find_loader(PyObject *self, PyObject *args)
 
 #if PY_MAJOR_VERSION < 3
 // Implement the standard find_module() method for the importer.
-static PyObject *mfsimporter_find_module(PyObject *self, PyObject *args)
+static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *path;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR "|O:mfsimporter.find_module", &py_fqmn, &path))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR "|O:qrcimporter.find_module", &py_fqmn, &path))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
-    if (find_module((MfsImporter *)self, fqmn, pathname, filename) == ModuleNotFound)
+    if (find_module((QrcImporter *)self, fqmn, pathname, filename) == ModuleNotFound)
     {
         result = Py_None;
 
@@ -353,17 +353,17 @@ static PyObject *mfsimporter_find_module(PyObject *self, PyObject *args)
 
 
 // Implement the standard load_module() method for the importer.
-static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
+static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *code, *py_filename, *mod_dict;
 
-    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":mfsimporter.load_module", &py_fqmn))
+    if (!PyArg_ParseTuple(args, MFSIMPORT_PARSE_STR ":qrcimporter.load_module", &py_fqmn))
         return NULL;
 
     QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
 
-    ModuleType mt = find_module((MfsImporter *)self, fqmn, pathname, filename);
+    ModuleType mt = find_module((QrcImporter *)self, fqmn, pathname, filename);
 
 #if PY_MAJOR_VERSION < 3
     if (mt == ModuleNotFound)
@@ -391,7 +391,7 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
 
     if (mt != ModuleIsModule && mt != ModuleIsPackage)
     {
-        PyErr_Format(PyExc_ImportError, "mfsimporter: can't find module %s",
+        PyErr_Format(PyExc_ImportError, "qrcimporter: can't find module %s",
                 fqmn.toLatin1().constData());
         return NULL;
     }
@@ -402,7 +402,7 @@ static PyObject *mfsimporter_load_module(PyObject *self, PyObject *args)
     if (!mfile.open(QIODevice::ReadOnly))
     {
         PyErr_Format(PyExc_ImportError,
-                "mfsimporter: error opening file for module %s",
+                "qrcimporter: error opening file for module %s",
                         fqmn.toLatin1().constData());
         return NULL;
     }
@@ -473,7 +473,7 @@ error:
 
 // Find a fully qualified module name handled by an importer and return its
 // type, path name and file name.
-static ModuleType find_module(MfsImporter *self, const QString &fqmn,
+static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename)
 {
     pathname = *self->path + "/" + fqmn.split(QChar('.')).last();
@@ -547,10 +547,10 @@ MFSIMPORT_TYPE MFSIMPORT_INIT()
     PyObject *mod;
 
     // Just in case we are linking against Python as a Windows DLL.
-    MfsImporter_Type.tp_new = PyType_GenericNew;
+    QrcImporter_Type.tp_new = PyType_GenericNew;
 
-    if (PyType_Ready(&MfsImporter_Type) < 0)
-        MFSIMPORT_FATAL("Failed to initialise mfsimport.mfsimporter type");
+    if (PyType_Ready(&QrcImporter_Type) < 0)
+        MFSIMPORT_FATAL("Failed to initialise mfsimport.qrcimporter type");
 
 #if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&mfsimportmodule);
@@ -560,11 +560,11 @@ MFSIMPORT_TYPE MFSIMPORT_INIT()
     if (mod == NULL)
         MFSIMPORT_FATAL("Failed to initialise mfsimport module");
 
-    Py_INCREF(&MfsImporter_Type);
-    if (PyModule_AddObject(mod, "mfsimporter", (PyObject *)&MfsImporter_Type) < 0)
+    Py_INCREF(&QrcImporter_Type);
+    if (PyModule_AddObject(mod, "qrcimporter", (PyObject *)&QrcImporter_Type) < 0)
     {
         MFSIMPORT_MODULE_DISCARD(mod);
-        MFSIMPORT_FATAL("Failed to add mfsimporter type to mfsimport module");
+        MFSIMPORT_FATAL("Failed to add qrcimporter type to mfsimport module");
     }
 
     MFSIMPORT_RETURN(mod);
