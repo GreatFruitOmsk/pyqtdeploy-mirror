@@ -70,7 +70,9 @@ def main():
 
         from . import Project, ProjectGUI
 
-        app = QApplication(sys.argv, organizationName='Riverbank Computing')
+        app = QApplication(sys.argv, applicationName='pyqtdeploy',
+                organizationDomain='riverbankcomputing.com',
+                organizationName='Riverbank Computing')
 
         if args.project_file is None:
             project = Project()
