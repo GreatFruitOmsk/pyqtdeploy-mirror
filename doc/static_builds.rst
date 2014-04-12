@@ -67,6 +67,17 @@ directory and run::
     make install
 
 
+PyQt4
+-----
+
+To build a static, native version of PyQt4, change to the PyQt4 source
+directory and run::
+
+    $ROOT/python/bin/python configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    make
+    make install
+
+
 QScintilla
 ----------
 
@@ -97,6 +108,9 @@ QScintilla source directory and run::
     $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
+
+The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
+substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
 
 Qt Charts

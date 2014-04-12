@@ -4,7 +4,7 @@ Tutorial
 Creating a pyqtdeploy Project
 -----------------------------
 
-The first stage of deploying a PyQt5 application is to create a pyqtdeploy
+The first stage of deploying a PyQt application is to create a pyqtdeploy
 project for it by running::
 
     pyqtdeploy myproject.pdy
@@ -47,6 +47,12 @@ The tab for defining the application source is shown below.
         In this particular example the ``wiggly.py`` script is in the same
         directory as the ``wiggly.pdy`` project file.
 
+**PyQt5**
+    is used to specify that the application is a PyQt5 application.
+
+**PyQt4**
+    is used to specify that the application is a PyQt4 application.
+
 **Scan application package...**
     is clicked to specify the name of the directory containing the Python
     package that (in more typical cases) implements the majority of the
@@ -86,6 +92,8 @@ Defining the PyQt Modules
 -------------------------
 
 The tab for defining the PyQt modules used by the application is shown below.
+If the application is a PyQt4 application then the PyQt4 modules will be shown
+instead.
 
 .. image:: /images/pyqt_modules_tab.png
     :align: center
