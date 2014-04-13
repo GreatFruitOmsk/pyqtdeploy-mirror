@@ -3,3 +3,4 @@ syntax: glob
 doc/_build
 pyqtdeploy.egg-info
 VERSION
+pyqtdeploy/version.py

@@ -35,6 +35,8 @@
 #include <QStringList>
 #include <QVector>
 
+#include "pyqtdeploy_version.h"
+
 
 #if QT_VERSION < 0x040200
 #error "Qt v4.2.0 or later is required"
@@ -560,11 +562,17 @@ PYQTDEPLOY_TYPE PYQTDEPLOY_INIT()
     if (mod == NULL)
         PYQTDEPLOY_FATAL("Failed to initialise pyqtdeploy module");
 
+    if (PyModule_AddIntConstant(mod, "hexversion", PYQTDEPLOY_HEXVERSION) < 0)
+    {
+        PYQTDEPLOY_MODULE_DISCARD(mod);
+        PYQTDEPLOY_FATAL("Failed to add hexversion to pyqtdeploy module");
+    }
+
     Py_INCREF(&QrcImporter_Type);
     if (PyModule_AddObject(mod, "qrcimporter", (PyObject *)&QrcImporter_Type) < 0)
     {
         PYQTDEPLOY_MODULE_DISCARD(mod);
-        PYQTDEPLOY_FATAL("Failed to add qrcimporter type to pyqtdeploy module");
+        PYQTDEPLOY_FATAL("Failed to add qrcimporter to pyqtdeploy module");
     }
 
     PYQTDEPLOY_RETURN(mod);

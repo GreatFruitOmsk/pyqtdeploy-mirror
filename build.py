@@ -180,8 +180,19 @@ def _get_release():
     else:
         version = '%d.%d.%d' % (major, minor, micro)
 
+    if 'preview' in release_suffix:
+        level = 0x0
+    elif 'alpha' in release_suffix:
+        level = 0xa
+    elif 'beta' in release_suffix:
+        level = 0xb
+    elif 'rc' in release_suffix:
+        level = 0xc
+    else:
+        level = 0xf
+
     release = '%s%s' % (version, release_suffix)
-    hex_version = '%02x%02x%02x' % (major, minor, micro)
+    hex_version = '%02x%02x%02x%01x0' % (major, minor, micro, level)
 
     return release, version, hex_version, changelog
 
@@ -230,6 +241,20 @@ def version():
     return release
 
 
+def pyversion(py_file):
+    """ Write the version of the package as a string and a hexversion to a
+    file.
+
+    :param py_file:
+        The file that the Python code is written to.
+    """
+
+    release, _, hexversion, _ = _get_release()
+
+    py_file.write('PYQTDEPLOY_RELEASE = \'%s\'\n' % release)
+    py_file.write('PYQTDEPLOY_HEXVERSION = 0x%s\n' % hexversion)
+
+
 if __name__ == '__main__':
 
     def _changelog(options):
@@ -258,7 +283,21 @@ if __name__ == '__main__':
             out_file.close()
 
 
-    actions = (_changelog, _version)
+    def _pyversion(options):
+        """create Python code implementing the version of the package"""
+
+        if options.output is not None:
+            out_file = open(options.output, 'w')
+        else:
+            out_file = sys.stdout
+
+        pyversion(out_file)
+
+        if options.output is not None:
+            out_file.close()
+
+
+    actions = (_changelog, _pyversion, _version)
 
     import optparse
 
