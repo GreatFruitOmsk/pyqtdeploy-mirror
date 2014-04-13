@@ -353,8 +353,10 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
 
         resources = []
 
-        if project.application_package.name != '':
-            resources.append('')
+        for content in project.application_package.contents:
+            if content.included:
+                resources.append('')
+                break
 
         resources.append('stdlib')
 
