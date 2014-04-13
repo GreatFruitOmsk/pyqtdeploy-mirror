@@ -440,7 +440,7 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
 
                 f.write(
                         '        <file>{0}</file>\n'.format(
-                                '/'.join(file_path)))
+                                os.path.normpath('/'.join(file_path))))
 
                 if freeze_file:
                     self._freeze(dst_path, src_path, freeze, as_data=True)
