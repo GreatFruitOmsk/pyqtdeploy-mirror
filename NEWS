@@ -1,6 +1,7 @@
 v0.2 ??? April 2014
   - Added support for PyQt4 applications.
   - Added support for Python v2.6 and v2.7 applications.
+  - Added the pyqtdeploy module.
 
 v0.1 26th March 2014
   - The first release.
