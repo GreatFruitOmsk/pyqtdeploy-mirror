@@ -132,7 +132,7 @@ class Builder():
         self._create_directory(resources_dir)
 
         for resource in self.resources():
-            if resource == 'application':
+            if resource == '':
                 package = project.application_package
                 self._write_resource(resources_dir, resource, package, 
                         project.absolute_path(package.name), freeze)
@@ -304,6 +304,9 @@ class Builder():
             f.write('RESOURCES =')
 
             for resource in resources:
+                if resource == '':
+                    resource = 'pyqtdeploy'
+
                 f.write(' \\\n    resources/{0}.qrc'.format(resource))
 
             f.write('\n')
@@ -351,7 +354,7 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
         resources = []
 
         if project.application_package.name != '':
-            resources.append('application')
+            resources.append('')
 
         resources.append('stdlib')
 
@@ -365,19 +368,25 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
 
         return resources
 
-    def _write_resource(self, build_dir, resource, package, src, freeze):
+    def _write_resource(self, resources_dir, resource, package, src, freeze):
         """ Create a .qrc file for a resource and the corresponding contents.
         """
 
-        f = self._create_file(build_dir, resource + '.qrc')
+        # The main application resource does not go in a sub-directory.
+        if resource == '':
+            qrc_file = 'pyqtdeploy.qrc'
+            dst_root_dir = resources_dir
+        else:
+            qrc_file = resource + '.qrc'
+            dst_root_dir = os.path.join(resources_dir, resource)
+            self._create_directory(dst_root_dir)
+
+        f = self._create_file(resources_dir, qrc_file)
 
         f.write('''<!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
 ''')
-
-        dst_root_dir = os.path.join(build_dir, resource)
-        self._create_directory(dst_root_dir)
 
         src_root_dir, src_root = os.path.split(src)
 
@@ -399,11 +408,17 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
             dir_stack = []
             dst_dir = dst_root_dir
         else:
-            dst_dir = os.path.join(dst_root_dir, dir_tail)
+            if dir_tail == '.':
+                dir_stack = []
 
-        self._create_directory(dst_dir)
+            dst_dir = os.path.join(dst_root_dir, dir_tail)
+            self._create_directory(dst_dir)
 
         prefix = os.path.basename(dst_root_dir)
+        if prefix != 'resources':
+            prefix = [prefix]
+        else:
+            prefix = []
 
         for content in contents:
             if not content.included:
@@ -430,7 +445,7 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
 
                 dst_path = os.path.join(dst_dir, dst_file)
 
-                file_path = [prefix]
+                file_path = list(prefix)
 
                 if dir_tail != '':
                     file_path.extend(dir_stack)
@@ -439,7 +454,7 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
 
                 f.write(
                         '        <file>{0}</file>\n'.format(
-                                os.path.normpath('/'.join(file_path))))
+                                '/'.join(file_path)))
 
                 if freeze_file:
                     self._freeze(dst_path, src_path, freeze, as_data=True)

@@ -208,7 +208,6 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif
 
     QString *q_path = new QString(str_to_qstring(path));
-    printf("Looking for importer for '%s'\n", q_path->toLatin1().constData());
 
     if (!QFileInfo(*q_path).isDir())
     {
@@ -217,6 +216,9 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(PyExc_ImportError, "qrcimporter: not a qrc file");
         return -1;
     }
+
+    if (!q_path->endsWith(QChar('/')))
+        q_path->append(QChar('/'));
 
     ((QrcImporter *)self)->path = q_path;
 
@@ -479,7 +481,7 @@ error:
 static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename)
 {
-    pathname = *self->path + "/" + fqmn.split(QChar('.')).last();
+    pathname = *self->path + fqmn.split(QChar('.')).last();
 
     // See if it is an ordinary module.
     filename = pathname + ".pyf";
