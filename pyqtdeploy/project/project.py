@@ -83,7 +83,7 @@ class Project(QObject):
 
         # Initialise the project data.
         self.application_is_pyqt5 = True
-        self.application_package = MfsPackage()
+        self.application_package = QrcPackage()
         self.application_script = ''
         self.extension_modules = []
         self.pyqt_modules = []
@@ -91,8 +91,8 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
-        self.site_packages_package = MfsPackage()
-        self.stdlib_package = MfsPackage()
+        self.site_packages_package = QrcPackage()
+        self.stdlib_package = QrcPackage()
 
     def relative_path(self, filename):
         """ Convert a filename to one that is relative to the project
@@ -236,7 +236,7 @@ class Project(QObject):
 
     @classmethod
     def _load_package(cls, package_element, package):
-        """ Populate an MfsPackage instance. """
+        """ Populate a QrcPackage instance. """
 
         package.name = package_element.get('name')
         cls._assert(package.name is not None,
@@ -269,7 +269,7 @@ class Project(QObject):
             included = cls._get_bool(content_element, 'included',
                     'Package.PackageContent')
 
-            content = MfsDirectory(name, included) if isdir else MfsFile(name, included)
+            content = QrcDirectory(name, included) if isdir else QrcFile(name, included)
 
             if isdir:
                 content.contents = cls._load_mfs_contents(content_element)
@@ -357,7 +357,7 @@ class Project(QObject):
         """ Save the contents of a memory-filesystem container. """
 
         for content in contents:
-            isdir = isinstance(content, MfsDirectory)
+            isdir = isinstance(content, QrcDirectory)
 
             subcontainer = SubElement(container, 'PackageContent', attrib={
                 'name': content.name,
@@ -375,7 +375,7 @@ class Project(QObject):
             raise UserException("The project file is invalid.", detail)
 
 
-class MfsPackage():
+class QrcPackage():
     """ The encapsulation of a memory-filesystem package. """
 
     def __init__(self):
@@ -397,7 +397,7 @@ class MfsPackage():
         return copy
 
 
-class MfsFile():
+class QrcFile():
     """ The encapsulation of a memory-filesystem file. """
 
     def __init__(self, name, included=True):
@@ -412,7 +412,7 @@ class MfsFile():
         return type(self)(self.name, self.included)
 
 
-class MfsDirectory(MfsFile):
+class QrcDirectory(QrcFile):
     """ The encapsulation of a memory-filesystem directory. """
 
     def __init__(self, name, included=True):

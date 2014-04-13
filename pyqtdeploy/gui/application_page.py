@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QFormLayout,
         QGridLayout, QHBoxLayout, QRadioButton, QWidget)
 
 from .filename_editor import FilenameEditor
-from .mfs_package_editor import MfsPackageEditor
+from .qrc_package_editor import QrcPackageEditor
 
 
 class ApplicationPage(QWidget):
@@ -135,7 +135,7 @@ class ApplicationPage(QWidget):
         self.project.modified = True
 
 
-class _ApplicationPackageEditor(MfsPackageEditor):
+class _ApplicationPackageEditor(QrcPackageEditor):
     """ A memory filesystem package editor for the application package. """
 
     # The editor title.

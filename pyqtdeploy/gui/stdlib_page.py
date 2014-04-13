@@ -26,7 +26,7 @@
 
 from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QWidget
 
-from .mfs_package_editor import MfsPackageEditor
+from .qrc_package_editor import QrcPackageEditor
 
 
 class StdlibPage(QWidget):
@@ -78,7 +78,7 @@ class StdlibPage(QWidget):
         self.project.modified = True
 
 
-class _StdlibPackageEditor(MfsPackageEditor):
+class _StdlibPackageEditor(QrcPackageEditor):
     """ A memory filesystem package editor for the Python standard library
     package.
     """

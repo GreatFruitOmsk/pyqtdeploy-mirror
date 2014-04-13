@@ -31,11 +31,11 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import (QGridLayout, QGroupBox, QPushButton, QTreeWidget,
         QTreeWidgetItem, QTreeWidgetItemIterator)
 
-from ..project import MfsDirectory, MfsFile
+from ..project import QrcDirectory, QrcFile
 
 
-class MfsPackageEditor(QGroupBox):
-    """ A memory file system package editor. """
+class QrcPackageEditor(QGroupBox):
+    """ A resource file system package editor. """
 
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
@@ -246,7 +246,7 @@ class MfsPackageEditor(QGroupBox):
                 if included is None:
                     included = ('__init__.py' in new_path_contents)
 
-                mfs = MfsDirectory(name, included)
+                mfs = QrcDirectory(name, included)
 
                 self._add_to_container(mfs, full_name, new_path_contents,
                         dir_stack, old_state)
@@ -254,7 +254,7 @@ class MfsPackageEditor(QGroupBox):
                 if included is None:
                     included = True
 
-                mfs = MfsFile(name, included)
+                mfs = QrcFile(name, included)
             else:
                 continue
 
@@ -290,7 +290,7 @@ class MfsPackageEditor(QGroupBox):
             itm.setCheckState(0, Qt.Checked if content.included else Qt.Unchecked)
             itm._mfs_item = content
 
-            if isinstance(content, MfsDirectory):
+            if isinstance(content, QrcDirectory):
                 self._visualise_contents(content.contents, itm)
                 itm.setExpanded(content.included)
 

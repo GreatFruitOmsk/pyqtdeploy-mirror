@@ -28,7 +28,7 @@ import os
 
 from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QWidget
 
-from .mfs_package_editor import MfsPackageEditor
+from .qrc_package_editor import QrcPackageEditor
 
 
 class SitePackagesPage(QWidget):
@@ -80,7 +80,7 @@ class SitePackagesPage(QWidget):
         self.project.modified = True
 
 
-class _SitePackagesPackageEditor(MfsPackageEditor):
+class _SitePackagesPackageEditor(QrcPackageEditor):
     """ A memory filesystem package editor for the Python site packages
     package.
     """

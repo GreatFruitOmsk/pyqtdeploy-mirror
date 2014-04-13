@@ -31,7 +31,7 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo
 
-from ..project import MfsDirectory, MfsFile
+from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 
@@ -149,8 +149,8 @@ class Builder():
                 pyqt_dir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
                 if len(project.pyqt_modules) != 0:
-                    pyqt_pkg_init = MfsFile('__init__.py')
-                    pyqt_pkg_dir = MfsDirectory(pyqt_dir)
+                    pyqt_pkg_init = QrcFile('__init__.py')
+                    pyqt_pkg_dir = QrcDirectory(pyqt_dir)
                     pyqt_pkg_dir.contents.append(pyqt_pkg_init)
                     site_packages_package.contents.append(pyqt_pkg_dir)
 
@@ -173,7 +173,7 @@ class Builder():
     def _add_uic_dir(self, package, pyqt_dir, dirname, dir_stack):
         """ Add a uic directory to a package. """
 
-        dir_pkg = MfsDirectory(dirname)
+        dir_pkg = QrcDirectory(dirname)
         package.contents.append(dir_pkg)
 
         dirpath = [pyqt_dir] + dir_stack + [dirname]
@@ -186,7 +186,7 @@ class Builder():
             content_path = os.path.join(dirpath, content)
 
             if os.path.isfile(content_path):
-                dir_pkg.contents.append(MfsFile(content))
+                dir_pkg.contents.append(QrcFile(content))
             elif os.path.isdir(content_path):
                 dir_stack.append(dirname)
                 self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
@@ -410,7 +410,7 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
             if not content.included:
                 continue
 
-            if isinstance(content, MfsDirectory):
+            if isinstance(content, QrcDirectory):
                 dir_stack.append(content.name)
                 self._write_package_contents(content.contents, dst_root_dir,
                         src_root_dir, dir_stack, freeze, f)
