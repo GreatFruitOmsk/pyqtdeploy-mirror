@@ -55,9 +55,8 @@ def main():
 
         from . import Builder, Project, UserException
 
-        builder = Builder(Project.load(args.project_file), args.verbose)
-
         try:
+            builder = Builder(Project.load(args.project_file), args.verbose)
             builder.build(args.build)
         except UserException as e:
             print("{0}: {1}".format(os.path.basename(sys.argv[0]), e.text),
