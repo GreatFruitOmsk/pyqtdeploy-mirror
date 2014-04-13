@@ -34,6 +34,7 @@ from PyQt5.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QTabWidget,
 from ..builder import Builder
 from ..project import Project
 from ..user_exception import UserException
+from ..version import PYQTDEPLOY_RELEASE
 
 from .application_page import ApplicationPage
 from .extension_modules_page import ExtensionModulesPage
@@ -122,6 +123,7 @@ class ProjectGUI(QMainWindow):
         menu_bar.addSeparator()
 
         help_menu = menu_bar.addMenu("&Help")
+        help_menu.addAction("About pyqtdeploy...", self._about)
         help_menu.addAction(QWhatsThis.createAction(help_menu))
 
     def _create_central_widget(self):
@@ -151,6 +153,15 @@ class ProjectGUI(QMainWindow):
                 pyqt_page.set_pyqt_version)
 
         self.setCentralWidget(tabs)
+
+    def _about(self):
+        """ Tell the user about the application. """
+
+        QMessageBox.about(self, "About pyqtdeploy",
+"""This is pyqtdeploy v%s
+
+pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Python v2.6 or later or Python v3.3 or later to desktop and mobile devices.
+""" % PYQTDEPLOY_RELEASE)
 
     def _new_project(self):
         """ Create a new, unnamed project. """
