@@ -122,23 +122,22 @@ class Builder():
 
         project = self._project
 
-        try:
-            os.makedirs(build_dir, exist_ok=True)
-        except Exception as e:
-            raise UserException("Unable to create the build directory.",
-                    str(e))
+        self._create_directory(build_dir)
 
         freeze = self._copy_lib_file('freeze.py')
 
         self._write_qmake(build_dir, freeze)
 
+        resources_dir = os.path.join(build_dir, 'resources')
+        self._create_directory(resources_dir)
+
         for resource in self.resources():
             if resource == 'application':
                 package = project.application_package
-                self._write_resource(build_dir, resource, package, 
+                self._write_resource(resources_dir, resource, package, 
                         project.absolute_path(package.name), freeze)
             elif resource == 'stdlib':
-                self._write_resource(build_dir, resource,
+                self._write_resource(resources_dir, resource,
                         project.stdlib_package,
                         os.path.join(project.python_target_stdlib_dir, ''),
                         freeze)
@@ -162,7 +161,7 @@ class Builder():
                                         'site-packages', pyqt_dir),
                                 'uic', [])
 
-                self._write_resource(build_dir, resource,
+                self._write_resource(resources_dir, resource,
                         site_packages_package,
                         os.path.join(project.python_target_stdlib_dir,
                                 'site-packages', ''),
@@ -305,7 +304,7 @@ class Builder():
             f.write('RESOURCES =')
 
             for resource in resources:
-                f.write(' \\\n    {0}.qrc'.format(resource))
+                f.write(' \\\n    resources/{0}.qrc'.format(resource))
 
             f.write('\n')
 
@@ -594,9 +593,11 @@ int main(int argc, char **argv)
         """ Create a directory which may already exist. """
 
         try:
-            os.mkdir(dir_name)
-        except FileExistsError:
-            pass
+            os.makedirs(dir_name, exist_ok=True)
+        except Exception as e:
+            raise UserException(
+                    "Unable to create the '{0}' directory.".format(dir_name),
+                    str(e))
 
     def _log(self, message):
         """ Log a message if requested. """

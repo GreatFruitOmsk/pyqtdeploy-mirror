@@ -208,6 +208,7 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 #endif
 
     QString *q_path = new QString(str_to_qstring(path));
+    printf("Looking for importer for '%s'\n", q_path->toLatin1().constData());
 
     if (!QFileInfo(*q_path).isDir())
     {
