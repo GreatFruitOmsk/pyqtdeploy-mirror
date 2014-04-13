@@ -148,7 +148,7 @@ class QrcPackageEditor(QGroupBox):
 
         it = QTreeWidgetItemIterator(self._package_edit)
 
-        if not self._show_root:
+        if self._show_root:
             it += 1
 
         itm = it.value()
@@ -287,7 +287,8 @@ class QrcPackageEditor(QGroupBox):
 
         for content in contents:
             itm = QTreeWidgetItem(parent, [content.name])
-            itm.setCheckState(0, Qt.Checked if content.included else Qt.Unchecked)
+            itm.setCheckState(0,
+                    Qt.Checked if content.included else Qt.Unchecked)
             itm._mfs_item = content
 
             if isinstance(content, QrcDirectory):
