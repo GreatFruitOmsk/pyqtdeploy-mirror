@@ -198,7 +198,8 @@ class QrcPackageEditor(QGroupBox):
             old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
 
         # Walk the package.
-        self._add_to_container(package, root, os.listdir(root), [], old_state)
+        self._add_to_container(package, project.relative_path(root),
+                os.listdir(root), [], old_state)
         self._visualise()
 
         self.package_changed.emit()
