@@ -24,6 +24,6 @@ application and, if necessary, change its behaviour accordingly.
             pyqtdeploy_hexversion = 0
 
         if pyqtdeploy_hexversion:
-            qml_url = 'qrc://main.qml'
+            qml_url = 'qrc:/main.qml'
         else:
             qml_url = os.path.join(os.path.dirname(__file__), 'main.qml')
