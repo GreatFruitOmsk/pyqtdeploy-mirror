@@ -91,9 +91,7 @@ class _SitePackagesPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title,
-                additional_exclusions=('libsip.a', 'sip.so', 'sip.lib',
-                        'sip.pyd', 'PyQt5', 'PyQt4'))
+        super().__init__(self._title)
 
         self._project = None
 
@@ -110,6 +108,14 @@ class _SitePackagesPackageEditor(QrcPackageEditor):
             return ''
 
         return os.path.join(stdlib_dir, 'site-packages')
+
+    def filter(self, name):
+        """ Reimplemented to filter out the PyQt related stuff. """
+
+        if name in ('libsip.a', 'sip.so', 'sip.lib', 'sip.pyd', 'PyQt5', 'PyQt4'):
+            return True
+
+        return super().filter(name)
 
     def set_project(self, project):
         """ Set the project. """

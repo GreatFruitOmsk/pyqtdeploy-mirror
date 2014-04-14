@@ -40,7 +40,7 @@ class QrcPackageEditor(QGroupBox):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title, show_root=False, scan="Scan", additional_exclusions=None):
+    def __init__(self, title, show_root=False, scan="Scan"):
         """ Initialise the editor. """
 
         super().__init__(title)
@@ -49,7 +49,6 @@ class QrcPackageEditor(QGroupBox):
         self._project = None
         self._title = title
         self._show_root = show_root
-        self._additional_exclusions = additional_exclusions
 
         layout = QGridLayout()
 
@@ -112,6 +111,18 @@ class QrcPackageEditor(QGroupBox):
 
         raise NotImplementedError
 
+    def filter(self, name):
+        """ See if a scanned name should be discarded. """
+
+        # Include everything by default.
+        return False
+
+    def required(self, name):
+        """ See if a scanned name is required. """
+
+        # Nothing is required by default.
+        return False
+
     def _add_exclusion_item(self, exclude=''):
         """ Add a QTreeWidgetItem that holds an exclusion. """
 
@@ -170,8 +181,9 @@ class QrcPackageEditor(QGroupBox):
         """ Invoked when the user clicks on the exclude all button. """
 
         for itm in self._get_items():
-            itm.setCheckState(0, Qt.Unchecked)
-            itm.setExpanded(False)
+            if not itm.isDisabled():
+                itm.setCheckState(0, Qt.Unchecked)
+                itm.setExpanded(False)
 
     def _remove_all(self, _):
         """ Invoked when the use clicks on the remove all button. """
@@ -232,6 +244,9 @@ class QrcPackageEditor(QGroupBox):
         container.
         """
 
+        # Make sure any filter is applied in a predictable order.
+        path_contents.sort(key=str.lower)
+
         dir_stack.append(os.path.basename(path))
         contents = []
 
@@ -245,14 +260,15 @@ class QrcPackageEditor(QGroupBox):
             if name is None:
                 continue
 
-            # Apply any additional exclusions if we are at the top level.
-            if self._additional_exclusions is not None and len(dir_stack) == 1:
-                for exc in self._additional_exclusions:
-                    if fnmatch.fnmatch(name, exc):
-                        name = None
-                        break
+            # Apply any filter.
+            if len(dir_stack) > 1:
+                module_path = dir_stack[1:]
+                module_path.append(name)
+                path_name = '.'.join(module_path)
+            else:
+                path_name = name
 
-            if name is None:
+            if self.filter(path_name):
                 continue
 
             # See if we already know the included state.
@@ -270,21 +286,20 @@ class QrcPackageEditor(QGroupBox):
                 if included is None:
                     included = ('__init__.py' in new_path_contents)
 
-                mfs = QrcDirectory(name, included)
+                qrc = QrcDirectory(name, included)
 
-                self._add_to_container(mfs, full_name, new_path_contents,
+                self._add_to_container(qrc, full_name, new_path_contents,
                         dir_stack, old_state)
             elif os.path.isfile(full_name):
                 if included is None:
                     included = True
 
-                mfs = QrcFile(name, included)
+                qrc = QrcFile(name, included)
             else:
                 continue
 
-            contents.append(mfs)
+            contents.append(qrc)
 
-        contents.sort(key=lambda mfs: mfs.name.lower())
         container.contents = contents
         dir_stack.pop()
 
@@ -311,19 +326,29 @@ class QrcPackageEditor(QGroupBox):
     def _visualise_contents(self, contents, parent):
         """ Visualise the contents for a parent. """
 
+        module_names = ['']
+        p = parent
+        while p is not None and not isinstance(p, QTreeWidget):
+            module_names.insert(0, p.text(0))
+            p = p.parent()
+
         for content in contents:
+            module_names[-1] = content.name
+            required = self.required('.'.join(module_names))
+
             itm = QTreeWidgetItem(parent, [content.name])
             itm.setCheckState(0,
                     Qt.Checked if content.included else Qt.Unchecked)
-            itm._mfs_item = content
+            itm.setDisabled(required)
+            itm._qrc_item = content
 
             if isinstance(content, QrcDirectory):
                 self._visualise_contents(content.contents, itm)
-                itm.setExpanded(content.included)
+                itm.setExpanded(not required and content.included)
 
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
 
-        itm._mfs_item.included = (itm.checkState(0) == Qt.Checked)
+        itm._qrc_item.included = (itm.checkState(0) == Qt.Checked)
 
         self.package_changed.emit()

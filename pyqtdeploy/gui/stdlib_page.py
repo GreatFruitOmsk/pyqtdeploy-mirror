@@ -86,13 +86,19 @@ class _StdlibPackageEditor(QrcPackageEditor):
     # The editor title.
     _title = "Standard Library"
 
+    # The required Python v3 modules.
+    _py3_required = ('importlib', 'types.py', 'warnings.py')
+
+    # The required Python v2 modules.
+    _py2_required = ('atexit.py', )
+
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title,
-                additional_exclusions=('site-packages', ))
+        super().__init__(self._title)
 
         self._project = None
+        self._required = self._py3_required
 
     def get_root_dir(self):
         """ Get the name of the Python standard library directory. """
@@ -106,7 +112,29 @@ class _StdlibPackageEditor(QrcPackageEditor):
                     "Configuration tab.")
             return ''
 
+        self._required = self._py3_required
+
         return stdlib_dir
+
+    def filter(self, name):
+        """ Reimplemented to filter out site-packages. """
+
+        if name in ('importlib._bootstrap.py', 'site-packages'):
+            return True
+
+        return super().filter(name)
+
+    def required(self, name):
+        """ Reimplemented to filter out site-packages. """
+
+        # Remember if we seem to be scanning Python v2.
+        if name == 'dircache.py':
+            self._required = self._py2_required
+
+        if name in self._required:
+            return True
+
+        return super().filter(name)
 
     def set_project(self, project):
         """ Set the project. """
