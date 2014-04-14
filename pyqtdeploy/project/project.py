@@ -79,7 +79,7 @@ class Project(QObject):
 
         # Initialise the project meta-data.
         self._modified = False
-        self._name = name
+        self._name = os.path.abspath(name)
 
         # Initialise the project data.
         self.application_is_pyqt5 = True
