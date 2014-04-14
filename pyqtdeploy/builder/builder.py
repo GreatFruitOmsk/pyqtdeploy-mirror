@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import tempfile
 
-from PyQt5.QtCore import QDir, QFile, QFileInfo
+from PyQt5.QtCore import QDir, QFile, QFileInfo, QIODevice
 
 from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
@@ -294,6 +294,20 @@ class Builder():
                 lib = lib[3:]
 
             f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
+
+        # Add the platform specific stuff.
+        platforms_f = QFile(self._lib_filename('platforms.pro'))
+
+        if not platforms_f.open(QIODevice.ReadOnly|QIODevice.Text):
+            raise UserException(
+                    "Unable to open file {0}.".format(platforms_f.fileName()),
+                    platforms_f.errorString())
+
+        platforms = platforms_f.readAll()
+        platforms_f.close()
+
+        f.write('\n')
+        f.write(platforms.data().decode('latin1'))
 
         # Specify any resource files.
         resources = self.resources()
@@ -565,7 +579,18 @@ int main(int argc, char **argv)
                     e.output)
 
     @staticmethod
-    def _copy_lib_file(filename, dirname=None):
+    def _lib_filename(filename):
+        """ Get name of a file in the 'lib' directory that can be used by
+        QFile.
+        """
+
+        lib_dir = QFileInfo(__file__).dir()
+        lib_dir.cd('lib')
+
+        return lib_dir.filePath(filename)
+
+    @classmethod
+    def _copy_lib_file(cls, filename, dirname=None):
         """ Copy a library file to a directory and return the full pathname of
         the copy.  If the directory wasn't specified then copy it to a
         temporary directory.
@@ -581,9 +606,7 @@ int main(int argc, char **argv)
         d_filename = os.path.join(dirname, filename)
 
         # The source filename.
-        s_dir = QFileInfo(__file__).dir()
-        s_dir.cd('lib')
-        s_filename = s_dir.filePath(filename)
+        s_filename = cls._lib_filename(filename)
 
         # Make sure the destination doesn't exist.
         QFile.remove(d_filename)
