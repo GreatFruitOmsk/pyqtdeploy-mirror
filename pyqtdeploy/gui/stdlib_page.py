@@ -127,8 +127,9 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def required(self, name):
         """ Reimplemented to filter out site-packages. """
 
-        # Remember if we seem to be scanning Python v2.
-        if name == 'dircache.py':
+        # Remember if we seem to be scanning Python v2.  (atexit is a builtin
+        # in Python v3.)
+        if name == 'atexit.py':
             self._required = self._py2_required
 
         if name in self._required:
