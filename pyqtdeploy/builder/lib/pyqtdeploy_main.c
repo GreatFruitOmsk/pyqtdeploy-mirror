@@ -40,7 +40,7 @@ extern PyObject *PyInit_pyqtdeploy(void);
 #define PYQTDEPLOY_INIT PyInit_pyqtdeploy
 #define PYMAIN_TYPE     wchar_t
 #else
-extern void initmfsimport(void);
+extern void initpyqtdeploy(void);
 #define PYQTDEPLOY_INIT initpyqtdeploy
 #define PYMAIN_TYPE     char
 #endif
