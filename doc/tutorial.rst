@@ -125,9 +125,9 @@ automatically handle inter-module dependencies.
 
 The ``wiggly.py`` script does not explicitly import any standard Python module
 (except for the :mod:`sys` module which is implemented as a builtin).  However,
-like any Python v3.x application deployed with pyqtdeploy, the
-:mod:`importlib`, :mod:`types` and :mod:`warnings` modules must be included.
-For a Python v2.x application only the :mod:`atexit` module must be included.
+pyqtdeploy will ensure that all modules that it depends on internally are
+included so, for example, the above shows that the :mod:`types` and
+:mod:`warnings` modules will be included and cannot be changed.
 
 
 Defining the ``site-packages`` Packages
