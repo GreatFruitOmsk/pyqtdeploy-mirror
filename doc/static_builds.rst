@@ -51,7 +51,7 @@ sip
 To build a static, native version of sip, change to the sip source directory
 and run::
 
-    $ROOT/python/bin/python configure.py --static
+    $ROOT/python/bin/python3 configure.py --static
     make
     make install
 
@@ -62,7 +62,7 @@ PyQt5
 To build a static, native version of PyQt5, change to the PyQt5 source
 directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
 
@@ -73,7 +73,7 @@ PyQt4
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
 
-    $ROOT/python/bin/python configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python3 configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
 
@@ -99,13 +99,13 @@ Assuming you are deploying the same versions of Qt and PyQt that you have
 developed the application with, then the easiest way to obtain the set of
 options is to run::
 
-    python -c "from PyQt5.QtCore import PYQT_CONFIGURATION; print(PYQT_CONFIGURATION['sip_flags'])"
+    python3 -c "from PyQt5.QtCore import PYQT_CONFIGURATION; print(PYQT_CONFIGURATION['sip_flags'])"
 
 To build a static, native version of the Python bindings, change to the
 QScintilla source directory and run::
 
     cd Python
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
@@ -130,7 +130,7 @@ section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtChart source directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
@@ -152,6 +152,6 @@ See the section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install

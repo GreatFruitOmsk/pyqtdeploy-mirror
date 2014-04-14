@@ -53,7 +53,7 @@ The tab for defining the application source is shown below.
 **PyQt4**
     is used to specify that the application is a PyQt4 application.
 
-**Scan application package...**
+**Scan...**
     is clicked to specify the name of the directory containing the Python
     package that (in more typical cases) implements the majority of the
     application.  The hierachy will be scanned for all files and directories
@@ -71,6 +71,9 @@ The tab for defining the application source is shown below.
         approach will also work with deployed applications so long as the file
         is accessed using the :class:`~PyQt5.QtCore.QFile` class (rather than
         the standard Python file access functions).
+
+**Remove all**
+    is clicked to remove all the scanned files and directories.
 
 **Include all**
     is clicked to check all scanned files and directories so that they are

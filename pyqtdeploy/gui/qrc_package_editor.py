@@ -60,9 +60,9 @@ class QrcPackageEditor(QGroupBox):
 
         layout.addWidget(QPushButton(scan, clicked=self._scan), 0, 1)
 
-        self._clear_button = QPushButton("Clear", clicked=self._clear,
-                enabled=False)
-        layout.addWidget(self._clear_button, 0, 2)
+        self._remove_button = QPushButton("Remove all",
+                clicked=self._remove_all, enabled=False)
+        layout.addWidget(self._remove_button, 0, 2)
 
         self._include_button = QPushButton("Include all",
                 clicked=self._include_all, enabled=False)
@@ -173,8 +173,8 @@ class QrcPackageEditor(QGroupBox):
             itm.setCheckState(0, Qt.Unchecked)
             itm.setExpanded(False)
 
-    def _clear(self, _):
-        """ Invoked when the use clicks on the clear button. """
+    def _remove_all(self, _):
+        """ Invoked when the use clicks on the remove all button. """
 
         blocked = self._package_edit.blockSignals(True)
         self._package_edit.clear()
@@ -189,7 +189,7 @@ class QrcPackageEditor(QGroupBox):
 
         enable = (len(list(self._get_items())) != 0)
 
-        self._clear_button.setEnabled(enable)
+        self._remove_button.setEnabled(enable)
         self._include_button.setEnabled(enable)
         self._exclude_button.setEnabled(enable)
 
