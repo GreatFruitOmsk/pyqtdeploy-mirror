@@ -1,7 +1,11 @@
-v0.2 ??? April 2014
+v0.2 14th April 2014
   - Added support for PyQt4 applications.
   - Added support for Python v2.6 and v2.7 applications.
   - Added the pyqtdeploy module.
+  - Added the 'Remove all' button to remove the results of scanning a package.
+  - The Python modules needed internally are now included automatically when
+    scanning the standard library.
+  - Added documentation about working with the repository.
 
 v0.1 26th March 2014
   - The first release.
