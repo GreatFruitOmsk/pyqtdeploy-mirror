@@ -91,9 +91,9 @@ class _SitePackagesPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title, scanning='site-packages',
+        super().__init__(self._title,
                 additional_exclusions=('libsip.a', 'sip.so', 'sip.lib',
-                        'sip.pyd', 'PyQt5'))
+                        'sip.pyd', 'PyQt5', 'PyQt4'))
 
         self._project = None
 

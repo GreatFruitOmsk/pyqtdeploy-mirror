@@ -40,7 +40,7 @@ class QrcPackageEditor(QGroupBox):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title, show_root=False, scanning='', additional_exclusions=None):
+    def __init__(self, title, show_root=False, scan="Scan", additional_exclusions=None):
         """ Initialise the editor. """
 
         super().__init__(title)
@@ -58,16 +58,19 @@ class QrcPackageEditor(QGroupBox):
         self._package_edit.itemChanged.connect(self._package_changed)
         layout.addWidget(self._package_edit, 0, 0, 3, 1)
 
-        text = "Scan"
-        if scanning != '':
-            text += ' '
-            text += scanning
+        layout.addWidget(QPushButton(scan, clicked=self._scan), 0, 1)
 
-        layout.addWidget(QPushButton(text, clicked=self._scan), 0, 1, 1, 2)
-        layout.addWidget(QPushButton("Include all", clicked=self._include_all),
-                1, 1)
-        layout.addWidget(QPushButton("Exclude all", clicked=self._exclude_all),
-                1, 2)
+        self._clear_button = QPushButton("Clear", clicked=self._clear,
+                enabled=False)
+        layout.addWidget(self._clear_button, 0, 2)
+
+        self._include_button = QPushButton("Include all",
+                clicked=self._include_all, enabled=False)
+        layout.addWidget(self._include_button, 1, 1)
+
+        self._exclude_button = QPushButton("Exclude all",
+                clicked=self._exclude_all, enabled=False)
+        layout.addWidget(self._exclude_button, 1, 2)
 
         self._exclusions_edit = QTreeWidget()
         self._exclusions_edit.setHeaderLabels(["Exclusions"])
@@ -169,6 +172,26 @@ class QrcPackageEditor(QGroupBox):
         for itm in self._get_items():
             itm.setCheckState(0, Qt.Unchecked)
             itm.setExpanded(False)
+
+    def _clear(self, _):
+        """ Invoked when the use clicks on the clear button. """
+
+        blocked = self._package_edit.blockSignals(True)
+        self._package_edit.clear()
+        self._package_edit.blockSignals(blocked)
+
+        self._enable_buttons()
+
+        self.package_changed.emit()
+
+    def _enable_buttons(self):
+        """ Set the enabled state of those buttons that require content. """
+
+        enable = (len(list(self._get_items())) != 0)
+
+        self._clear_button.setEnabled(enable)
+        self._include_button.setEnabled(enable)
+        self._exclude_button.setEnabled(enable)
 
     def _scan(self, _):
         """ Invoked when the user clicks on the scan button. """
@@ -282,6 +305,8 @@ class QrcPackageEditor(QGroupBox):
         self._visualise_contents(self._package.contents, parent)
 
         self._package_edit.blockSignals(blocked)
+
+        self._enable_buttons()
 
     def _visualise_contents(self, contents, parent):
         """ Visualise the contents for a parent. """

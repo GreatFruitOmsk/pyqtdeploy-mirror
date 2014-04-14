@@ -144,8 +144,7 @@ class _ApplicationPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title, show_root=True,
-                scanning=self._title.lower() + '...')
+        super().__init__(self._title, show_root=True, scan="Scan...")
 
         self._project = None
 
