@@ -89,7 +89,8 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title)
+        super().__init__(self._title,
+                additional_exclusions=('site-packages', ))
 
         self._project = None
 
