@@ -20,6 +20,9 @@ to specify other options to fully configure each package.
 Python
 ------
 
+Linux and OS/X
+..............
+
 To build a static, native version of Python, change to the Python source
 directory and run::
 
@@ -27,7 +30,57 @@ directory and run::
     make
     make install
 
-Note that a static, native build of Python is the default.
+Note that a static, native build of Python is the default on these platforms.
+
+
+Windows
+.......
+
+Instructions for creating a static version of the Python library on Windows are
+given in the ``readme.txt`` file in the ``PCbuild`` directory of the Python
+source code.  However these are rather brief and incomplete.  The following
+are, hopefully, a little clearer:
+
+- Open the ``pcbuild.sln`` in Microsoft Visual C++.
+
+- Set the configuration to ``Release`` from the default ``Debug``.
+
+- Using the Solution Explorer, right click on  ``pythoncore`` and select
+  ``Properties``.  In the dialog select ``Configuration Properties`` and set
+  ``Configuration Type`` to ``Static library (.lib)`` from the default
+  ``Dynamic library (.dll)``.
+
+- In the same dialog expand ``C/C++`` and select ``Preprocessor``. Edit
+  ``Preprocessor Definitions`` and change ``Py_ENABLE_SHARED`` to
+  ``Py_NO_ENABLE_SHARED``..
+
+- In the same dialog expand ``C/C++`` and select ``Code Generation``. Set
+  ``Runtime Library`` to ``Multi-threaded (/MT)`` from the default
+  ``Multi-threaded DLL (/MD)``.
+
+- Using the Solution Explorer, expand ``pythoncore``, right click on
+  ``Modules`` and select ``Add`` and then ``Existing Item...``.  Select the
+  ``getbuildinfo.c`` file from the ``Modules`` directory of the Python source
+  package.
+
+- Using the Solution Explorer, right click on  ``kill_python`` and select
+  ``Project Only`` and then ``Build Only kill_python``.
+
+- Using the Solution Explorer, right click on  ``make_buildinfo`` and select
+  ``Project Only`` and then ``Build Only make_buildinfo``.
+
+- Using the Solution Explorer, right click on  ``make_versioninfo`` and select
+  ``Project Only`` and then ``Build Only make_versioninfo``.
+
+- Using the Solution Explorer, right click on  ``pythoncore`` and select
+  ``Project Only`` and then ``Build Only pythoncore``.
+
+The Python static library will be left in the ``PCbuild`` directory.
+
+Note that this will not build any of the standard Python extension modules.
+These can be built individually but each should have ``Py_NO_ENABLE_SHARED``
+added to their preprocessor symbols and their runtime library sey to
+``Multi-threaded (/MT)``.
 
 
 Qt
