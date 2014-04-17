@@ -16,12 +16,22 @@ All packages are built in a nominal ``$ROOT`` directory.  Only those command
 line options related to static builds are specifed - you will probably want
 to specify other options to fully configure each package.
 
+The notes refer to the Python interpreter as ``$ROOT/python/bin/python`` which
+is correct for Python v2 on non-Windows platforms.  If you are using Python v3
+(on a non-Windows platform) then use ``$ROOT/python/bin/python3`` instead.  If
+you are using Windows then use ``$ROOT\Python-X.Y.Z\python`` where *X.Y.Z* is
+the Python version number.
+
+Similarly the notes refer to the SIP code generator as ``$ROOT/python/bin/sip``
+which is correct for non-Windows platforms.  If you are using Windows then use
+``$ROOT\Python-X.Y.Z\sip.exe`` instead.
+
 
 Python
 ------
 
-Linux and OS/X
-..............
+Non-Windows Platforms
+.....................
 
 To build a static, native version of Python, change to the Python source
 directory and run::
@@ -39,9 +49,17 @@ Windows
 Instructions for creating a static version of the Python library on Windows are
 given in the ``readme.txt`` file in the ``PCbuild`` directory of the Python
 source code.  However these are rather brief and incomplete.  The following
-are, hopefully, a little clearer:
+are, hopefully, a little clearer and will result in a static installation
+similar to one created by the standard Python installer.
 
-- Open the ``pcbuild.sln`` in Microsoft Visual C++.
+- Edit the file ``pyconfig.h`` in the ``PC`` directory of the Python source
+  package.  Locate the line where the preprocessor symbol
+  ``Py_NO_ENABLE_SHARED`` is tested and insert the following line before it::
+
+    #define Py_NO_ENABLE_SHARED
+
+- Open the ``pcbuild.sln`` file in the ``PCbuild`` directory in Microsoft
+  Visual C++.  Ignore any message about solution folders not being supported.
 
 - Set the configuration to ``Release`` from the default ``Debug``.
 
@@ -51,36 +69,26 @@ are, hopefully, a little clearer:
   ``Dynamic library (.dll)``.
 
 - In the same dialog expand ``C/C++`` and select ``Preprocessor``. Edit
-  ``Preprocessor Definitions`` and change ``Py_ENABLE_SHARED`` to
-  ``Py_NO_ENABLE_SHARED``..
-
-- In the same dialog expand ``C/C++`` and select ``Code Generation``. Set
-  ``Runtime Library`` to ``Multi-threaded (/MT)`` from the default
-  ``Multi-threaded DLL (/MD)``.
+  ``Preprocessor Definitions`` and remove ``Py_ENABLE_SHARED``.
 
 - Using the Solution Explorer, expand ``pythoncore``, right click on
   ``Modules`` and select ``Add`` and then ``Existing Item...``.  Select the
   ``getbuildinfo.c`` file from the ``Modules`` directory of the Python source
   package.
 
-- Using the Solution Explorer, right click on  ``kill_python`` and select
-  ``Project Only`` and then ``Build Only kill_python``.
+- Press ``F7`` to build Python.  Some extension modules will not build unless
+  external libraries on which they depend are installed.  If you do not need
+  these modules then you can simply ignore them.
 
-- Using the Solution Explorer, right click on  ``make_buildinfo`` and select
-  ``Project Only`` and then ``Build Only make_buildinfo``.
+- To install Python in similar locations as they would be on non-Windows
+  platforms, run the following commands::
 
-- Using the Solution Explorer, right click on  ``make_versioninfo`` and select
-  ``Project Only`` and then ``Build Only make_versioninfo``.
+    mkdir libs
+    copy PCbuild\pythonXY.lib libs
+    copy PC\pyconfig.h Include
 
-- Using the Solution Explorer, right click on  ``pythoncore`` and select
-  ``Project Only`` and then ``Build Only pythoncore``.
-
-The Python static library will be left in the ``PCbuild`` directory.
-
-Note that this will not build any of the standard Python extension modules.
-These can be built individually but each should have ``Py_NO_ENABLE_SHARED``
-added to their preprocessor symbols and their runtime library sey to
-``Multi-threaded (/MT)``.
+  In the above *XY* is the major and minor version of Python, e.g.
+  ``python34.lib``.
 
 
 Qt
@@ -104,7 +112,7 @@ sip
 To build a static, native version of sip, change to the sip source directory
 and run::
 
-    $ROOT/python/bin/python3 configure.py --static
+    $ROOT/python/bin/python configure.py --static
     make
     make install
 
@@ -115,7 +123,7 @@ PyQt5
 To build a static, native version of PyQt5, change to the PyQt5 source
 directory and run::
 
-    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
 
@@ -126,9 +134,12 @@ PyQt4
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
 
-    $ROOT/python/bin/python3 configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
+
+On Windows make sure that the directory containing ``qmake`` is on your
+:env:`PATH` and omit the ``--qmake`` option.
 
 
 QScintilla
@@ -152,18 +163,21 @@ Assuming you are deploying the same versions of Qt and PyQt that you have
 developed the application with, then the easiest way to obtain the set of
 options is to run::
 
-    python3 -c "from PyQt5.QtCore import PYQT_CONFIGURATION; print(PYQT_CONFIGURATION['sip_flags'])"
+    python -c "from PyQt5.QtCore import PYQT_CONFIGURATION; print(PYQT_CONFIGURATION['sip_flags'])"
 
 To build a static, native version of the Python bindings, change to the
 QScintilla source directory and run::
 
     cd Python
-    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
+
+On Windows make sure that the directory containing ``qmake`` is on your
+:env:`PATH` and omit the ``--qmake`` option.
 
 
 Qt Charts
@@ -183,9 +197,12 @@ section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtChart source directory and run::
 
-    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
+
+On Windows make sure that the directory containing ``qmake`` is on your
+:env:`PATH` and omit the ``--qmake`` option.
 
 
 Qt Data Visualization
@@ -205,6 +222,9 @@ See the section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
-    $ROOT/python/bin/python3 configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
+
+On Windows make sure that the directory containing ``qmake`` is on your
+:env:`PATH` and omit the ``--qmake`` option.
