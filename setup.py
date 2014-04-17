@@ -40,7 +40,7 @@ with open('README') as readme:
 setup(
         name='pyqtdeploy',
         version=version,
-        description='PyQt5 Application Deployment Tool',
+        description='PyQt Application Deployment Tool',
         long_description=long_description,
         author='Riverbank Computing Limited',
         author_email='info@riverbankcomputing.com',
