@@ -1,6 +1,9 @@
 syntax: glob
 *.pyc
+build
+ChangeLog
+dist
 doc/_build
 pyqtdeploy.egg-info
-VERSION
 pyqtdeploy/version.py
+VERSION
