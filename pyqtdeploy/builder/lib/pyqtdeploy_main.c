@@ -32,8 +32,9 @@
 
 #if PY_MAJOR_VERSION >= 3
 #include "frozen_importlib.h"
-#endif
+#else
 #include "frozen_bootstrap.h"
+#endif
 #include "frozen_main.h"
 
 
@@ -56,8 +57,9 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     static struct _frozen modules[] = {
 #if PY_MAJOR_VERSION >= 3
         {"_frozen_importlib", frozen__bootstrap, sizeof (frozen__bootstrap)},
-#endif
+#else
         {"__bootstrap__", frozen___bootstrap__, sizeof (frozen___bootstrap__)},
+#endif
         {"__main__", frozen___main__, sizeof (frozen___main__)},
         {NULL, NULL, 0}
     };

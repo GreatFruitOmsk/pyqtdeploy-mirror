@@ -87,7 +87,12 @@ class _StdlibPackageEditor(QrcPackageEditor):
     _title = "Standard Library"
 
     # The required Python v3 modules.
-    _py3_required = ('importlib', 'types.py', 'warnings.py')
+    _py3_required = ('_collections_abc.py', '_osx_support.py',
+        '_sitebuiltins.py', '_sysconfigdata.py', '_weakrefset.py', 'abc.py',
+        'codecs.py', 'copyreg', 'encodings', 'genericpath.py', 'importlib',
+        'io.py', 'ntpath.py', 'os.py', 'posixpath.py', 're.py', 'site.py',
+        'sre_compile.py', 'sre_constants.py', 'sre_parse.py', 'stat.py',
+        'sysconfig.py', 'types.py', 'warnings.py')
 
     # The required Python v2 modules.
     _py2_required = ('atexit.py', )
@@ -117,7 +122,9 @@ class _StdlibPackageEditor(QrcPackageEditor):
         return stdlib_dir
 
     def filter(self, name):
-        """ Reimplemented to filter out site-packages. """
+        """ Reimplemented to filter out site-packages and unwanted
+        sub-packages.
+        """
 
         if name in ('importlib._bootstrap.py', 'site-packages'):
             return True

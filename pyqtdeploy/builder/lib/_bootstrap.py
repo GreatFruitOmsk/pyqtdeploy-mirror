@@ -1913,7 +1913,9 @@ class PathFinder:
         """find the module on sys.path or 'path' based on sys.path_hooks and
         sys.path_importer_cache."""
         if path is None:
-            path = sys.path
+            # Hard code the path (rather than use sys.path) so that any changes
+            # made by site.py are ignored.
+            path = [':/', ':/stdlib', ':/site-packages']
         spec = cls._get_spec(fullname, path, target)
         if spec is None:
             return None
@@ -2372,7 +2374,7 @@ def _setup(sys_module, _imp_module):
 
     # Directly load built-in modules needed during bootstrap.
     self_module = sys.modules[__name__]
-    for builtin_name in ('_io', '_warnings', 'builtins', 'marshal'):
+    for builtin_name in ('_io', '_warnings', 'builtins', 'marshal', 'pyqtdeploy'):
         if builtin_name not in sys.modules:
             builtin_module = _builtin_from_name(builtin_name)
         else:
@@ -2429,10 +2431,12 @@ def _setup(sys_module, _imp_module):
 def _install(sys_module, _imp_module):
     """Install importlib as the implementation of import."""
     _setup(sys_module, _imp_module)
-    supported_loaders = _get_supported_file_loaders()
-    sys.path_hooks.extend([FileFinder.path_hook(*supported_loaders)])
+    #supported_loaders = _get_supported_file_loaders()
+    #sys.path_hooks.extend([FileFinder.path_hook(*supported_loaders)])
     sys.meta_path.append(BuiltinImporter)
     sys.meta_path.append(FrozenImporter)
-    if _os.__name__ == 'nt':
-        sys.meta_path.append(WindowsRegistryFinder)
+    #if _os.__name__ == 'nt':
+    #    sys.meta_path.append(WindowsRegistryFinder)
     sys.meta_path.append(PathFinder)
+
+    sys.path_hooks[:] = [pyqtdeploy.qrcimporter]
