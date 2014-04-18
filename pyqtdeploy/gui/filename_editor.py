@@ -70,7 +70,7 @@ class FilenameEditor(QWidget):
     def text(self):
         """ Get the text of the embedded QLineEdit. """
 
-        return QDir.toNativeSeparators(self._line_edit.text())
+        return self._line_edit.text()
 
     def _browse(self, value):
         """ Invoked when the user clicks on the browse button. """
@@ -87,6 +87,8 @@ class FilenameEditor(QWidget):
                     self._caption, default)
 
         if name != '':
+            name = QDir.toNativeSeparators(name)
+
             if self._project is not None:
                 name = self._project.relative_path(name)
 
