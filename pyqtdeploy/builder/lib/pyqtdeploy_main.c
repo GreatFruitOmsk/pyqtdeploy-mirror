@@ -30,6 +30,9 @@
 
 #include <Python.h>
 
+#if PY_MAJOR_VERSION >= 3
+#include "frozen_importlib.h"
+#endif
 #include "frozen_bootstrap.h"
 #include "frozen_main.h"
 
@@ -49,12 +52,13 @@ extern void initpyqtdeploy(void);
 int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         struct _inittab *extension_modules)
 {
-    // The replacement table of frozen modules with a reserved place for
-    // Python v3's _frozen_importlib.
+    // The replacement table of frozen modules.
     static struct _frozen modules[] = {
+#if PY_MAJOR_VERSION >= 3
+        {"_frozen_importlib", frozen__bootstrap, sizeof (frozen__bootstrap)},
+#endif
         {"__bootstrap__", frozen___bootstrap__, sizeof (frozen___bootstrap__)},
         {"__main__", frozen___main__, sizeof (frozen___main__)},
-        {NULL, NULL, 0},
         {NULL, NULL, 0}
     };
 
@@ -62,17 +66,6 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     wchar_t **w_argv;
     int i;
     char *saved_locale;
-    const struct _frozen *fm;
-
-    // Plugin _frozen_importlib.
-    for (fm = PyImport_FrozenModules; fm->name != NULL; ++fm)
-    {
-        if (strcmp(fm->name, "_frozen_importlib") == 0)
-        {
-            modules[2] = *fm;
-            break;
-        }
-    }
 #endif
 
     PyImport_FrozenModules = modules;

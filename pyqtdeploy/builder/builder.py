@@ -334,7 +334,7 @@ class Builder():
         self._copy_lib_file('pyqtdeploy_main.c', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
-        f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
+        f.write('HEADERS = frozen_importlib.h frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
 
         bootstrap_f = self._create_file(build_dir, '__bootstrap__.py')
         bootstrap_f.write('''import sys
@@ -351,6 +351,11 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
         self._freeze(os.path.join(build_dir, 'frozen_main.h'),
                 project.absolute_path(project.application_script), freeze,
                 main=True)
+
+        importlib = self._copy_lib_file('_bootstrap.py')
+        self._freeze(os.path.join(build_dir, 'frozen_importlib.h'), importlib,
+                freeze)
+        os.remove(importlib)
 
         version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
         version_f.write(
