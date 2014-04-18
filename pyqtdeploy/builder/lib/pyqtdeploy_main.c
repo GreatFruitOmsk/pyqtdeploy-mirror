@@ -59,9 +59,12 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     };
 
 #if PY_MAJOR_VERSION >= 3
-    // Plugin _frozen_importlib.
+    wchar_t **w_argv;
+    int i;
+    char *saved_locale;
     const struct _frozen *fm;
 
+    // Plugin _frozen_importlib.
     for (fm = PyImport_FrozenModules; fm->name != NULL; ++fm)
     {
         if (strcmp(fm->name, "_frozen_importlib") == 0)
@@ -90,10 +93,6 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         }
 
 #if PY_MAJOR_VERSION >= 3
-    wchar_t **w_argv;
-    int i;
-    char *saved_locale;
-
     // Convert the argument list to wide characters.
     if ((w_argv = PyMem_Malloc(sizeof (wchar_t *) * argc)) == NULL)
     {
