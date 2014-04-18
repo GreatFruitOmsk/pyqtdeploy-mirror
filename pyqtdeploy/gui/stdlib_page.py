@@ -87,15 +87,16 @@ class _StdlibPackageEditor(QrcPackageEditor):
     _title = "Standard Library"
 
     # The required Python v3 modules.
-    _py3_required = ('_collections_abc.py', '_osx_support.py',
-        '_sitebuiltins.py', '_sysconfigdata.py', '_weakrefset.py', 'abc.py',
-        'codecs.py', 'copyreg.py', 'encodings/__init__.py',
-        'encodings/aliases.py', 'encodings/ascii.py', 'encodings/latin1.py',
-        'encodings/mbcs.py', 'utf_8.py', 'genericpath.py',
-        'importlib/__init__.py', 'importlib/abc.py', 'importlib/machinery.py',
-        'importlib/util.py', 'io.py', 'ntpath.py', 'os.py', 'posixpath.py',
-        're.py', 'site.py', 'sre_compile.py', 'sre_constants.py',
-        'sre_parse.py', 'stat.py', 'sysconfig.py', 'types.py', 'warnings.py')
+    _py3_required = ('_bootlocale.py', '_collections_abc.py',
+        '_osx_support.py', '_sitebuiltins.py', '_sysconfigdata.py',
+        '_weakrefset.py', 'abc.py', 'codecs.py', 'copyreg.py',
+        'encodings/__init__.py', 'encodings/aliases.py', 'encodings/ascii.py',
+        'encodings/cp437.py', 'encodings/latin_1.py', 'encodings/mbcs.py',
+        'encodings/utf_8.py', 'genericpath.py', 'importlib/__init__.py',
+        'importlib/abc.py', 'importlib/machinery.py', 'importlib/util.py',
+        'io.py', 'ntpath.py', 'os.py', 'posixpath.py', 're.py', 'site.py',
+        'sre_compile.py', 'sre_constants.py', 'sre_parse.py', 'stat.py',
+        'sysconfig.py', 'types.py', 'warnings.py')
 
     # The required Python v2 modules.
     _py2_required = ('atexit.py', )
