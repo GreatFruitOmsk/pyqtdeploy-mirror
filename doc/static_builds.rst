@@ -26,6 +26,9 @@ Similarly the notes refer to the SIP code generator as ``$ROOT/python/bin/sip``
 which is correct for non-Windows platforms.  If you are using Windows then use
 ``$ROOT\Python-X.Y.Z\sip.exe`` instead.
 
+Finally, the notes refer to the make command as ``make``.  If you are using
+Microsoft Visual C++ then use ``nmake`` instead.
+
 
 Python
 ------
@@ -80,9 +83,10 @@ similar to one created by the standard Python installer.
   external libraries on which they depend are installed.  If you do not need
   these modules then you can simply ignore them.
 
-- To install Python in similar locations as they would be on non-Windows
-  platforms, run the following commands::
+- To install Python in similar locations as they would be by the standard
+  Python installer, run the following commands::
 
+    copy PCbuild\python*.exe .
     mkdir libs
     copy PCbuild\pythonXY.lib libs
     copy PC\pyconfig.h Include
@@ -126,6 +130,9 @@ directory and run::
     $ROOT/python/bin/python configure.py --no-designer-plugin --no-qml-plugin --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
+
+On Windows make sure that the directory containing ``qmake`` is on your
+:env:`PATH` and omit the ``--qmake`` option.
 
 
 PyQt4
