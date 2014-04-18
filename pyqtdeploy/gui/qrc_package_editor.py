@@ -264,7 +264,7 @@ class QrcPackageEditor(QGroupBox):
             if len(dir_stack) > 1:
                 module_path = dir_stack[1:]
                 module_path.append(name)
-                path_name = '.'.join(module_path)
+                path_name = '/'.join(module_path)
             else:
                 path_name = name
 
@@ -273,27 +273,17 @@ class QrcPackageEditor(QGroupBox):
 
             # See if we already know the included state.
             rel_path = os.path.join(os.path.join(*dir_stack), name)
-            included = old_state.get(rel_path)
+            included = old_state.get(rel_path, False)
 
             # Add the content.
             full_name = os.path.join(path, name)
 
             if os.path.isdir(full_name):
-                # Look ahead to see if the directory is a sub-package.  If not,
-                # and it is new in this scan, then we exclude it.
-                new_path_contents = os.listdir(full_name)
-
-                if included is None:
-                    included = ('__init__.py' in new_path_contents)
-
                 qrc = QrcDirectory(name, included)
 
-                self._add_to_container(qrc, full_name, new_path_contents,
+                self._add_to_container(qrc, full_name, os.listdir(full_name),
                         dir_stack, old_state)
             elif os.path.isfile(full_name):
-                if included is None:
-                    included = True
-
                 qrc = QrcFile(name, included)
             else:
                 continue
@@ -328,23 +318,33 @@ class QrcPackageEditor(QGroupBox):
 
         module_names = ['']
         p = parent
-        while p is not None and not isinstance(p, QTreeWidget):
+        while p is not None and isinstance(p, QTreeWidgetItem):
             module_names.insert(0, p.text(0))
             p = p.parent()
 
         for content in contents:
             module_names[-1] = content.name
-            required = self.required('.'.join(module_names))
+            required = self.required('/'.join(module_names))
 
             itm = QTreeWidgetItem(parent, [content.name])
+
+            itm.setDisabled(required)
+            if required:
+                content.included = True
+
+                p = parent
+                while p is not None and isinstance(p, QTreeWidgetItem):
+                    p.setCheckState(0, Qt.Checked)
+                    p._qrc_item.included = True
+                    p = p.parent()
+
             itm.setCheckState(0,
                     Qt.Checked if content.included else Qt.Unchecked)
-            itm.setDisabled(required)
+
             itm._qrc_item = content
 
             if isinstance(content, QrcDirectory):
                 self._visualise_contents(content.contents, itm)
-                itm.setExpanded(not required and content.included)
 
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
