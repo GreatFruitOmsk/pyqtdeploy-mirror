@@ -3,5 +3,5 @@ linux-* {
 }
 
 win32-msvc* {
-    LIBS += -lshell32 -ladvapi32
+    LIBS += -ladvapi32 -lshell32 -luser32
 }

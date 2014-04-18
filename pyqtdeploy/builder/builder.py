@@ -234,6 +234,7 @@ class Builder():
                 no_gui = False
 
         if no_gui:
+            f.write('CONFIG += console\n')
             f.write('QT -= gui\n')
 
         if len(qmake_qt) != 0:
