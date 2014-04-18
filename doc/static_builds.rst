@@ -123,7 +123,7 @@ PyQt5
 To build a static, native version of PyQt5, change to the PyQt5 source
 directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python configure.py --no-designer-plugin --no-qml-plugin --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
 
@@ -134,7 +134,7 @@ PyQt4
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
 
-    $ROOT/python/bin/python configure-ng.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    $ROOT/python/bin/python configure-ng.py --no-designer-plugin --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
     make
     make install
 
