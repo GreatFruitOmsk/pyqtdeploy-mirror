@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from PyQt5.QtCore import QDir
 from PyQt5.QtWidgets import (QFileDialog, QHBoxLayout, QLineEdit, QStyle,
         QToolButton, QWidget)
 
@@ -69,7 +70,7 @@ class FilenameEditor(QWidget):
     def text(self):
         """ Get the text of the embedded QLineEdit. """
 
-        return self._line_edit.text()
+        return QDir.toNativeSeparators(self._line_edit.text())
 
     def _browse(self, value):
         """ Invoked when the user clicks on the browse button. """
