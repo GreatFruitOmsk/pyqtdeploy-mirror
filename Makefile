@@ -47,7 +47,7 @@ wheel: clean VERSION pyqtdeploy/version.py
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel
 
-sdist: clean doc
+sdist: clean doc pyqtdeploy/version.py
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py sdist
 
