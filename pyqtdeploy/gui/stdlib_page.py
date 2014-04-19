@@ -107,10 +107,33 @@ class _StdlibPackageEditor(QrcPackageEditor):
         super().__init__(self._title)
 
         self._project = None
-        self._required = self._py2_required
+        self._py_version = None
 
     def get_root_dir(self):
         """ Get the name of the Python standard library directory. """
+
+        major, minor = self._project.python_target_version
+
+        if major is None:
+            QMessageBox.warning(self, self._title,
+                    "The standard library cannot be scanned because the "
+                    "Python version cannot be obtained from the Python "
+                    "library name in the Python Configuration tab.")
+            return ''
+
+        if major == 3 and minor < 3:
+            QMessageBox.warning(self, self._title,
+                    "When targetting Python v3, Python v3.3 or later is "
+                    "required.")
+            return ''
+
+        if major == 2 and minor < 6:
+            QMessageBox.warning(self, self._title,
+                    "When targetting Python v2, Python v2.6 or later is "
+                    "required.")
+            return ''
+
+        self._py_version = major
 
         stdlib_dir = self._project.python_target_stdlib_dir
 
@@ -120,8 +143,6 @@ class _StdlibPackageEditor(QrcPackageEditor):
                     "directory name has not been set in the Python "
                     "Configuration tab.")
             return ''
-
-        self._required = self._py2_required
 
         return stdlib_dir
 
@@ -138,11 +159,9 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def required(self, name):
         """ See if a name is required. """
 
-        # Remember if we seem to be scanning Python v3.
-        if name == '_bootlocale.py':
-            self._required = self._py3_required
+        required_modules = self._py3_required if self._py_version == 3 else self._py2_required
 
-        if name in self._required:
+        if name in required_modules:
             return True
 
         return super().filter(name)

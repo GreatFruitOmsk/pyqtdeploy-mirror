@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QFormLayout, QWidget
+from PyQt5.QtWidgets import QFormLayout, QMessageBox, QWidget
 
 from .filename_editor import FilenameEditor
 

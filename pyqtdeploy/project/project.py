@@ -72,6 +72,33 @@ class Project(QObject):
             self._name = value
             self.name_changed.emit(value)
 
+    @property
+    def python_target_version(self):
+        """ The target Python version getter. """
+
+        if self.python_target_library != '':
+            lib_name = os.path.basename(self.python_target_library)
+
+            # Strip everything up to the leading digit.
+            while lib_name != '' and not lib_name[0].isdigit():
+                lib_name = lib_name[1:]
+
+            # Strip everything after the trailing digit.
+            while lib_name != '' and not lib_name[-1].isdigit():
+                lib_name = lib_name[:-1]
+
+            version_str = lib_name.replace('.', '')
+
+            # We should now have a 2-digit string.
+            try:
+                version = int(version_str)
+
+                return version // 10, version % 10
+            except ValueError:
+                pass
+
+        return None
+
     def __init__(self, name=''):
         """ Initialise the project. """
 
