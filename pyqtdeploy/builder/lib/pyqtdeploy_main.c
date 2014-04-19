@@ -140,7 +140,6 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     Py_SetProgramName(argv[0]);
     Py_Initialize();
     PySys_SetArgv(argc, argv);
-#endif
 
     // Initialise the path hooks.
     if (PyImport_ImportFrozenModule("__bootstrap__") < 0)
@@ -148,6 +147,7 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
         PyErr_Print();
         return 1;
     }
+#endif
 
     // Import the main module, ie. execute the application.
     if (PyImport_ImportFrozenModule("__main__") < 0)
