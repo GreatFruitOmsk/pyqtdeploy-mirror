@@ -56,8 +56,10 @@ are, hopefully, a little clearer and will result in a static installation
 similar to one created by the standard Python installer.
 
 - Edit the file ``pyconfig.h`` in the ``PC`` directory of the Python source
-  package.  Locate the line where the preprocessor symbol
-  ``Py_NO_ENABLE_SHARED`` is tested and insert the following line before it::
+  package.  Locate the line that defines the preprocessor symbol
+  ``HAVE_DYNAMIC_LOADING`` and comment it out.  Locate the line where the
+  preprocessor symbol ``Py_NO_ENABLE_SHARED`` is tested and insert the
+  following line before it::
 
     #define Py_NO_ENABLE_SHARED
 
@@ -77,7 +79,8 @@ similar to one created by the standard Python installer.
 - Using the Solution Explorer, expand ``pythoncore``, right click on
   ``Modules`` and select ``Add`` and then ``Existing Item...``.  Select the
   ``getbuildinfo.c`` file from the ``Modules`` directory of the Python source
-  package.
+  package.  Expand ``Python``, right click on ``dynload_win.c`` and select 
+  ``Exclude From Project``.
 
 - Press ``F7`` to build Python.  Some extension modules will not build unless
   external libraries on which they depend are installed.  If you do not need
@@ -87,9 +90,16 @@ similar to one created by the standard Python installer.
   Python installer, run the following commands::
 
     copy PCbuild\python*.exe .
-    mkdir libs
-    copy PCbuild\pythonXY.lib libs
     copy PC\pyconfig.h Include
+    mkdir libs
+
+  If you are building Python v3 then run the following command::
+
+    copy PCbuild\pythonXY.lib libs
+
+  If you are building Python v2 then run the following command::
+
+    copy PCbuild\pythoncore.lib libs\pythonXY.lib
 
   In the above *XY* is the major and minor version of Python, e.g.
   ``python34.lib``.
