@@ -63,6 +63,9 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     char *saved_locale;
 #endif
 
+    Py_FrozenFlag = 1;
+    Py_NoSiteFlag = 1;
+
     PyImport_FrozenModules = modules;
 
     // Add the importer to the table of builtins.
