@@ -107,7 +107,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
         super().__init__(self._title)
 
         self._project = None
-        self._required = self._py3_required
+        self._required = self._py2_required
 
     def get_root_dir(self):
         """ Get the name of the Python standard library directory. """
@@ -121,7 +121,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
                     "Configuration tab.")
             return ''
 
-        self._required = self._py3_required
+        self._required = self._py2_required
 
         return stdlib_dir
 
@@ -138,10 +138,9 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def required(self, name):
         """ See if a name is required. """
 
-        # Remember if we seem to be scanning Python v2.  (atexit is a builtin
-        # in Python v3.)
-        if name == 'atexit.py':
-            self._required = self._py2_required
+        # Remember if we seem to be scanning Python v3.
+        if name == '_bootlocale.py':
+            self._required = self._py3_required
 
         if name in self._required:
             return True
