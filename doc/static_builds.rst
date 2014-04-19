@@ -142,7 +142,7 @@ directory and run::
     make install
 
 On Windows make sure that the directory containing ``qmake`` is on your
-:env:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH` and omit the ``--qmake`` option.
 
 
 PyQt4
@@ -156,7 +156,7 @@ directory and run::
     make install
 
 On Windows make sure that the directory containing ``qmake`` is on your
-:env:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH` and omit the ``--qmake`` option.
 
 
 QScintilla
@@ -194,7 +194,7 @@ The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
 On Windows make sure that the directory containing ``qmake`` is on your
-:env:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH` and omit the ``--qmake`` option.
 
 
 Qt Charts
@@ -219,7 +219,7 @@ PyQtChart source directory and run::
     make install
 
 On Windows make sure that the directory containing ``qmake`` is on your
-:env:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH` and omit the ``--qmake`` option.
 
 
 Qt Data Visualization
@@ -244,4 +244,4 @@ PyQtDataVisualization source directory and run::
     make install
 
 On Windows make sure that the directory containing ``qmake`` is on your
-:env:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH` and omit the ``--qmake`` option.
