@@ -248,11 +248,13 @@ class Builder():
 
         for extension_module in project.extension_modules:
             if extension_module.name != '':
-                extensions[extension_module.name] = extension_module.path
+                extensions[extension_module.name] = QDir.fromNativeSeparators(
+                        project.absolute_path(extension_module.path))
 
         if len(project.pyqt_modules) > 0:
-            sitepackages = project.absolute_path(
-                    project.python_target_stdlib_dir) + '/site-packages'
+            sitepackages = QDir.fromNativeSeparators(
+                    project.absolute_path(
+                            project.python_target_stdlib_dir)) + '/site-packages'
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
             for pyqt in project.pyqt_modules:
@@ -271,7 +273,7 @@ class Builder():
                 if mod_dir not in mod_dirs:
                     mod_dirs.append(mod_dir)
 
-            mod_dir_flags = ['-L' + md for md in mod_dirs]
+            mod_dir_flags = ['-L' + self._quote(md) for md in mod_dirs]
             mod_flags = ['-l' + m.split('.')[-1] for m in extensions.keys()]
 
             f.write(
@@ -282,19 +284,21 @@ class Builder():
         f.write('\n')
 
         if project.python_target_include_dir != '':
-            f.write(
-                    'INCLUDEPATH += {0}\n'.format(
-                            project.python_target_include_dir))
+            inc_dir = QDir.fromNativeSeparators(
+                    project.absolute_path(project.python_target_include_dir))
+            f.write('INCLUDEPATH += {0}\n'.format(self._quote(inc_dir)))
 
         if project.python_target_library != '':
             lib_dir = os.path.dirname(project.python_target_library)
+            lib_dir = QDir.fromNativeSeparators(project.absolute_path(lib_dir))
+
             lib, _ = os.path.splitext(
                     os.path.basename(project.python_target_library))
 
             if lib.startswith('lib'):
                 lib = lib[3:]
 
-            f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
+            f.write('LIBS += -L{0} -l{1}\n'.format(self._quote(lib_dir), lib))
 
         # Add the platform specific stuff.
         platforms_f = QFile(self._lib_filename('platforms.pro'))
@@ -389,6 +393,15 @@ sys.path_hooks = [pyqtdeploy.qrcimporter]
                     break
 
         return resources
+
+    @staticmethod
+    def _quote(name):
+        """ Return the quoted version of a name if quoting is required. """
+
+        if ' ' in name:
+            name = '"' + name + '"'
+
+        return name
 
     def _write_resource(self, resources_dir, resource, package, src, freeze):
         """ Create a .qrc file for a resource and the corresponding contents.
