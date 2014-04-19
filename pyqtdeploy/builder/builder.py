@@ -338,28 +338,21 @@ class Builder():
         self._copy_lib_file('pyqtdeploy_main.c', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
-        f.write('HEADERS = frozen_importlib.h frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
+        f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
 
-        bootstrap_f = self._create_file(build_dir, '__bootstrap__.py')
-        bootstrap_f.write('''import sys
-import pyqtdeploy
+        major, _ = project.python_target_version
+        if major is None:
+            raise UserException("Unable to determine target Python version")
 
-sys.path = [{0}]
-sys.path_hooks = [pyqtdeploy.qrcimporter]
-'''.format(', '.join(["':/{0}'".format(resource) for resource in resources])))
-        bootstrap_f.close()
-
-        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'),
-                os.path.join(build_dir, '__bootstrap__.py'), freeze)
+        bootstrap = self._copy_lib_file(
+                'bootstrap_py3.py' if major == 3 else 'bootstrap_py2.py')
+        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
+                freeze, name='pyqtdeploy_bootstrap')
+        os.remove(bootstrap)
 
         self._freeze(os.path.join(build_dir, 'frozen_main.h'),
                 project.absolute_path(project.application_script), freeze,
-                main=True)
-
-        importlib = self._copy_lib_file('_bootstrap.py')
-        self._freeze(os.path.join(build_dir, 'frozen_importlib.h'), importlib,
-                freeze)
-        os.remove(importlib)
+                name='pyqtdeploy_main')
 
         version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
         version_f.write(
@@ -575,13 +568,14 @@ int main(int argc, char **argv)
     return pyqtdeploy_main(argc, argv, %s"%s", %s);
 ''' % (name_type, name_prefix, app_name, inittab))
 
-    def _freeze(self, output, py_filename, freeze, main=False, as_data=False):
+    def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
         args = [self._project.python_host_interpreter, freeze]
         
-        if main:
-            args.append('--main')
+        if name is not None:
+            args.append('--name')
+            args.append(name)
 
         args.append('--as-data' if as_data else '--as-c')
         args.append(output)

@@ -30,23 +30,20 @@
 
 #include <Python.h>
 
-#if PY_MAJOR_VERSION >= 3
-#include "frozen_importlib.h"
-#else
 #include "frozen_bootstrap.h"
-#endif
 #include "frozen_main.h"
 
 
-// Forward declarations.
 #if PY_MAJOR_VERSION >= 3
+#define BOOTSTRAP_MODULE    "_frozen_importlib"
+#define PYQTDEPLOY_INIT     PyInit_pyqtdeploy
+#define PYMAIN_TYPE         wchar_t
 extern PyObject *PyInit_pyqtdeploy(void);
-#define PYQTDEPLOY_INIT PyInit_pyqtdeploy
-#define PYMAIN_TYPE     wchar_t
 #else
+#define BOOTSTRAP_MODULE    "__bootstrap__"
+#define PYQTDEPLOY_INIT     initpyqtdeploy
+#define PYMAIN_TYPE         char
 extern void initpyqtdeploy(void);
-#define PYQTDEPLOY_INIT initpyqtdeploy
-#define PYMAIN_TYPE     char
 #endif
 
 
@@ -55,12 +52,8 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
-#if PY_MAJOR_VERSION >= 3
-        {"_frozen_importlib", frozen__bootstrap, sizeof (frozen__bootstrap)},
-#else
-        {"__bootstrap__", frozen___bootstrap__, sizeof (frozen___bootstrap__)},
-#endif
-        {"__main__", frozen___main__, sizeof (frozen___main__)},
+        {BOOTSTRAP_MODULE, frozen_pyqtdeploy_bootstrap, sizeof (frozen_pyqtdeploy_bootstrap)},
+        {"__main__", frozen_pyqtdeploy_main, sizeof (frozen_pyqtdeploy_main)},
         {NULL, NULL, 0}
     };
 
@@ -142,7 +135,7 @@ int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
     PySys_SetArgv(argc, argv);
 
     // Initialise the path hooks.
-    if (PyImport_ImportFrozenModule("__bootstrap__") < 0)
+    if (PyImport_ImportFrozenModule(BOOTSTRAP_MODULE) < 0)
     {
         PyErr_Print();
         return 1;

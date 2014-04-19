@@ -40,14 +40,12 @@ def freeze_as_data(py_filename, data_filename):
     data_file.close()
 
 
-def freeze_as_c(py_filename, c_filename, main):
+def freeze_as_c(py_filename, c_filename, name):
     """ Freeze a Python source file and save it as C source code. """
 
     code = _get_marshalled_code(py_filename)
 
-    if main:
-        name = '__main__'
-    else:
+    if not name:
         name, _ = os.path.splitext(os.path.basename(py_filename))
 
     c_file = open(c_filename, 'wt')
@@ -86,8 +84,8 @@ parser.add_option('--as-c', help="freeze the Python source as C code in FILE",
         metavar="FILE")
 parser.add_option('--as-data', help="freeze the Python source as data in FILE",
         metavar="FILE")
-parser.add_option('--main', help="the frozen module is __main__",
-        action='store_true')
+parser.add_option('--name', help="name the C structure frozen_NAME",
+        metavar="NAME")
 
 (options, args) = parser.parse_args()
 
@@ -99,7 +97,7 @@ py_file = args[0]
 
 # Handle the specific actions.
 if options.as_c is not None:
-    freeze_as_c(py_file, options.as_c, options.main)
+    freeze_as_c(py_file, options.as_c, options.name)
 
 if options.as_data is not None:
     freeze_as_data(py_file, options.as_data)
