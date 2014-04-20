@@ -41,70 +41,77 @@ class Builder():
 
     # Map PyQt modules to the corresponding qmake QT or CONFIG values.  A
     # module that doesn't need any of these values can be omitted
-    class _QtMetaData:
-        def __init__(self, qt=None, config=None):
+    class _Qt5MetaData:
+        def __init__(self, qt=None, config=None, needs_suffix=False):
             self.qt = qt
             self.config = config
+            self.needs_suffix = needs_suffix
+
+    class _Qt4MetaData(_Qt5MetaData):
+        def __init__(self, qt=None, config=None, needs_suffix=True):
+            super().__init__(qt=qt, config=config, needs_suffix=needs_suffix)
 
     _pyqt5_module_map = {
-        'QAxContainer':         _QtMetaData(qt=['axcontainer']),
-        'QtBluetooth':          _QtMetaData(qt=['bluetooth']),
-        'QtCore':               _QtMetaData(qt=['-gui']),
-        'QtDBus':               _QtMetaData(qt=['dbus', '-gui']),
-        'QtDesigner':           _QtMetaData(qt=['designer']),
-        'QtHelp':               _QtMetaData(qt=['help']),
-        'QtMacExtras':          _QtMetaData(qt=['macextras']),
-        'QtMultimedia':         _QtMetaData(qt=['multimedia']),
-        'QtMultimediaWidgets':  _QtMetaData(
+        'QAxContainer':         _Qt5MetaData(qt=['axcontainer']),
+        'QtBluetooth':          _Qt5MetaData(qt=['bluetooth']),
+        'QtCore':               _Qt5MetaData(qt=['-gui']),
+        'QtDBus':               _Qt5MetaData(qt=['dbus', '-gui']),
+        'QtDesigner':           _Qt5MetaData(qt=['designer']),
+        'QtHelp':               _Qt5MetaData(qt=['help']),
+        'QtMacExtras':          _Qt5MetaData(qt=['macextras']),
+        'QtMultimedia':         _Qt5MetaData(qt=['multimedia']),
+        'QtMultimediaWidgets':  _Qt5MetaData(
                                         qt=['multimediawidgets',
                                                 'multimedia']),
-        'QtNetwork':            _QtMetaData(qt=['network', '-gui']),
-        'QtOpenGL':             _QtMetaData(qt=['opengl']),
-        'QtPositioning':        _QtMetaData(qt=['positioning']),
-        'QtPrintSupport':       _QtMetaData(qt=['printsupport']),
-        'QtQml':                _QtMetaData(qt=['qml']),
-        'QtQuick':              _QtMetaData(qt=['quick']),
-        'QtSensors':            _QtMetaData(qt=['sensors']),
-        'QtSerialPort':         _QtMetaData(qt=['serialport']),
-        'QtSql':                _QtMetaData(qt=['sql', 'widgets']),
-        'QtSvg':                _QtMetaData(qt=['svg']),
-        'QtTest':               _QtMetaData(qt=['testlib', 'widgets']),
-        'QtWebKit':             _QtMetaData(qt=['webkit', 'network']),
-        'QtWebKitWidgets':      _QtMetaData(qt=['webkitwidgets']),
-        'QtWidgets':            _QtMetaData(qt=['widgets']),
-        'QtWinExtras':          _QtMetaData(qt=['winextras', 'widgets']),
-        'QtX11Extras':          _QtMetaData(qt=['x11extras']),
-        'QtXmlPatterns':        _QtMetaData(
+        'QtNetwork':            _Qt5MetaData(qt=['network', '-gui']),
+        'QtOpenGL':             _Qt5MetaData(qt=['opengl']),
+        'QtPositioning':        _Qt5MetaData(qt=['positioning']),
+        'QtPrintSupport':       _Qt5MetaData(qt=['printsupport']),
+        'QtQml':                _Qt5MetaData(qt=['qml']),
+        'QtQuick':              _Qt5MetaData(qt=['quick']),
+        'QtSensors':            _Qt5MetaData(qt=['sensors']),
+        'QtSerialPort':         _Qt5MetaData(qt=['serialport']),
+        'QtSql':                _Qt5MetaData(qt=['sql', 'widgets']),
+        'QtSvg':                _Qt5MetaData(qt=['svg']),
+        'QtTest':               _Qt5MetaData(qt=['testlib', 'widgets']),
+        'QtWebKit':             _Qt5MetaData(qt=['webkit', 'network']),
+        'QtWebKitWidgets':      _Qt5MetaData(qt=['webkitwidgets']),
+        'QtWidgets':            _Qt5MetaData(qt=['widgets']),
+        'QtWinExtras':          _Qt5MetaData(qt=['winextras', 'widgets']),
+        'QtX11Extras':          _Qt5MetaData(qt=['x11extras']),
+        'QtXmlPatterns':        _Qt5MetaData(
                                         qt=['xmlpatterns', '-gui', 'network']),
 
-        'QtChart':              _QtMetaData(config=['qtcommercialchart']),
-        'QtDataVisualization':  _QtMetaData(qt=['datavisualization']),
-        'Qsci':                 _QtMetaData(config=['qscintilla2']),
+        'QtChart':              _Qt5MetaData(config=['qtcommercialchart']),
+        'QtDataVisualization':  _Qt5MetaData(qt=['datavisualization']),
+        'Qsci':                 _Qt5MetaData(config=['qscintilla2']),
     }
 
     _pyqt4_module_map = {
-        'QAxContainer':         _QtMetaData(config=['qaxcontainer']),
-        'QtCore':               _QtMetaData(qt=['-gui']),
-        'QtDBus':               _QtMetaData(qt=['dbus', '-gui']),
-        'QtDeclarative':        _QtMetaData(qt=['declarative', 'network']),
-        'QtDesigner':           _QtMetaData(config=['designer']),
-        'QtHelp':               _QtMetaData(config=['help']),
-        'QtMultimedia':         _QtMetaData(qt=['multimedia']),
-        'QtNetwork':            _QtMetaData(qt=['network', '-gui']),
-        'QtOpenGL':             _QtMetaData(qt=['opengl']),
-        'QtScript':             _QtMetaData(qt=['script', '-gui']),
-        'QtScriptTools':        _QtMetaData(qt=['scripttools', 'script']),
-        'QtSql':                _QtMetaData(qt=['sql']),
-        'QtSvg':                _QtMetaData(qt=['svg']),
-        'QtTest':               _QtMetaData(qt=['testlib']),
-        'QtWebKit':             _QtMetaData(qt=['webkit', 'network']),
-        'QtXml':                _QtMetaData(qt=['xml', '-gui']),
-        'QtXmlPatterns':        _QtMetaData(
+        'QAxContainer':         _Qt4MetaData(config=['qaxcontainer']),
+        'QtCore':               _Qt4MetaData(qt=['-gui']),
+        'QtDBus':               _Qt4MetaData(qt=['dbus', '-gui']),
+        'QtDeclarative':        _Qt4MetaData(qt=['declarative', 'network']),
+        'QtDesigner':           _Qt4MetaData(config=['designer']),
+        'QtHelp':               _Qt4MetaData(config=['help']),
+        'QtMultimedia':         _Qt4MetaData(qt=['multimedia']),
+        'QtNetwork':            _Qt4MetaData(qt=['network', '-gui']),
+        'QtOpenGL':             _Qt4MetaData(qt=['opengl']),
+        'QtScript':             _Qt4MetaData(qt=['script', '-gui']),
+        'QtScriptTools':        _Qt4MetaData(qt=['scripttools', 'script']),
+        'QtSql':                _Qt4MetaData(qt=['sql']),
+        'QtSvg':                _Qt4MetaData(qt=['svg']),
+        'QtTest':               _Qt4MetaData(qt=['testlib']),
+        'QtWebKit':             _Qt4MetaData(qt=['webkit', 'network']),
+        'QtXml':                _Qt4MetaData(qt=['xml', '-gui']),
+        'QtXmlPatterns':        _Qt4MetaData(
                                         qt=['xmlpatterns', '-gui', 'network']),
-        'phonon':               _QtMetaData(qt=['phonon']),
+        'phonon':               _Qt4MetaData(qt=['phonon']),
 
-        'QtChart':              _QtMetaData(config=['qtcommercialchart']),
-        'Qsci':                 _QtMetaData(config=['qscintilla2']),
+        'QtChart':              _Qt4MetaData(config=['qtcommercialchart'],
+                                        needs_suffix=False),
+        'Qsci':                 _Qt4MetaData(config=['qscintilla2'],
+                                        needs_suffix=False),
     }
 
     def __init__(self, project, verbose=False):
@@ -211,12 +218,10 @@ class Builder():
         qmake_qt = []
         qmake_config = []
 
-        module_map = self._pyqt5_module_map if project.application_is_pyqt5 else self._pyqt4_module_map
-
         for pyqt_m in project.pyqt_modules:
             needs_gui = True
 
-            metadata = module_map.get(pyqt_m, self._QtMetaData())
+            metadata = self._get_metadata(pyqt_m)
 
             if metadata.qt is not None:
                 for qt in metadata.qt:
@@ -248,8 +253,10 @@ class Builder():
 
         for extension_module in project.extension_modules:
             if extension_module.name != '':
-                extensions[extension_module.name] = QDir.fromNativeSeparators(
-                        project.absolute_path(extension_module.path))
+                extensions[extension_module.name] = (
+                        QDir.fromNativeSeparators(
+                                project.absolute_path(extension_module.path)),
+                        extension_module.name)
 
         if len(project.pyqt_modules) > 0:
             sitepackages = QDir.fromNativeSeparators(
@@ -259,22 +266,31 @@ class Builder():
 
             for pyqt in project.pyqt_modules:
                 if pyqt != 'uic':
-                    extensions[pyqt_version + '.' + pyqt] = sitepackages + '/' + pyqt_version
+                    lib_name = pyqt
+                    if self._get_metadata(pyqt).needs_suffix:
+                        # Qt4's qmake thinks -lQtCore etc. always refer to the
+                        # Qt libraries so PyQt4 creates static libraries with a
+                        # suffix.
+                        lib_name += '_s'
+
+                    extensions[pyqt_version + '.' + pyqt] = (
+                            sitepackages + '/' + pyqt_version,
+                            lib_name)
 
             # Add the implicit sip module.
-            extensions['sip'] = sitepackages
+            extensions['sip'] = (sitepackages, 'sip')
 
         if len(extensions) > 0:
             f.write('\n')
 
             # Get the list of unique module directories.
             mod_dirs = []
-            for mod_dir in extensions.values():
+            for mod_dir, _ in extensions.values():
                 if mod_dir not in mod_dirs:
                     mod_dirs.append(mod_dir)
 
             mod_dir_flags = ['-L' + self._quote(md) for md in mod_dirs]
-            mod_flags = ['-l' + m.split('.')[-1] for m in extensions.keys()]
+            mod_flags = ['-l' + l for _, l in extensions.values()]
 
             f.write(
                     'LIBS += {0} {1}\n'.format(' '.join(mod_dir_flags),
@@ -386,6 +402,18 @@ class Builder():
                     break
 
         return resources
+
+    def _get_metadata(self, name):
+        """ Get the metadata for a module. """
+
+        if self._project.application_is_pyqt5:
+            module_map = self._pyqt5_module_map
+            default_metadata = self._Qt5MetaData()
+        else:
+            module_map = self._pyqt4_module_map
+            default_metadata = self._Qt4MetaData()
+
+        return module_map.get(name, default_metadata)
 
     @staticmethod
     def _quote(name):
