@@ -1,3 +1,6 @@
+v0.3 20th April 2014
+  - Windows support now works.
+
 v0.2 14th April 2014
   - Added support for PyQt4 applications.
   - Added support for Python v2.6 and v2.7 applications.
