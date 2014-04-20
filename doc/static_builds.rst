@@ -4,13 +4,10 @@ Building Static Packages
 In this section we describe how to build static, native versions of the various
 packages that might be part of a deployment.
 
-Depending on the target platform it is not necessary to build static versions
-of all packages.  The main advantage of a static version is that it removes an
-external dependency and so eases deployment.  The main disadvantage is that it
-inceases the size of the final executable.  In reality it probably only makes
-sense to consider a non-static version of Qt (given its relatively large size)
-and only if you are deploying more that one application or if you know it will
-already be installed as dynamic libraries on the target platform.
+For most target platforms it is not necessary to build a static version of Qt.
+The main advantage of a static version is that it removes an external
+dependency and so eases deployment.  The main disadvantage is that it increases
+the size of the final executable.
 
 All packages are built in a nominal ``$ROOT`` directory.  Only those command
 line options related to static builds are specifed - you will probably want
@@ -55,6 +52,18 @@ source code.  However these are rather brief and incomplete.  The following
 are, hopefully, a little clearer and will result in a static installation
 similar to one created by the standard Python installer.
 
+In the following *XY* refers to the major and minor version of Python, e.g.
+``pythonXY.lib``.
+
+If you are building Python v3 then it is assumed you are using Microsoft Visual
+C++ 2010.  If you are building Python v2 then it is assumed you are using
+Microsoft Visual C++ 2008.
+
+If you are building a 64 bit version of Python then you will need to have an
+existing Python installation.  (The standard Python installer is fine.)  You
+need to set the :envvar:`HOST_PYTHON` environment variable to the name of the
+Python interpreter in that installation, e.g. ``C:\PythonXY\python.exe``.
+
 - Edit the file ``pyconfig.h`` in the ``PC`` directory of the Python source
   package.  Locate the line that defines the preprocessor symbol
   ``HAVE_DYNAMIC_LOADING`` and comment it out.  Locate the line where the
@@ -63,18 +72,30 @@ similar to one created by the standard Python installer.
 
     #define Py_NO_ENABLE_SHARED
 
-- Open the ``pcbuild.sln`` file in the ``PCbuild`` directory in Microsoft
-  Visual C++.  Ignore any message about solution folders not being supported.
+- Open the ``pcbuild.sln`` file in the ``PCbuild`` directory in Visual C++.
+  Ignore any message about solution folders not being supported.
 
 - Set the configuration to ``Release`` from the default ``Debug``.
 
+- If you are building a 64 bit version of Python then set the platform to
+  ``x64`` from the default ``Win32``.
+
+- If you are building a 64 bit version of Python v3 then, using the Solution
+  Explorer, right click on each project and select ``Properties``.  In the
+  dialog select ``Configuration Properties`` and set ``Platform Toolset`` to
+  ``Windows7.1SDK``.  (Note that you can select multiple projects and set the
+  properties for all selected at the same time.)
+
 - Using the Solution Explorer, right click on  ``pythoncore`` and select
   ``Properties``.  In the dialog select ``Configuration Properties`` and set
-  ``Configuration Type`` to ``Static library (.lib)`` from the default
-  ``Dynamic library (.dll)``.
+  ``Configuration Type`` to ``Static library (.lib)``.
 
 - In the same dialog expand ``C/C++`` and select ``Preprocessor``. Edit
   ``Preprocessor Definitions`` and remove ``Py_ENABLE_SHARED``.
+
+- If you are building a 64 bit version of Python v3 then, in the same dialog,
+  expand ``Librarian``, select ``General`` and set ``Target Machine`` to
+  ``MachineX64 (/MACHINE:X64)``.
 
 - Using the Solution Explorer, expand ``pythoncore``, right click on
   ``Modules`` and select ``Add`` and then ``Existing Item...``.  Select the
@@ -82,27 +103,40 @@ similar to one created by the standard Python installer.
   package.  Expand ``Python``, right click on ``dynload_win.c`` and select 
   ``Exclude From Project``.
 
-- Press ``F7`` to build Python.  Some extension modules will not build unless
-  external libraries on which they depend are installed.  If you do not need
-  these modules then you can simply ignore them.
+- Press ``F7`` to build Python.  Some projects will not build unless external
+  libraries on which they depend are installed.  If you do not need these then
+  you can simply ignore them.
 
 - To install Python in similar locations as they would be by the standard
-  Python installer, run the following commands::
+  Python installer, run the following commands.
 
-    copy PCbuild\python*.exe .
+  For a 64 bit Python v3, run::
+
     copy PC\pyconfig.h Include
+    copy PCbuild\amd64\python*.exe .
     mkdir libs
+    copy PCbuild\amd64\pythonXY.lib libs
 
-  If you are building Python v3 then run the following command::
+  For a 32 bit Python v3, run::
 
+    copy PC\pyconfig.h Include
+    copy PCbuild\python*.exe .
+    mkdir libs
     copy PCbuild\pythonXY.lib libs
 
-  If you are building Python v2 then run the following command::
+  For a 64 bit Python v2, run::
 
+    copy PC\pyconfig.h Include
+    copy PCbuild\amd64\python*.exe .
+    mkdir libs
+    copy PCbuild\amd64\pythoncore.lib libs\pythonXY.lib
+
+  For a 32 bit Python v2, run::
+
+    copy PC\pyconfig.h Include
+    copy PCbuild\python*.exe .
+    mkdir libs
     copy PCbuild\pythoncore.lib libs\pythonXY.lib
-
-  In the above *XY* is the major and minor version of Python, e.g.
-  ``python34.lib``.
 
 
 Qt
