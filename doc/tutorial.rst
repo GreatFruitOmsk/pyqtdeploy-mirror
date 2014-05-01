@@ -101,12 +101,13 @@ instead.
 .. image:: /images/pyqt_modules_tab.png
     :align: center
 
-Simply check all the PyQt modules that are used, either implicitly or
-explicitly, by the application.  pyqtdeploy does not (yet) automatically handle
-inter-module dependencies.
+Simply check all the PyQt modules that are used.  pyqtdeploy understands the
+dependencies between the different PyQt modules and will automatically check
+any additional modules that are required.
 
-In this example the ``wiggly.py`` script uses the :mod:`~PyQt5.QtCore`,
-:mod:`~PyQt5.QtGui` and :mod:`~PyQt5.QtWidgets` modules.
+In this example only the :mod:`~PyQt5.QtWidgets` module has been explicitly
+specified and the :mod:`~PyQt5.QtCore` and :mod:`~PyQt5.QtGui` modules are
+automatically included as dependencies.
 
 
 Defining the Standard Library Packages
