@@ -64,7 +64,8 @@ class LocationsPage(QWidget):
 
         # Create the page's GUI.
         py_host_group = QGroupBox("Host Python Locations")
-        py_host_layout = QFormLayout()
+        py_host_layout = QFormLayout(
+                fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
 
         self._host_interp_edit = FilenameEditor("Host Interpreter",
                 placeholderText="Interpreter executable",
@@ -76,7 +77,8 @@ class LocationsPage(QWidget):
         py_host_group.setLayout(py_host_layout)
 
         py_target_group = QGroupBox("Target Python Locations")
-        py_target_layout = QFormLayout()
+        py_target_layout = QFormLayout(
+                fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
 
         self._target_inc_edit = FilenameEditor("Target Include Directory",
                 placeholderText="Include directory name",

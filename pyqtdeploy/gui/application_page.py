@@ -67,7 +67,7 @@ class ApplicationPage(QWidget):
         # Create the page's GUI.
         layout = QGridLayout()
 
-        form = QFormLayout()
+        form = QFormLayout(fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
 
         self._script_edit = FilenameEditor("Application Script",
                 placeholderText="Application script",
