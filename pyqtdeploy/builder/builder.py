@@ -63,6 +63,7 @@ class Builder():
 
         resources_dir = os.path.join(build_dir, 'resources')
         self._create_directory(resources_dir)
+        stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         for resource in self.resources():
             if resource == '':
@@ -71,8 +72,7 @@ class Builder():
                         project.absolute_path(package.name), freeze)
             elif resource == 'stdlib':
                 self._write_resource(resources_dir, resource,
-                        project.stdlib_package,
-                        os.path.join(project.python_target_stdlib_dir, ''),
+                        project.stdlib_package, os.path.join(stdlib_dir, ''),
                         freeze)
             else:
                 # Add the PyQt package to a temporary copy of the site-packages
@@ -89,16 +89,13 @@ class Builder():
                     # Add uic if requested.
                     if 'uic' in project.pyqt_modules:
                         self._add_uic_dir(pyqt_pkg_dir,
-                                os.path.join(
-                                        self._project.python_target_stdlib_dir,
-                                        'site-packages', pyqt_dir),
+                                os.path.join(stdlib_dir, 'site-packages',
+                                        pyqt_dir),
                                 'uic', [])
 
                 self._write_resource(resources_dir, resource,
                         site_packages_package,
-                        os.path.join(project.python_target_stdlib_dir,
-                                'site-packages', ''),
-                        freeze)
+                        os.path.join(stdlib_dir, 'site-packages', ''), freeze)
 
         os.remove(freeze)
 
@@ -129,7 +126,8 @@ class Builder():
 
         project = self._project
 
-        app_name = os.path.basename(project.application_script)
+        app_name = os.path.basename(
+                project.absolute_path(project.application_script))
         app_name, _ = os.path.splitext(app_name)
 
         f = self._create_file(build_dir, app_name + '.pro')
@@ -184,8 +182,11 @@ class Builder():
 
         if len(project.pyqt_modules) > 0:
             sitepackages = QDir.fromNativeSeparators(
-                    project.absolute_path(
-                            project.python_target_stdlib_dir)) + '/site-packages'
+                    os.path.join(
+                            project.absolute_path(
+                                    project.python_target_stdlib_dir),
+                            'site-packages'))
+
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
             for pyqt in self._get_all_pyqt_modules():
@@ -229,11 +230,9 @@ class Builder():
             f.write('INCLUDEPATH += {0}\n'.format(self._quote(inc_dir)))
 
         if project.python_target_library != '':
-            lib_dir = os.path.dirname(project.python_target_library)
-            lib_dir = QDir.fromNativeSeparators(project.absolute_path(lib_dir))
-
-            lib, _ = os.path.splitext(
-                    os.path.basename(project.python_target_library))
+            lib_path = project.absolute_path(project.python_target_library)
+            lib_dir = QDir.fromNativeSeparators(os.path.dirname(lib_path))
+            lib, _ = os.path.splitext(os.path.basename(lib_path))
 
             if lib.startswith('lib'):
                 lib = lib[3:]
@@ -544,7 +543,9 @@ int main(int argc, char **argv)
     def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        args = [self._project.python_host_interpreter, freeze]
+        project = self._project
+
+        args = [project.absolute_path(project.python_host_interpreter), freeze]
         
         if name is not None:
             args.append('--name')

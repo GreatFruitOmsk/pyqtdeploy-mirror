@@ -107,7 +107,9 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def get_root_dir(self):
         """ Get the name of the Python standard library directory. """
 
-        major, minor = self._project.python_target_version
+        project = self._project
+
+        major, minor = project.python_target_version
 
         if major is None:
             QMessageBox.warning(self, self._title,
@@ -130,7 +132,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
 
         self._py_version = major
 
-        stdlib_dir = self._project.python_target_stdlib_dir
+        stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         if stdlib_dir == '':
             QMessageBox.warning(self, self._title,

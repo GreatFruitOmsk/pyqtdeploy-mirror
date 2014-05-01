@@ -98,7 +98,9 @@ class _SitePackagesPackageEditor(QrcPackageEditor):
     def get_root_dir(self):
         """ Get the name of the Python site packages directory. """
 
-        stdlib_dir = self._project.python_target_stdlib_dir
+        project = self._project
+
+        stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         if stdlib_dir == '':
             QMessageBox.warning(self, self._title,

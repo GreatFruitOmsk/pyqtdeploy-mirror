@@ -141,7 +141,7 @@ class Project(QObject):
         absolute filename.
         """
 
-        filename = filename.strip()
+        filename = os.path.expandvars(filename.strip())
 
         if not os.path.isabs(filename):
             filename = os.path.join(os.path.dirname(self._name), filename)

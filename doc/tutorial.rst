@@ -45,7 +45,9 @@ The tab for defining the application source is shown below.
         Whenever a file or directory is specified, pyqtdeploy always saves its
         name relative to the directory containing the project file if possible.
         In this particular example the ``wiggly.py`` script is in the same
-        directory as the ``wiggly.pdy`` project file.
+        directory as the ``wiggly.pdy`` project file.  Also, whenever a file
+        or directory name is entered, pyqtdeploy allows the embedding of
+        environment variables which will be expanded when necessary.
 
 **PyQt5**
     is used to specify that the application is a PyQt5 application.
