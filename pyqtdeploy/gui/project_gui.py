@@ -37,6 +37,7 @@ from ..user_exception import UserException
 from ..version import PYQTDEPLOY_RELEASE
 
 from .application_page import ApplicationPage
+from .build_page import BuildPage
 from .extension_modules_page import ExtensionModulesPage
 from .locations_page import LocationsPage
 from .pyqt_page import PyQtPage
@@ -148,6 +149,9 @@ class ProjectGUI(QMainWindow):
 
         locations_page = LocationsPage()
         tabs.addTab(locations_page, locations_page.label)
+
+        build_page = BuildPage()
+        tabs.addTab(build_page, build_page.label)
 
         application_page.pyqt_version_changed.connect(
                 pyqt_page.set_pyqt_version)
