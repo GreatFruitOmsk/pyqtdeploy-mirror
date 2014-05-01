@@ -24,16 +24,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QFormLayout, QMessageBox, QWidget
+from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QMessageBox, QVBoxLayout,
+        QWidget)
 
 from .filename_editor import FilenameEditor
 
 
-class PythonPage(QWidget):
-    """ The GUI for the Python configuration page of a project. """
+class LocationsPage(QWidget):
+    """ The GUI for the locations page of a project. """
 
     # The page's label.
-    label = "Python Configuration"
+    label = "Locations"
 
     @property
     def project(self):
@@ -61,36 +62,49 @@ class PythonPage(QWidget):
         self._project = None
 
         # Create the page's GUI.
-        form = QFormLayout()
+        py_host_group = QGroupBox("Host Python Locations")
+        py_host_layout = QFormLayout()
 
         self._host_interp_edit = FilenameEditor("Host Interpreter",
                 placeholderText="Interpreter executable",
                 whatsThis="The name of the host interpreter's executable. "
                         "This must be on PATH or be an absolute pathname.",
                 textEdited=self._host_interp_changed)
-        form.addRow("Host interpreter", self._host_interp_edit)
+        py_host_layout.addRow("Interpreter", self._host_interp_edit)
+
+        py_host_group.setLayout(py_host_layout)
+
+        py_target_group = QGroupBox("Target Python Locations")
+        py_target_layout = QFormLayout()
 
         self._target_inc_edit = FilenameEditor("Target Include Directory",
                 placeholderText="Include directory name",
                 whatsThis="The target interpreter's include directory.",
                 textEdited=self._target_inc_changed, directory=True)
-        form.addRow("Target include directory", self._target_inc_edit)
+        py_target_layout.addRow("Include directory", self._target_inc_edit)
 
         self._target_lib_edit = FilenameEditor("Python Library",
                 placeholderText="Library name",
                 whatsThis="The target interpreter's Python library.",
                 textEdited=self._target_lib_changed)
-        form.addRow("Target Python library", self._target_lib_edit)
+        py_target_layout.addRow("Python library", self._target_lib_edit)
 
         self._target_stdlib_edit = FilenameEditor(
                 "Target Standard Library Directory",
                 placeholderText="Standard library directory name",
                 whatsThis="The target interpreter's standard library directory.",
                 textEdited=self._target_stdlib_changed, directory=True)
-        form.addRow("Target standard library directory",
+        py_target_layout.addRow("Standard library directory",
                 self._target_stdlib_edit)
 
-        self.setLayout(form)
+        py_target_group.setLayout(py_target_layout)
+
+        layout = QVBoxLayout()
+        layout.addWidget(py_host_group)
+        layout.addWidget(py_target_group)
+        layout.addStretch()
+
+        self.setLayout(layout)
 
     def _update_page(self):
         """ Update the page using the current project. """

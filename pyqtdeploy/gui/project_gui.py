@@ -38,8 +38,8 @@ from ..version import PYQTDEPLOY_RELEASE
 
 from .application_page import ApplicationPage
 from .extension_modules_page import ExtensionModulesPage
+from .locations_page import LocationsPage
 from .pyqt_page import PyQtPage
-from .python_page import PythonPage
 from .site_packages_page import SitePackagesPage
 from .stdlib_page import StdlibPage
 
@@ -146,8 +146,8 @@ class ProjectGUI(QMainWindow):
         extension_modules_page = ExtensionModulesPage()
         tabs.addTab(extension_modules_page, extension_modules_page.label)
 
-        python_page = PythonPage()
-        tabs.addTab(python_page, python_page.label)
+        locations_page = LocationsPage()
+        tabs.addTab(locations_page, locations_page.label)
 
         application_page.pyqt_version_changed.connect(
                 pyqt_page.set_pyqt_version)
