@@ -24,10 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QFormLayout, QGroupBox, QMessageBox, QVBoxLayout,
-        QWidget, QWidgetItem)
+from PyQt5.QtWidgets import QGroupBox, QMessageBox, QVBoxLayout, QWidget
 
+from .better_form import BetterForm
 from .filename_editor import FilenameEditor
 
 
@@ -64,8 +63,7 @@ class LocationsPage(QWidget):
 
         # Create the page's GUI.
         py_host_group = QGroupBox("Host Python Locations")
-        py_host_layout = QFormLayout(
-                fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
+        py_host_layout = BetterForm()
 
         self._host_interp_edit = FilenameEditor("Host Interpreter",
                 placeholderText="Interpreter executable",
@@ -77,8 +75,7 @@ class LocationsPage(QWidget):
         py_host_group.setLayout(py_host_layout)
 
         py_target_group = QGroupBox("Target Python Locations")
-        py_target_layout = QFormLayout(
-                fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
+        py_target_layout = BetterForm()
 
         self._target_inc_edit = FilenameEditor("Target Include Directory",
                 placeholderText="Include directory name",
@@ -109,38 +106,7 @@ class LocationsPage(QWidget):
 
         self.setLayout(layout)
 
-        self._align_forms(py_host_layout, py_target_layout)
-
-    def _align_forms(self, *forms):
-        """ Align a set of forms. """
-
-        # Find the widest label.
-        max_width = 0
-
-        for form in forms:
-            # Force the layout to be calculated.
-            form.update()
-            form.activate()
-
-            for label in self._get_labels(form):
-                width = label.width()
-                if max_width < width:
-                    max_width = width
-
-        for form in forms:
-            alignment = form.labelAlignment() | Qt.AlignVCenter
-
-            for label in self._get_labels(form):
-                label.setMinimumWidth(max_width)
-                label.setAlignment(alignment)
-
-    def _get_labels(self, form):
-        """ A generator returning the labels of a form. """
-
-        for row in range(form.rowCount()):
-            itm = form.itemAt(row, QFormLayout.LabelRole)
-            if isinstance(itm, QWidgetItem):
-                yield itm.widget()
+        BetterForm.align_forms(py_host_layout, py_target_layout)
 
     def _update_page(self):
         """ Update the page using the current project. """

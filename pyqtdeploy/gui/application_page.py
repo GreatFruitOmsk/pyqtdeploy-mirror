@@ -25,9 +25,10 @@
 
 
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QFormLayout,
-        QGridLayout, QHBoxLayout, QRadioButton, QWidget)
+from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout,
+        QHBoxLayout, QRadioButton, QWidget)
 
+from .better_form import BetterForm
 from .filename_editor import FilenameEditor
 from .qrc_package_editor import QrcPackageEditor
 
@@ -67,7 +68,7 @@ class ApplicationPage(QWidget):
         # Create the page's GUI.
         layout = QGridLayout()
 
-        form = QFormLayout(fieldGrowthPolicy=QFormLayout.ExpandingFieldsGrow)
+        form = BetterForm()
 
         self._script_edit = FilenameEditor("Application Script",
                 placeholderText="Application script",
