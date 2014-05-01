@@ -24,9 +24,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QGridLayout, QGroupBox,
-        QStackedWidget, QVBoxLayout, QWidget)
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QStackedWidget,
+        QVBoxLayout, QWidget)
+
+from ..metadata import pyqt4_metadata, pyqt5_metadata
 
 
 class PyQtPage(QStackedWidget):
@@ -34,39 +36,6 @@ class PyQtPage(QStackedWidget):
 
     # The page's label.
     label = "PyQt Modules"
-
-    class _PyQtModules:
-        """ Encapsulate the PyQt modules for a particular version. """
-
-        def __init__(self, modules=(), opengl_modules=(), addon_modules=()):
-            """ Initialise the object. """
-
-            self.modules = modules
-            self.opengl_modules = opengl_modules
-            self.addon_modules = addon_modules
-
-    # The PyQt5 modules.
-    _pyqt5_modules = _PyQtModules(
-            modules=(
-                'QAxContainer', 'Qt', 'QtBluetooth', 'QtCore', 'QtDBus',
-                'QtDesigner', 'QtGui', 'QtHelp', 'QtMacExtras', 'QtMultimedia',
-                'QtMultimediaWidgets', 'QtNetwork', 'QtOpenGL',
-                'QtPositioning', 'QtPrintSupport', 'QtQml', 'QtQuick',
-                'QtSensors', 'QtSerialPort', 'QtSql', 'QtSvg', 'QtTest',
-                'QtWebKit', 'QtWebKitWidgets', 'QtWidgets', 'QtWinExtras',
-                'QtX11Extras', 'QtXmlPatterns', 'uic'),
-            opengl_modules=('_QOpenGLFunctions_ES2', '_QOpenGLFunctions_2_0'),
-            addon_modules=('Qsci', 'QtChart', 'QtDataVisualization'))
-
-    # The PyQt4 modules.
-    _pyqt4_modules = _PyQtModules(
-            modules=(
-                'QAxContainer', 'Qt', 'QtCore', 'QtDBus', 'QtDeclarative',
-                'QtDesigner', 'QtGui', 'QtHelp', 'QtMultimedia', 'QtNetwork',
-                'QtOpenGL', 'QtScript', 'QtScriptTools', 'QtSql', 'QtSvg',
-                'QtTest', 'QtWebKit', 'QtXml', 'QtXmlPatterns', 'phonon',
-                'uic'),
-            addon_modules=('Qsci', 'QtChart'))
 
     @property
     def project(self):
@@ -90,10 +59,10 @@ class PyQtPage(QStackedWidget):
         self._project = None
 
         # Create the stacked pages for each PyQt version.
-        self._pyqt5_page = _PyQtVersionPage(self._pyqt5_modules)
+        self._pyqt5_page = _PyQtVersionPage(pyqt5_metadata)
         self.addWidget(self._pyqt5_page)
 
-        self._pyqt4_page = _PyQtVersionPage(self._pyqt4_modules)
+        self._pyqt4_page = _PyQtVersionPage(pyqt4_metadata)
         self.addWidget(self._pyqt4_page)
 
     @pyqtSlot(bool)
@@ -127,23 +96,21 @@ class PyQtPage(QStackedWidget):
 class _PyQtVersionPage(QWidget):
     """ The GUI for a PyQt version specific configuration page. """
 
-    def __init__(self, modules):
+    def __init__(self, metadata):
         """ Initialise the page. """
 
         super().__init__()
 
-        self._modules = modules
+        self._metadata = metadata
+        self._buttons = {}
         self.project = None
 
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        self._modules_bg = self._create_button_group(layout,
-                "Imported Modules", self._modules.modules)
-        self._opengl_modules_bg = self._create_button_group(layout,
-                "Internal OpenGL Modules", self._modules.opengl_modules)
-        self._addon_modules_bg = self._create_button_group(layout,
-                "Add-on Modules", self._modules.addon_modules)
+        self._create_buttons(layout, "Imported Modules", 'base')
+        self._create_buttons(layout, "Internal OpenGL Modules", 'opengl')
+        self._create_buttons(layout, "Add-on Modules", 'addon')
         layout.addStretch()
 
         self.setLayout(layout)
@@ -153,51 +120,45 @@ class _PyQtVersionPage(QWidget):
 
         modules = self.project.pyqt_modules
 
-        del modules[:]
-
-        for b in self._get_buttons():
-            if b.isChecked():
-                modules.append(b.text())
+        modules[:] = [name for name, b in self._buttons.items()
+                if b.explicitly_required]
 
     def configure(self):
         """ Update the page according to modules specified in the project. """
 
         modules = self.project.pyqt_modules
 
-        self._block_signals(True)
+        for name, b in self._buttons.items():
+            b.explicitly_required = (name in modules)
 
-        for b in self._get_buttons():
-            b.setChecked(b.text() in modules)
-
-        self._block_signals(False)
+        self._set_implicit_requirements()
 
     def clear(self):
         """ Deselect all modules. """
 
-        self._block_signals(True)
+        for b in self._buttons.values():
+            b.explictly_required = False
 
-        for b in self._get_buttons():
-            b.setChecked(False)
+        self._set_implicit_requirements()
 
-        self._block_signals(False)
+    def _create_buttons(self, layout, title, group):
+        """ Add a button for each module in a group to a layout. """
 
-    def _create_button_group(self, layout, title, modules):
-        """ Add a check box for each module to a layout and return a connected
-        button group.
-        """
-
-        if len(modules) == 0:
-            return None
-
-        b_group = QButtonGroup(exclusive=False)
-        imports = QGroupBox(title)
-        grid = QGridLayout()
-
+        imports = grid = None
         row = column = 0
-        for m in modules:
-            b = QCheckBox(m)
 
-            b_group.addButton(b)
+        for module_name in sorted(self._metadata.keys()):
+            if self._metadata[module_name].group != group:
+                continue
+
+            if imports is None:
+                imports = QGroupBox(title)
+                grid = QGridLayout()
+
+            b = ModuleButton(module_name)
+            b.explicitly_required_changed.connect(self._module_toggled)
+
+            self._buttons[module_name] = b
             grid.addWidget(b, row, column)
 
             column += 1
@@ -205,46 +166,103 @@ class _PyQtVersionPage(QWidget):
                 row += 1
                 column = 0
 
-        imports.setLayout(grid)
-        layout.addWidget(imports)
+        if imports is not None:
+            imports.setLayout(grid)
+            layout.addWidget(imports)
 
-        b_group.buttonToggled.connect(self._module_toggled)
-
-        return b_group
-
-    def _get_buttons(self):
-        """ A generator that returns all of the buttons in the page. """
-
-        if self._modules_bg is not None:
-            for b in self._modules_bg.buttons():
-                yield b
-
-        if self._opengl_modules_bg is not None:
-            for b in self._opengl_modules_bg.buttons():
-                yield b
-
-        if self._addon_modules_bg is not None:
-            for b in self._addon_modules_bg.buttons():
-                yield b
-
-    def _block_signals(self, block):
-        """ Block (or unblock) all button group signals. """
-
-        if self._modules_bg is not None:
-            self._modules_bg.blockSignals(block)
-
-        if self._opengl_modules_bg is not None:
-            self._opengl_modules_bg.blockSignals(block)
-
-        if self._addon_modules_bg is not None:
-            self._addon_modules_bg.blockSignals(block)
-
-    def _module_toggled(self, button, checked):
+    def _module_toggled(self, module, required):
         """ Invoked when a module button is toggled. """
 
-        if checked:
-            self.project.pyqt_modules.append(button.text())
+        self._set_implicit_requirements()
+
+        if required:
+            self.project.pyqt_modules.append(module)
         else:
-            self.project.pyqt_modules.remove(button.text())
+            self.project.pyqt_modules.remove(module)
 
         self.project.modified = True
+
+    def _set_implicit_requirements(self):
+        """ Set the implicit requirement for each module button. """
+
+        for b in self._buttons.values():
+            b.implicitly_required = False
+
+        for name, b in self._buttons.items():
+            if b.explicitly_required:
+                self._set_button_dependencies(name)
+
+    def _set_button_dependencies(self, module_name):
+        """ Set the implicit requirements for the dependencies of a button. """
+
+        for dep in self._metadata[module_name].deps:
+            self._buttons[dep].implicitly_required = True
+
+            # Handle sub-dependencies.
+            self._set_button_dependencies(dep)
+
+
+class ModuleButton(QCheckBox):
+    """ A button for a module allowing for it to be explicitly included or
+    implicitly included because it is a dependency.
+    """
+
+    # Emitted if the user changes the explicitly required state of the module.
+    explicitly_required_changed = pyqtSignal(str, bool)
+
+    def __init__(self, text):
+        """ Initialise the button. """
+
+        super().__init__(text)
+
+        self.setTristate(True)
+
+        self._explicit = False
+        self._implicit = False
+
+    def nextCheckState(self):
+        """ Reimplemented to update the state after the user clicks the button.
+        """
+
+        self._explicit = not self._explicit
+        self._update_state()
+
+        self.explicitly_required_changed.emit(self.text(), self._explicit)
+
+    @property
+    def explicitly_required(self):
+        """ The explicitly_required property getter. """
+
+        return self._explicit
+
+    @explicitly_required.setter
+    def explicitly_required(self, required):
+        """ The explicitly_required property setter. """
+
+        self._explicit = required
+        self._update_state()
+
+    @property
+    def implicitly_required(self):
+        """ The implicitly_required property getter. """
+
+        return self._implicit
+
+    @implicitly_required.setter
+    def implicitly_required(self, required):
+        """ The implicitly_required property setter. """
+
+        self._implicit = required
+        self._update_state()
+
+    def _update_state(self):
+        """ Update the state of the button after a change. """
+
+        if self._explicit:
+            state = Qt.Checked
+        elif self._implicit:
+            state = Qt.PartiallyChecked
+        else:
+            state = Qt.Unchecked
+
+        self.setCheckState(state)
