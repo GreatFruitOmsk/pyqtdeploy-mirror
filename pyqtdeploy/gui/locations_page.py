@@ -48,10 +48,10 @@ class LocationsPage(QWidget):
 
         if self._project != value:
             self._project = value
-            self._host_interp_edit.set_project(value)
             self._target_inc_edit.set_project(value)
             self._target_lib_edit.set_project(value)
             self._target_stdlib_edit.set_project(value)
+            self._build_edit.set_project(value)
             self._update_page()
 
     def __init__(self):
@@ -99,14 +99,34 @@ class LocationsPage(QWidget):
 
         py_target_group.setLayout(py_target_layout)
 
+        others_group = QGroupBox("Other Locations")
+        others_layout = BetterForm()
+
+        self._build_edit = FilenameEditor("Build Directory",
+                placeholderText="Build directory name",
+                whatsThis="The name of the build directory. The directory "
+                        "will be created automatically if necessary.",
+                textEdited=self._build_changed, directory=True)
+        others_layout.addRow("Build directory", self._build_edit)
+
+        self._qmake_edit = FilenameEditor("qmake",
+                placeholderText="qmake executable",
+                whatsThis="The name of the qmake executable. This must be on "
+                        "PATH or be an absolute pathname.",
+                textEdited=self._qmake_changed)
+        others_layout.addRow("qmake", self._qmake_edit)
+
+        others_group.setLayout(others_layout)
+
         layout = QVBoxLayout()
         layout.addWidget(py_host_group)
         layout.addWidget(py_target_group)
+        layout.addWidget(others_group)
         layout.addStretch()
 
         self.setLayout(layout)
 
-        BetterForm.align_forms(py_host_layout, py_target_layout)
+        BetterForm.align_forms(py_host_layout, py_target_layout, others_layout)
 
     def _update_page(self):
         """ Update the page using the current project. """
@@ -117,6 +137,8 @@ class LocationsPage(QWidget):
         self._target_inc_edit.setText(project.python_target_include_dir)
         self._target_lib_edit.setText(project.python_target_library)
         self._target_stdlib_edit.setText(project.python_target_stdlib_dir)
+        self._build_edit.setText(project.build_dir)
+        self._qmake_edit.setText(project.qmake)
 
     def _host_interp_changed(self, value):
         """ Invoked when the user edits the host interpreter name. """
@@ -142,4 +164,16 @@ class LocationsPage(QWidget):
         """
 
         self.project.python_target_stdlib_dir = value
+        self.project.modified = True
+
+    def _build_changed(self, value):
+        """ Invoked when the user edits the build directory name. """
+
+        self.project.build_dir = value
+        self.project.modified = True
+
+    def _qmake_changed(self, value):
+        """ Invoked when the user edits the qmake name. """
+
+        self.project.qmake = value
         self.project.modified = True

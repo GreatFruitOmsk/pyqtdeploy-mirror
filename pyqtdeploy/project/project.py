@@ -36,7 +36,9 @@ class Project(QObject):
     """ The encapsulation of a project. """
 
     # The current project version.
-    version = 0
+    #   0: The original version.
+    #   1: Added the Others element with the builddir and qmake attributes.
+    version = 1
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -112,12 +114,14 @@ class Project(QObject):
         self.application_is_pyqt5 = True
         self.application_package = QrcPackage()
         self.application_script = ''
+        self.build_dir = 'build'
         self.extension_modules = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
+        self.qmake = ''
         self.site_packages_package = QrcPackage()
         self.stdlib_package = QrcPackage()
 
@@ -179,7 +183,7 @@ class Project(QObject):
 
         cls._assert(version is not None, "Invalid 'version'.")
 
-        if version != cls.version:
+        if version > cls.version:
             raise UserException(
                     "The project's format is version {0} but only version {1} is supported.".format(version, cls.version))
 
@@ -240,6 +244,12 @@ class Project(QObject):
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
         project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
+
+        # The other configuration (added in version 1).
+        others = root.find('Others')
+        if others is not None:
+            project.build_dir = others.get('builddir', '')
+            project.qmake = others.get('qmake', '')
 
         return project
 
@@ -355,6 +365,10 @@ class Project(QObject):
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library,
             'targetstdlibdir': self.python_target_stdlib_dir})
+
+        SubElement(root, 'Others', attrib={
+            'builddir': self.build_dir,
+            'qmake': self.qmake})
 
         tree = ElementTree(root)
 

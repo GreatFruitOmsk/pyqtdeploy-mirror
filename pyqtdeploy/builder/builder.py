@@ -543,9 +543,7 @@ int main(int argc, char **argv)
     def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        project = self._project
-
-        args = [project.absolute_path(project.python_host_interpreter), freeze]
+        args = [self._project.python_host_interpreter, freeze]
         
         if name is not None:
             args.append('--name')

@@ -106,7 +106,7 @@ class _SitePackagesPackageEditor(QrcPackageEditor):
             QMessageBox.warning(self, self._title,
                     "site-packages cannot be scanned because the directory "
                     "name of the standard library has not been set in the "
-                    "Python Configuration tab.")
+                    "Locations tab.")
             return ''
 
         return os.path.join(stdlib_dir, 'site-packages')

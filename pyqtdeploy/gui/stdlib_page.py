@@ -115,7 +115,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
             QMessageBox.warning(self, self._title,
                     "The standard library cannot be scanned because the "
                     "Python version cannot be obtained from the Python "
-                    "library name in the Python Configuration tab.")
+                    "library name in the Locations tab.")
             return ''
 
         if major == 3 and minor < 3:
@@ -137,8 +137,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
         if stdlib_dir == '':
             QMessageBox.warning(self, self._title,
                     "The standard library cannot be scanned because its "
-                    "directory name has not been set in the Python "
-                    "Configuration tab.")
+                    "directory name has not been set in the Locations tab.")
             return ''
 
         return stdlib_dir
