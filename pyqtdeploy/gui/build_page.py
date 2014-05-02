@@ -133,7 +133,7 @@ class BuildPage(QWidget):
 
         builder.status("Code generation succeeded.")
 
-        if self._run_qmake_button.checkState != Qt.Unchecked:
+        if self._run_qmake_button.checkState() != Qt.Unchecked:
             qmake = os.path.expandvars(project.qmake)
 
             if qmake == '':
@@ -150,7 +150,7 @@ class BuildPage(QWidget):
 
                 builder.status("qmake succeeded.")
 
-        if self._run_make_button.checkState != Qt.Unchecked:
+        if self._run_make_button.checkState() != Qt.Unchecked:
             make = 'nmake' if sys.platform == 'win32' else 'make'
 
             builder.status("Running {0}...".format(make))
@@ -164,7 +164,7 @@ class BuildPage(QWidget):
 
             builder.status("{0} succeeded.".format(make))
 
-        if self._run_application_button.checkState != Qt.Unchecked:
+        if self._run_application_button.checkState() != Qt.Unchecked:
             build_dir = project.absolute_path(project.build_dir)
             app_name = project.application_basename()
 
