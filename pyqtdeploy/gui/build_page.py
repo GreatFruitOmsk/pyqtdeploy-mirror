@@ -82,7 +82,7 @@ class BuildPage(QWidget):
 
         self._clean_button = QCheckBox("Clean before building", checked=True)
         options_layout.addWidget(self._clean_button)
-        self._console_button = QCheckBox("Show console output")
+        self._console_button = QCheckBox("Capture console output")
         options_layout.addWidget(self._console_button)
         self._verbose_button = QCheckBox("Verbose output")
         options_layout.addWidget(self._verbose_button)

@@ -210,13 +210,59 @@ pyqtdeploy is shown below.
 Building the Application
 ------------------------
 
-TODO
+Normally building an application is done from the command line.  However during
+the debugging of the deployment it is convenient to be able to complete the
+whole build process (generating code, running :program:`qmake`, running
+:program:`make` and running the final application executable) from within the
+GUI.  In particular it is useful if you are using trial and error to work out
+which Python standard library modules need to be included.
 
-Once all the relevant information has been specified the application source
-code and :program:`qmake` ``.pro`` file can be generated.  This can be done
-from the GUI by selecting the ``Build Project...`` option of the ``Build``
-menu.  You will then be asked for the name of an existing directory.
-pyqtdeploy will then create all the necessary files in that directory.
+The tab for building the application is shown below.
+
+.. image:: /images/build_tab.png
+    :align: center
+
+The main area of the tab shows the output of the various stages of the build.
+
+**Build**
+    is clicked to build the application.  The application code and
+    :program:`qmake` ``.pro`` file will be generated in the build directory.
+    What else is done depends on the additional build steps that have been
+    specified.
+
+**Run qmake**
+    is clicked to specify that :program:`qmake` will be run after generating
+    the application code.  If this is disabled the later build steps will be
+    disabled automatically.
+
+**Run make**
+    is clicked to specify that :program:`make` (or :program:`nmake` on Windows)
+    will be run after running :program:`qmake`.  The earlier build steps will
+    be enabled automatically.  If this is disabled the later build steps will
+    be disabled automatically.
+
+**Run application**
+    is clicked to specify that the application executable will be run after
+    running :program:`make`.  The earlier build steps will be enabled
+    automatically.
+
+    .. note::
+        This only makes sense if you are building natively and not
+        cross-compiling.
+
+**Clean before building**
+    is clicked to specify that the build directory is deleted and recreated
+    before starting a new build.
+
+**Capture console output**
+    is clicked to specify that ``console`` is always added to the ``CONFIG``
+    variable in the generated ``.pro`` file.  This is only useful on Windows
+    and ensures that, even for a GUI application, tracebacks (e.g. about
+    missing modules) are captured and displayed.
+
+**Verbose output**
+    is clicked specify that additional information is displayed during the
+    build process.
 
 
 Building from the Command Line
@@ -236,10 +282,11 @@ The :option:`--quiet` option will disable any progress messages.  The
 Creating a Deployable Package
 -----------------------------
 
-The build directory now contains the source of (as far as :program:`qmake` is
-concerned) the source of conventional Qt based C++ application.  To convert
-this into a deployable application you must follow the appropriate Qt
-documentation for compiling and packaging for your target platform.
+Assuming you have built the application code and the :program:`qmake` ``.pro``
+file, the build directory will now contain the source of (as far as
+:program:`qmake` is concerned) a Qt based C++ application.  To convert this
+into a deployable application you must follow the appropriate Qt documentation
+for compiling and packaging for your target platform.
 
 For desktop platforms this is probably as simple as running :program:`qmake`
 followed by :program:`make` (or :program:`nmake` on Windows).

@@ -567,7 +567,7 @@ int main(int argc, char **argv)
         argv.append(output)
         argv.append(py_filename)
 
-        self._progress("Feezing {0}".format(py_filename))
+        self._progress("Freezing {0}".format(py_filename))
 
         self.run(argv, "Unable to freeze {0}.".format(py_filename))
 
