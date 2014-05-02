@@ -554,25 +554,45 @@ int main(int argc, char **argv)
     def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        args = [os.path.expandvars(self._project.python_host_interpreter),
+        argv = [os.path.expandvars(self._project.python_host_interpreter),
             freeze]
         
         if name is not None:
-            args.append('--name')
-            args.append(name)
+            argv.append('--name')
+            argv.append(name)
 
-        args.append('--as-data' if as_data else '--as-c')
-        args.append(output)
-        args.append(py_filename)
+        argv.append('--as-data' if as_data else '--as-c')
+        argv.append(output)
+        argv.append(py_filename)
 
-        self._progress("Feezing {0}".format(py_filename),
-                "Running '{0}'".format(' '.join(args)))
+        self._progress("Feezing {0}".format(py_filename))
+
+        self.run(argv, "Unable to freeze {0}.".format(py_filename))
+
+    def run(self, argv, error_message, in_build_dir=False):
+        """ Execute a command and capture the output. """
+
+        if in_build_dir:
+            saved_cwd = os.getcwd()
+            build_dir = self._project.absolute_path(self._project.build_dir)
+            os.chdir(build_dir)
+            self._verbose(
+                    "{0} is now the current directory.".format(build_dir))
+        else:
+            saved_cwd = None
+
+        self._verbose("Running '{0}'".format(' '.join(argv)))
 
         try:
-            subprocess.check_output(args, stderr=subprocess.STDOUT,
+            subprocess.check_output(argv, stderr=subprocess.STDOUT,
                     universal_newlines=True)
         except subprocess.CalledProcessError as e:
-            self._error("Unable to freeze {0}.".format(py_filename), e.output)
+            self._error(error_message, e.output)
+        finally:
+            if saved_cwd is not None:
+                os.chdir(saved_cwd)
+                self._verbose(
+                        "{0} is now the current directory.".format(saved_cwd))
 
     @staticmethod
     def _lib_filename(filename):
@@ -634,14 +654,17 @@ int main(int argc, char **argv)
                     "Unable to create the '{0}' directory.".format(dir_name),
                     str(e))
 
-    def _progress(self, text, detail=''):
-        """ Display a progress if requested. """
+    def _progress(self, text):
+        """ Display a progress message if requested. """
 
         if not self.quiet:
             self.information(text)
 
-            if detail != '' and self.verbose:
-                self.information(detail)
+    def _verbose(self, text):
+        """ Display a verbose progress message if requested. """
+
+        if self.verbose:
+            self.information(text)
 
     def _error(self, text, detail=''):
         """ Handle an error.  This will raise an exception and not return. """

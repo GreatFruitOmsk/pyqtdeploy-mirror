@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QAbstractSlider, QApplication, QCheckBox,
         QGridLayout, QGroupBox, QMessageBox, QPlainTextEdit, QPushButton,
@@ -48,9 +51,6 @@ class BuildPage(QWidget):
 
         self.project = None
 
-        self._console = False
-        self._verbose = False
-
         # Create the page's GUI.
         layout = QGridLayout()
 
@@ -63,9 +63,15 @@ class BuildPage(QWidget):
         steps = QGroupBox("Additional Build Steps")
         steps_layout = QVBoxLayout()
 
-        steps_layout.addWidget(QCheckBox("Run qmake"))
-        steps_layout.addWidget(QCheckBox("Run make"))
-        steps_layout.addWidget(QCheckBox("Run application"))
+        self._run_qmake_button = QCheckBox("Run qmake",
+                stateChanged=self._run_qmake_changed)
+        steps_layout.addWidget(self._run_qmake_button)
+        self._run_make_button = QCheckBox("Run make",
+                stateChanged=self._run_make_changed)
+        steps_layout.addWidget(self._run_make_button)
+        self._run_application_button = QCheckBox("Run application",
+                stateChanged=self._run_application_changed)
+        steps_layout.addWidget(self._run_application_button)
 
         steps.setLayout(steps_layout)
         layout.addWidget(steps, 1, 1)
@@ -73,10 +79,10 @@ class BuildPage(QWidget):
         options = QGroupBox("Build Options")
         options_layout = QVBoxLayout()
 
-        options_layout.addWidget(QCheckBox("Show console output",
-                stateChanged=self._console_changed))
-        options_layout.addWidget(QCheckBox("Verbose output",
-                stateChanged=self._verbose_changed))
+        self._console_button = QCheckBox("Show console output")
+        options_layout.addWidget(self._console_button)
+        self._verbose_button = QCheckBox("Verbose output")
+        options_layout.addWidget(self._verbose_button)
 
         options.setLayout(options_layout)
         layout.addWidget(options, 2, 1)
@@ -110,17 +116,33 @@ class BuildPage(QWidget):
             return
 
         builder = LoggingBuilder(project, self._builder_viewer)
-        builder.verbose = self._verbose
+        builder.verbose = bool(self._verbose_button.checkState())
 
         builder.clear()
         builder.status("Generating code...")
 
         try:
-            builder.build(console=True)
+            builder.build(console=bool(self._console_button.checkState()))
         except UserException as e:
             handle_user_exception(e, self.label, self)
 
         builder.status("Code generation succeeded.")
+
+        if self._run_qmake_button.checkState != Qt.Unchecked:
+            qmake = os.path.expandvars(project.qmake)
+
+            if qmake == '':
+                QMessageBox.warning(self, self.label,
+                    "qmake cannot be run because its name has not been set.")
+            else:
+                builder.status("Running qmake...")
+
+                try:
+                    builder.run([qmake], "qmake failed.", in_build_dir=True)
+                except UserException as e:
+                    handle_user_exception(e, self.label, self)
+
+                builder.status("qmake succeeded.")
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """
@@ -129,15 +151,25 @@ class BuildPage(QWidget):
                 "The project cannot be built because the name of the {0} has "
                         "not been set.".format(missing))
 
-    def _console_changed(self, state):
-        """ Invoked when the user clicks on the console button. """
+    def _run_qmake_changed(self, state):
+        """ Invoked when the user clicks on the run qmake button. """
 
-        self._console = bool(state)
+        if state == Qt.Unchecked:
+            self._run_make_button.setCheckState(Qt.Unchecked)
 
-    def _verbose_changed(self, state):
-        """ Invoked when the user clicks on the verbose button. """
+    def _run_make_changed(self, state):
+        """ Invoked when the user clicks on the run make button. """
 
-        self._verbose = bool(state)
+        if state == Qt.Unchecked:
+            self._run_application_button.setCheckState(Qt.Unchecked)
+        else:
+            self._run_qmake_button.setCheckState(Qt.Checked)
+
+    def _run_application_changed(self, state):
+        """ Invoked when the user clicks on the run application button. """
+
+        if state != Qt.Unchecked:
+            self._run_make_button.setCheckState(Qt.Checked)
 
 
 class LoggingBuilder(Builder):
@@ -151,7 +183,7 @@ class LoggingBuilder(Builder):
 
         self._viewer = viewer
 
-        self._information_format = self._viewer.currentCharFormat()
+        self._default_format = self._viewer.currentCharFormat()
 
         self._error_format = self._viewer.currentCharFormat()
         self._error_format.setForeground(QColor('#7f0000'))
@@ -173,7 +205,7 @@ class LoggingBuilder(Builder):
     def information(self, text):
         """ Reimplemented to handle information messages. """
 
-        self._append_text(text, self._information_format)
+        self._append_text(text, self._default_format)
 
     def error(self, text):
         """ Reimplemented to handle error messages. """
@@ -184,8 +216,8 @@ class LoggingBuilder(Builder):
         """ Append text to the viewer using a specific character format. """
 
         self._viewer.setCurrentCharFormat(char_format)
-
         self._viewer.appendPlainText(text)
+        self._viewer.setCurrentCharFormat(self._default_format)
 
         # Make sure the new text is visible.
         self._viewer.verticalScrollBar().triggerAction(
