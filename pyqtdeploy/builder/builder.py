@@ -40,20 +40,29 @@ from ..version import PYQTDEPLOY_HEXVERSION
 class Builder():
     """ The builder for a project. """
 
-    def __init__(self, project, verbose=False):
+    def __init__(self, project):
         """ Initialise the builder for a project. """
 
         super().__init__()
 
         self._project = project
-        self._verbose = verbose
 
-    def build(self, build_dir):
+        self.quiet = False
+        self.verbose = False
+
+    def build(self, build_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
 
         project = self._project
+
+        if build_dir is None:
+            build_dir = project.build_dir
+            if build_dir == '':
+                build_dir = '.'
+
+            build_dir = project.absolute_path(build_dir)
 
         self._create_directory(build_dir)
 
@@ -243,7 +252,7 @@ class Builder():
         platforms_f = QFile(self._lib_filename('platforms.pro'))
 
         if not platforms_f.open(QIODevice.ReadOnly|QIODevice.Text):
-            raise UserException(
+            self._error(
                     "Unable to open file {0}.".format(platforms_f.fileName()),
                     platforms_f.errorString())
 
@@ -281,7 +290,7 @@ class Builder():
 
         major, _ = project.python_target_version
         if major is None:
-            raise UserException("Unable to determine target Python version")
+            self._error("Unable to determine target Python version")
 
         bootstrap = self._copy_lib_file(
                 'bootstrap_py3.py' if major == 3 else 'bootstrap_py2.py')
@@ -543,7 +552,8 @@ int main(int argc, char **argv)
     def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        args = [self._project.python_host_interpreter, freeze]
+        args = [os.path.expandvars(self._project.python_host_interpreter),
+            freeze]
         
         if name is not None:
             args.append('--name')
@@ -553,15 +563,14 @@ int main(int argc, char **argv)
         args.append(output)
         args.append(py_filename)
 
-        self._log("Running '{0}'".format(' '.join(args)))
+        self._log("Feezing {0}".format(py_filename),
+                "Running '{0}'".format(' '.join(args)))
 
         try:
             subprocess.check_output(args, stderr=subprocess.STDOUT,
                     universal_newlines=True)
         except subprocess.CalledProcessError as e:
-            self._log(e.output)
-            raise UserException("Unable to freeze {0}.".format(py_filename),
-                    e.output)
+            self._error("Unable to freeze {0}.".format(py_filename), e.output)
 
     @staticmethod
     def _lib_filename(filename):
@@ -597,7 +606,7 @@ int main(int argc, char **argv)
         QFile.remove(d_filename)
 
         if not QFile.copy(s_filename, QDir.fromNativeSeparators(d_filename)):
-            raise UserException("Unable to copy file {0}.".format(filename))
+            self._error("Unable to copy file {0}.".format(filename))
 
         return d_filename
 
@@ -610,8 +619,7 @@ int main(int argc, char **argv)
         try:
             return open(pathname, 'wt')
         except Exception as e:
-            raise UserException("Unable to create file {0}.".format(pathname),
-                    str(e))
+            self._error("Unable to create file {0}.".format(pathname), str(e))
 
     @staticmethod
     def _create_directory(dir_name):
@@ -620,12 +628,22 @@ int main(int argc, char **argv)
         try:
             os.makedirs(dir_name, exist_ok=True)
         except Exception as e:
-            raise UserException(
+            self._error(
                     "Unable to create the '{0}' directory.".format(dir_name),
                     str(e))
 
-    def _log(self, message):
+    def _log(self, text, detail=''):
         """ Log a message if requested. """
 
-        if self._verbose:
-            print(message)
+        if not self.quiet:
+            print(text)
+
+            if detail != '' and self.verbose:
+                print(detail)
+
+    def _error(self, text, detail=''):
+        """ Handle an error.  This will raise an exception and not return. """
+
+        self._log(text, detail)
+
+        raise UserException(text, detail)

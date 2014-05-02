@@ -24,8 +24,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QPlainTextEdit,
-        QPushButton, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QMessageBox,
+        QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
+
+from ..builder import Builder
+from ..user_exception import UserException
+
+from .exception_handlers import handle_user_exception
 
 
 class BuildPage(QWidget):
@@ -47,13 +52,12 @@ class BuildPage(QWidget):
         self._log = QPlainTextEdit(readOnly=True)
         layout.addWidget(self._log, 0, 0, 4, 1)
 
-        build = QPushButton("Build")
+        build = QPushButton("Build", clicked=self._build)
         layout.addWidget(build, 0, 1)
 
-        steps = QGroupBox("Build Steps")
+        steps = QGroupBox("Additional Build Steps")
         steps_layout = QVBoxLayout()
 
-        steps_layout.addWidget(QCheckBox("Generate code"))
         steps_layout.addWidget(QCheckBox("Run qmake"))
         steps_layout.addWidget(QCheckBox("Run make"))
         steps_layout.addWidget(QCheckBox("Run application"))
@@ -73,3 +77,41 @@ class BuildPage(QWidget):
         layout.setRowStretch(3, 1)
 
         self.setLayout(layout)
+
+    def _build(self, _):
+        """ Invoked when the user clicks the build button. """
+
+        project = self.project
+
+        # Check the prerequisites.  Note that we don't disable the button if
+        # these are missing because (as they are spread across the GUI) the
+        # user would have difficulty knowing what needed fixing.
+        if project.application_script == '':
+            self._missing_prereq("main script file")
+            return
+
+        if project.python_host_interpreter == '':
+            self._missing_prereq("host interpreter")
+            return
+
+        if project.application_script == '':
+            self._missing_prereq("target Python include directory")
+            return
+
+        if project.application_script == '':
+            self._missing_prereq("target Python library")
+            return
+
+        builder = Builder(project)
+
+        try:
+            builder.build()
+        except UserException as e:
+            handle_user_exception(e, self.label, self)
+
+    def _missing_prereq(self, missing):
+        """ Tell the user about a missing prerequisite. """
+
+        QMessageBox.warning(self, self.label,
+                "The project cannot be built because the name of the {0} has "
+                        "not been set.".format(missing))

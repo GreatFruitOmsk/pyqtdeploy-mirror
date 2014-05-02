@@ -31,13 +31,13 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QTabWidget,
         QWhatsThis)
 
-from ..builder import Builder
 from ..project import Project
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_RELEASE
 
 from .application_page import ApplicationPage
 from .build_page import BuildPage
+from .exception_handlers import handle_user_exception
 from .extension_modules_page import ExtensionModulesPage
 from .locations_page import LocationsPage
 from .pyqt_page import PyQtPage
@@ -118,9 +118,6 @@ class ProjectGUI(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction("E&xit", self.close, QKeySequence.Quit)
 
-        build_menu = menu_bar.addMenu("&Build")
-        build_menu.addAction("Build Project...", self._build_project)
-
         menu_bar.addSeparator()
 
         help_menu = menu_bar.addMenu("&Help")
@@ -191,7 +188,7 @@ pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Py
         try:
             self._project.save()
         except UserException as e:
-            self._handle_exception(e, "Save", self)
+            handle_user_exception(e, "Save", self)
             return False
 
         return True
@@ -209,55 +206,13 @@ pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Py
         try:
             self._project.save_as(filename)
         except UserException as e:
-            self._handle_exception(e, "Save", self)
+            handle_user_exception(e, "Save", self)
             return False
 
         return True
 
-    def _build_project(self):
-        """ Build the project. """
-
-        project = self._project
-
-        # Check the prerequisites.  Note that we don't disable the menu option
-        # if these are missing because (as they are spread across the GUI) the
-        # user would have difficulty knowing what needed fixing.
-        if project.application_script == '':
-            self._missing_prereq("main script file")
-            return
-
-        if project.python_host_interpreter == '':
-            self._missing_prereq("host interpreter")
-            return
-
-        if project.application_script == '':
-            self._missing_prereq("target Python include directory")
-            return
-
-        if project.application_script == '':
-            self._missing_prereq("target Python library")
-            return
-
-        build_dir = QFileDialog.getExistingDirectory(self, "Build Project")
-        if build_dir == '':
-            return
-
-        try:
-            Builder(project).build(build_dir)
-            QMessageBox.information(self, "Build Project",
-                    "The project was built successfully.")
-        except UserException as e:
-            self._handle_exception(e, "Build Project", self)
-
-    def _missing_prereq(self, missing):
-        """ Tell the user about a missing prerequisite. """
-
-        QMessageBox.warning(self, "Build Project",
-                "The project cannot be built because the name of the {0} has "
-                        "not been set.".format(missing))
-
-    @classmethod
-    def _load_project(cls, filename, parent=None):
+    @staticmethod
+    def _load_project(filename, parent=None):
         """ Create a project from the given file.  Return None if there was an
         error.
         """
@@ -265,22 +220,10 @@ pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Py
         try:
             project = Project.load(filename)
         except UserException as e:
-            cls._handle_exception(e, "Open", parent)
+            handle_user_exception(e, "Open", parent)
             project = None
 
         return project
-
-    @staticmethod
-    def _handle_exception(e, title, parent):
-        """ Handle a UserException. """
-
-        msg_box = QMessageBox(QMessageBox.Warning, title, e.text,
-                parent=parent)
-
-        if e.detail != '':
-            msg_box.setDetailedText(e.detail)
-
-        msg_box.exec()
 
     def _current_project_done(self):
         """ Return True if the user has finished with any current project. """
