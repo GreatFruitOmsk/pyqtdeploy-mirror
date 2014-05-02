@@ -24,8 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QMessageBox,
-        QPlainTextEdit, QPushButton, QVBoxLayout, QWidget)
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import (QAbstractSlider, QApplication, QCheckBox,
+        QGridLayout, QGroupBox, QMessageBox, QPlainTextEdit, QPushButton,
+        QVBoxLayout, QWidget)
 
 from ..builder import Builder
 from ..user_exception import UserException
@@ -49,8 +51,8 @@ class BuildPage(QWidget):
         # Create the page's GUI.
         layout = QGridLayout()
 
-        self._log = QPlainTextEdit(readOnly=True)
-        layout.addWidget(self._log, 0, 0, 4, 1)
+        self._builder_viewer = QPlainTextEdit(readOnly=True)
+        layout.addWidget(self._builder_viewer, 0, 0, 4, 1)
 
         build = QPushButton("Build", clicked=self._build)
         layout.addWidget(build, 0, 1)
@@ -102,7 +104,7 @@ class BuildPage(QWidget):
             self._missing_prereq("target Python library")
             return
 
-        builder = Builder(project)
+        builder = LoggingBuilder(project, self._builder_viewer)
 
         try:
             builder.build()
@@ -115,3 +117,51 @@ class BuildPage(QWidget):
         QMessageBox.warning(self, self.label,
                 "The project cannot be built because the name of the {0} has "
                         "not been set.".format(missing))
+
+
+class LoggingBuilder(Builder):
+    """ A Builder that captures user messages and displays them in a widget.
+    """
+
+    def __init__(self, project, viewer):
+        """ Initialise the object. """
+
+        super().__init__(project)
+
+        self._viewer = viewer
+
+        self._information_format = self._viewer.currentCharFormat()
+
+        self._error_format = self._viewer.currentCharFormat()
+        self._error_format.setForeground(QColor('#7f0000'))
+
+    def build(self):
+        """ Reimplemented to clear the viewer before building. """
+
+        self._viewer.setPlainText('')
+        QApplication.processEvents()
+
+        super().build()
+
+    def information(self, text):
+        """ Reimplemented to handle information messages. """
+
+        self._append_text(text, self._information_format)
+
+    def error(self, text):
+        """ Reimplemented to handle error messages. """
+
+        self._append_text(text, self._error_format)
+
+    def _append_text(self, text, char_format):
+        """ Append text to the viewer using a specific character format. """
+
+        self._viewer.setCurrentCharFormat(char_format)
+
+        self._viewer.appendPlainText(text)
+
+        # Make sure the new text is visible.
+        self._viewer.verticalScrollBar().triggerAction(
+                QAbstractSlider.SliderToMaximum)
+
+        QApplication.processEvents()

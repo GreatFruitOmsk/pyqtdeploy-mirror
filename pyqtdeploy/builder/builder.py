@@ -563,7 +563,7 @@ int main(int argc, char **argv)
         args.append(output)
         args.append(py_filename)
 
-        self._log("Feezing {0}".format(py_filename),
+        self._progress("Feezing {0}".format(py_filename),
                 "Running '{0}'".format(' '.join(args)))
 
         try:
@@ -632,18 +632,35 @@ int main(int argc, char **argv)
                     "Unable to create the '{0}' directory.".format(dir_name),
                     str(e))
 
-    def _log(self, text, detail=''):
-        """ Log a message if requested. """
+    def _progress(self, text, detail=''):
+        """ Display a progress if requested. """
 
         if not self.quiet:
-            print(text)
+            self.information(text)
 
             if detail != '' and self.verbose:
-                print(detail)
+                self.information(detail)
 
     def _error(self, text, detail=''):
         """ Handle an error.  This will raise an exception and not return. """
 
-        self._log(text, detail)
+        self.error(text)
+
+        if detail != '':
+            self.error(detail)
 
         raise UserException(text, detail)
+
+    def information(self, text):
+        """ Handle a user information message (which will not have a trailing
+        newline).  This default implementation just sends it to stdout.
+        """
+
+        print(text)
+
+    def error(self, text):
+        """ Handle a user error message (which will not have a trailing
+        newline).  This default implementation just sends it to stderr.
+        """
+
+        print(text, file=sys.stderr)
