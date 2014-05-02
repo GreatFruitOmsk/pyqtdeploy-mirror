@@ -40,8 +40,10 @@ def main():
             metavar="FILE")
     parser.add_argument('--build', help="build the project in DIR",
             metavar="DIR")
-    parser.add_argument('--verbose', help="enable build progress messages",
+    parser.add_argument('--quiet', help="disable build progress messages",
             action='store_true')
+    parser.add_argument('--verbose',
+            help="enable verbose build progress messages", action='store_true')
 
     args = parser.parse_args()
 
@@ -57,6 +59,7 @@ def main():
 
         try:
             builder = Builder(Project.load(args.project_file))
+            builder.quiet = args.quiet
             builder.verbose = args.verbose
             builder.build(args.build)
         except UserException as e:

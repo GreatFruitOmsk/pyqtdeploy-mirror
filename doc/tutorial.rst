@@ -13,14 +13,12 @@ This will create a new project, or open an exiting one if the file
 ``myproject.pdy`` already exists.  A project is simply a file with a ``.pdy``
 extension.
 
-A GUI will be displayed which consists of a ``File`` menu, a ``Build`` menu and
-a set of tabbed pages that handle different aspects of the application's
-specification.
+A GUI will be displayed which consists of a ``File`` menu and a set of tabbed
+pages that handle different aspects of the application's specification and
+building.
 
 The ``File`` menu contains the usual set of options to create a new project,
 open an existing project, save a project and rename a project.
-
-We will cover the ``Build`` menu in a later section.
 
 In this tutorial we will use the ``wiggly.py`` example that is included with
 PyQt.  It consists of a single Python file, rather than a collection of
@@ -205,12 +203,14 @@ pyqtdeploy is shown below.
     if necessary.
 
 **qmake**
-    is used to specify the name of the ``qmake`` executable that is optionally
-    used to build a ``Makefile`` for the application.
+    is used to specify the name of the :program:`qmake` executable that is
+    optionally used to build a ``Makefile`` for the application.
 
 
-Building the C++ Source Code
-----------------------------
+Building the Application
+------------------------
+
+TODO
 
 Once all the relevant information has been specified the application source
 code and :program:`qmake` ``.pro`` file can be generated.  This can be done
@@ -218,14 +218,19 @@ from the GUI by selecting the ``Build Project...`` option of the ``Build``
 menu.  You will then be asked for the name of an existing directory.
 pyqtdeploy will then create all the necessary files in that directory.
 
-The project can also be built from the command line by specifying the
-:option:`--build` with the name of an existing directory to pyqtdeploy.  For
-example::
 
-    pyqtdeploy --build builddir wiggly.pdy
+Building from the Command Line
+------------------------------
 
-You may also specify the :option:`--verbose` option which will display a
-series of progress messages.
+The application code and :program:`qmake` ``.pro`` file can also be built from
+the command line by specifying the :option:`--build` with the name of a build
+directory to pyqtdeploy.  For example::
+
+    pyqtdeploy --build build wiggly.pdy
+
+You may also specify the :option:`--quiet` and :option:`--verbose` options.
+The :option:`--quiet` option will disable any progress messages.  The
+:option:`--verbose` option will enable more detailed progress messages.
 
 
 Creating a Deployable Package
