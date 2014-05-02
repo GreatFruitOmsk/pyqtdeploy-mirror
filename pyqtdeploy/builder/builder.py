@@ -50,7 +50,7 @@ class Builder():
         self.quiet = False
         self.verbose = False
 
-    def build(self, build_dir=None, console=False):
+    def build(self, build_dir=None, clean=False, console=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -63,6 +63,10 @@ class Builder():
                 build_dir = '.'
 
             build_dir = project.absolute_path(build_dir)
+
+        if clean:
+            self._progress("Cleaning {0}.".format(build_dir))
+            shutil.rmtree(build_dir, ignore_errors=True)
 
         self._create_directory(build_dir)
 
@@ -643,9 +647,10 @@ int main(int argc, char **argv)
         except Exception as e:
             self._error("Unable to create file {0}.".format(pathname), str(e))
 
-    @staticmethod
-    def _create_directory(dir_name):
+    def _create_directory(self, dir_name):
         """ Create a directory which may already exist. """
+
+        self._verbose("Creating directory {0}.".format(dir_name))
 
         try:
             os.makedirs(dir_name, exist_ok=True)

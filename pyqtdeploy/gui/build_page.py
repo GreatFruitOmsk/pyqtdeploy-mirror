@@ -25,6 +25,7 @@
 
 
 import os
+import sys
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
@@ -79,6 +80,8 @@ class BuildPage(QWidget):
         options = QGroupBox("Build Options")
         options_layout = QVBoxLayout()
 
+        self._clean_button = QCheckBox("Clean before building", checked=True)
+        options_layout.addWidget(self._clean_button)
         self._console_button = QCheckBox("Show console output")
         options_layout.addWidget(self._console_button)
         self._verbose_button = QCheckBox("Verbose output")
@@ -122,7 +125,8 @@ class BuildPage(QWidget):
         builder.status("Generating code...")
 
         try:
-            builder.build(console=bool(self._console_button.checkState()))
+            builder.build(clean=bool(self._clean_button.checkState()),
+                    console=bool(self._console_button.checkState()))
         except UserException as e:
             handle_user_exception(e, self.label, self)
 
@@ -143,6 +147,19 @@ class BuildPage(QWidget):
                     handle_user_exception(e, self.label, self)
 
                 builder.status("qmake succeeded.")
+
+        if self._run_make_button.checkState != Qt.Unchecked:
+            make = 'nmake' if sys.platform == 'win32' else 'make'
+
+            builder.status("Running {0}...".format(make))
+
+            try:
+                builder.run([make], "{0} failed.".format(make),
+                        in_build_dir=True)
+            except UserException as e:
+                handle_user_exception(e, self.label, self)
+
+            builder.status("{0} succeeded.".format(make))
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """
