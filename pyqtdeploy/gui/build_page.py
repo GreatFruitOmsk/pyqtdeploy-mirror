@@ -48,6 +48,9 @@ class BuildPage(QWidget):
 
         self.project = None
 
+        self._console = False
+        self._verbose = False
+
         # Create the page's GUI.
         layout = QGridLayout()
 
@@ -70,8 +73,10 @@ class BuildPage(QWidget):
         options = QGroupBox("Build Options")
         options_layout = QVBoxLayout()
 
-        options_layout.addWidget(QCheckBox("Show console output"))
-        options_layout.addWidget(QCheckBox("Verbose output"))
+        options_layout.addWidget(QCheckBox("Show console output",
+                stateChanged=self._console_changed))
+        options_layout.addWidget(QCheckBox("Verbose output",
+                stateChanged=self._verbose_changed))
 
         options.setLayout(options_layout)
         layout.addWidget(options, 2, 1)
@@ -105,12 +110,13 @@ class BuildPage(QWidget):
             return
 
         builder = LoggingBuilder(project, self._builder_viewer)
+        builder.verbose = self._verbose
 
         builder.clear()
         builder.status("Generating code...")
 
         try:
-            builder.build()
+            builder.build(console=True)
         except UserException as e:
             handle_user_exception(e, self.label, self)
 
@@ -122,6 +128,16 @@ class BuildPage(QWidget):
         QMessageBox.warning(self, self.label,
                 "The project cannot be built because the name of the {0} has "
                         "not been set.".format(missing))
+
+    def _console_changed(self, state):
+        """ Invoked when the user clicks on the console button. """
+
+        self._console = bool(state)
+
+    def _verbose_changed(self, state):
+        """ Invoked when the user clicks on the verbose button. """
+
+        self._verbose = bool(state)
 
 
 class LoggingBuilder(Builder):

@@ -50,7 +50,7 @@ class Builder():
         self.quiet = False
         self.verbose = False
 
-    def build(self, build_dir=None):
+    def build(self, build_dir=None, console=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -68,7 +68,7 @@ class Builder():
 
         freeze = self._copy_lib_file('freeze.py')
 
-        self._write_qmake(build_dir, freeze)
+        self._write_qmake(build_dir, console, freeze)
 
         resources_dir = os.path.join(build_dir, 'resources')
         self._create_directory(resources_dir)
@@ -130,7 +130,7 @@ class Builder():
                 self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
                 dir_stack.pop()
 
-    def _write_qmake(self, build_dir, freeze):
+    def _write_qmake(self, build_dir, console, freeze):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -169,8 +169,10 @@ class Builder():
             if needs_gui:
                 no_gui = False
 
-        if no_gui:
+        if no_gui or console:
             f.write('CONFIG += console\n')
+
+        if no_gui:
             f.write('QT -= gui\n')
 
         if len(qmake_qt) != 0:
