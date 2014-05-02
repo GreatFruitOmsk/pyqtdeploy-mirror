@@ -106,10 +106,15 @@ class BuildPage(QWidget):
 
         builder = LoggingBuilder(project, self._builder_viewer)
 
+        builder.clear()
+        builder.status("Generating code...")
+
         try:
             builder.build()
         except UserException as e:
             handle_user_exception(e, self.label, self)
+
+        builder.status("Code generation succeeded.")
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """
@@ -135,13 +140,19 @@ class LoggingBuilder(Builder):
         self._error_format = self._viewer.currentCharFormat()
         self._error_format.setForeground(QColor('#7f0000'))
 
-    def build(self):
-        """ Reimplemented to clear the viewer before building. """
+        self._status_format = self._viewer.currentCharFormat()
+        self._status_format.setForeground(QColor('#007f00'))
+
+    def clear(self):
+        """ Clear the viewer. """
 
         self._viewer.setPlainText('')
         QApplication.processEvents()
 
-        super().build()
+    def status(self, text):
+        """ Add some status text to the viewer. """
+
+        self._append_text(text, self._status_format)
 
     def information(self, text):
         """ Reimplemented to handle information messages. """
