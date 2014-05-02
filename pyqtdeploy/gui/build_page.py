@@ -129,6 +129,7 @@ class BuildPage(QWidget):
                     console=bool(self._console_button.checkState()))
         except UserException as e:
             handle_user_exception(e, self.label, self)
+            return
 
         builder.status("Code generation succeeded.")
 
@@ -145,6 +146,7 @@ class BuildPage(QWidget):
                     builder.run([qmake], "qmake failed.", in_build_dir=True)
                 except UserException as e:
                     handle_user_exception(e, self.label, self)
+                    return
 
                 builder.status("qmake succeeded.")
 
@@ -158,8 +160,32 @@ class BuildPage(QWidget):
                         in_build_dir=True)
             except UserException as e:
                 handle_user_exception(e, self.label, self)
+                return
 
             builder.status("{0} succeeded.".format(make))
+
+        if self._run_application_button.checkState != Qt.Unchecked:
+            build_dir = project.absolute_path(project.build_dir)
+            app_name = project.application_basename()
+
+            if sys.platform == 'win32':
+                application = os.path.join(build_dir, 'Release',
+                        app_name + '.exe')
+            elif sys.platform == 'darwin':
+                application = os.path.join(build_dir, app_name + '.app',
+                        'Contents', 'MacOS', app_name)
+            else:
+                application = os.path.join(build_dir, app_name)
+
+            builder.status("Running {0}...".format(app_name))
+
+            try:
+                builder.run([application], "{0} failed.".format(application))
+            except UserException as e:
+                handle_user_exception(e, self.label, self)
+                return
+
+            builder.status("{0} succeeded.".format(app_name))
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """
@@ -232,12 +258,14 @@ class LoggingBuilder(Builder):
     def _append_text(self, text, char_format):
         """ Append text to the viewer using a specific character format. """
 
-        self._viewer.setCurrentCharFormat(char_format)
-        self._viewer.appendPlainText(text)
-        self._viewer.setCurrentCharFormat(self._default_format)
+        viewer = self._viewer
+
+        viewer.setCurrentCharFormat(char_format)
+        viewer.appendPlainText(text)
+        viewer.setCurrentCharFormat(self._default_format)
 
         # Make sure the new text is visible.
-        self._viewer.verticalScrollBar().triggerAction(
+        viewer.verticalScrollBar().triggerAction(
                 QAbstractSlider.SliderToMaximum)
 
         QApplication.processEvents()

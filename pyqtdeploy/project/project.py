@@ -152,6 +152,16 @@ class Project(QObject):
 
         return filename
 
+    def application_basename(self):
+        """ Return the basename of the application script (i.e. with no path or
+        extension.
+        """
+
+        app_name, _ = os.path.splitext(
+                os.path.basename(self.absolute_path(self.application_script)))
+
+        return app_name
+
     @classmethod
     def load(cls, filename):
         """ Return a new project loaded from the given file.  Raise a

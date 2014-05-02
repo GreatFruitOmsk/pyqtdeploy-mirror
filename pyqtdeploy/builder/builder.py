@@ -139,9 +139,7 @@ class Builder():
 
         project = self._project
 
-        app_name = os.path.basename(
-                project.absolute_path(project.application_script))
-        app_name, _ = os.path.splitext(app_name)
+        app_name = project.application_basename()
 
         f = self._create_file(build_dir, app_name + '.pro')
 
