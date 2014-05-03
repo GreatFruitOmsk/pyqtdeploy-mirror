@@ -99,7 +99,7 @@ class Project(QObject):
             except ValueError:
                 pass
 
-        return None
+        return None, None
 
     def __init__(self, name=''):
         """ Initialise the project. """
