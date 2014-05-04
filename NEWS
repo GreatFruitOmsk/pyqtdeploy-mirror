@@ -1,3 +1,11 @@
+v0.4 4th May 2014
+  - Replaced the Build menu with the Build tab and allow applications to be
+    generated, built and run from within the GUI.
+  - The Python Configuration tab is now the Locations tab.
+  - Dependencies between PyQt modules is now understood and enforced.
+  - Environment variables can now be used in all pathnames.
+  - Added the --quiet command line option.
+
 v0.3 20th April 2014
   - Windows support now works.
 
