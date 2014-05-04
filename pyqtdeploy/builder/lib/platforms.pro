@@ -1,5 +1,5 @@
 linux-* {
-    LIBS += -lutil
+    LIBS += -lutil -ldl
 }
 
 win32-msvc* {
