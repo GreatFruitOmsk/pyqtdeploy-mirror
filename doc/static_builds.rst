@@ -168,7 +168,7 @@ and run::
 
 Note that (for current versions of Qt) QtWebkit is not supported in a static
 version on all platforms.  Therefore you may wish to add the ``-skip qtwebkit``
-command line option.
+option.
 
 
 sip
@@ -177,38 +177,50 @@ sip
 To build a static, native version of sip, change to the sip source directory
 and run::
 
-    python configure.py --static --use-qmake --sysroot=$ROOT
+    python configure.py --static --sysroot=$ROOT --use-qmake
     qmake
     make
     make install
 
 
 PyQt5
------
+.....
 
 To build a static, native version of PyQt5, change to the PyQt5 source
 directory and run::
 
-    $ROOT/python/bin/python configure.py --no-designer-plugin --no-qml-plugin --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    python configure.py --static --sysroot=$ROOT --no-designer-plugin --no-qml-plugin --no-qsci-api --no-sip-files --no-tools
     make
     make install
 
+You may also wish to disable the automatic generation of docstrings using the
+``--no-docstrings`` option.
+
 On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH`.  On other platforms you may need to specify the ``qmake``
+executable using the ``--qmake`` option.
+
+You may also need to specify the ``sip`` executable using the ``--sip`` option.
 
 
 PyQt4
------
+.....
 
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
 
-    $ROOT/python/bin/python configure-ng.py --no-designer-plugin --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip
+    python configure-ng.py --static --sysroot=$ROOT --no-designer-plugin --no-qsci-api --no-sip-files --no-tools
     make
     make install
 
+You may also wish to disable the automatic generation of docstrings using the
+``--no-docstrings`` option.
+
 On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH` and omit the ``--qmake`` option.
+:envvar:`PATH`.  On other platforms you may need to specify the ``qmake``
+executable using the ``--qmake`` option.
+
+You may also need to specify the ``sip`` executable using the ``--sip`` option.
 
 
 QScintilla
