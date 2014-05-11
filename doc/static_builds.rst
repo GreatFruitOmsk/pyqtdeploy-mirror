@@ -1,37 +1,53 @@
 Building Static Packages
 ========================
 
-In this section we describe how to build static, native versions of the various
-packages that might be part of a deployment.
+In this section we describe how to build static versions of the various
+packages that might be part of a deployment.  As this covers cross-compiling
+(specifically to support mobile platforms) we refer to *host* and *target*
+installations.  All compiling is performed on the *host* system and generates
+code that will eventually run on the *target* system.  A *native* build is
+where the *host* and *target* systems are the same.
 
-For most target platforms it is not necessary to build a static version of Qt.
-The main advantage of a static version is that it removes an external
-dependency and so eases deployment.  The main disadvantage is that it increases
-the size of the final executable.
+You must have a host Python installation that is the same version as the target
+version you will be building.  Other than that there is nothing special about
+the host Python installation.  The notes refer to the host Python interpreter
+as ``python`` although the actual name you use will depend on your version of
+Python and the host platform.
+
+You must also have an appropriate host Qt installation.  This can be a regular
+native Qt installation, a static native Qt installation or a cross-compiling
+Qt installation.  For most target platforms it is not necessary to build a
+static version of Qt.  The main advantage of a static version is that it
+removes an external dependency and so eases deployment.  The main disadvantage
+is that it increases the size of the final executable.  The notes refer to the
+qmake command of your Qt installation as ``qmake``.  You must make sure that
+you run the correct copy of ``qmake`` if you have multiple versions of Qt
+installed.  When cross-compiling for mobile devices it is highly recommended
+that you use one of the binary installers provided by Digia.
+
+You must also have a host SIP installation that is the same version as the
+target version you will be building.
+
+The notes refer to the make command as ``make``.  If you are using Microsoft
+Visual C++ then use ``nmake`` instead.
 
 All packages are built in a nominal ``$ROOT`` directory.  Only those command
-line options related to static builds are specifed - you will probably want
-to specify other options to fully configure each package.
+line options related to static and cross-compiled builds are specifed - you
+will probably want to specify other options to fully configure each package.
+The notes are careful to use version numbers in such a way that the same
+``$ROOT`` directory can be used for multiple versions of Python, Qt and
+multiple applications without conflict.
 
-The notes refer to the Python interpreter as ``$ROOT/python/bin/python`` which
-is correct for Python v2 on non-Windows platforms.  If you are using Python v3
-(on a non-Windows platform) then use ``$ROOT/python/bin/python3`` instead.  If
-you are using Windows then use ``$ROOT\Python-X.Y.Z\python`` where *X.Y.Z* is
-the Python version number.
 
-Similarly the notes refer to the SIP code generator as ``$ROOT/python/bin/sip``
-which is correct for non-Windows platforms.  If you are using Windows then use
-``$ROOT\Python-X.Y.Z\sip.exe`` instead.
-
-Finally, the notes refer to the make command as ``make``.  If you are using
-Microsoft Visual C++ then use ``nmake`` instead.
-
+Native Windows, OS/X and Linux Builds
+-------------------------------------
 
 Python
-------
+......
+
+TODO
 
 Non-Windows Platforms
-.....................
 
 To build a static, native version of Python, change to the Python source
 directory and run::
@@ -44,7 +60,6 @@ Note that a static, native build of Python is the default on these platforms.
 
 
 Windows
-.......
 
 Instructions for creating a static version of the Python library on Windows are
 given in the ``readme.txt`` file in the ``PCbuild`` directory of the Python
@@ -140,14 +155,16 @@ Python interpreter in that installation, e.g. ``C:\PythonXY\python.exe``.
 
 
 Qt
---
+..
 
 To build a static, native version of Qt, change to the Qt source directory
 and run::
 
-    ./configure -prefix $ROOT/qt -static
+    ./configure -prefix $ROOT/qt-X.Y.Z -static
     make
     make install
+
+``X.Y.Z`` is the version number of Qt you are building.
 
 Note that (for current versions of Qt) QtWebkit is not supported in a static
 version on all platforms.  Therefore you may wish to add the ``-skip qtwebkit``
@@ -155,12 +172,13 @@ command line option.
 
 
 sip
----
+...
 
 To build a static, native version of sip, change to the sip source directory
 and run::
 
-    $ROOT/python/bin/python configure.py --static
+    python configure.py --static --use-qmake --sysroot=$ROOT
+    qmake
     make
     make install
 
