@@ -177,10 +177,12 @@ sip
 To build a static, native version of sip, change to the sip source directory
 and run::
 
-    python configure.py --static --sysroot=$ROOT --use-qmake
+    python configure.py --static --sysroot=$ROOT --no-tools --use-qmake
     qmake
     make
     make install
+
+See notes [#qmake]_.
 
 
 PyQt5
@@ -189,18 +191,11 @@ PyQt5
 To build a static, native version of PyQt5, change to the PyQt5 source
 directory and run::
 
-    python configure.py --static --sysroot=$ROOT --no-designer-plugin --no-qml-plugin --no-qsci-api --no-sip-files --no-tools
+    python configure.py --static --sysroot=$ROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --no-qml-plugin
     make
     make install
 
-You may also wish to disable the automatic generation of docstrings using the
-``--no-docstrings`` option.
-
-On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH`.  On other platforms you may need to specify the ``qmake``
-executable using the ``--qmake`` option.
-
-You may also need to specify the ``sip`` executable using the ``--sip`` option.
+See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 PyQt4
@@ -209,28 +204,21 @@ PyQt4
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
 
-    python configure-ng.py --static --sysroot=$ROOT --no-designer-plugin --no-qsci-api --no-sip-files --no-tools
+    python configure-ng.py --static --sysroot=$ROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin
     make
     make install
 
-You may also wish to disable the automatic generation of docstrings using the
-``--no-docstrings`` option.
-
-On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH`.  On other platforms you may need to specify the ``qmake``
-executable using the ``--qmake`` option.
-
-You may also need to specify the ``sip`` executable using the ``--sip`` option.
+See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 QScintilla
-----------
+..........
 
 To build a static, native version of the QScintilla library, change to the
 QScintilla source directory and run::
 
     cd Qt4/Qt5
-    $ROOT/qt/bin/qmake CONFIG+=staticlib
+    qmake CONFIG+=staticlib
     make
     make install
 
@@ -250,24 +238,23 @@ To build a static, native version of the Python bindings, change to the
 QScintilla source directory and run::
 
     cd Python
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    python configure.py --static --sysroot=$ROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH` and omit the ``--qmake`` option.
+See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 Qt Charts
----------
+.........
 
 To build a static, native version of the Qt Charts library, change to the
 Qt Charts source directory and run::
 
-    $ROOT/qt/bin/qmake "CONFIG+=release staticlib"
+    qmake "CONFIG+=release staticlib"
     make
     make install
 
@@ -278,21 +265,23 @@ section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtChart source directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    python configure.py --static --sysroot=$ROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
-On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH` and omit the ``--qmake`` option.
+The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
+substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
+
+See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 Qt Data Visualization
----------------------
+.....................
 
 To build a static, native version of the Qt Data Visualization library, change
 to the Qt Data Visualization source directory and run::
 
-    $ROOT/qt/bin/qmake "CONFIG+=release staticlib"
+    qmake "CONFIG+=release staticlib"
     make
     make install
 
@@ -303,9 +292,21 @@ See the section describing the building of the QScintilla Python bindings.
 To build a static, native version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
-    $ROOT/python/bin/python configure.py --static --qmake=$ROOT/qt/bin/qmake --sip=$ROOT/python/bin/sip --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    python configure.py --static --sysroot=$ROOT --no-sip-files --no-qsci-api --pyqt-sip-flags="$PYQT_SIP_FLAGS"
     make
     make install
 
-On Windows make sure that the directory containing ``qmake`` is on your
-:envvar:`PATH` and omit the ``--qmake`` option.
+See notes [#docstrings]_, [#qmake]_, [#sip]_.
+
+
+.. rubric:: Notes
+
+.. [#docstrings] You may also wish to disable the automatic generation of
+    docstrings using the ``--no-docstrings`` option.
+
+.. [#qmake] On Windows make sure that the directory containing ``qmake`` is on
+    your :envvar:`PATH`.  On other platforms you may need to specify the
+    ``qmake`` executable using the ``--qmake`` option.
+
+.. [#sip] You may also need to specify the ``sip`` executable using the
+    ``--sip`` option.
