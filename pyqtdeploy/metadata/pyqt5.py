@@ -135,6 +135,10 @@ pyqt5_metadata = {
                                     deps=['QtPrintSupport', 'QtWebKit'],
                                     qt=['webkitwidgets']),
 
+    'QtWebSockets':             PyQt5Metadata(
+                                    deps=['QtNetwork'],
+                                    qt=['websockets']),
+
     'QtWidgets':                PyQt5Metadata(
                                     deps=['QtGui'],
                                     qt=['widgets']),
