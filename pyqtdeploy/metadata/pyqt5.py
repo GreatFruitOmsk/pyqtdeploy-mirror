@@ -103,6 +103,10 @@ pyqt5_metadata = {
                                     deps=['QtGui', 'QtQml'],
                                     qt=['quick']),
 
+    'QtQuickWidgets':           PyQt5Metadata(
+                                    deps=['QtQuick', 'QtWidgets'],
+                                    qt=['quickwidgets']),
+
     'QtSensors':                PyQt5Metadata(
                                     deps=['QtCore'],
                                     qt=['sensors']),
