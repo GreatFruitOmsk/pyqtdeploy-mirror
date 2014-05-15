@@ -47,7 +47,7 @@ extern void initpyqtdeploy(void);
 #endif
 
 
-int pyqtdeploy_main(int argc, char **argv, PYMAIN_TYPE *py_main,
+int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
         struct _inittab *extension_modules)
 {
     // The replacement table of frozen modules.

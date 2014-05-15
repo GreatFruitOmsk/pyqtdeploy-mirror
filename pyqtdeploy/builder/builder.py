@@ -286,9 +286,9 @@ class Builder():
         # Specify the source and header files.
         f.write('\n')
 
-        f.write('SOURCES = main.c pyqtdeploy_main.c pyqtdeploy_module.cpp\n')
+        f.write('SOURCES = main.c pyqtdeploy_start.c pyqtdeploy_module.cpp\n')
         self._write_main_c(build_dir, app_name, extensions.keys())
-        self._copy_lib_file('pyqtdeploy_main.c', build_dir)
+        self._copy_lib_file('pyqtdeploy_start.c', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
@@ -539,7 +539,7 @@ int main(int argc, char **argv)
 
     @staticmethod
     def _write_main_call(f, app_name, inittab, py3):
-        """ Write the Python version specific call to pyqtdeploy_main(). """
+        """ Write the Python version specific call to pyqtdeploy_start(). """
 
         if py3:
             name_type = 'wchar_t'
@@ -548,10 +548,10 @@ int main(int argc, char **argv)
             name_type = 'char'
             name_prefix = ''
 
-        f.write('''    extern int pyqtdeploy_main(int argc, char **argv, %s *py_main,
+        f.write('''    extern int pyqtdeploy_start(int argc, char **argv, %s *py_main,
             struct _inittab *extension_modules);
 
-    return pyqtdeploy_main(argc, argv, %s"%s", %s);
+    return pyqtdeploy_start(argc, argv, %s"%s", %s);
 ''' % (name_type, name_prefix, app_name, inittab))
 
     def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
