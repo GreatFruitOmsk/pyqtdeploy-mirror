@@ -27,6 +27,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 from PyQt5.QtCore import QDir, QFile, QFileInfo, QIODevice
