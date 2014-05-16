@@ -27,7 +27,7 @@
 class Metadata:
     """ Encapsulate the meta-data for a single PyQt module. """
 
-    def __init__(self, group, deps, qt, config, needs_suffix):
+    def __init__(self, group, deps, gui, qt4, qt5, config4, config5, needs_suffix):
         """ Initialise the object. """
 
         # The group (either 'base', 'opengl', or 'addon') that the module
@@ -39,11 +39,24 @@ class Metadata:
         # complete set of dependencies for a module.
         self.deps = deps
 
-        # The sequence of strings to add the qmake's QT variable.
-        self.qt = qt
+        # Set if the QtGui module is needed.
+        self.gui = gui
 
-        # The sequence of strings to add the qmake's CONFIG variable.
-        self.config = config
+        # The sequence of strings to add the qmake's QT variable when building
+        # against Qt v4.
+        self.qt4 = qt4
+
+        # The sequence of strings to add the qmake's QT variable when building
+        # against Qt v5.
+        self.qt5 = qt5
+
+        # The sequence of strings to add the qmake's CONFIG variable when
+        # building against Qt v4.
+        self.config4 = config4
+
+        # The sequence of strings to add the qmake's CONFIG variable when
+        # building against Qt v5.
+        self.config5 = config5
 
         # Set if a suffix must be added to the name of the statically linked
         # module (in order to work around a quirk in Qt4's qmake).

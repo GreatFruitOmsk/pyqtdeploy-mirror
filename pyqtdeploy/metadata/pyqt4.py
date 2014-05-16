@@ -30,90 +30,112 @@ from .metadata import Metadata
 class PyQt4Metadata(Metadata):
     """ Encapsulate the meta-data for a single PyQt4 module. """
 
-    def __init__(self, group='base', deps=(), qt=(), config=(), needs_suffix=True):
+    def __init__(self, group='base', deps=(), gui=True, qt4=(), qt5=(), config4=(), config5=(), needs_suffix=True):
         """ Initialise the object. """
 
-        super().__init__(group=group, deps=deps, qt=qt, config=config,
-                needs_suffix=needs_suffix)
+        super().__init__(group=group, deps=deps, gui=gui, qt4=qt4, qt5=qt5,
+                config4=config4, config5=config5, needs_suffix=needs_suffix)
 
 
 # The dictionary of meta-data for the PyQt4 modules.
 pyqt4_metadata = {
     'QAxContainer':     PyQt4Metadata(
                             deps=['QtGui'],
-                            config=['qaxcontainer']),
+                            config4=['qaxcontainer'],
+                            qt5=['axcontainer']),
 
     'Qt':               PyQt4Metadata(),
 
     'QtCore':           PyQt4Metadata(
-                            qt=['-gui']),
+                            gui=False),
 
     'QtDBus':           PyQt4Metadata(
                             deps=['QtCore'],
-                            qt=['dbus', '-gui']),
+                            gui=False,
+                            qt4=['dbus'],
+                            qt5=['dbus']),
 
     'QtDeclarative':    PyQt4Metadata(
                             deps=['QtGui', 'QtNetwork'],
-                            qt=['declarative', 'network']),
+                            qt4=['declarative', 'network'],
+                            qt5=['declarative', 'network']),
 
     'QtDesigner':       PyQt4Metadata(
                             deps=['QtGui'],
-                            config=['designer']),
+                            config4=['designer'],
+                            qt5=['designer']),
 
     'QtGui':            PyQt4Metadata(
-                            deps=['QtCore']),
+                            deps=['QtCore'],
+                            qt5=['widgets', 'printsupport']),
 
     'QtHelp':           PyQt4Metadata(
                             deps=['QtGui'],
-                            config=['help']),
+                            config4=['help'],
+                            qt5=['help']),
 
     'QtMultimedia':     PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['multimedia']),
+                            qt4=['multimedia'],
+                            qt5=['multimedia']),
 
     'QtNetwork':        PyQt4Metadata(
                             deps=['QtCore'],
-                            qt=['network', '-gui']),
+                            gui=False,
+                            qt4=['network'],
+                            qt5=['network']),
 
     'QtOpenGL':         PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['opengl']),
+                            qt4=['opengl'],
+                            qt5=['opengl']),
 
     'QtScript':         PyQt4Metadata(
                             deps=['QtCore'],
-                            qt=['script', '-gui']),
+                            gui=False,
+                            qt4=['script'],
+                            qt5=['script']),
 
     'QtScriptTools':    PyQt4Metadata(
                             deps=['QtGui', 'QtScript'],
-                            qt=['scripttools', 'script']),
+                            qt4=['scripttools', 'script'],
+                            qt5=['scripttools', 'script', 'widgets']),
 
     'QtSql':            PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['sql']),
+                            qt4=['sql'],
+                            qt5=['sql', 'widgets']),
 
     'QtSvg':            PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['svg']),
+                            qt4=['svg'],
+                            qt5=['svg']),
 
     'QtTest':           PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['testlib']),
+                            qt4=['testlib'],
+                            qt5=['testlib', 'widgets']),
 
     'QtWebKit':         PyQt4Metadata(
                             deps=['QtGui', 'QtNetwork'],
-                            qt=['webkit', 'network']),
+                            qt4=['webkit', 'network'],
+                            qt5=['webkit', 'webkitwidgets', 'network']),
 
     'QtXml':            PyQt4Metadata(
                             deps=['QtCore'],
-                            qt=['xml', '-gui']),
+                            gui=False,
+                            qt4=['xml'],
+                            qt5=['xml']),
 
     'QtXmlPatterns':    PyQt4Metadata(
                             deps=['QtNetwork'],
-                            qt=['xmlpatterns', '-gui', 'network']),
+                            gui=False,
+                            qt4=['xmlpatterns', 'network'],
+                            qt5=['xmlpatterns', 'network']),
 
     'phonon':           PyQt4Metadata(
                             deps=['QtGui'],
-                            qt=['phonon']),
+                            qt4=['phonon']),
 
     'uic':              PyQt4Metadata(
                             deps=['QtGui']),
@@ -121,12 +143,14 @@ pyqt4_metadata = {
     'QtChart':          PyQt4Metadata(
                             group='addon',
                             deps=['QtGui'],
-                            config=['qtcommercialchart'],
+                            config4=['qtcommercialchart'],
+                            config5=['qtcommercialchart'],
                             needs_suffix=False),
 
     'Qsci':             PyQt4Metadata(
                             group='addon',
                             deps=['QtGui'],
-                            config=['qscintilla2'],
+                            config4=['qscintilla2'],
+                            config5=['qscintilla2'],
                             needs_suffix=False),
 }

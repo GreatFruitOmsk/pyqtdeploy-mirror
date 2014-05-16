@@ -145,44 +145,71 @@ class Builder():
         f = self._create_file(build_dir, app_name + '.pro')
 
         f.write('TEMPLATE = app\n')
-        f.write('CONFIG += release warn_on\n')
-
-        # Configure the QT value.
         f.write('\n')
 
-        no_gui = True
-        qmake_qt = []
-        qmake_config = []
+        # Configure the CONFIG and QT values.
+        needs_gui = False
+        qmake_qt4 = set()
+        qmake_config4 = set()
+        qmake_qt5 = set()
+        qmake_config5 = set()
 
         for pyqt_m in project.pyqt_modules:
-            needs_gui = True
-
             metadata = self._get_module_metadata(pyqt_m)
 
-            for qt in metadata.qt:
-                if qt == '-gui':
-                    needs_gui = False
-                elif qt not in qmake_qt:
-                    qmake_qt.append(qt)
+            if metadata.gui:
+                needs_gui = True
 
-            for config in metadata.config:
-                if config not in qmake_config:
-                    qmake_config.append(config)
+            qmake_qt4.update(metadata.qt4)
+            qmake_config4.update(metadata.config4)
+            qmake_qt5.update(metadata.qt5)
+            qmake_config5.update(metadata.config5)
 
-            if needs_gui:
-                no_gui = False
+        both_qt = qmake_qt4 & qmake_qt5
+        qmake_qt4 -= both_qt
+        qmake_qt5 -= both_qt
 
-        if no_gui or console:
-            f.write('CONFIG += console\n')
+        both_config = qmake_qt4 & qmake_qt5
+        qmake_config4 -= both_config
+        qmake_config5 -= both_config
 
-        if no_gui:
+        both_config.add('release')
+        both_config.add('warn_on')
+
+        if not needs_gui or console:
+            both_config.add('console')
+
+        f.write('CONFIG += {0}\n'.format(' '.join(both_config)))
+
+        if not needs_gui:
             f.write('QT -= gui\n')
 
-        if len(qmake_qt) != 0:
-            f.write('QT += {0}\n'.format(' '.join(qmake_qt)))
+        if both_qt:
+            f.write('QT += {0}\n'.format(' '.join(both_qt)))
 
-        if len(qmake_config) != 0:
-            f.write('CONFIG += {0}\n'.format(' '.join(qmake_config)))
+        if qmake_config4 or qmake_qt4:
+            f.write('\n')
+            f.write('lessThan(QT_MAJOR_VERSION, 5) {\n')
+
+            if qmake_config4:
+                f.write('    CONFIG += {0}\n'.format(' '.join(qmake_config4)))
+
+            if qmake_qt4:
+                f.write('    QT += {0}\n'.format(' '.join(qmake_qt4)))
+
+            f.write('}\n')
+
+        if qmake_config5 or qmake_qt5:
+            f.write('\n')
+            f.write('greaterThan(QT_MAJOR_VERSION, 4) {\n')
+
+            if qmake_config5:
+                f.write('    CONFIG += {0}\n'.format(' '.join(qmake_config5)))
+
+            if qmake_qt5:
+                f.write('    QT += {0}\n'.format(' '.join(qmake_qt5)))
+
+            f.write('}\n')
 
         # Determine the extension modules and link against them.
         extensions = {}
