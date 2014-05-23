@@ -127,7 +127,7 @@
 #define HAVE_COMPUTED_GOTOS 1
 
 /* Define to 1 if you have the `confstr' function. */
-#define HAVE_CONFSTR 1
+/* #undef HAVE_CONFSTR */
 
 /* Define to 1 if you have the <conio.h> header file. */
 /* #undef HAVE_CONIO_H */
@@ -176,7 +176,7 @@
 /* #undef HAVE_DEV_PTC */
 
 /* Define to 1 if you have the /dev/ptmx device file. */
-#define HAVE_DEV_PTMX 1
+/* #undef HAVE_DEV_PTMX */
 
 /* Define to 1 if you have the <direct.h> header file. */
 /* #undef HAVE_DIRECT_H */
@@ -198,7 +198,7 @@
 #define HAVE_DUP2 1
 
 /* Define to 1 if you have the `dup3' function. */
-#define HAVE_DUP3 1
+/* #undef HAVE_DUP3 */
 
 /* Defined when any dynamic module loading is enabled. */
 /* #undef HAVE_DYNAMIC_LOADING */
@@ -255,7 +255,7 @@
 #define HAVE_FDOPENDIR 1
 
 /* Define to 1 if you have the `fexecve' function. */
-#define HAVE_FEXECVE 1
+/* #undef HAVE_FEXECVE */
 
 /* Define to 1 if you have the `finite' function. */
 #define HAVE_FINITE 1
@@ -267,7 +267,7 @@
 #define HAVE_FORK 1
 
 /* Define to 1 if you have the `forkpty' function. */
-#define HAVE_FORKPTY 1
+/* #undef HAVE_FORKPTY */
 
 /* Define to 1 if you have the `fpathconf' function. */
 #define HAVE_FPATHCONF 1
@@ -300,13 +300,13 @@
 #define HAVE_FTRUNCATE 1
 
 /* Define to 1 if you have the `futimens' function. */
-#define HAVE_FUTIMENS 1
+/* #undef HAVE_FUTIMENS */
 
 /* Define to 1 if you have the `futimes' function. */
-#define HAVE_FUTIMES 1
+/* #undef HAVE_FUTIMES */
 
 /* Define to 1 if you have the `futimesat' function. */
-#define HAVE_FUTIMESAT 1
+/* #undef HAVE_FUTIMESAT */
 
 /* Define to 1 if you have the `gai_strerror' function. */
 #define HAVE_GAI_STRERROR 1
@@ -355,7 +355,7 @@
 #define HAVE_GETITIMER 1
 
 /* Define to 1 if you have the `getloadavg' function. */
-#define HAVE_GETLOADAVG 1
+/* #undef HAVE_GETLOADAVG */
 
 /* Define to 1 if you have the `getlogin' function. */
 #define HAVE_GETLOGIN 1
@@ -391,7 +391,7 @@
 #define HAVE_GETRESUID 1
 
 /* Define to 1 if you have the `getsid' function. */
-#define HAVE_GETSID 1
+/* #undef HAVE_GETSID */
 
 /* Define to 1 if you have the `getspent' function. */
 #define HAVE_GETSPENT 1
@@ -509,7 +509,7 @@
 #define HAVE_LINK 1
 
 /* Define to 1 if you have the `linkat' function. */
-#define HAVE_LINKAT 1
+/* #undef HAVE_LINKAT */
 
 /* Define to 1 if you have the <linux/can/bcm.h> header file. */
 #define HAVE_LINUX_CAN_BCM_H 1
@@ -527,7 +527,7 @@
 #define HAVE_LINUX_TIPC_H 1
 
 /* Define to 1 if you have the `lockf' function. */
-#define HAVE_LOCKF 1
+/* #undef HAVE_LOCKF */
 
 /* Define to 1 if you have the `log1p' function. */
 #define HAVE_LOG1P 1
@@ -545,7 +545,7 @@
 #define HAVE_LSTAT 1
 
 /* Define to 1 if you have the `lutimes' function. */
-#define HAVE_LUTIMES 1
+/* #undef HAVE_LUTIMES */
 
 /* Define this if you have the makedev macro. */
 #define HAVE_MAKEDEV 1
@@ -569,13 +569,13 @@
 #define HAVE_MKFIFO 1
 
 /* Define to 1 if you have the `mkfifoat' function. */
-#define HAVE_MKFIFOAT 1
+/* #undef HAVE_MKFIFOAT */
 
 /* Define to 1 if you have the `mknod' function. */
 #define HAVE_MKNOD 1
 
 /* Define to 1 if you have the `mknodat' function. */
-#define HAVE_MKNODAT 1
+/* #undef HAVE_MKNODAT */
 
 /* Define to 1 if you have the `mktime' function. */
 #define HAVE_MKTIME 1
@@ -605,7 +605,7 @@
 #define HAVE_OPENAT 1
 
 /* Define to 1 if you have the `openpty' function. */
-#define HAVE_OPENPTY 1
+/* #undef HAVE_OPENPTY */
 
 /* Define if compiling using MacOS X 10.5 SDK or later. */
 /* #undef HAVE_OSX105_SDK */
@@ -629,10 +629,10 @@
 #define HAVE_POLL_H 1
 
 /* Define to 1 if you have the `posix_fadvise' function. */
-#define HAVE_POSIX_FADVISE 1
+/* #undef HAVE_POSIX_FADVISE */
 
 /* Define to 1 if you have the `posix_fallocate' function. */
-#define HAVE_POSIX_FALLOCATE 1
+/* #undef HAVE_POSIX_FALLOCATE */
 
 /* Define to 1 if you have the `pread' function. */
 #define HAVE_PREAD 1
@@ -677,7 +677,7 @@
 #define HAVE_READLINK 1
 
 /* Define to 1 if you have the `readlinkat' function. */
-#define HAVE_READLINKAT 1
+/* #undef HAVE_READLINKAT */
 
 /* Define to 1 if you have the `readv' function. */
 #define HAVE_READV 1
@@ -821,13 +821,13 @@
 #define HAVE_SIGRELSE 1
 
 /* Define to 1 if you have the `sigtimedwait' function. */
-#define HAVE_SIGTIMEDWAIT 1
+/* #undef HAVE_SIGTIMEDWAIT */
 
 /* Define to 1 if you have the `sigwait' function. */
 #define HAVE_SIGWAIT 1
 
 /* Define to 1 if you have the `sigwaitinfo' function. */
-#define HAVE_SIGWAITINFO 1
+/* #undef HAVE_SIGWAITINFO */
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
@@ -913,7 +913,7 @@
 #define HAVE_SYMLINK 1
 
 /* Define to 1 if you have the `symlinkat' function. */
-#define HAVE_SYMLINKAT 1
+/* #undef HAVE_SYMLINKAT */
 
 /* Define to 1 if you have the `sync' function. */
 #define HAVE_SYNC 1
@@ -1105,7 +1105,7 @@
 /* #undef HAVE_UTIL_H */
 
 /* Define to 1 if you have the `utimensat' function. */
-#define HAVE_UTIMENSAT 1
+/* #undef HAVE_UTIMENSAT */
 
 /* Define to 1 if you have the `utimes' function. */
 #define HAVE_UTIMES 1
