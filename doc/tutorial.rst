@@ -269,12 +269,13 @@ Building from the Command Line
 ------------------------------
 
 The application code and :program:`qmake` ``.pro`` file can also be built from
-the command line by specifying the :option:`--build` with the name of a build
-directory to pyqtdeploy.  For example::
+the command line by specifying the :option:`build`.  For example::
 
-    pyqtdeploy --build build wiggly.pdy
+    pyqtdeploy --project wiggly.pdy build
 
-You may also specify the :option:`--quiet` and :option:`--verbose` options.
+You may also specify the :option:`--output`, :option:`--quiet` and
+:option:`--verbose` options.  The :option:`--output` option allows you to
+specify a different build directory to the one defined in the project file.
 The :option:`--quiet` option will disable any progress messages.  The
 :option:`--verbose` option will enable more detailed progress messages.
 

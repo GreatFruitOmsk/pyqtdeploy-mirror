@@ -24,9 +24,5 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.
-from .builder import Builder
-from .gui import ProjectGUI
+# Publish the sub-package's API.
 from .packages import configure_package, show_packages
-from .project import Project
-from .user_exception import UserException

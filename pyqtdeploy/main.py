@@ -36,57 +36,136 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('project_file', help="the project file", nargs='?',
+    parser.add_argument('action',
+            help="the action to perform, otherwise the GUI is started",
+            nargs='?', metavar="build|configure|show-packages")
+    parser.add_argument('--output',
+            help="the name of the output file (configure) or directory (build)",
+            metavar="OUTPUT")
+    parser.add_argument('--package', help="the package name (configure)",
+            metavar="PACKAGE")
+    parser.add_argument('--project', help="the project file (build)",
             metavar="FILE")
-    parser.add_argument('--build', help="build the project in DIR",
-            metavar="DIR")
-    parser.add_argument('--quiet', help="disable build progress messages",
+    parser.add_argument('--target', help="the target platform (configure)",
+            metavar="TARGET")
+    parser.add_argument('--quiet', help="disable progress messages (build)",
             action='store_true')
     parser.add_argument('--verbose',
-            help="enable verbose build progress messages", action='store_true')
+            help="enable verbose progress messages (build)",
+            action='store_true')
 
     args = parser.parse_args()
 
     # Handle the specific actions.
-    if args.build is not None:
-        if args.project_file is None:
-            # Mimic the argparse message.
-            print("{0}: error: the following arguments are required: FILE".format(os.path.basename(sys.argv[0])),
-                    file=sys.stderr)
-            return 2
-
-        from . import Builder, Project, UserException
-
-        try:
-            builder = Builder(Project.load(args.project_file))
-            builder.quiet = args.quiet
-            builder.verbose = args.verbose
-            builder.build(args.build)
-        except UserException as e:
-            print("{0}: {1}".format(os.path.basename(sys.argv[0]), e.text),
-                    file=sys.stderr)
-            return 1
-
-        rc = 0
+    if args.action == 'build':
+        rc = build(args)
+    elif args.action == 'configure':
+        rc = configure(args)
+    elif args.action == 'show-packages':
+        rc = show_packages(args)
     else:
-        from PyQt5.QtWidgets import QApplication
+        rc = gui(args)
 
-        from . import Project, ProjectGUI
+    return rc
 
-        app = QApplication(sys.argv, applicationName='pyqtdeploy',
+
+def gui(args):
+    """ Start the GUI. """
+
+    # Interpret any action as a project file.
+    if args.action is not None:
+        project_file = args.action
+    elif args.project is not None:
+        project_file = args.project
+    else:
+        project_file = None
+
+    from PyQt5.QtWidgets import QApplication
+
+    from . import Project, ProjectGUI
+
+    app = QApplication(sys.argv, applicationName='pyqtdeploy',
                 organizationDomain='riverbankcomputing.com',
                 organizationName='Riverbank Computing')
 
-        if args.project_file is None:
-            project = Project()
-        else:
-            project = ProjectGUI.load(args.project_file)
-            if project is None:
-                return 1
+    if project_file is None:
+        project = Project()
+    else:
+        project = ProjectGUI.load(project_file)
+        if project is None:
+            return 1
 
-        gui = ProjectGUI(project)
-        gui.show()
+    gui = ProjectGUI(project)
+    gui.show()
 
-        rc = app.exec()
+    return app.exec()
 
-    return rc
+
+def build(args):
+    """ Perform the build action. """
+
+    if args.project is None:
+        missing_argument('--project')
+        return 2
+
+    from . import Builder, Project, UserException
+
+    try:
+        builder = Builder(Project.load(args.project))
+        builder.quiet = args.quiet
+        builder.verbose = args.verbose
+        builder.build(args.output)
+    except UserException as e:
+        handle_exception(e)
+        return 1
+
+    return 0
+
+
+def configure(args):
+    """ Perform the configure action. """
+
+    if args.package is None:
+        missing_argument('--package')
+        return 2
+
+    from . import configure_package, UserException
+
+    try:
+        configure_package(args.package, args.target, args.output)
+    except UserException as e:
+        handle_exception(e)
+        return 1
+
+    return 0
+
+
+def show_packages(args):
+    """ Perform the show-packages action. """
+
+    from . import show_packages, UserException
+
+    try:
+        show_packages()
+    except UserException as e:
+        handle_exception(e)
+        return 1
+
+    return 0
+
+
+def missing_argument(name):
+    """ Tell the user about a missing argument. """
+
+    # Mimic the argparse message.
+    print(
+            "{0}: error: the following arguments are required: {1}".format(
+                    os.path.basename(sys.argv[0]), name),
+            file=sys.stderr)
+
+
+def handle_exception(e):
+    """ Tell the user about an exception. """
+
+    print("{0}: {1}".format(os.path.basename(sys.argv[0]), e.text),
+            file=sys.stderr)
