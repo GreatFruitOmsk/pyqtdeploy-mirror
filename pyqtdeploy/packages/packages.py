@@ -35,5 +35,22 @@ def configure_package(package, target, output):
 
 
 def show_packages():
+    """ Write the list of packages for which configuration files exist to
+    stdout.
+    """
 
-    print("Showing packages")
+    packages = _config_qdir().entryList(QDir.Dirs|QDir.NoDotAndDotDot,
+            QDir.Name)
+
+    for package in packages:
+        print(package)
+
+
+def _config_qdir():
+    """ Return a QDir set to the directory containing the configuration files.
+    """
+
+    qdir = QFileInfo(__file__).absoluteDir()
+    qdir.cd('configurations')
+
+    return qdir
