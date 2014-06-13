@@ -9,8 +9,8 @@ application and, if necessary, change its behaviour accordingly.
 
 .. data:: hexversion
 
-    This is the version number of pyqtdeploy encoded as a single (non-zero)
-    integer.  The encoding used is the same as that used by
+    This is the version number of :program:`pyqtdeploy` encoded as a single
+    (non-zero) integer.  The encoding used is the same as that used by
     :data:`sys.hexversion`.
 
     The following code fragment shows how this might be used to locate a QML

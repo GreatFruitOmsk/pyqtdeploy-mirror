@@ -1,7 +1,7 @@
 Working with the Development Version
 ====================================
 
-The source of pyqtdeploy is held in a public read-only
+The source of :program:`pyqtdeploy` is held in a public read-only
 `Mercurial <http:mercurial.selenic.com>`_ repository at
 http://www.riverbankcomputing.com/hg/pyqtdeploy/.  In order to clone the
 repository, run the following command::
@@ -14,11 +14,12 @@ have :mod:`setuptools` installed.
 The repository contains a ``Makefile`` which has the following useful targets.
 
 **develop**
-    is used to install pyqtdeploy in what :mod:`setuptools` calls *Development
-    Mode*.
+    is used to install :program:`pyqtdeploy` in what :mod:`setuptools` calls
+    *Development Mode*.
 
 **develop-uninstall**
-    is used to uninstall the *Development Mode* version of pyqtdeploy.
+    is used to uninstall the *Development Mode* version of
+    :program:`pyqtdeploy`.
 
 **doc**
     is used to build the HTML version of the documentation. You must have

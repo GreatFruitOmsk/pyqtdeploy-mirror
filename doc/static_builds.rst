@@ -20,10 +20,10 @@ Qt installation.  For most target platforms it is not necessary to build a
 static version of Qt.  The main advantage of a static version is that it
 removes an external dependency and so eases deployment.  The main disadvantage
 is that it increases the size of the final executable.  The notes refer to the
-qmake command of your Qt installation as ``qmake``.  You must make sure that
-you run the correct copy of ``qmake`` if you have multiple versions of Qt
-installed.  When cross-compiling for mobile devices it is highly recommended
-that you use one of the binary installers provided by Digia.
+:program:`qmake` command of your Qt installation as ``qmake``.  You must make
+sure that you run the correct copy of :program:`qmake` if you have multiple
+versions of Qt installed.  When cross-compiling for mobile devices it is
+recommended that you use one of the binary installers provided by Digia.
 
 You must also have a host SIP installation that is the same version as the
 target version you will be building.
@@ -304,9 +304,9 @@ See notes [#docstrings]_, [#qmake]_, [#sip]_.
 .. [#docstrings] You may also wish to disable the automatic generation of
     docstrings using the ``--no-docstrings`` option.
 
-.. [#qmake] On Windows make sure that the directory containing ``qmake`` is on
-    your :envvar:`PATH`.  On other platforms you may need to specify the
-    ``qmake`` executable using the ``--qmake`` option.
+.. [#qmake] On Windows make sure that the directory containing :program:`qmake`
+    is on your :envvar:`PATH`.  On other platforms you may need to specify the
+    :program:`qmake` executable using the ``--qmake`` option.
 
 .. [#sip] You may also need to specify the ``sip`` executable using the
     ``--sip`` option.
