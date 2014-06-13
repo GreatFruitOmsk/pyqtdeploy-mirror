@@ -186,18 +186,21 @@ See notes [#target]_, [#qmake]_.
 PyQt5
 -----
 
-To build a static, native version of PyQt5, change to the PyQt5 source
-directory and run::
+To build a static version of PyQt5 (either native or cross-compiling), change
+to the PyQt5 source directory and run::
 
-    python configure.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --no-qml-plugin
+    pyqtdeploy --package pyqt5 --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration pyqt5-TARGET.cfg
     make
     make install
 
-See notes [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 PyQt4
 -----
+
+TODO
 
 To build a static, native version of PyQt4, change to the PyQt4 source
 directory and run::
@@ -211,6 +214,8 @@ See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 QScintilla
 ----------
+
+TODO
 
 To build a static, native version of the QScintilla library, change to the
 QScintilla source directory and run::
@@ -249,6 +254,8 @@ See notes [#docstrings]_, [#qmake]_, [#sip]_.
 Qt Charts
 ---------
 
+TODO
+
 To build a static, native version of the Qt Charts library, change to the
 Qt Charts source directory and run::
 
@@ -276,6 +283,8 @@ See notes [#docstrings]_, [#qmake]_, [#sip]_.
 Qt Data Visualization
 ---------------------
 
+TODO
+
 To build a static, native version of the Qt Data Visualization library, change
 to the Qt Data Visualization source directory and run::
 
@@ -299,11 +308,11 @@ See notes [#docstrings]_, [#qmake]_, [#sip]_.
 
 .. rubric:: Notes
 
-.. [#docstrings] You may also wish to disable the automatic generation of
-    docstrings using the ``--no-docstrings`` option.
-
 .. [#target] If you are building a native version of the package then you may
     omit the ``--target`` option.
+
+.. [#docstrings] You may also wish to disable the automatic generation of
+    docstrings using the ``--no-docstrings`` option.
 
 .. [#qmake] On Windows make sure that the directory containing :program:`qmake`
     is on your :envvar:`PATH`.  On other platforms you may need to specify the
