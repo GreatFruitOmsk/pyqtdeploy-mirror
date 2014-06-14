@@ -35,6 +35,13 @@ All packages are built in a nominal ``$SYSROOT`` directory.  Only those command
 line options related to static and cross-compiled builds are specifed - you
 will probably want to specify other options to fully configure each package.
 
+The package configuration files created by the :option:`configure` action of
+:program:`pyqtdeploy` assume (for desktop platforms) a full-featured Qt
+installation (including OpenSSL support on Windows) and (for mobile devices)
+a Qt installation from the binary installers from Digia.  If your Qt
+installation is different then you may need to modify the configuration files
+appropriately.
+
 
 Python
 ------
@@ -175,12 +182,12 @@ To build a static version of sip (either native or cross-compiling), change to
 the sip source directory and run::
 
     pyqtdeploy --package sip --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-tools --use-qmake --configuration sip-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-tools --use-qmake --configuration=sip-TARGET.cfg
     qmake
     make
     make install
 
-See notes [#target]_.
+See note [#target]_.
 
 
 PyQt5
@@ -190,7 +197,7 @@ To build a static version of PyQt5 (either native or cross-compiling), change
 to the PyQt5 source directory and run::
 
     pyqtdeploy --package pyqt5 --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration pyqt5-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration=pyqt5-TARGET.cfg
     make
     make install
 
@@ -204,7 +211,7 @@ To build a static version of PyQt4 (either native or cross-compiling), change
 to the PyQt4 source directory and run::
 
     pyqtdeploy --package pyqt4 --target TARGET configure
-    python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --configuration pyqt4-TARGET.cfg
+    python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --configuration=pyqt4-TARGET.cfg
     make
     make install
 
@@ -222,85 +229,66 @@ cross-compiling), change to the QScintilla source directory and run::
     make
     make install
 
-Before building the QScintilla Python bindings you need to determine the set of
-command line options that were passed to sip when building PyQt - specifically
-the set of :option:`-t` options and their values.  Normally the
-:program:`configure.py` script imports the :mod:`~PyQt5.QtCore` module to
-determine these options but a statically built PyQt cannot be imported.
-
-Assuming you are deploying the same versions of Qt and PyQt that you have
-developed the application with, then the easiest way to obtain the set of
-options is to run::
-
-    python -c "from PyQt5.QtCore import PYQT_CONFIGURATION; print(PYQT_CONFIGURATION['sip_flags'])"
-
-To build a static, native version of the Python bindings, change to the
-QScintilla source directory and run::
+To build a static version of the Python bindings (either native or
+cross-compiling), change to the QScintilla source directory and run::
 
     cd Python
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    pyqtdeploy --package qscintilla --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=qscintilla-TARGET.cfg
     make
     make install
 
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-See notes [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 Qt Charts
 ---------
 
-TODO
-
-To build a static, native version of the Qt Charts library, change to the
-Qt Charts source directory and run::
+To build a static version of the Qt Charts library (either native or
+cross-compiling), change to the Qt Charts source directory and run::
 
     qmake "CONFIG+=release staticlib"
     make
     make install
 
-Before building the Qt Charts Python bindings you need to determine the set of
-command line options that were passed to sip when building PyQt.  See the
-section describing the building of the QScintilla Python bindings.
+To build a static version of the Python bindings (either native or
+cross-compiling), change to the PyQtChart source directory and run::
 
-To build a static, native version of the Python bindings, change to the
-PyQtChart source directory and run::
-
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    pyqtdeploy --package qtcharts --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=qtcharts-TARGET.cfg
     make
     make install
 
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-See notes [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 Qt Data Visualization
 ---------------------
 
-TODO
-
-To build a static, native version of the Qt Data Visualization library, change
-to the Qt Data Visualization source directory and run::
+To build a static version of the Qt Data Visualization library (either native
+or cross-compiling), change to the Qt Data Visualization source directory and
+run::
 
     qmake "CONFIG+=release staticlib"
     make
     make install
 
-Before building the Qt Data Visualization Python bindings you need to determine
-the set of command line options that were passed to sip when building PyQt.
-See the section describing the building of the QScintilla Python bindings.
+To build a static version of the Python bindings (either native or
+cross-compiling), change to the PyQtDataVisualization source directory and
+run::
 
-To build a static, native version of the Python bindings, change to the
-PyQtDataVisualization source directory and run::
-
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt-sip-flags="$PYQT_SIP_FLAGS"
+    pyqtdeploy --package qtdatavisualization --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=qtdatavisualization-TARGET.cfg
     make
     make install
 
-See notes [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 .. rubric:: Notes
