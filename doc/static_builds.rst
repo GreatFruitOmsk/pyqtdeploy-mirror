@@ -180,7 +180,7 @@ the sip source directory and run::
     make
     make install
 
-See notes [#target]_, [#qmake]_.
+See notes [#target]_.
 
 
 PyQt5
@@ -200,25 +200,22 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 PyQt4
 -----
 
-TODO
+To build a static version of PyQt4 (either native or cross-compiling), change
+to the PyQt4 source directory and run::
 
-To build a static, native version of PyQt4, change to the PyQt4 source
-directory and run::
-
-    python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin
+    pyqtdeploy --package pyqt4 --target TARGET configure
+    python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-sip-files --no-qsci-api --no-designer-plugin --configuration pyqt4-TARGET.cfg
     make
     make install
 
-See notes [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 
 QScintilla
 ----------
 
-TODO
-
-To build a static, native version of the QScintilla library, change to the
-QScintilla source directory and run::
+To build a static version of the QScintilla library (either native or
+cross-compiling), change to the QScintilla source directory and run::
 
     cd Qt4/Qt5
     qmake CONFIG+=staticlib
