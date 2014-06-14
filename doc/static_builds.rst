@@ -257,8 +257,8 @@ cross-compiling), change to the Qt Charts source directory and run::
 To build a static version of the Python bindings (either native or
 cross-compiling), change to the PyQtChart source directory and run::
 
-    pyqtdeploy --package qtcharts --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=qtcharts-TARGET.cfg
+    pyqtdeploy --package pyqtchart --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
     make
     make install
 
@@ -283,8 +283,8 @@ To build a static version of the Python bindings (either native or
 cross-compiling), change to the PyQtDataVisualization source directory and
 run::
 
-    pyqtdeploy --package qtdatavisualization --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=qtdatavisualization-TARGET.cfg
+    pyqtdeploy --package pyqtdatavisualization --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
 
