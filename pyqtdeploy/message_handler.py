@@ -24,11 +24,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.
-from .builder import Builder
-from .gui import ProjectGUI
-from .message_handler import MessageHandler
-from .packages import configure_package, show_packages
-from .project import Project
-from .python import configure_python, show_targets
-from .user_exception import UserException
+class MessageHandler:
+    """ The MessageHandler class handles progress and verbose progress
+    messages.  This base implementation issues messages to the console.
+    """
+
+    def __init__(self, quiet, verbose):
+        """ Initialise the object.  quiet is set if all progress messages
+        should be disabled.  verbose is set if verbose progress messages should
+        be enabled.  Messages do not have trailing newlines.
+        """
+
+        self.quiet = quiet
+        self.verbose = verbose
+
+    def progress_message(self, message):
+        """ Handle a progress message. """
+
+        if not self.quiet:
+            self.message(message)
+
+    def verbose_message(self, message):
+        """ Handle a verbose progress message. """
+
+        if self.verbose:
+            self.progress_message(message)
+
+    def message(self, message):
+        """ Handle a message.  This method may be reimplemented to send the
+        message to somewhere other that stdout.
+        """
+
+        print(message)

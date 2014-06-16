@@ -41,7 +41,7 @@ _TARGET_PYPLATFORM_MAP = {
 }
 
 
-def configure_python(target, output):
+def configure_python(target, output, message_handler):
     """ Write a configuration file for a particular package and target. """
 
     print("Configuring python for %s in %s" % (target, output))

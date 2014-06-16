@@ -40,7 +40,7 @@ def main():
             help="the action to perform, otherwise the GUI is started",
             nargs='?', metavar="build|configure|show-packages|show-targets")
     parser.add_argument('--output',
-            help="the name of the output file (configure) or directory (build)",
+            help="the name of the output file or directory (configure, build)",
             metavar="OUTPUT")
     parser.add_argument('--package', help="the package name (configure)",
             metavar="PACKAGE")
@@ -51,7 +51,7 @@ def main():
     parser.add_argument('--quiet', help="disable progress messages (build)",
             action='store_true')
     parser.add_argument('--verbose',
-            help="enable verbose progress messages (build)",
+            help="enable verbose progress messages (configure, build)",
             action='store_true')
 
     args = parser.parse_args()
@@ -110,15 +110,15 @@ def build(args):
         missing_argument('--project')
         return 2
 
-    from . import Builder, Project, UserException
+    from . import Builder, MessageHandler, Project, UserException
+
+    message_handler = MessageHandler(args.quiet, args.verbose)
 
     try:
-        builder = Builder(Project.load(args.project))
-        builder.quiet = args.quiet
-        builder.verbose = args.verbose
+        builder = Builder(Project.load(args.project), message_handler)
         builder.build(args.output)
     except UserException as e:
-        handle_exception(e)
+        handle_exception(e, args.verbose)
         return 1
 
     return 0
@@ -132,12 +132,14 @@ def configure(args):
         return 2
 
     if args.package == 'python':
-        from . import configure_python, UserException
+        from . import configure_python, MessageHandler, UserException
+
+        message_handler = MessageHandler(args.quiet, args.verbose)
 
         try:
-            configure_python(args.target, args.output)
+            configure_python(args.target, args.output, message_handler)
         except UserException as e:
-            handle_exception(e)
+            handle_exception(e, args.verbose)
             return 1
     else:
         from . import configure_package, UserException
@@ -145,7 +147,7 @@ def configure(args):
         try:
             configure_package(args.package, args.target, args.output)
         except UserException as e:
-            handle_exception(e)
+            handle_exception(e, args.verbose)
             return 1
 
     return 0
@@ -159,7 +161,7 @@ def show_packages(args):
     try:
         show_packages()
     except UserException as e:
-        handle_exception(e)
+        handle_exception(e, args.verbose)
         return 1
 
     return 0
@@ -173,7 +175,7 @@ def show_targets(args):
     try:
         show_targets()
     except UserException as e:
-        handle_exception(e)
+        handle_exception(e, args.verbose)
         return 1
 
     return 0
@@ -189,8 +191,13 @@ def missing_argument(name):
             file=sys.stderr)
 
 
-def handle_exception(e):
+def handle_exception(e, verbose):
     """ Tell the user about an exception. """
 
-    print("{0}: {1}".format(os.path.basename(sys.argv[0]), e.text),
-            file=sys.stderr)
+    program = os.path.basename(sys.argv[0])
+
+    if verbose and e.detail != '':
+        print("{0}: {1}: {2}".format(program, e.text, e.detail),
+                file=sys.stderr)
+    else:
+        print("{0}: {1}".format(program, e.text), file=sys.stderr)

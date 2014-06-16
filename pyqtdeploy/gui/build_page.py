@@ -34,6 +34,7 @@ from PyQt5.QtWidgets import (QAbstractSlider, QApplication, QCheckBox,
         QVBoxLayout, QWidget)
 
 from ..builder import Builder
+from ..message_handler import MessageHandler
 from ..user_exception import UserException
 
 from .exception_handlers import handle_user_exception
@@ -55,8 +56,8 @@ class BuildPage(QWidget):
         # Create the page's GUI.
         layout = QGridLayout()
 
-        self._builder_viewer = QPlainTextEdit(readOnly=True)
-        layout.addWidget(self._builder_viewer, 0, 0, 4, 1)
+        self._log_viewer = QPlainTextEdit(readOnly=True)
+        layout.addWidget(self._log_viewer, 0, 0, 4, 1)
 
         build = QPushButton("Build", clicked=self._build)
         layout.addWidget(build, 0, 1)
@@ -118,20 +119,22 @@ class BuildPage(QWidget):
             self._missing_prereq("target Python library")
             return
 
-        builder = LoggingBuilder(project, self._builder_viewer)
-        builder.verbose = bool(self._verbose_button.checkState())
+        logger = LoggingMessageHandler(bool(self._verbose_button.checkState()),
+                self._log_viewer)
+        builder = Builder(project, logger)
 
-        builder.clear()
-        builder.status("Generating code...")
+        logger.clear()
+        logger.status_message("Generating code...")
 
         try:
             builder.build(clean=bool(self._clean_button.checkState()),
                     console=bool(self._console_button.checkState()))
         except UserException as e:
+            logger.user_exception(e)
             handle_user_exception(e, self.label, self)
             return
 
-        builder.status("Code generation succeeded.")
+        logger.status_message("Code generation succeeded.")
 
         if self._run_qmake_button.checkState() != Qt.Unchecked:
             qmake = os.path.expandvars(project.qmake)
@@ -140,29 +143,31 @@ class BuildPage(QWidget):
                 QMessageBox.warning(self, self.label,
                     "qmake cannot be run because its name has not been set.")
             else:
-                builder.status("Running qmake...")
+                logger.status_message("Running qmake...")
 
                 try:
                     builder.run([qmake], "qmake failed.", in_build_dir=True)
                 except UserException as e:
+                    logger.user_exception(e)
                     handle_user_exception(e, self.label, self)
                     return
 
-                builder.status("qmake succeeded.")
+                logger.status_message("qmake succeeded.")
 
         if self._run_make_button.checkState() != Qt.Unchecked:
             make = 'nmake' if sys.platform == 'win32' else 'make'
 
-            builder.status("Running {0}...".format(make))
+            logger.status_message("Running {0}...".format(make))
 
             try:
                 builder.run([make], "{0} failed.".format(make),
                         in_build_dir=True)
             except UserException as e:
+                logger.user_exception(e)
                 handle_user_exception(e, self.label, self)
                 return
 
-            builder.status("{0} succeeded.".format(make))
+            logger.status_message("{0} succeeded.".format(make))
 
         if self._run_application_button.checkState() != Qt.Unchecked:
             build_dir = project.absolute_path(project.build_dir)
@@ -177,15 +182,16 @@ class BuildPage(QWidget):
             else:
                 application = os.path.join(build_dir, app_name)
 
-            builder.status("Running {0}...".format(app_name))
+            logger.status_message("Running {0}...".format(app_name))
 
             try:
                 builder.run([application], "{0} failed.".format(application))
             except UserException as e:
+                logger.user_exception(e)
                 handle_user_exception(e, self.label, self)
                 return
 
-            builder.status("{0} succeeded.".format(app_name))
+            logger.status_message("{0} succeeded.".format(app_name))
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """
@@ -215,14 +221,15 @@ class BuildPage(QWidget):
             self._run_make_button.setCheckState(Qt.Checked)
 
 
-class LoggingBuilder(Builder):
-    """ A Builder that captures user messages and displays them in a widget.
+class LoggingMessageHandler(MessageHandler):
+    """ A message handler that captures user messages and displays them in a
+    widget.
     """
 
-    def __init__(self, project, viewer):
+    def __init__(self, verbose, viewer):
         """ Initialise the object. """
 
-        super().__init__(project)
+        super().__init__(quiet=False, verbose=verbose)
 
         self._viewer = viewer
 
@@ -240,20 +247,23 @@ class LoggingBuilder(Builder):
         self._viewer.setPlainText('')
         QApplication.processEvents()
 
-    def status(self, text):
-        """ Add some status text to the viewer. """
+    def status_message(self, message):
+        """ Add a status message to the viewer. """
 
-        self._append_text(text, self._status_format)
+        self._append_text(message, self._status_format)
 
-    def information(self, text):
-        """ Reimplemented to handle information messages. """
+    def user_exception(self, e):
+        """ Add a user exception to the viewer. """
 
-        self._append_text(text, self._default_format)
+        self._append_text(e.text, self._error_format)
 
-    def error(self, text):
-        """ Reimplemented to handle error messages. """
+        if self.verbose and e.detail != '':
+            self._append_text(e.detail, self._error_format)
 
-        self._append_text(text, self._error_format)
+    def message(self, message):
+        """ Reimplemented to handle progress messages. """
+
+        self._append_text(message, self._default_format)
 
     def _append_text(self, text, char_format):
         """ Append text to the viewer using a specific character format. """

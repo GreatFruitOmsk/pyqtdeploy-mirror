@@ -41,15 +41,13 @@ from ..version import PYQTDEPLOY_HEXVERSION
 class Builder():
     """ The builder for a project. """
 
-    def __init__(self, project):
+    def __init__(self, project, message_handler):
         """ Initialise the builder for a project. """
 
         super().__init__()
 
         self._project = project
-
-        self.quiet = False
-        self.verbose = False
+        self._message_handler = message_handler
 
     def build(self, build_dir=None, clean=False, console=False):
         """ Build the project in a given directory.  Raise a UserException if
@@ -66,7 +64,8 @@ class Builder():
             build_dir = project.absolute_path(build_dir)
 
         if clean:
-            self._progress("Cleaning {0}.".format(build_dir))
+            self._message_handler.progress_message(
+                    "Cleaning {0}.".format(build_dir))
             shutil.rmtree(build_dir, ignore_errors=True)
 
         self._create_directory(build_dir)
@@ -284,7 +283,7 @@ class Builder():
         platforms_f = QFile(self._lib_filename('platforms.pro'))
 
         if not platforms_f.open(QIODevice.ReadOnly|QIODevice.Text):
-            self._error(
+            raise UserException(
                     "Unable to open file {0}.".format(platforms_f.fileName()),
                     platforms_f.errorString())
 
@@ -322,7 +321,7 @@ class Builder():
 
         major, _ = project.python_target_version
         if major is None:
-            self._error("Unable to determine target Python version")
+            raise UserException("Unable to determine target Python version")
 
         bootstrap = self._copy_lib_file(
                 'bootstrap_py3.py' if major == 3 else 'bootstrap_py2.py')
@@ -595,7 +594,8 @@ int main(int argc, char **argv)
         argv.append(output)
         argv.append(py_filename)
 
-        self._progress("Freezing {0}".format(py_filename))
+        self._message_handler.progress_message(
+                "Freezing {0}".format(py_filename))
 
         self.run(argv, "Unable to freeze {0}.".format(py_filename))
 
@@ -606,22 +606,23 @@ int main(int argc, char **argv)
             saved_cwd = os.getcwd()
             build_dir = self._project.absolute_path(self._project.build_dir)
             os.chdir(build_dir)
-            self._verbose(
+            self._message_handler.verbose_message(
                     "{0} is now the current directory.".format(build_dir))
         else:
             saved_cwd = None
 
-        self._verbose("Running '{0}'".format(' '.join(argv)))
+        self._message_handler.verbose_message(
+                "Running '{0}'".format(' '.join(argv)))
 
         try:
             subprocess.check_output(argv, stderr=subprocess.STDOUT,
                     universal_newlines=True)
         except subprocess.CalledProcessError as e:
-            self._error(error_message, e.output)
+            raise UserException(error_message, e.output)
         finally:
             if saved_cwd is not None:
                 os.chdir(saved_cwd)
-                self._verbose(
+                self._message_handler.verbose_message(
                         "{0} is now the current directory.".format(saved_cwd))
 
     @staticmethod
@@ -658,7 +659,7 @@ int main(int argc, char **argv)
         QFile.remove(d_filename)
 
         if not QFile.copy(s_filename, QDir.fromNativeSeparators(d_filename)):
-            self._error("Unable to copy file {0}.".format(filename))
+            raise UserException("Unable to copy file {0}.".format(filename))
 
         return d_filename
 
@@ -671,52 +672,18 @@ int main(int argc, char **argv)
         try:
             return open(pathname, 'wt')
         except Exception as e:
-            self._error("Unable to create file {0}.".format(pathname), str(e))
+            raise UserException("Unable to create file {0}.".format(pathname),
+                    str(e))
 
     def _create_directory(self, dir_name):
         """ Create a directory which may already exist. """
 
-        self._verbose("Creating directory {0}.".format(dir_name))
+        self._message_handler.verbose_message(
+                "Creating directory {0}.".format(dir_name))
 
         try:
             os.makedirs(dir_name, exist_ok=True)
         except Exception as e:
-            self._error(
+            raise UserException(
                     "Unable to create the '{0}' directory.".format(dir_name),
                     str(e))
-
-    def _progress(self, text):
-        """ Display a progress message if requested. """
-
-        if not self.quiet:
-            self.information(text)
-
-    def _verbose(self, text):
-        """ Display a verbose progress message if requested. """
-
-        if self.verbose:
-            self.information(text)
-
-    def _error(self, text, detail=''):
-        """ Handle an error.  This will raise an exception and not return. """
-
-        self.error(text)
-
-        if detail != '':
-            self.error(detail)
-
-        raise UserException(text, detail)
-
-    def information(self, text):
-        """ Handle a user information message (which will not have a trailing
-        newline).  This default implementation just sends it to stdout.
-        """
-
-        print(text)
-
-    def error(self, text):
-        """ Handle a user error message (which will not have a trailing
-        newline).  This default implementation just sends it to stderr.
-        """
-
-        print(text, file=sys.stderr)
