@@ -48,6 +48,9 @@ setup(
         license='BSD',
         platforms=['X11', 'OS/X', 'Windows'],
         packages=find_packages(),
-        package_data={'pyqtdeploy.builder': ['lib/*']},
+        package_data={
+            'pyqtdeploy.builder':   ['lib/*'],
+            'pyqtdeploy.packages':  ['configurations/*/*']
+        },
         entry_points={'gui_scripts': ['pyqtdeploy = pyqtdeploy.main:main']}
      )
