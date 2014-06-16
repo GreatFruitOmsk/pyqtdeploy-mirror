@@ -41,8 +41,11 @@ _TARGET_PYPLATFORM_MAP = {
 }
 
 
-def configure_package(package, target, output):
+def configure_python(target, output):
     """ Write a configuration file for a particular package and target. """
+
+    print("Configuring python for %s in %s" % (target, output))
+    return
 
     # Get the package directory and check it is valid.
     package_qdir = _config_qdir()
@@ -59,9 +62,6 @@ def configure_package(package, target, output):
             target = 'win'
         elif sys.platform == 'darwin':
             target = 'osx'
-    else:
-        # Remove any target variant.
-        target, _ = target.split('-', maxsplit=1)
 
     try:
         py_platform = _TARGET_PYPLATFORM_MAP[target]
@@ -109,15 +109,16 @@ def configure_package(package, target, output):
     output_qfile.close()
 
 
-def show_packages():
-    """ Write the list of packages for which configuration files exist to
-    stdout.
-    """
+def show_targets():
+    """ Write the list of supported targets to stdout. """
 
-    packages = _config_qdir().entryList(QDir.Dirs|QDir.NoDotAndDotDot)
-    packages.append('python')
+    print("Showing targets")
+    return
 
-    for package in sorted(packages):
+    packages = _config_qdir().entryList(QDir.Dirs|QDir.NoDotAndDotDot,
+            QDir.Name)
+
+    for package in packages:
         print(package)
 
 

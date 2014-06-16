@@ -50,7 +50,8 @@ setup(
         packages=find_packages(),
         package_data={
             'pyqtdeploy.builder':   ['lib/*'],
-            'pyqtdeploy.packages':  ['configurations/*/*']
+            'pyqtdeploy.packages':  ['configurations/*/*'],
+            'pyqtdeploy.python':  ['configurations/*', 'configurations/*/*']
         },
         entry_points={'gui_scripts': ['pyqtdeploy = pyqtdeploy.main:main']}
      )

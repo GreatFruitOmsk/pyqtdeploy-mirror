@@ -38,7 +38,7 @@ def main():
 
     parser.add_argument('action',
             help="the action to perform, otherwise the GUI is started",
-            nargs='?', metavar="build|configure|show-packages")
+            nargs='?', metavar="build|configure|show-packages|show-targets")
     parser.add_argument('--output',
             help="the name of the output file (configure) or directory (build)",
             metavar="OUTPUT")
@@ -63,6 +63,8 @@ def main():
         rc = configure(args)
     elif args.action == 'show-packages':
         rc = show_packages(args)
+    elif args.action == 'show-targets':
+        rc = show_targets(args)
     else:
         rc = gui(args)
 
@@ -129,13 +131,22 @@ def configure(args):
         missing_argument('--package')
         return 2
 
-    from . import configure_package, UserException
+    if args.package == 'python':
+        from . import configure_python, UserException
 
-    try:
-        configure_package(args.package, args.target, args.output)
-    except UserException as e:
-        handle_exception(e)
-        return 1
+        try:
+            configure_python(args.target, args.output)
+        except UserException as e:
+            handle_exception(e)
+            return 1
+    else:
+        from . import configure_package, UserException
+
+        try:
+            configure_package(args.package, args.target, args.output)
+        except UserException as e:
+            handle_exception(e)
+            return 1
 
     return 0
 
@@ -147,6 +158,20 @@ def show_packages(args):
 
     try:
         show_packages()
+    except UserException as e:
+        handle_exception(e)
+        return 1
+
+    return 0
+
+
+def show_targets(args):
+    """ Perform the show-targets action. """
+
+    from . import show_targets, UserException
+
+    try:
+        show_targets()
     except UserException as e:
         handle_exception(e)
         return 1
