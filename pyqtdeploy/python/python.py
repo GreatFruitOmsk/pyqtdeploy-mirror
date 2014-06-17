@@ -81,7 +81,7 @@ def configure_python(target, output, message_handler):
             "Configuring {0} as Python v{1} for {2}.".format(
                     py_src_dir, py_version_str, target))
 
-    # Copy the modules configuration file.
+    # Copy the modules config.c file.
     config_c_src_dir = get_embedded_dir(__file__, 'configurations')
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
 
@@ -90,6 +90,19 @@ def configure_python(target, output, message_handler):
 
     copy_embedded_file(config_c_src_dir.absoluteFilePath('config.c'),
             config_c_dst_file)
+
+    # Copy the pyconfig.h file.
+    pyconfig_h_src_dir = get_embedded_dir(__file__, 'configurations',
+            'pyconfig')
+    pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
+
+    message_handler.verbose_message(
+            "Installing {0}.".format(pyconfig_h_dst_file))
+
+    copy_embedded_file(
+            pyconfig_h_src_dir.absoluteFilePath(
+                    'pyconfig-{0}.h'.format(target)),
+            pyconfig_h_dst_file)
 
 def get_supported_targets():
     """ Return the list of supported targets. """
