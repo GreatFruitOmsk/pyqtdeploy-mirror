@@ -30,8 +30,9 @@ import subprocess
 import sys
 import tempfile
 
-from PyQt5.QtCore import QDir, QFile, QFileInfo, QIODevice
+from PyQt5.QtCore import QDir, QFile
 
+from ..file_utilities import get_embedded_dir, read_embedded_file
 from ..metadata import pyqt4_metadata, pyqt5_metadata
 from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
@@ -112,13 +113,13 @@ class Builder():
 
         os.remove(freeze)
 
-    def _add_uic_dir(self, package, pyqt_dir, dirname, dir_stack):
+    def _add_uic_dir(self, package, pyqt_dir, dir_name, dir_stack):
         """ Add a uic directory to a package. """
 
-        dir_pkg = QrcDirectory(dirname)
+        dir_pkg = QrcDirectory(dir_name)
         package.contents.append(dir_pkg)
 
-        dirpath = [pyqt_dir] + dir_stack + [dirname]
+        dirpath = [pyqt_dir] + dir_stack + [dir_name]
         dirpath = os.path.join(*dirpath)
 
         for content in os.listdir(dirpath):
@@ -130,7 +131,7 @@ class Builder():
             if os.path.isfile(content_path):
                 dir_pkg.contents.append(QrcFile(content))
             elif os.path.isdir(content_path):
-                dir_stack.append(dirname)
+                dir_stack.append(dir_name)
                 self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
                 dir_stack.pop()
 
@@ -280,15 +281,8 @@ class Builder():
             f.write('LIBS += -L{0} -l{1}\n'.format(self._quote(lib_dir), lib))
 
         # Add the platform specific stuff.
-        platforms_f = QFile(self._lib_filename('platforms.pro'))
-
-        if not platforms_f.open(QIODevice.ReadOnly|QIODevice.Text):
-            raise UserException(
-                    "Unable to open file {0}.".format(platforms_f.fileName()),
-                    platforms_f.errorString())
-
-        platforms = platforms_f.readAll()
-        platforms_f.close()
+        platforms = read_embedded_file(
+                self._get_lib_file_name('platforms.pro'))
 
         f.write('\n')
         f.write(platforms.data().decode('latin1'))
@@ -626,18 +620,13 @@ int main(int argc, char **argv)
                         "{0} is now the current directory.".format(saved_cwd))
 
     @staticmethod
-    def _lib_filename(filename):
-        """ Get name of a file in the 'lib' directory that can be used by
-        QFile.
-        """
+    def _get_lib_file_name(file_name):
+        """ Get name of a file in the 'lib' sub-directory. """
 
-        lib_dir = QFileInfo(__file__).dir()
-        lib_dir.cd('lib')
-
-        return lib_dir.filePath(filename)
+        return get_embedded_dir(__file__, 'lib').absoluteFilePath(file_name)
 
     @classmethod
-    def _copy_lib_file(cls, filename, dirname=None):
+    def _copy_lib_file(cls, file_name, dir_name=None):
         """ Copy a library file to a directory and return the full pathname of
         the copy.  If the directory wasn't specified then copy it to a
         temporary directory.
@@ -646,22 +635,22 @@ int main(int argc, char **argv)
         # Note that we use the Qt file operations to support the possibility
         # that pyqtdeploy itself has been deployed as a single executable.
 
-        # The destination filename.
-        if dirname is None:
-            dirname = tempfile.gettempdir()
+        # The destination file name.
+        if dir_name is None:
+            dir_name = tempfile.gettempdir()
 
-        d_filename = os.path.join(dirname, filename)
+        d_file_name = os.path.join(dir_name, file_name)
 
-        # The source filename.
-        s_filename = cls._lib_filename(filename)
+        # The source file name.
+        s_file_name = cls._get_lib_file_name(file_name)
 
         # Make sure the destination doesn't exist.
-        QFile.remove(d_filename)
+        QFile.remove(d_file_name)
 
-        if not QFile.copy(s_filename, QDir.fromNativeSeparators(d_filename)):
-            raise UserException("Unable to copy file {0}.".format(filename))
+        if not QFile.copy(s_file_name, QDir.fromNativeSeparators(d_file_name)):
+            raise UserException("Unable to copy file {0}.".format(file_name))
 
-        return d_filename
+        return d_file_name
 
     @staticmethod
     def _create_file(build_dir, filename):

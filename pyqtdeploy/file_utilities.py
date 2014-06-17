@@ -70,12 +70,9 @@ def get_embedded_file_names(root, *subdirs):
     return [qdir.absoluteFilePath(name) for name in qdir.entryList(QDir.Files)]
 
 
-def copy_embedded_file(src_name, dst_name, macros={}):
-    """ Copy an embedded source file to a destination file.  src_name is the
-    name of the source file.  dst_name is the name of the destination file.
-    macros is an optional dictionary of key/value string macros and instances
-    of each key are replaced by the corresponding value.  A UserException is
-    raised if there was an error.
+def read_embedded_file(src_name):
+    """ Return the contents of an embedded source file.  src_name is the name
+    of the source file.  A UserException is raised if there was an error.
     """
 
     src_file = QFile(src_name)
@@ -87,6 +84,19 @@ def copy_embedded_file(src_name, dst_name, macros={}):
 
     contents = src_file.readAll()
     src_file.close()
+
+    return contents
+
+
+def copy_embedded_file(src_name, dst_name, macros={}):
+    """ Copy an embedded source file to a destination file.  src_name is the
+    name of the source file.  dst_name is the name of the destination file.
+    macros is an optional dictionary of key/value string macros and instances
+    of each key are replaced by the corresponding value.  A UserException is
+    raised if there was an error.
+    """
+
+    contents = read_embedded_file(src_name)
 
     for key, value in macros.items():
         contents.replace(key, value)
