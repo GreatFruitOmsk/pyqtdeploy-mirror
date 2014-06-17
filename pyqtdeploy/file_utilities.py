@@ -71,8 +71,9 @@ def get_embedded_file_names(root, *subdirs):
 
 
 def read_embedded_file(src_name):
-    """ Return the contents of an embedded source file.  src_name is the name
-    of the source file.  A UserException is raised if there was an error.
+    """ Return the contents of an embedded source file as a QByteArray.
+    src_name is the name of the source file.  A UserException is raised if
+    there was an error.
     """
 
     src_file = QFile(src_name)

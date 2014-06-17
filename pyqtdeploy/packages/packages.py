@@ -25,14 +25,14 @@
 
 
 import os
-import sys
 
 from ..file_utilities import (copy_embedded_file, get_embedded_dir,
         get_embedded_dir_names)
+from ..targets import normalised_target
 from ..user_exception import UserException
 
 
-# The mapping of supported targets to Python platforms.
+# The mapping of supported main targets to Python platforms.
 _TARGET_PYPLATFORM_MAP = {
     'linux':    'linux',
     'win':      'win32',
@@ -49,25 +49,12 @@ def configure_package(package, target, output):
     package_dir = get_embedded_dir(__file__, 'configurations', package)
 
     if package_dir is None:
-        raise UserException("{0} is not a supported package.".format(package))
+        raise UserException(
+                "'{0}' is not a supported package.".format(package))
 
-    # Get the target platform.
-    if target is None:
-        # Default to the host platform.
-        if sys.platform.startswith('linux'):
-            target = 'linux'
-        elif sys.platform == 'win32':
-            target = 'win'
-        elif sys.platform == 'darwin':
-            target = 'osx'
-    else:
-        # Remove any target variant.
-        target, _ = target.split('-', maxsplit=1)
-
-    try:
-        py_platform = _TARGET_PYPLATFORM_MAP[target]
-    except KeyError:
-        raise UserException("{0} is not a supported target.".format(target))
+    # Get the main target platform.
+    target, _ = normalised_target(target).split('-', maxsplit=1)
+    py_platform = _TARGET_PYPLATFORM_MAP[target]
 
     # Make sure we have a name to write to.
     if output is None:
@@ -78,11 +65,23 @@ def configure_package(package, target, output):
     if not package_dir.exists(name):
         name = _get_configuration_name(package)
         if not package_dir.exists(name):
-            raise UserException("Internal error - no configuration file.")
+            raise UserException(
+                    "There is no configuration file for target '{0}'.".format(
+                            target))
 
     # Copy the configuration file.
     copy_embedded_file(package_dir.absoluteFilePath(name), output,
             macros={'@PY_PLATFORM@': py_platform})
+
+
+def get_supported_packages():
+    """ Return the list of supported packages. """
+
+    packages = [os.path.basename(name)
+            for name in get_embedded_dir_names(__file__, 'configurations')]
+    packages.append('python')
+
+    return packages
 
 
 def show_packages():
@@ -90,11 +89,7 @@ def show_packages():
     stdout.
     """
 
-    packages = [os.path.basename(name)
-            for name in get_embedded_dir_names(__file__, 'configurations')]
-    packages.append('python')
-
-    for package in sorted(packages):
+    for package in sorted(get_supported_packages()):
         print(package)
 
 

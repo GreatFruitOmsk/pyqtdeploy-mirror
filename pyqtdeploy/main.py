@@ -156,13 +156,15 @@ def configure(args):
 def show_packages(args):
     """ Perform the show-packages action. """
 
-    from . import show_packages, UserException
+    from . import get_supported_packages, UserException
 
     try:
-        show_packages()
+        packages = get_supported_packages()
     except UserException as e:
         handle_exception(e, args.verbose)
         return 1
+
+    show(packages)
 
     return 0
 
@@ -170,15 +172,24 @@ def show_packages(args):
 def show_targets(args):
     """ Perform the show-targets action. """
 
-    from . import show_targets, UserException
+    from . import get_supported_targets, UserException
 
     try:
-        show_targets()
+        targets = get_supported_targets()
     except UserException as e:
         handle_exception(e, args.verbose)
         return 1
 
+    show(targets)
+
     return 0
+
+
+def show(items):
+    """ Show an unsorted list of items on stdout. """
+
+    for item in sorted(items):
+        print(item)
 
 
 def missing_argument(name):

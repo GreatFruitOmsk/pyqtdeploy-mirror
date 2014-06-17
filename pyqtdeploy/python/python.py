@@ -87,13 +87,17 @@ def configure_python(target, output, message_handler):
             macros={'@PY_PLATFORM@': py_platform})
 
 
-def show_targets():
-    """ Write the list of supported targets to stdout. """
+def get_supported_targets():
+    """ Return the list of supported targets. """
 
     # File names have the format 'pyconfig-TARGET.h'.
-    targets = [os.path.basename(name)[9:-2]
+    return [os.path.basename(name)[9:-2]
             for name in get_embedded_file_names(__file__,
                     'configurations', 'pyconfig')]
 
-    for target in sorted(targets):
+
+def show_targets():
+    """ Write the list of supported targets to stdout. """
+
+    for target in sorted(get_supported_targets()):
         print(target)

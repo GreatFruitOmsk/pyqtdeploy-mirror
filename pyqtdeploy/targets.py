@@ -24,5 +24,33 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the sub-package's API.
-from .packages import configure_package, get_supported_packages
+import struct
+import sys
+
+from .python import get_supported_targets
+from .user_exception import UserException
+
+
+def normalised_target(target):
+    """ Return a string which is the normalised version of a target.  If target
+    is None then the host target is returned with '-32' or '-64' appended.  A
+    UserException is raised if the target is unsupported.
+    """
+
+    if target is None:
+        if sys.platform.startswith('linux'):
+            main_target = 'linux'
+        elif sys.platform == 'win32':
+            main_target = 'win'
+        elif sys.platform == 'darwin':
+            main_target = 'osx'
+        else:
+            # This will fail.
+            main_target = sys.platform
+
+        target = '{0}-{1}'.format(main_target, 8 * struct.calcsize('P'))
+
+    if target not in get_supported_targets():
+        raise UserException("'{0}' is not a supported target.".format(target))
+
+    return target
