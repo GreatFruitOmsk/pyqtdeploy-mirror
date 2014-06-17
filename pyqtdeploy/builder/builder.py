@@ -606,7 +606,7 @@ int main(int argc, char **argv)
             saved_cwd = None
 
         self._message_handler.verbose_message(
-                "Running '{0}'".format(' '.join(argv)))
+                "Running '{0}'.".format(' '.join(argv)))
 
         try:
             subprocess.check_output(argv, stderr=subprocess.STDOUT,

@@ -25,67 +25,71 @@
 
 
 import os
-import sys
 
 from ..file_utilities import (copy_embedded_file, get_embedded_dir,
         get_embedded_file_names)
 from ..user_exception import UserException
 
 
-# The mapping of supported targets to Python platforms.
-_TARGET_PYPLATFORM_MAP = {
-    'linux':    'linux',
-    'win':      'win32',
-    'osx':      'darwin',
-    'ios':      'darwin',
-    'android':  'linux'
-}
-
-
 def configure_python(target, output, message_handler):
     """ Configure a Python source directory for a particular target. """
 
-    print("Configuring Python for %s in %s" % (target, output))
-    return
-    # Get the package directory and check it is valid.
-    package_dir = get_embedded_dir(__file__, 'configurations', package)
+    # Avoid a circular import.
+    from ..targets import normalised_target
 
-    if package_dir is None:
-        raise UserException("{0} is not a supported package.".format(package))
+    # Validate the target.
+    target = normalised_target(target)
 
-    # Get the target platform.
-    if target is None:
-        # Default to the host platform.
-        if sys.platform.startswith('linux'):
-            target = 'linux'
-        elif sys.platform == 'win32':
-            target = 'win'
-        elif sys.platform == 'darwin':
-            target = 'osx'
-    else:
-        # Remove any target variant.
-        target, _ = target.split('-', maxsplit=1)
-
-    try:
-        py_platform = _TARGET_PYPLATFORM_MAP[target]
-    except KeyError:
-        raise UserException("{0} is not a supported target.".format(target))
-
-    # Make sure we have a name to write to.
+    # Get the name of the Python source directory and extract the Python
+    # version.
     if output is None:
-        output = _get_configuration_name(package, target)
+        output = '.'
 
-    # See if there is a target-specific file.
-    name = _get_configuration_name(package, target)
-    if not package_dir.exists(name):
-        name = _get_configuration_name(package)
-        if not package_dir.exists(name):
-            raise UserException("Internal error - no configuration file.")
+    py_src_dir = os.path.abspath(output)
+    _, py_version_str = os.path.basename(py_src_dir).split('-', maxsplit=1)
 
-    # Copy the configuration file.
-    copy_embedded_file(package_dir.absoluteFilePath(name), output,
-            macros={'@PY_PLATFORM@': py_platform})
+    while py_version_str != '' and not py_version_str[-1].isdigit():
+        py_version_str = py_version_str[:-1]
 
+    version_parts = py_version_str.split('.')
+
+    if len(version_parts) == 2:
+        version_parts.append('0')
+
+    py_version = 0
+
+    if len(version_parts) == 3:
+        for part in version_parts:
+            try:
+                part = int(part)
+            except ValueError:
+                py_version = 0
+                break
+
+            py_version = (py_version << 8) + part
+
+    if py_version == 0:
+        raise UserException(
+                "Unable to determine the Python version from the name of {0}.".format(py_src_dir))
+
+    # Sanity check the version number.
+    if py_version < 0x020600 or (py_version >= 0x030000 and py_version < 0x030300) or py_version >= 0x040000:
+        raise UserException(
+                "Python v{0} is not supported.".format(py_version_str))
+
+    message_handler.verbose_message(
+            "Configuring {0} as Python v{1} for {2}.".format(
+                    py_src_dir, py_version_str, target))
+
+    # Copy the modules configuration file.
+    config_c_src_dir = get_embedded_dir(__file__, 'configurations')
+    config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
+
+    message_handler.verbose_message(
+            "Installing {0}.".format(config_c_dst_file))
+
+    copy_embedded_file(config_c_src_dir.absoluteFilePath('config.c'),
+            config_c_dst_file)
 
 def get_supported_targets():
     """ Return the list of supported targets. """
@@ -94,10 +98,3 @@ def get_supported_targets():
     return [os.path.basename(name)[9:-2]
             for name in get_embedded_file_names(__file__,
                     'configurations', 'pyconfig')]
-
-
-def show_targets():
-    """ Write the list of supported targets to stdout. """
-
-    for target in sorted(get_supported_targets()):
-        print(target)
