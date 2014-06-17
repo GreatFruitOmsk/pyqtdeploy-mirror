@@ -24,10 +24,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
 import sys
 
-from PyQt5.QtCore import QDir, QFile, QFileInfo, QIODevice
-
+from ..file_utilities import (copy_embedded_file, get_embedded_dir,
+        get_embedded_dir_names)
 from ..user_exception import UserException
 
 
@@ -45,9 +46,9 @@ def configure_package(package, target, output):
     """ Write a configuration file for a particular package and target. """
 
     # Get the package directory and check it is valid.
-    package_qdir = _config_qdir()
+    package_dir = get_embedded_dir(__file__, 'configurations', package)
 
-    if not package_qdir.cd(package):
+    if package_dir is None:
         raise UserException("{0} is not a supported package.".format(package))
 
     # Get the target platform.
@@ -70,43 +71,18 @@ def configure_package(package, target, output):
 
     # Make sure we have a name to write to.
     if output is None:
-        output = _config_name(package, target)
+        output = _get_configuration_name(package, target)
 
     # See if there is a target-specific file.
-    name = _config_name(package, target)
-    if not package_qdir.exists(name):
-        name = _config_name(package)
-        if not package_qdir.exists(name):
+    name = _get_configuration_name(package, target)
+    if not package_dir.exists(name):
+        name = _get_configuration_name(package)
+        if not package_dir.exists(name):
             raise UserException("Internal error - no configuration file.")
 
-    # Read the configuration file.
-    config_qfile = QFile(package_qdir.absoluteFilePath(name))
-
-    if not config_qfile.open(QIODevice.ReadOnly|QIODevice.Text):
-        raise UserException(
-                "Unable to open file {0}.".format(config_qfile.fileName()),
-                config_qfile.errorString())
-
-    config = config_qfile.readAll()
-    config_qfile.close()
-
-    # Expand any macros.
-    config.replace('@PY_PLATFORM@', py_platform)
-
-    # Write the output.
-    output_qfile = QFile(output)
-
-    if not output_qfile.open(QIODevice.WriteOnly|QIODevice.Text):
-        raise UserException(
-                "Unable to create file {0}.".format(output_qfile.fileName()),
-                output_qfile.errorString())
-
-    if output_qfile.write(config) < 0:
-        raise UserException(
-                "Unable to write to file {0}.".format(output_qfile.fileName()),
-                output_qfile.errorString())
-
-    output_qfile.close()
+    # Copy the configuration file.
+    copy_embedded_file(package_dir.absoluteFilePath(name), output,
+            macros={'@PY_PLATFORM@': py_platform})
 
 
 def show_packages():
@@ -114,14 +90,15 @@ def show_packages():
     stdout.
     """
 
-    packages = _config_qdir().entryList(QDir.Dirs|QDir.NoDotAndDotDot)
+    packages = [os.path.basename(name)
+            for name in get_embedded_dir_names(__file__, 'configurations')]
     packages.append('python')
 
     for package in sorted(packages):
         print(package)
 
 
-def _config_name(package, target=None):
+def _get_configuration_name(package, target=None):
     """ Return the name of a configuration file for a platform and optional
     target.
     """
@@ -130,13 +107,3 @@ def _config_name(package, target=None):
         return '{0}.cfg'.format(package)
 
     return '{0}-{1}.cfg'.format(package, target)
-
-
-def _config_qdir():
-    """ Return a QDir set to the directory containing the configuration files.
-    """
-
-    qdir = QFileInfo(__file__).absoluteDir()
-    qdir.cd('configurations')
-
-    return qdir
