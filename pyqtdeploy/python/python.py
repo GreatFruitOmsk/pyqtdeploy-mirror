@@ -30,7 +30,7 @@ from ..file_utilities import (copy_embedded_file, get_embedded_dir,
         get_embedded_file_names)
 from ..user_exception import UserException
 
-from .patch import apply_diff
+from .patch import apply_diffs
 
 
 def configure_python(target, output, message_handler):
@@ -101,9 +101,7 @@ def configure_python(target, output, message_handler):
     # Patch with the most appropriate diff.
     python_diff_src_file = _get_file_for_version('patches', py_version)
 
-    message_handler.progress_message("Patching {0}".format(py_src_dir))
-
-    apply_diff(python_diff_src_file, py_src_dir)
+    apply_diffs(python_diff_src_file, py_src_dir, message_handler)
 
 
 def get_supported_targets():

@@ -25,12 +25,20 @@
 
 
 from ..file_utilities import read_embedded_file
-from ..user_exception import UserException
+
+from .diff_parser import parse_diffs
 
 
-def apply_diff(diff_file, patch_dir):
+def apply_diffs(diff_file, patch_dir, message_handler):
     """ Apply an embedded diff file to a directory. """
 
-    print("Applying %s to %s" % (diff_file, patch_dir))
+    diffs = read_embedded_file(diff_file)
 
-    diff = read_embedded_file(diff_file)
+    for diff in parse_diffs(diffs):
+        _apply_diff(diff, patch_dir, message_handler)
+
+
+def _apply_diff(diff, patch_dir, message_handler):
+    """ Apply a single diff. """
+
+    print("Patching %s/%s" % (patch_dir, diff.file_name))
