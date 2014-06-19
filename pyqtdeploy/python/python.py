@@ -62,16 +62,16 @@ def configure_python(target, output, message_handler):
         raise UserException(
                 "Python v{0} is not supported.".format(py_version_str))
 
-    message_handler.verbose_message(
-            "Configuring {0} as Python v{1} for {2}.".format(
+    message_handler.progress_message(
+            "Configuring {0} as Python v{1} for {2}".format(
                     py_src_dir, py_version_str, target))
 
     # Copy the modules config.c file.
     config_c_src_dir = get_embedded_dir(__file__, 'configurations')
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
 
-    message_handler.verbose_message(
-            "Installing {0}.".format(config_c_dst_file))
+    message_handler.progress_message(
+            "Installing {0}".format(config_c_dst_file))
 
     copy_embedded_file(config_c_src_dir.absoluteFilePath('config.c'),
             config_c_dst_file)
@@ -81,8 +81,8 @@ def configure_python(target, output, message_handler):
             'pyconfig')
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
-    message_handler.verbose_message(
-            "Installing {0}.".format(pyconfig_h_dst_file))
+    message_handler.progress_message(
+            "Installing {0}".format(pyconfig_h_dst_file))
 
     copy_embedded_file(
             pyconfig_h_src_dir.absoluteFilePath(
@@ -93,15 +93,15 @@ def configure_python(target, output, message_handler):
     python_pro_src_file = _get_file_for_version('qmake', py_version)
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
 
-    message_handler.verbose_message(
-            "Installing {0}.".format(python_pro_dst_file))
+    message_handler.progress_message(
+            "Installing {0}".format(python_pro_dst_file))
 
     copy_embedded_file(python_pro_src_file, python_pro_dst_file)
 
     # Patch with the most appropriate diff.
     python_diff_src_file = _get_file_for_version('patches', py_version)
 
-    message_handler.verbose_message("Patching {0}.".format(py_src_dir))
+    message_handler.progress_message("Patching {0}".format(py_src_dir))
 
     apply_diff(python_diff_src_file, py_src_dir)
 

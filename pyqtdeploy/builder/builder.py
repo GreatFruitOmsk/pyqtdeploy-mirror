@@ -66,7 +66,7 @@ class Builder():
 
         if clean:
             self._message_handler.progress_message(
-                    "Cleaning {0}.".format(build_dir))
+                    "Cleaning {0}".format(build_dir))
             shutil.rmtree(build_dir, ignore_errors=True)
 
         self._create_directory(build_dir)
@@ -601,12 +601,12 @@ int main(int argc, char **argv)
             build_dir = self._project.absolute_path(self._project.build_dir)
             os.chdir(build_dir)
             self._message_handler.verbose_message(
-                    "{0} is now the current directory.".format(build_dir))
+                    "{0} is now the current directory".format(build_dir))
         else:
             saved_cwd = None
 
         self._message_handler.verbose_message(
-                "Running '{0}'.".format(' '.join(argv)))
+                "Running '{0}'".format(' '.join(argv)))
 
         try:
             subprocess.check_output(argv, stderr=subprocess.STDOUT,
@@ -617,7 +617,7 @@ int main(int argc, char **argv)
             if saved_cwd is not None:
                 os.chdir(saved_cwd)
                 self._message_handler.verbose_message(
-                        "{0} is now the current directory.".format(saved_cwd))
+                        "{0} is now the current directory".format(saved_cwd))
 
     @staticmethod
     def _get_lib_file_name(file_name):
@@ -668,7 +668,7 @@ int main(int argc, char **argv)
         """ Create a directory which may already exist. """
 
         self._message_handler.verbose_message(
-                "Creating directory {0}.".format(dir_name))
+                "Creating directory {0}".format(dir_name))
 
         try:
             os.makedirs(dir_name, exist_ok=True)
