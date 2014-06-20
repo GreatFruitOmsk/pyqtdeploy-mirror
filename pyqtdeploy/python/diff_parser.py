@@ -27,50 +27,41 @@
 from ..user_exception import UserException
 
 
-class _DiffException(UserException):
-    """ A UserException specifically related to an unexpected diff file format.
-    """
-
-    def __init__(self, line_nr, detail):
-        """ Initialise the object. """
-
-        super().__init__("Unexpected diff format",
-                "{0}:{1}".format(line_nr + 1, detail))
-
-
-class _FileDiff:
+class FileDiff:
     """ Encapsulate the diff for a single file. """
 
-    def __init__(self):
+    def __init__(self, file_name):
         """ Initialise the object. """
 
-        self.file_name = ''
+        self.file_name = file_name
         self.hunks = []
 
 
-class _Hunk:
+class Hunk:
     """ Encapsulate a hunk. """
 
-    def __init__(self, old_range, new_range):
-        """ Initialise the object.  old_range is a 2-tuple of the line number
-        and number of lines in the section to be removed.  new_range is a
-        2-tuple of the line number and number of lines in the section to be
-        added.
+    def __init__(self, old_start):
+        """ Initialise the object.  old_start is the number of the first line
+        of the old content to replace.
         """
 
-        self.old_range = old_range
-        self.new_range = new_range
-        self.lines = []
+        self.old_start = old_start
+        self.old_lines = []
+        self.new_lines = []
 
 
 def parse_diffs(diff):
-    """ Parse a diff and return a list of _FileDiff instances. """
+    """ Parse a diff and return a list of FileDiff instances. """
 
     WANT_DIFF, WANT_OLD, WANT_NEW, WANT_RANGES, WANT_BODY = range(5)
 
     want = WANT_DIFF
+    old_length = new_length = 0
 
     diffs = []
+
+    if diff.endsWith('\n'):
+        diff.chop(1)
 
     for line_nr, line in enumerate(diff.split('\n')):
         words = line.data().decode('latin1').split()
@@ -78,8 +69,6 @@ def parse_diffs(diff):
         if want == WANT_DIFF:
             if len(words) == 0 or words[0] != 'diff':
                 raise _DiffException(line_nr, "diff command line expected")
-
-            diffs.append(_FileDiff())
 
             want = WANT_OLD
         elif want == WANT_OLD:
@@ -90,7 +79,7 @@ def parse_diffs(diff):
             # patched.  We assume we won't have a diff with paths containing
             # spaces.
             _, file_name = words[1].split('/', maxsplit=1)
-            diffs[-1].file_name = file_name
+            diffs.append(FileDiff(file_name))
 
             want = WANT_NEW
         elif want == WANT_NEW:
@@ -99,63 +88,110 @@ def parse_diffs(diff):
 
             want = WANT_RANGES
         elif want == WANT_RANGES:
-            _parse_hunk_header(diffs, words, line_nr)
+            old_length, new_length = _parse_hunk_header(diffs, words, line_nr)
 
             want = WANT_BODY
         elif want == WANT_BODY:
+            hunk = diffs[-1].hunks[-1]
+
             if len(words) != 0:
                 if words[0] == 'diff':
-                    diffs.append(_FileDiff())
+                    _check_hunk_lengths(hunk, old_length, new_length, line_nr)
                     want = WANT_OLD
                     continue
 
                 if words[0] == '@@':
-                    _parse_hunk_header(diffs, words, line_nr)
+                    _check_hunk_lengths(hunk, old_length, new_length, line_nr)
+                    old_length, new_length = _parse_hunk_header(diffs, words,
+                            line_nr)
                     continue
 
-            diffs[-1].hunks[-1].lines.append(line)
+            if line.startsWith('-'):
+                line = line.mid(1)
+                hunk.old_lines.append(line)
+            elif line.startsWith('+'):
+                line = line.mid(1)
+                hunk.new_lines.append(line)
+            else:
+                if line.startsWith(' '):
+                    line = line.mid(1)
+
+                hunk.old_lines.append(line)
+                hunk.new_lines.append(line)
 
     if want != WANT_BODY:
         raise _DiffException(line_nr, "diff seems to be truncated")
+
+    _check_hunk_lengths(diffs[-1].hunks[-1], old_length, new_length, line_nr)
 
     return diffs
 
 
 def _parse_hunk_header(diffs, words, line_nr):
-    """ Parse a hunk header line and add it to the current diff. """
+    """ Parse a hunk header line and add it to the current diff.  Return a
+    2-tuple of the length of the old part and the length of the new part.
+    """
 
     if len(words) != 4 or words[0] != '@@' or words[3] != '@@':
         raise _DiffException(line_nr, "hunk header line expected")
 
-    old_range = _parse_range(words[1], '-')
-    if old_range is None:
+    old_start, old_length = _parse_range(words[1], '-')
+    if old_start == 0:
         raise _DiffException(line_nr, "invalid -range")
 
-    new_range = _parse_range(words[2], '+')
-    if new_range is None:
+    new_start, new_length = _parse_range(words[2], '+')
+    if new_start == 0:
         raise _DiffException(line_nr, "invalid +range")
 
-    diffs[-1].hunks.append(_Hunk(old_range, new_range))
+    diffs[-1].hunks.append(Hunk(old_start))
+
+    return old_length, new_length
+
+
+def _check_hunk_lengths(hunk, old_length, new_length, line_nr):
+    """ Sanity check the expected lengths of a hunk with the actual lengths.
+    """
+
+    if len(hunk.old_lines) != old_length:
+        raise _DiffException(line_nr,
+                "found {0} old lines, expected {1}".format(len(hunk.old_lines),
+                        old_length))
+
+    if len(hunk.new_lines) != new_length:
+        raise _DiffException(line_nr,
+                "found {0} new lines, expected {1}".format(len(hunk.new_lines),
+                        new_length))
 
 
 def _parse_range(range_str, prefix):
     """ Parse a hunk range and return a 2-tuple of the line number and number
-    of lines.  Return None if there was an error.
+    of lines.  The line number will be 0 if there was an error.
     """
 
     if range_str[0] != prefix:
-        return None
+        return 0, 0
 
     line_nr, nr_lines = range_str[1:].split(',', maxsplit=1)
 
     try:
         line_nr = int(line_nr)
     except ValueError:
-        return None
+        return 0, 0
 
     try:
         nr_lines = int(nr_lines)
     except ValueError:
-        return None
+        return 0, 0
 
     return (line_nr, nr_lines)
+
+
+class _DiffException(UserException):
+    """ A UserException specifically related to an unexpected diff file format.
+    """
+
+    def __init__(self, line_nr, detail):
+        """ Initialise the object. """
+
+        super().__init__("Unexpected diff format",
+                "line {0}: {1}".format(line_nr + 1, detail))
