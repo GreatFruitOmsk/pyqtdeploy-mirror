@@ -24,7 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
+
 from ..file_utilities import read_embedded_file
+from ..user_exception import UserException
 
 from .diff_parser import parse_diffs
 
@@ -41,4 +44,50 @@ def apply_diffs(diff_file, patch_dir, message_handler):
 def _apply_diff(diff, patch_dir, message_handler):
     """ Apply a single diff. """
 
-    print("Patching %s/%s" % (patch_dir, diff.file_name))
+    # Note that (at the moment) we don't support a fuzz factor and the old
+    # lines of a hunk must be found at the exepected line.  If it turns out
+    # that we would significantly reduce the need for new patches for later
+    # versions of Python by supporting a fuzz factor then we will do so.
+
+    src_file_name = os.path.join(patch_dir, diff.file_name)
+    dst_file_name = src_file_name + '.new'
+
+    src_file = open(src_file_name)
+    dst_file = open(dst_file_name, 'wt')
+
+    src_line_nr = 1
+
+    for hunk in diff.hunks:
+        # Copy the old lines before the hunk.
+        while src_line_nr < hunk.old_start:
+            line = src_file.readline()
+            src_line_nr += 1
+
+            dst_file.write(line)
+
+        # Skip the old lines while checking they are as expected.
+        for hunk_line in hunk.old_lines:
+            line = src_file.readline()
+            src_line_nr += 1
+
+            if hunk_line != line:
+                raise UserException(
+                        "{0}:{1}: line does not match diff context".format(
+                                src_file_name, src_line_nr))
+
+        # Write the new lines.
+        for line in hunk.new_lines:
+            dst_file.write(line)
+
+    # Copy the remaining lines.
+    for line in src_file.readlines():
+        dst_file.write(line)
+
+    src_file.close()
+    dst_file.close()
+
+    # Rename the files.
+    os.rename(src_file_name, src_file_name + '.orig')
+    os.rename(dst_file_name, src_file_name)
+
+    message_handler.progress_message("Patched {0}".format(src_file_name))

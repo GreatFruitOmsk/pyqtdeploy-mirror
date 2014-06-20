@@ -24,6 +24,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
+
 from ..user_exception import UserException
 
 
@@ -31,7 +33,9 @@ class FileDiff:
     """ Encapsulate the diff for a single file. """
 
     def __init__(self, file_name):
-        """ Initialise the object. """
+        """ Initialise the object.  file_name is the name of the file relative
+        to the source directory using native path separators.
+        """
 
         self.file_name = file_name
         self.hunks = []
@@ -64,7 +68,8 @@ def parse_diffs(diff):
         diff.chop(1)
 
     for line_nr, line in enumerate(diff.split('\n')):
-        words = line.data().decode('latin1').split()
+        line = line.data().decode('latin1')
+        words = line.split()
 
         if want == WANT_DIFF:
             if len(words) == 0 or words[0] != 'diff':
@@ -78,8 +83,8 @@ def parse_diffs(diff):
             # Remove the root directory from the name of the file being
             # patched.  We assume we won't have a diff with paths containing
             # spaces.
-            _, file_name = words[1].split('/', maxsplit=1)
-            diffs.append(FileDiff(file_name))
+            parts = words[1].split('/')[1:]
+            diffs.append(FileDiff(os.path.join(*parts)))
 
             want = WANT_NEW
         elif want == WANT_NEW:
@@ -106,15 +111,17 @@ def parse_diffs(diff):
                             line_nr)
                     continue
 
-            if line.startsWith('-'):
-                line = line.mid(1)
+            line += '\n'
+
+            if line.startswith('-'):
+                line = line[1:]
                 hunk.old_lines.append(line)
-            elif line.startsWith('+'):
-                line = line.mid(1)
+            elif line.startswith('+'):
+                line = line[1:]
                 hunk.new_lines.append(line)
             else:
-                if line.startsWith(' '):
-                    line = line.mid(1)
+                if line.startswith(' '):
+                    line = line[1:]
 
                 hunk.old_lines.append(line)
                 hunk.new_lines.append(line)
