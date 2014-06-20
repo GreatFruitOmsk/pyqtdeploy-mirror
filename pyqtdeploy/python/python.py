@@ -54,8 +54,11 @@ def configure_python(target, output, message_handler):
         raise UserException(
                 "Unable to determine the Python version from the name of {0}.".format(py_src_dir))
 
-    py_version_str = '{0}.{1}.{2}'.format(py_version >> 16,
-            (py_version >> 8) & 0xff, py_version & 0xff)
+    py_major = py_version >> 16
+    py_minor = (py_version >> 8) & 0xff
+    py_patch = py_version & 0xff
+
+    py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
 
     # Sanity check the version number.
     if py_version < 0x020600 or (py_version >= 0x030000 and py_version < 0x030300) or py_version >= 0x040000:
@@ -66,14 +69,15 @@ def configure_python(target, output, message_handler):
             "Configuring {0} as Python v{1} for {2}".format(
                     py_src_dir, py_version_str, target))
 
+    configurations_dir = get_embedded_dir(__file__, 'configurations')
+
     # Copy the modules config.c file.
-    config_c_src_dir = get_embedded_dir(__file__, 'configurations')
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
 
     message_handler.progress_message(
             "Installing {0}".format(config_c_dst_file))
 
-    copy_embedded_file(config_c_src_dir.absoluteFilePath('config.c'),
+    copy_embedded_file(configurations_dir.absoluteFilePath('config.c'),
             config_c_dst_file)
 
     # Copy the pyconfig.h file.
@@ -89,14 +93,18 @@ def configure_python(target, output, message_handler):
                     'pyconfig-{0}.h'.format(target)),
             pyconfig_h_dst_file)
 
-    # Copy the most appropriate qmake .pro file.
-    python_pro_src_file = _get_file_for_version('qmake', py_version)
+    # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
 
     message_handler.progress_message(
             "Installing {0}".format(python_pro_dst_file))
 
-    copy_embedded_file(python_pro_src_file, python_pro_dst_file)
+    copy_embedded_file(configurations_dir.absoluteFilePath('python.pro'),
+            python_pro_dst_file,
+            macros={
+                '@PY_VERSION_MAJOR@': str(py_major),
+                '@PY_VERSION_MINOR@': str(py_minor),
+                '@PY_VERSION_PATCH@': str(py_patch)})
 
     # Patch with the most appropriate diff.
     python_diff_src_file = _get_file_for_version('patches', py_version)

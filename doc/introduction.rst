@@ -50,11 +50,6 @@ change in future versions):
   third party modules to be included with the application.  You must explicitly
   specify these yourself.
 
-- It does not provide any help in creating an appropriately compiled Python
-  interpreter library.  This is particularly an issue when deploying
-  applications to non-native platforms, typically mobile platforms.  The same
-  applies to third party extension modules.
-
 
 Author
 ------

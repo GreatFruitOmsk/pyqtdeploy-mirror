@@ -46,113 +46,24 @@ appropriately.
 Python
 ------
 
-TODO
+To build a static version of Python (either native or cross-compiling), change
+to the Python source directory and run::
 
-Non-Windows Platforms
+    pyqtdeploy --package python --target TARGET configure
 
-To build a static, native version of Python, change to the Python source
-directory and run::
+This will configure Python for a small sub-set of standard extension modules.
+Your application will probably require additional ones to be enabled.  To do
+this you will need to make changes to the ``python.pro`` file and the
+``config.c`` file (in the ``Modules`` directory).  See the comments in those
+files for more information.
 
-    ./configure --prefix $SYSROOT
+To complete the build run::
+
+    qmake SYSROOT=$SYSROOT
     make
     make install
 
-Note that a static, native build of Python is the default on these platforms.
-
-
-Windows
-
-Instructions for creating a static version of the Python library on Windows are
-given in the ``readme.txt`` file in the ``PCbuild`` directory of the Python
-source code.  However these are rather brief and incomplete.  The following
-are, hopefully, a little clearer and will result in a static installation
-similar to one created by the standard Python installer.
-
-In the following *XY* refers to the major and minor version of Python, e.g.
-``pythonXY.lib``.
-
-If you are building Python v3 then it is assumed you are using Microsoft Visual
-C++ 2010.  If you are building Python v2 then it is assumed you are using
-Microsoft Visual C++ 2008.
-
-If you are building a 64 bit version of Python then you will need to have an
-existing Python installation.  (The standard Python installer is fine.)  You
-need to set the :envvar:`HOST_PYTHON` environment variable to the name of the
-Python interpreter in that installation, e.g. ``C:\PythonXY\python.exe``.
-
-- Edit the file ``pyconfig.h`` in the ``PC`` directory of the Python source
-  package.  Locate the line that defines the preprocessor symbol
-  ``HAVE_DYNAMIC_LOADING`` and comment it out.  Locate the line where the
-  preprocessor symbol ``Py_NO_ENABLE_SHARED`` is tested and insert the
-  following line before it::
-
-    #define Py_NO_ENABLE_SHARED
-
-- Open the ``pcbuild.sln`` file in the ``PCbuild`` directory in Visual C++.
-  Ignore any message about solution folders not being supported.
-
-- Set the configuration to ``Release`` from the default ``Debug``.
-
-- If you are building a 64 bit version of Python then set the platform to
-  ``x64`` from the default ``Win32``.
-
-- If you are building a 64 bit version of Python v3 then, using the Solution
-  Explorer, right click on each project and select ``Properties``.  In the
-  dialog select ``Configuration Properties`` and set ``Platform Toolset`` to
-  ``Windows7.1SDK``.  (Note that you can select multiple projects and set the
-  properties for all selected at the same time.)
-
-- Using the Solution Explorer, right click on  ``pythoncore`` and select
-  ``Properties``.  In the dialog select ``Configuration Properties`` and set
-  ``Configuration Type`` to ``Static library (.lib)``.
-
-- In the same dialog expand ``C/C++`` and select ``Preprocessor``. Edit
-  ``Preprocessor Definitions`` and remove ``Py_ENABLE_SHARED``.
-
-- If you are building a 64 bit version of Python v3 then, in the same dialog,
-  expand ``Librarian``, select ``General`` and set ``Target Machine`` to
-  ``MachineX64 (/MACHINE:X64)``.
-
-- Using the Solution Explorer, expand ``pythoncore``, right click on
-  ``Modules`` and select ``Add`` and then ``Existing Item...``.  Select the
-  ``getbuildinfo.c`` file from the ``Modules`` directory of the Python source
-  package.  Expand ``Python``, right click on ``dynload_win.c`` and select 
-  ``Exclude From Project``.
-
-- Press ``F7`` to build Python.  Some projects will not build unless external
-  libraries on which they depend are installed.  If you do not need these then
-  you can simply ignore them.
-
-- To install Python in similar locations as they would be by the standard
-  Python installer, run the following commands.
-
-  For a 64 bit Python v3, run::
-
-    copy PC\pyconfig.h Include
-    copy PCbuild\amd64\python*.exe .
-    mkdir libs
-    copy PCbuild\amd64\pythonXY.lib libs
-
-  For a 32 bit Python v3, run::
-
-    copy PC\pyconfig.h Include
-    copy PCbuild\python*.exe .
-    mkdir libs
-    copy PCbuild\pythonXY.lib libs
-
-  For a 64 bit Python v2, run::
-
-    copy PC\pyconfig.h Include
-    copy PCbuild\amd64\python*.exe .
-    mkdir libs
-    copy PCbuild\amd64\pythoncore.lib libs\pythonXY.lib
-
-  For a 32 bit Python v2, run::
-
-    copy PC\pyconfig.h Include
-    copy PCbuild\python*.exe .
-    mkdir libs
-    copy PCbuild\pythoncore.lib libs\pythonXY.lib
+See notes [#target]_, [#qmake]_.
 
 
 Qt

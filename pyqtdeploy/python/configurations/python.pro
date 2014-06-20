@@ -1,10 +1,14 @@
-PYQTDEPLOY_PYVERSION = 3.4
-PYQTDEPLOY_ABIFLAGS = m
-PYQTDEPLOY_SYSROOT = /Users/phil/usr/sysroot
+PY_VERSION_MAJOR = @PY_VERSION_MAJOR@
+PY_VERSION_MINOR = @PY_VERSION_MINOR@
+PY_VERSION_PATCH = @PY_VERSION_PATCH@
+
+!defined(SYSROOT, var) {
+    error(SYSROOT must be defined on the qmake command line)
+}
 
 TEMPLATE = lib
 
-TARGET = python$$PYQTDEPLOY_PYVERSION$$PYQTDEPLOY_ABIFLAGS
+TARGET = python$$PY_VERSION_MAJOR.$$PY_VERSION_MINOR
 
 CONFIG -= qt
 CONFIG += warn_off staticlib release
@@ -20,12 +24,12 @@ INCLUDEPATH += Include
     QMAKE_CFLAGS += -fwrapv -O3
 }
 
-target.path = $$PYQTDEPLOY_SYSROOT/lib
+target.path = $$SYSROOT/lib
 
-headers.path = $$PYQTDEPLOY_SYSROOT/include/python$$PYQTDEPLOY_PYVERSION$$PYQTDEPLOY_ABIFLAGS
+headers.path = $$SYSROOT/include/python$$PY_VERSION_MAJOR.$$PY_VERSION_MINOR
 headers.files = pyconfig.h Include/*.h
 
-stdlib.path = $$PYQTDEPLOY_SYSROOT/lib/python$$PYQTDEPLOY_PYVERSION
+stdlib.path = $$SYSROOT/lib/python$$PY_VERSION_MAJOR.$$PY_VERSION_MINOR
 stdlib.files = Lib/*
 
 INSTALLS += target headers stdlib
