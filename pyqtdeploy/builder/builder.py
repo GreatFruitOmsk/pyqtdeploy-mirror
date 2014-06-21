@@ -591,7 +591,7 @@ int main(int argc, char **argv)
         self._message_handler.progress_message(
                 "Freezing {0}".format(py_filename))
 
-        self.run(argv, "Unable to freeze {0}.".format(py_filename))
+        self.run(argv, "Unable to freeze {0}".format(py_filename))
 
     def run(self, argv, error_message, in_build_dir=False):
         """ Execute a command and capture the output. """
@@ -648,7 +648,7 @@ int main(int argc, char **argv)
         QFile.remove(d_file_name)
 
         if not QFile.copy(s_file_name, QDir.fromNativeSeparators(d_file_name)):
-            raise UserException("Unable to copy file {0}.".format(file_name))
+            raise UserException("Unable to copy file {0}".format(file_name))
 
         return d_file_name
 
@@ -661,7 +661,7 @@ int main(int argc, char **argv)
         try:
             return open(pathname, 'wt')
         except Exception as e:
-            raise UserException("Unable to create file {0}.".format(pathname),
+            raise UserException("Unable to create file {0}".format(pathname),
                     str(e))
 
     def _create_directory(self, dir_name):
@@ -674,5 +674,5 @@ int main(int argc, char **argv)
             os.makedirs(dir_name, exist_ok=True)
         except Exception as e:
             raise UserException(
-                    "Unable to create the '{0}' directory.".format(dir_name),
+                    "Unable to create the '{0}' directory".format(dir_name),
                     str(e))

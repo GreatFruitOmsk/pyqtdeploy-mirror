@@ -52,6 +52,8 @@ def _apply_diff(diff, patch_dir, message_handler):
     src_file_name = os.path.join(patch_dir, diff.file_name)
     dst_file_name = src_file_name + '.new'
 
+    message_handler.progress_message("Patching {0}".format(src_file_name))
+
     src_file = open(src_file_name)
     dst_file = open(dst_file_name, 'wt')
 
@@ -89,5 +91,3 @@ def _apply_diff(diff, patch_dir, message_handler):
     # Rename the files.
     os.rename(src_file_name, src_file_name + '.orig')
     os.rename(dst_file_name, src_file_name)
-
-    message_handler.progress_message("Patched {0}".format(src_file_name))
