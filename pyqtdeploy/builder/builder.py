@@ -50,7 +50,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, build_dir=None, clean=False, console=False, opt=2):
+    def build(self, opt, build_dir=None, clean=False, console=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """

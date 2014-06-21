@@ -41,6 +41,19 @@ The full set of command line options is:
 
     This will display a summary of the command line actions and options.
 
+.. cmdoption:: --opt LEVEL
+
+    When used with the :option:`build` action this specifies the level of
+    optimisation performed when freezing Python source files:
+
+    0 - no optimisation is done
+
+    1 - ``assert`` statements are removed
+
+    2 - ``assert`` statements and docstrings are removed.
+
+    The default is ``2``.
+
 .. cmdoption:: --output OUTPUT
 
     When used with the :option:`build` action this specifies the name of the

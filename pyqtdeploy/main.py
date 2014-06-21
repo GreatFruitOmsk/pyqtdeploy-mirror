@@ -39,6 +39,10 @@ def main():
     parser.add_argument('action',
             help="the action to perform, otherwise the GUI is started",
             nargs='?', metavar="build|configure|show-packages|show-targets")
+    parser.add_argument('--opt',
+            help="the optimisation level where 0 is none, 1 is no asserts, 2 "
+                    "is no asserts or docstrings (build) [default: 2]",
+            metavar="LEVEL", type=int, choices=range(3), default=2),
     parser.add_argument('--output',
             help="the name of the output file or directory (configure, build)",
             metavar="OUTPUT")
@@ -116,7 +120,7 @@ def build(args):
 
     try:
         builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.output)
+        builder.build(args.opt, build_dir=args.output)
     except UserException as e:
         handle_exception(e, args.verbose)
         return 1
