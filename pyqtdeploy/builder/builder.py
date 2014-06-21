@@ -50,7 +50,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, build_dir=None, clean=False, console=False):
+    def build(self, build_dir=None, clean=False, console=False, opt=2):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -73,7 +73,7 @@ class Builder():
 
         freeze = self._copy_lib_file('freeze.py')
 
-        self._write_qmake(build_dir, console, freeze)
+        self._write_qmake(build_dir, console, freeze, opt)
 
         resources_dir = os.path.join(build_dir, 'resources')
         self._create_directory(resources_dir)
@@ -83,11 +83,11 @@ class Builder():
             if resource == '':
                 package = project.application_package
                 self._write_resource(resources_dir, resource, package, 
-                        project.absolute_path(package.name), freeze)
+                        project.absolute_path(package.name), freeze, opt)
             elif resource == 'stdlib':
                 self._write_resource(resources_dir, resource,
                         project.stdlib_package, os.path.join(stdlib_dir, ''),
-                        freeze)
+                        freeze, opt)
             else:
                 # Add the PyQt package to a temporary copy of the site-packages
                 # package.
@@ -109,7 +109,8 @@ class Builder():
 
                 self._write_resource(resources_dir, resource,
                         site_packages_package,
-                        os.path.join(stdlib_dir, 'site-packages', ''), freeze)
+                        os.path.join(stdlib_dir, 'site-packages', ''), freeze,
+                        opt)
 
         os.remove(freeze)
 
@@ -135,7 +136,7 @@ class Builder():
                 self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
                 dir_stack.pop()
 
-    def _write_qmake(self, build_dir, console, freeze):
+    def _write_qmake(self, build_dir, console, freeze, opt):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -320,11 +321,11 @@ class Builder():
         bootstrap = self._copy_lib_file(
                 'bootstrap_py3.py' if major == 3 else 'bootstrap_py2.py')
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
-                freeze, name='pyqtdeploy_bootstrap')
+                freeze, opt, name='pyqtdeploy_bootstrap')
         os.remove(bootstrap)
 
         self._freeze(os.path.join(build_dir, 'frozen_main.h'),
-                project.absolute_path(project.application_script), freeze,
+                project.absolute_path(project.application_script), freeze, opt,
                 name='pyqtdeploy_main')
 
         version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
@@ -402,7 +403,7 @@ class Builder():
 
         return name
 
-    def _write_resource(self, resources_dir, resource, package, src, freeze):
+    def _write_resource(self, resources_dir, resource, package, src, freeze, opt):
         """ Create a .qrc file for a resource and the corresponding contents.
         """
 
@@ -425,7 +426,7 @@ class Builder():
         src_root_dir, src_root = os.path.split(src)
 
         self._write_package_contents(package.contents, dst_root_dir,
-                src_root_dir, [src_root], freeze, f)
+                src_root_dir, [src_root], freeze, opt, f)
 
         f.write('''    </qresource>
 </RCC>
@@ -433,7 +434,7 @@ class Builder():
 
         f.close()
 
-    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, f):
+    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, opt, f):
         """ Write the contents of a single package directory. """
 
         dir_tail = os.path.join(*dir_stack)
@@ -461,7 +462,7 @@ class Builder():
             if isinstance(content, QrcDirectory):
                 dir_stack.append(content.name)
                 self._write_package_contents(content.contents, dst_root_dir,
-                        src_root_dir, dir_stack, freeze, f)
+                        src_root_dir, dir_stack, freeze, opt, f)
                 dir_stack.pop()
             else:
                 freeze_file = True
@@ -491,7 +492,7 @@ class Builder():
                                 '/'.join(file_path)))
 
                 if freeze_file:
-                    self._freeze(dst_path, src_path, freeze, as_data=True)
+                    self._freeze(dst_path, src_path, freeze, opt, as_data=True)
                 else:
                     shutil.copyfile(src_path, dst_path)
 
@@ -574,11 +575,17 @@ int main(int argc, char **argv)
     return pyqtdeploy_start(argc, argv, %s"%s", %s);
 ''' % (name_type, name_prefix, app_name, inittab))
 
-    def _freeze(self, output, py_filename, freeze, name=None, as_data=False):
+    def _freeze(self, output, py_filename, freeze, opt, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        argv = [os.path.expandvars(self._project.python_host_interpreter),
-            freeze]
+        argv = [os.path.expandvars(self._project.python_host_interpreter)]
+
+        if opt == 2:
+            argv.append('-OO')
+        elif opt == 1:
+            argv.append('-O')
+
+        argv.append(freeze)
         
         if name is not None:
             argv.append('--name')
