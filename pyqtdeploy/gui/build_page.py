@@ -57,10 +57,36 @@ class BuildPage(QWidget):
         layout = QGridLayout()
 
         self._log_viewer = QPlainTextEdit(readOnly=True)
-        layout.addWidget(self._log_viewer, 0, 0, 4, 1)
+        layout.addWidget(self._log_viewer, 0, 0, 5, 1)
 
         build = QPushButton("Build", clicked=self._build)
         layout.addWidget(build, 0, 1)
+
+        optimisation = QGroupBox("Optimisations")
+        optimisation_layout = QVBoxLayout()
+
+        self._opt1_button = QCheckBox("No asserts", checked=True,
+                stateChanged=self._opt1_changed)
+        optimisation_layout.addWidget(self._opt1_button)
+        self._opt2_button = QCheckBox("No docstrings", checked=True,
+                stateChanged=self._opt2_changed)
+        optimisation_layout.addWidget(self._opt2_button)
+
+        optimisation.setLayout(optimisation_layout)
+        layout.addWidget(optimisation, 1, 1)
+
+        options = QGroupBox("Build Options")
+        options_layout = QVBoxLayout()
+
+        self._clean_button = QCheckBox("Clean before building", checked=True)
+        options_layout.addWidget(self._clean_button)
+        self._console_button = QCheckBox("Capture console output")
+        options_layout.addWidget(self._console_button)
+        self._verbose_button = QCheckBox("Verbose output")
+        options_layout.addWidget(self._verbose_button)
+
+        options.setLayout(options_layout)
+        layout.addWidget(options, 2, 1)
 
         steps = QGroupBox("Additional Build Steps")
         steps_layout = QVBoxLayout()
@@ -76,22 +102,9 @@ class BuildPage(QWidget):
         steps_layout.addWidget(self._run_application_button)
 
         steps.setLayout(steps_layout)
-        layout.addWidget(steps, 1, 1)
+        layout.addWidget(steps, 3, 1)
 
-        options = QGroupBox("Build Options")
-        options_layout = QVBoxLayout()
-
-        self._clean_button = QCheckBox("Clean before building", checked=True)
-        options_layout.addWidget(self._clean_button)
-        self._console_button = QCheckBox("Capture console output")
-        options_layout.addWidget(self._console_button)
-        self._verbose_button = QCheckBox("Verbose output")
-        options_layout.addWidget(self._verbose_button)
-
-        options.setLayout(options_layout)
-        layout.addWidget(options, 2, 1)
-
-        layout.setRowStretch(3, 1)
+        layout.setRowStretch(4, 1)
 
         self.setLayout(layout)
 
@@ -126,8 +139,15 @@ class BuildPage(QWidget):
         logger.clear()
         logger.status_message("Generating code...")
 
+        if self._opt2_button.checkState():
+            opt = 2
+        elif self._opt1_button.checkState():
+            opt = 1
+        else:
+            opt = 0
+
         try:
-            builder.build(clean=bool(self._clean_button.checkState()),
+            builder.build(opt, clean=bool(self._clean_button.checkState()),
                     console=bool(self._console_button.checkState()))
         except UserException as e:
             logger.user_exception(e)
@@ -199,6 +219,18 @@ class BuildPage(QWidget):
         QMessageBox.warning(self, self.label,
                 "The project cannot be built because the name of the {0} has "
                         "not been set.".format(missing))
+
+    def _opt1_changed(self, state):
+        """ Invoked when the user clicks on the no asserts button. """
+
+        if state == Qt.Unchecked:
+            self._opt2_button.setCheckState(Qt.Unchecked)
+
+    def _opt2_changed(self, state):
+        """ Invoked when the user clicks on the no docstrings button. """
+
+        if state == Qt.Checked:
+            self._opt1_button.setCheckState(Qt.Checked)
 
     def _run_qmake_changed(self, state):
         """ Invoked when the user clicks on the run qmake button. """

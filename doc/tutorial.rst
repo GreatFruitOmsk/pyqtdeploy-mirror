@@ -231,6 +231,28 @@ The main area of the tab shows the output of the various stages of the build.
     What else is done depends on the additional build steps that have been
     specified.
 
+**No asserts**
+    is clicked to specify that all ``assert`` statements should be removed from
+    frozen Python code.
+
+**No docstrings**
+    is clicked to specify that all docstrings should be removed from frozen
+    Python code.
+
+**Clean before building**
+    is clicked to specify that the build directory is deleted and recreated
+    before starting a new build.
+
+**Capture console output**
+    is clicked to specify that ``console`` is always added to the ``CONFIG``
+    variable in the generated ``.pro`` file.  This is only useful on Windows
+    and ensures that, even for a GUI application, tracebacks (e.g. about
+    missing modules) are captured and displayed.
+
+**Verbose output**
+    is clicked specify that additional information is displayed during the
+    build process.
+
 **Run qmake**
     is clicked to specify that :program:`qmake` will be run after generating
     the application code.  If this is disabled the later build steps will be
@@ -250,20 +272,6 @@ The main area of the tab shows the output of the various stages of the build.
     .. note::
         This only makes sense if you are building natively and not
         cross-compiling.
-
-**Clean before building**
-    is clicked to specify that the build directory is deleted and recreated
-    before starting a new build.
-
-**Capture console output**
-    is clicked to specify that ``console`` is always added to the ``CONFIG``
-    variable in the generated ``.pro`` file.  This is only useful on Windows
-    and ensures that, even for a GUI application, tracebacks (e.g. about
-    missing modules) are captured and displayed.
-
-**Verbose output**
-    is clicked specify that additional information is displayed during the
-    build process.
 
 
 Creating a Deployable Package
