@@ -82,16 +82,21 @@ class Builder():
         for resource in self.resources():
             if resource == '':
                 package = project.application_package
-                self._write_resource(resources_dir, resource, package, 
-                        project.absolute_path(package.name), freeze, opt)
+                contents = self._write_package(resources_dir, resource,
+                        package, project.absolute_path(package.name), freeze,
+                        opt)
+                self._write_resource_qrc(resources_dir, 'pyqtdeploy.qrc',
+                        contents)
             elif resource == 'stdlib':
-                self._write_resource(resources_dir, resource,
+                contents = self._write_package(resources_dir, resource,
                         project.stdlib_package, os.path.join(stdlib_dir, ''),
                         freeze, opt)
+                self._write_resource_qrc(resources_dir, 'stdlib.qrc',
+                        contents)
             else:
                 # Add the PyQt package to a temporary copy of the site-packages
                 # package.
-                site_packages_package = project.site_packages_package.copy()
+                site_packages_package = project.packages[0].copy()
                 pyqt_dir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
                 if len(project.pyqt_modules) != 0:
@@ -107,10 +112,20 @@ class Builder():
                                         pyqt_dir),
                                 'uic', [])
 
-                self._write_resource(resources_dir, resource,
+                contents = self._write_package(resources_dir, resource,
                         site_packages_package,
                         os.path.join(stdlib_dir, 'site-packages', ''), freeze,
                         opt)
+
+                for package in project.packages[1:]:
+                    contents += self._write_package(resources_dir, resource,
+                            package,
+                            os.path.join(project.absolute_path(package.name),
+                                    ''),
+                            freeze, opt)
+
+                self._write_resource_qrc(resources_dir, 'site-packages.qrc',
+                        contents)
 
         os.remove(freeze)
 
@@ -351,13 +366,19 @@ class Builder():
 
         resources.append('stdlib')
 
+        need_site_packages = False
+
         if len(project.pyqt_modules) != 0:
-            resources.append('site-packages')
+            need_site_packages = True
         else:
-            for content in project.site_packages_package.contents:
-                if content.included:
-                    resources.append('site-packages')
-                    break
+            for package in project.packages:
+                for content in package.contents:
+                    if content.included:
+                        need_site_packages = True
+                        break
+
+        if need_site_packages:
+            resources.append('site-packages')
 
         return resources
 
@@ -403,18 +424,8 @@ class Builder():
 
         return name
 
-    def _write_resource(self, resources_dir, resource, package, src, freeze, opt):
-        """ Create a .qrc file for a resource and the corresponding contents.
-        """
-
-        # The main application resource does not go in a sub-directory.
-        if resource == '':
-            qrc_file = 'pyqtdeploy.qrc'
-            dst_root_dir = resources_dir
-        else:
-            qrc_file = resource + '.qrc'
-            dst_root_dir = os.path.join(resources_dir, resource)
-            self._create_directory(dst_root_dir)
+    def _write_resource_qrc(self, resources_dir, qrc_file, resource_contents):
+        """ Create a .qrc file for a resource. """
 
         f = self._create_file(resources_dir, qrc_file)
 
@@ -423,10 +434,8 @@ class Builder():
     <qresource>
 ''')
 
-        src_root_dir, src_root = os.path.split(src)
-
-        self._write_package_contents(package.contents, dst_root_dir,
-                src_root_dir, [src_root], freeze, opt, f)
+        for content in resource_contents:
+            f.write('        <file>{0}</file>\n'.format(content))
 
         f.write('''    </qresource>
 </RCC>
@@ -434,7 +443,28 @@ class Builder():
 
         f.close()
 
-    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, opt, f):
+    def _write_package(self, resources_dir, resource, package, src, freeze, opt):
+        """ Write the contents of a single package and return the list of files
+        written relative to the resources directory.
+        """
+
+        # The main application resource does not go in a sub-directory.
+        if resource == '':
+            dst_root_dir = resources_dir
+        else:
+            dst_root_dir = os.path.join(resources_dir, resource)
+            self._create_directory(dst_root_dir)
+
+        src_root_dir, src_root = os.path.split(src)
+
+        resource_contents = []
+
+        self._write_package_contents(package.contents, dst_root_dir,
+                src_root_dir, [src_root], freeze, opt, resource_contents)
+
+        return resource_contents
+
+    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, opt, resource_contents):
         """ Write the contents of a single package directory. """
 
         dir_tail = os.path.join(*dir_stack)
@@ -462,7 +492,8 @@ class Builder():
             if isinstance(content, QrcDirectory):
                 dir_stack.append(content.name)
                 self._write_package_contents(content.contents, dst_root_dir,
-                        src_root_dir, dir_stack, freeze, opt, f)
+                        src_root_dir, dir_stack, freeze, opt,
+                        resource_contents)
                 dir_stack.pop()
             else:
                 freeze_file = True
@@ -487,9 +518,7 @@ class Builder():
 
                 file_path.append(dst_file)
 
-                f.write(
-                        '        <file>{0}</file>\n'.format(
-                                '/'.join(file_path)))
+                resource_contents.append('/'.join(file_path))
 
                 if freeze_file:
                     self._freeze(dst_path, src_path, freeze, opt, as_data=True)

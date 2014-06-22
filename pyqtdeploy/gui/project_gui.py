@@ -40,8 +40,8 @@ from .build_page import BuildPage
 from .exception_handlers import handle_user_exception
 from .extension_modules_page import ExtensionModulesPage
 from .locations_page import LocationsPage
+from .packages_page import PackagesPage
 from .pyqt_page import PyQtPage
-from .site_packages_page import SitePackagesPage
 from .stdlib_page import StdlibPage
 
 
@@ -138,8 +138,8 @@ class ProjectGUI(QMainWindow):
         stdlib_page = StdlibPage()
         tabs.addTab(stdlib_page, stdlib_page.label)
 
-        site_packages_page = SitePackagesPage()
-        tabs.addTab(site_packages_page, site_packages_page.label)
+        packages_page = PackagesPage()
+        tabs.addTab(packages_page, packages_page.label)
 
         extension_modules_page = ExtensionModulesPage()
         tabs.addTab(extension_modules_page, extension_modules_page.label)

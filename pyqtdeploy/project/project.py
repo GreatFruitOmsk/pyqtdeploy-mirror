@@ -38,7 +38,9 @@ class Project(QObject):
     # The current project version.
     #   0: The original version.
     #   1: Added the Others element with the builddir and qmake attributes.
-    version = 1
+    #   2: The SitePackages element can now contain multiple Package
+    #      sub-elements.
+    version = 2
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -122,7 +124,7 @@ class Project(QObject):
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
         self.qmake = ''
-        self.site_packages_package = QrcPackage()
+        self.packages = [QrcPackage()]
         self.stdlib_package = QrcPackage()
 
     def relative_path(self, filename):
@@ -212,7 +214,7 @@ class Project(QObject):
         app_package = application.find('Package')
         cls._assert(app_package is not None,
                 "Missing 'Application.Package' tag.")
-        cls._load_package(app_package, project.application_package)
+        project.application_package = cls._load_package(app_package)
 
         for pyqt_m in application.iterfind('PyQtModule'):
             name = pyqt_m.get('name', '')
@@ -223,17 +225,17 @@ class Project(QObject):
         site_packages = application.find('SitePackages')
         cls._assert(site_packages is not None,
                 "Missing 'Application.SitePackages' tag.")
-        site_packages_package = site_packages.find('Package')
-        cls._assert(site_packages_package is not None,
+        project.packages = [cls._load_package(package)
+                for package in site_packages.iterfind('Package')]
+        cls._assert(len(project.packages) != 0,
                 "Missing 'Application.SitePackages.Package' tag.")
-        cls._load_package(site_packages_package, project.site_packages_package)
 
         stdlib = application.find('Stdlib')
         cls._assert(stdlib is not None, "Missing 'Application.Stdlib' tag.")
         stdlib_package = stdlib.find('Package')
         cls._assert(stdlib_package is not None,
                 "Missing 'Application.Stdlib.Package' tag.")
-        cls._load_package(stdlib_package, project.stdlib_package)
+        project.stdlib_package = cls._load_package(stdlib_package)
 
         for extension_module_element in application.iterfind('ExtensionModule'):
             name = extension_module_element.get('name')
@@ -282,8 +284,10 @@ class Project(QObject):
         self.name = abs_filename
 
     @classmethod
-    def _load_package(cls, package_element, package):
-        """ Populate a QrcPackage instance. """
+    def _load_package(cls, package_element):
+        """ Return a populated QrcPackage instance. """
+
+        package = QrcPackage()
 
         package.name = package_element.get('name')
         cls._assert(package.name is not None,
@@ -292,12 +296,13 @@ class Project(QObject):
         package.contents = cls._load_mfs_contents(package_element)
 
         package.exclusions = []
-
         for exclude_element in package_element.iterfind('Exclude'):
             name = exclude_element.get('name', '')
             cls._assert(name != '',
                     "Missing or empty 'Package.Exclude.name' attribute.")
             package.exclusions.append(name)
+
+        return package
 
     @classmethod
     def _load_mfs_contents(cls, mfs_element):
@@ -360,7 +365,8 @@ class Project(QObject):
                 'name': pyqt_module})
 
         site_packages = SubElement(application, 'SitePackages')
-        self._save_package(site_packages, self.site_packages_package)
+        for package in self.packages:
+            self._save_package(site_packages, package)
 
         stdlib = SubElement(application, 'Stdlib')
         self._save_package(stdlib, self.stdlib_package)

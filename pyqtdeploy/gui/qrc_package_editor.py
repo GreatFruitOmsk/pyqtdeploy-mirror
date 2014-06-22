@@ -45,8 +45,9 @@ class QrcPackageEditor(QGroupBox):
 
         super().__init__(title)
 
-        self._package = None
-        self._project = None
+        self.package = None
+        self.project = None
+
         self._title = title
         self._show_root = show_root
 
@@ -72,7 +73,7 @@ class QrcPackageEditor(QGroupBox):
         layout.addWidget(self._exclude_button, 1, 2)
 
         self._exclusions_edit = QTreeWidget()
-        self._exclusions_edit.setHeaderLabels(["Exclusions"])
+        self._exclusions_edit.setHeaderLabel("Exclusions")
         self._exclusions_edit.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|
                         QTreeWidget.EditKeyPressed)
@@ -89,8 +90,8 @@ class QrcPackageEditor(QGroupBox):
         """
 
         # Save the configuration.
-        self._package = package
-        self._project = project
+        self.package = package
+        self.project = project
 
         # Set the package itself.
         self._visualise()
@@ -151,7 +152,7 @@ class QrcPackageEditor(QGroupBox):
             exc_edit.takeTopLevelItem(itm_index)
 
         # Save the new exclusions.
-        self._package.exclusions = [
+        self.package.exclusions = [
                 exc_edit.topLevelItem(i).data(0, Qt.DisplayRole).strip()
                         for i in range(exc_edit.topLevelItemCount() - 1)]
 
@@ -208,8 +209,8 @@ class QrcPackageEditor(QGroupBox):
     def _scan(self, _):
         """ Invoked when the user clicks on the scan button. """
 
-        project = self._project
-        package = self._package
+        project = self.project
+        package = self.package
 
         # Get the root directory to scan.
         root = self.get_root_dir()
@@ -252,7 +253,7 @@ class QrcPackageEditor(QGroupBox):
 
         for name in path_contents:
             # Apply any exclusions.
-            for exc in self._package.exclusions:
+            for exc in self.package.exclusions:
                 if fnmatch.fnmatch(name, exc):
                     name = None
                     break
@@ -301,13 +302,13 @@ class QrcPackageEditor(QGroupBox):
         self._package_edit.clear()
 
         if self._show_root:
-            parent = QTreeWidgetItem([self._package.name])
+            parent = QTreeWidgetItem([self.package.name])
             self._package_edit.addTopLevelItem(parent)
             parent.setExpanded(True)
         else:
             parent = self._package_edit
 
-        self._visualise_contents(self._package.contents, parent)
+        self._visualise_contents(self.package.contents, parent)
 
         self._package_edit.blockSignals(blocked)
 
