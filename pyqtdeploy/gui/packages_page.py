@@ -131,7 +131,7 @@ class PackagesPage(QWidget):
 
         self._package_edit.configure(new.data(0, Qt.UserRole), self.project)
 
-    def _package_dir_changed(self, itm, _):
+    def _package_dir_changed(self, itm, column):
         """ Invoked when the user edits a package directory name. """
 
         project = self.project

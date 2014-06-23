@@ -135,7 +135,7 @@ class QrcPackageEditor(QGroupBox):
 
         self._exclusions_edit.addTopLevelItem(itm)
 
-    def _exclusion_changed(self, itm, _):
+    def _exclusion_changed(self, itm, column):
         """ Invoked when an exclusion has changed. """
 
         exc_edit = self._exclusions_edit
@@ -195,6 +195,7 @@ class QrcPackageEditor(QGroupBox):
 
         self._enable_buttons()
 
+        del self.package.contents[:]
         self.package_changed.emit()
 
     def _enable_buttons(self):
@@ -336,13 +337,13 @@ class QrcPackageEditor(QGroupBox):
                 p = parent
                 while p is not None and isinstance(p, QTreeWidgetItem):
                     p.setCheckState(0, Qt.Checked)
-                    p._qrc_item.included = True
+                    p.data(0, Qt.UserRole).included = True
                     p = p.parent()
 
             itm.setCheckState(0,
                     Qt.Checked if content.included else Qt.Unchecked)
 
-            itm._qrc_item = content
+            itm.setData(0, Qt.UserRole, content)
 
             if isinstance(content, QrcDirectory):
                 self._visualise_contents(content.contents, itm)
@@ -350,6 +351,6 @@ class QrcPackageEditor(QGroupBox):
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
 
-        itm._qrc_item.included = (itm.checkState(0) == Qt.Checked)
+        itm.data(0, Qt.UserRole).included = (itm.checkState(0) == Qt.Checked)
 
         self.package_changed.emit()
