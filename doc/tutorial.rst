@@ -120,10 +120,10 @@ application is shown below.
 .. image:: /images/stdlib_packages_tab.png
     :align: center
 
-This tab is used to scan the directory containing the Python interpreter's
-standard library.  You then specify which individual modules are needed, either
-implicitly or explicitly, by the application.  :program:`pyqtdeploy` does not
-(yet) automatically handle inter-module dependencies.
+This tab is used to scan the directory containing the target Python
+interpreter's standard library.  You then specify which individual modules are
+needed, either implicitly or explicitly, by the application.
+:program:`pyqtdeploy` does not automatically handle inter-module dependencies.
 
 The ``wiggly.py`` script does not explicitly import any standard Python module
 (except for the :mod:`sys` module which is implemented as a builtin).  However,
@@ -132,21 +132,31 @@ internally are included so, for example, the above shows that the :mod:`types`
 and :mod:`warnings` modules will be included and cannot be changed.
 
 
-Defining the ``site-packages`` Packages
----------------------------------------
+Defining Additional Packages
+----------------------------
 
-The tab for defining the ``site-packages`` packages used by the application is
-shown below.
+The tab for defining additional packages used by the application is shown
+below.
 
-.. image:: /images/site_packages_tab.png
+.. image:: /images/packages_tab.png
     :align: center
 
-This tab is used to scan the the Python interpreter's ``site-packages``
-directory.  You then specify which individual modules are needed, either
-implicitly or explicitly, by the application.  :program:`pyqtdeploy` does not
-(yet) automatically handle inter-module dependencies.
+This tab is used to scan a number of directories containing additional Python
+packages.  You then specify which individual modules are needed, either
+implicitly or explicitly, by the application.
 
-The ``wiggly.py`` script does not use any third-party Python packages.
+By default the only directory defined is the target Python interpreter's
+``site-packages`` directory which, unless you have installed additional
+packages, will be empty.  To edit the list of directories just double-click on
+the entry to modify or delete.  To add a new entry just double-click the list
+after the last entry.
+
+In many cases you will want to add the ``site-packages`` directory of your host
+Python interpreter, i.e. the interpreter being used to develop the application,
+where all the additional packages required by your application are already
+installed.
+
+The ``wiggly.py`` script does not use any additional Python packages.
 
 
 Defining the Extension Modules
