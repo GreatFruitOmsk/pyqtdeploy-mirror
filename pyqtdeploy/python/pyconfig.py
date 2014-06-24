@@ -85,6 +85,9 @@ pyconfig = (
     # Define if gettimeofday() does not have second (timezone) argument
     Config('GETTIMEOFDAY_NO_TZ'),
 
+    # Define to 1 if you have the `accept4' function.
+    Config('HAVE_ACCEPT4'),
+
     # Define to 1 if you have the `acosh' function.
     Config('HAVE_ACOSH'),
 
@@ -120,6 +123,10 @@ pyconfig = (
 
     # Define to 1 if you have the <bluetooth.h> header file.
     Config('HAVE_BLUETOOTH_H'),
+
+    # Define if mbstowcs(NULL, "text", 0) does not return the number of wide
+    # chars that would be converted.
+    Config('HAVE_BROKEN_MBSTOWCS'),
 
     # Define if nice() returns success/failure instead of the new priority.
     Config('HAVE_BROKEN_NICE'),
@@ -157,6 +164,15 @@ pyconfig = (
     # Define to 1 if you have the `clock' function.
     Config('HAVE_CLOCK'),
 
+    # Define to 1 if you have the `clock_getres' function.
+    Config('HAVE_CLOCK_GETRES'),
+
+    # Define to 1 if you have the `clock_gettime' function.
+    Config('HAVE_CLOCK_GETTIME'),
+
+    # Define if the C compiler supports computed gotos.
+    Config('HAVE_COMPUTED_GOTOS'),
+
     # Define to 1 if you have the `confstr' function.
     Config('HAVE_CONFSTR'),
 
@@ -188,12 +204,12 @@ pyconfig = (
     Config('HAVE_DECL_ISFINITE'),
 
     # Define to 1 if you have the declaration of `isinf'.
-    Config('HAVE_DECL_ISINF')
-    Config('HAVE_ISINF')
+    Config('HAVE_DECL_ISINF'),
+    Config('HAVE_ISINF'),
 
     # Define to 1 if you have the declaration of `isnan'.
-    Config('HAVE_DECL_ISNAN')
-    Config('HAVE_ISNAN')
+    Config('HAVE_DECL_ISNAN'),
+    Config('HAVE_ISNAN'),
 
     # Define to 1 if you have the declaration of `tzname'.
     Config('HAVE_DECL_TZNAME'),
@@ -213,6 +229,9 @@ pyconfig = (
     # Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
     Config('HAVE_DIRENT_H'),
 
+    # Define if you have the 'dirfd' function or macro.
+    Config('HAVE_DIRFD'),
+
     # Define to 1 if you have the <dlfcn.h> header file.
     Config('HAVE_DLFCN_H'),
 
@@ -227,6 +246,9 @@ pyconfig = (
 
     # Define if you have the 'epoll' functions.
     Config('HAVE_EPOLL'),
+
+    # Define if you have the 'epoll_create1' function.
+    Config('HAVE_EPOLL_CREATE1'),
 
     # Define to 1 if you have the `erf' function.
     Config('HAVE_ERF'),
@@ -243,20 +265,35 @@ pyconfig = (
     # Define to 1 if you have the `expm1' function.
     Config('HAVE_EXPM1'),
 
+    # Define to 1 if you have the `faccessat' function.
+    Config('HAVE_FACCESSAT'),
+
     # Define if you have the 'fchdir' function.
     Config('HAVE_FCHDIR'),
 
     # Define to 1 if you have the `fchmod' function.
     Config('HAVE_FCHMOD'),
 
+    # Define to 1 if you have the `fchmodat' function.
+    Config('HAVE_FCHMODAT'),
+
     # Define to 1 if you have the `fchown' function.
     Config('HAVE_FCHOWN'),
+
+    # Define to 1 if you have the `fchownat' function.
+    Config('HAVE_FCHOWNAT'),
 
     # Define to 1 if you have the <fcntl.h> header file.
     Config('HAVE_FCNTL_H'),
 
     # Define if you have the 'fdatasync' function.
     Config('HAVE_FDATASYNC'),
+
+    # Define to 1 if you have the `fdopendir' function.
+    Config('HAVE_FDOPENDIR'),
+
+    # Define to 1 if you have the `fexecve' function.
+    Config('HAVE_FEXECVE'),
 
     # Define to 1 if you have the `finite' function.
     Config('HAVE_FINITE'),
@@ -279,6 +316,9 @@ pyconfig = (
     # Define to 1 if you have the `fseeko' function.
     Config('HAVE_FSEEKO'),
 
+    # Define to 1 if you have the `fstatat' function.
+    Config('HAVE_FSTATAT'),
+
     # Define to 1 if you have the `fstatvfs' function.
     Config('HAVE_FSTATVFS'),
 
@@ -297,14 +337,29 @@ pyconfig = (
     # Define to 1 if you have the `ftruncate' function.
     Config('HAVE_FTRUNCATE'),
 
+    # Define to 1 if you have the `futimens' function.
+    Config('HAVE_FUTIMENS'),
+
+    # Define to 1 if you have the `futimes' function.
+    Config('HAVE_FUTIMES'),
+
+    # Define to 1 if you have the `futimesat' function.
+    Config('HAVE_FUTIMESAT'),
+
     # Define to 1 if you have the `gai_strerror' function.
     Config('HAVE_GAI_STRERROR'),
 
     # Define to 1 if you have the `gamma' function.
     Config('HAVE_GAMMA'),
 
+    # Define if we can use x64 gcc inline assembler
+    Config('HAVE_GCC_ASM_FOR_X64'),
+
     # Define if we can use gcc inline assembler to get and set x87 control word
     Config('HAVE_GCC_ASM_FOR_X87'),
+
+    # Define if your compiler provides __uint128_t
+    Config('HAVE_GCC_UINT128_T'),
 
     # Define if you have the getaddrinfo function.
     Config('HAVE_GETADDRINFO'),
@@ -314,6 +369,9 @@ pyconfig = (
 
     # Define this if you have flockfile(), getc_unlocked(), and funlockfile()
     Config('HAVE_GETC_UNLOCKED'),
+
+    # Define to 1 if you have the `getgrouplist' function.
+    Config('HAVE_GETGROUPLIST'),
 
     # Define to 1 if you have the `getgroups' function.
     Config('HAVE_GETGROUPS'),
@@ -387,6 +445,10 @@ pyconfig = (
     # Define to 1 if you have the `getwd' function.
     Config('HAVE_GETWD'),
 
+    # Define if glibc has incorrect _FORTIFY_SOURCE wrappers for memmove and
+    # bcopy.
+    Config('HAVE_GLIBC_MEMMOVE_BUG'),
+
     # Define to 1 if you have the <grp.h> header file.
     Config('HAVE_GRP_H'),
 
@@ -398,6 +460,9 @@ pyconfig = (
 
     # Define to 1 if you have the <ieeefp.h> header file.
     Config('HAVE_IEEEFP_H'),
+
+    # Define to 1 if you have the `if_nameindex' function.
+    Config('HAVE_IF_NAMEINDEX'),
 
     # Define if you have the 'inet_aton' function.
     Config('HAVE_INET_ATON'),
@@ -419,6 +484,9 @@ pyconfig = (
 
     # Define to 1 if you have the <io.h> header file.
     Config('HAVE_IO_H'),
+
+    # Define if gcc has the ipa-pure-const bug.
+    Config('HAVE_IPA_PURE_CONST_BUG'),
 
     # Define to 1 if you have the `kill' function.
     Config('HAVE_KILL'),
@@ -468,11 +536,23 @@ pyconfig = (
     # Define to 1 if you have the `resolv' library (-lresolv).
     Config('HAVE_LIBRESOLV'),
 
+    # Define to 1 if you have the `sendfile' library (-lsendfile).
+    Config('HAVE_LIBSENDFILE'),
+
     # Define to 1 if you have the <libutil.h> header file.
     Config('HAVE_LIBUTIL_H'),
 
     # Define if you have the 'link' function.
     Config('HAVE_LINK'),
+
+    # Define to 1 if you have the `linkat' function.
+    Config('HAVE_LINKAT'),
+
+    # Define to 1 if you have the <linux/can.h> header file.
+    Config('HAVE_LINUX_CAN_H'),
+
+    # Define to 1 if you have the <linux/can/raw.h> header file.
+    Config('HAVE_LINUX_CAN_RAW_H'),
 
     # Define to 1 if you have the <linux/netlink.h> header file.
     Config('HAVE_LINUX_NETLINK_H'),
@@ -480,8 +560,14 @@ pyconfig = (
     # Define to 1 if you have the <linux/tipc.h> header file.
     Config('HAVE_LINUX_TIPC_H'),
 
+    # Define to 1 if you have the `lockf' function.
+    Config('HAVE_LOCKF'),
+
     # Define to 1 if you have the `log1p' function.
     Config('HAVE_LOG1P'),
+
+    # Define to 1 if you have the `log2' function.
+    Config('HAVE_LOG2'),
 
     # Define this if you have the type long double.
     Config('HAVE_LONG_DOUBLE'),
@@ -492,8 +578,14 @@ pyconfig = (
     # Define to 1 if you have the `lstat' function.
     Config('HAVE_LSTAT'),
 
+    # Define to 1 if you have the `lutimes' function.
+    Config('HAVE_LUTIMES'),
+
     # Define this if you have the makedev macro.
     Config('HAVE_MAKEDEV'),
+
+    # Define to 1 if you have the `mbrtowc' function.
+    Config('HAVE_MBRTOWC'),
 
     # Define to 1 if you have the `memmove' function.
     Config('HAVE_MEMMOVE'),
@@ -501,11 +593,23 @@ pyconfig = (
     # Define to 1 if you have the <memory.h> header file.
     Config('HAVE_MEMORY_H'),
 
+    # Define to 1 if you have the `memrchr' function.
+    Config('HAVE_MEMRCHR'),
+
+    # Define to 1 if you have the `mkdirat' function.
+    Config('HAVE_MKDIRAT'),
+
     # Define to 1 if you have the `mkfifo' function.
     Config('HAVE_MKFIFO'),
 
+    # Define to 1 if you have the `mkfifoat' function.
+    Config('HAVE_MKFIFOAT'),
+
     # Define to 1 if you have the `mknod' function.
     Config('HAVE_MKNOD'),
+
+    # Define to 1 if you have the `mknodat' function.
+    Config('HAVE_MKNODAT'),
 
     # Define to 1 if you have the `mktime' function.
     Config('HAVE_MKTIME'),
@@ -525,8 +629,14 @@ pyconfig = (
     # Define to 1 if you have the <netpacket/packet.h> header file.
     Config('HAVE_NETPACKET_PACKET_H'),
 
+    # Define to 1 if you have the <net/if.h> header file.
+    Config('HAVE_NET_IF_H'),
+
     # Define to 1 if you have the `nice' function.
     Config('HAVE_NICE'),
+
+    # Define to 1 if you have the `openat' function.
+    Config('HAVE_OPENAT'),
 
     # Define to 1 if you have the `openpty' function.
     Config('HAVE_OPENPTY'),
@@ -540,6 +650,9 @@ pyconfig = (
     # Define to 1 if you have the `pause' function.
     Config('HAVE_PAUSE'),
 
+    # Define to 1 if you have the `pipe2' function.
+    Config('HAVE_PIPE2'),
+
     # Define to 1 if you have the `plock' function.
     Config('HAVE_PLOCK'),
 
@@ -548,6 +661,15 @@ pyconfig = (
 
     # Define to 1 if you have the <poll.h> header file.
     Config('HAVE_POLL_H'),
+
+    # Define to 1 if you have the `posix_fadvise' function.
+    Config('HAVE_POSIX_FADVISE'),
+
+    # Define to 1 if you have the `posix_fallocate' function.
+    Config('HAVE_POSIX_FALLOCATE'),
+
+    # Define to 1 if you have the `pread' function.
+    Config('HAVE_PREAD'),
 
     # Define to 1 if you have the <process.h> header file.
     Config('HAVE_PROCESS_H'),
@@ -570,6 +692,9 @@ pyconfig = (
     # Define to 1 if you have the `pthread_init' function.
     Config('HAVE_PTHREAD_INIT'),
 
+    # Define to 1 if you have the `pthread_kill' function.
+    Config('HAVE_PTHREAD_KILL'),
+
     # Define to 1 if you have the `pthread_sigmask' function.
     Config('HAVE_PTHREAD_SIGMASK'),
 
@@ -579,11 +704,23 @@ pyconfig = (
     # Define to 1 if you have the `putenv' function.
     Config('HAVE_PUTENV'),
 
+    # Define to 1 if you have the `pwrite' function.
+    Config('HAVE_PWRITE'),
+
     # Define to 1 if you have the `readlink' function.
     Config('HAVE_READLINK'),
 
+    # Define to 1 if you have the `readlinkat' function.
+    Config('HAVE_READLINKAT'),
+
+    # Define to 1 if you have the `readv' function.
+    Config('HAVE_READV'),
+
     # Define to 1 if you have the `realpath' function.
     Config('HAVE_REALPATH'),
+
+    # Define to 1 if you have the `renameat' function.
+    Config('HAVE_RENAMEAT'),
 
     # Define if you have readline 2.1
     Config('HAVE_RL_CALLBACK'),
@@ -609,6 +746,24 @@ pyconfig = (
     # Define to 1 if you have the `round' function.
     Config('HAVE_ROUND'),
 
+    # Define to 1 if you have the `sched_get_priority_max' function.
+    Config('HAVE_SCHED_GET_PRIORITY_MAX'),
+
+    # Define to 1 if you have the <sched.h> header file.
+    Config('HAVE_SCHED_H'),
+
+    # Define to 1 if you have the `sched_rr_get_interval' function.
+    Config('HAVE_SCHED_RR_GET_INTERVAL'),
+
+    # Define to 1 if you have the `sched_setaffinity' function.
+    Config('HAVE_SCHED_SETAFFINITY'),
+
+    # Define to 1 if you have the `sched_setparam' function.
+    Config('HAVE_SCHED_SETPARAM'),
+
+    # Define to 1 if you have the `sched_setscheduler' function.
+    Config('HAVE_SCHED_SETSCHEDULER'),
+
     # Define to 1 if you have the `select' function.
     Config('HAVE_SELECT'),
 
@@ -624,6 +779,9 @@ pyconfig = (
     # Define to 1 if you have the `sem_unlink' function.
     Config('HAVE_SEM_UNLINK'),
 
+    # Define to 1 if you have the `sendfile' function.
+    Config('HAVE_SENDFILE'),
+
     # Define to 1 if you have the `setegid' function.
     Config('HAVE_SETEGID'),
 
@@ -636,6 +794,9 @@ pyconfig = (
     # Define if you have the 'setgroups' function.
     Config('HAVE_SETGROUPS'),
 
+    # Define to 1 if you have the `sethostname' function.
+    Config('HAVE_SETHOSTNAME'),
+
     # Define to 1 if you have the `setitimer' function.
     Config('HAVE_SETITIMER'),
 
@@ -647,6 +808,9 @@ pyconfig = (
 
     # Define to 1 if you have the `setpgrp' function.
     Config('HAVE_SETPGRP'),
+
+    # Define to 1 if you have the `setpriority' function.
+    Config('HAVE_SETPRIORITY'),
 
     # Define to 1 if you have the `setregid' function.
     Config('HAVE_SETREGID'),
@@ -675,14 +839,29 @@ pyconfig = (
     # Define to 1 if you have the `sigaction' function.
     Config('HAVE_SIGACTION'),
 
+    # Define to 1 if you have the `sigaltstack' function.
+    Config('HAVE_SIGALTSTACK'),
+
     # Define to 1 if you have the `siginterrupt' function.
     Config('HAVE_SIGINTERRUPT'),
 
     # Define to 1 if you have the <signal.h> header file.
     Config('HAVE_SIGNAL_H'),
 
+    # Define to 1 if you have the `sigpending' function.
+    Config('HAVE_SIGPENDING'),
+
     # Define to 1 if you have the `sigrelse' function.
     Config('HAVE_SIGRELSE'),
+
+    # Define to 1 if you have the `sigtimedwait' function.
+    Config('HAVE_SIGTIMEDWAIT'),
+
+    # Define to 1 if you have the `sigwait' function.
+    Config('HAVE_SIGWAIT'),
+
+    # Define to 1 if you have the `sigwaitinfo' function.
+    Config('HAVE_SIGWAITINFO'),
 
     # Define to 1 if you have the `snprintf' function.
     Config('HAVE_SNPRINTF'),
@@ -733,6 +912,9 @@ pyconfig = (
     # Define to 1 if you have the <string.h> header file.
     Config('HAVE_STRING_H'),
 
+    # Define to 1 if you have the `strlcpy' function.
+    Config('HAVE_STRLCPY'),
+
     # Define to 1 if you have the <stropts.h> header file.
     Config('HAVE_STROPTS_H'),
 
@@ -760,6 +942,12 @@ pyconfig = (
     # Define if you have the 'symlink' function.
     Config('HAVE_SYMLINK'),
 
+    # Define to 1 if you have the `symlinkat' function.
+    Config('HAVE_SYMLINKAT'),
+
+    # Define to 1 if you have the `sync' function.
+    Config('HAVE_SYNC'),
+
     # Define to 1 if you have the `sysconf' function.
     Config('HAVE_SYSCONF'),
 
@@ -771,6 +959,9 @@ pyconfig = (
 
     # Define to 1 if you have the <sys/bsdtty.h> header file.
     Config('HAVE_SYS_BSDTTY_H'),
+
+    # Define to 1 if you have the <sys/devpoll.h> header file.
+    Config('HAVE_SYS_DEVPOLL_H'),
 
     # Define to 1 if you have the <sys/dir.h> header file, and it defines
     # `DIR'.
@@ -784,6 +975,12 @@ pyconfig = (
 
     # Define to 1 if you have the <sys/file.h> header file.
     Config('HAVE_SYS_FILE_H'),
+
+    # Define to 1 if you have the <sys/ioctl.h> header file.
+    Config('HAVE_SYS_IOCTL_H'),
+
+    # Define to 1 if you have the <sys/kern_control.h> header file.
+    Config('HAVE_SYS_KERN_CONTROL_H'),
 
     # Define to 1 if you have the <sys/loadavg.h> header file.
     Config('HAVE_SYS_LOADAVG_H'),
@@ -813,6 +1010,9 @@ pyconfig = (
     # Define to 1 if you have the <sys/select.h> header file.
     Config('HAVE_SYS_SELECT_H'),
 
+    # Define to 1 if you have the <sys/sendfile.h> header file.
+    Config('HAVE_SYS_SENDFILE_H'),
+
     # Define to 1 if you have the <sys/socket.h> header file.
     Config('HAVE_SYS_SOCKET_H'),
 
@@ -821,6 +1021,12 @@ pyconfig = (
 
     # Define to 1 if you have the <sys/stat.h> header file.
     Config('HAVE_SYS_STAT_H'),
+
+    # Define to 1 if you have the <sys/syscall.h> header file.
+    Config('HAVE_SYS_SYSCALL_H'),
+
+    # Define to 1 if you have the <sys/sys_domain.h> header file.
+    Config('HAVE_SYS_SYS_DOMAIN_H'),
 
     # Define to 1 if you have the <sys/termio.h> header file.
     Config('HAVE_SYS_TERMIO_H'),
@@ -834,6 +1040,9 @@ pyconfig = (
     # Define to 1 if you have the <sys/types.h> header file.
     Config('HAVE_SYS_TYPES_H'),
 
+    # Define to 1 if you have the <sys/uio.h> header file.
+    Config('HAVE_SYS_UIO_H'),
+
     # Define to 1 if you have the <sys/un.h> header file.
     Config('HAVE_SYS_UN_H'),
 
@@ -842,6 +1051,9 @@ pyconfig = (
 
     # Define to 1 if you have the <sys/wait.h> header file.
     Config('HAVE_SYS_WAIT_H'),
+
+    # Define to 1 if you have the <sys/xattr.h> header file.
+    Config('HAVE_SYS_XATTR_H'),
 
     # Define to 1 if you have the `tcgetpgrp' function.
     Config('HAVE_TCGETPGRP'),
@@ -904,6 +1116,9 @@ pyconfig = (
     # Define to 1 if you have the <unistd.h> header file.
     Config('HAVE_UNISTD_H'),
 
+    # Define to 1 if you have the `unlinkat' function.
+    Config('HAVE_UNLINKAT'),
+
     # Define to 1 if you have the `unsetenv' function.
     Config('HAVE_UNSETENV'),
 
@@ -914,6 +1129,9 @@ pyconfig = (
 
     # Define to 1 if you have the <util.h> header file.
     Config('HAVE_UTIL_H'),
+
+    # Define to 1 if you have the `utimensat' function.
+    Config('HAVE_UTIMENSAT'),
 
     # Define to 1 if you have the `utimes' function.
     Config('HAVE_UTIMES'),
@@ -927,6 +1145,9 @@ pyconfig = (
     # Define to 1 if you have the `wait4' function.
     Config('HAVE_WAIT4'),
 
+    # Define to 1 if you have the `waitid' function.
+    Config('HAVE_WAITID'),
+
     # Define to 1 if you have the `waitpid' function.
     Config('HAVE_WAITPID'),
 
@@ -936,15 +1157,27 @@ pyconfig = (
     # Define to 1 if you have the `wcscoll' function.
     Config('HAVE_WCSCOLL'),
 
+    # Define to 1 if you have the `wcsftime' function.
+    Config('HAVE_WCSFTIME'),
+
+    # Define to 1 if you have the `wcsxfrm' function.
+    Config('HAVE_WCSXFRM'),
+
     # Define if tzset() actually switches the local timezone in a meaningful
     # way.
     Config('HAVE_WORKING_TZSET'),
+
+    # Define to 1 if you have the `writev' function.
+    Config('HAVE_WRITEV'),
 
     # Define if the zlib library has inflateCopy
     Config('HAVE_ZLIB_COPY'),
 
     # Define to 1 if you have the `_getpty' function.
     Config('HAVE__GETPTY'),
+
+    # Define if log1p(-0.) is 0. rather than -0.
+    Config('LOG1P_DROPS_ZERO_SIGN'),
 
     # Define if you are using Mach cthreads directly under /include
     Config('HURD_C_THREADS'),
@@ -1086,6 +1319,12 @@ pyconfig = (
     # Define to 1 if your <sys/time.h> declares `struct tm'.
     Config('TM_IN_SYS_TIME'),
 
+    # Define if you want to use computed gotos in ceval.c.
+    Config('USE_COMPUTED_GOTOS'),
+
+    # Define to use the C99 inline keyword.
+    Config('USE_INLINE'),
+
     # Define if you want to use MacPython modules on MacOSX in unix-Python.
     Config('USE_TOOLBOX_OBJECT_GLUE'),
 
@@ -1152,7 +1391,7 @@ pyconfig = (
     # this defined.
     Config('_POSIX_1_SOURCE'),
 
-    # Define to activate features from IEEE Stds 1003.1-2001
+    # Define to activate features from IEEE Stds 1003.1-2008
     Config('_POSIX_C_SOURCE'),
 
     # Define to 1 if you need to in order for `stat' and other things to work.
