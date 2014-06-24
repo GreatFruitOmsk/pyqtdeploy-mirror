@@ -1,0 +1,15 @@
+Updating pyqtdeploy When New Versions are Released
+==================================================
+
+These notes assume that immediately prior releases are fully supported by
+pyqtdeploy.
+
+
+Python
+------
+
+pyconfig.h
+..........
+
+``diff`` the ``pyconfig.h.in`` file to see if there are any new configuration
+items.  Add any new ones to ``pyconfig.py``.
