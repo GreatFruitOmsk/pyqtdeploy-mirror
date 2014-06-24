@@ -97,6 +97,9 @@ pyconfig = (
     # Define to 1 if you have the `alarm' function.
     Config('HAVE_ALARM'),
 
+    # Define if aligned memory access is required
+    Config('HAVE_ALIGNED_REQUIRED'),
+
     # Define to 1 if you have the <alloca.h> header file.
     Config('HAVE_ALLOCA_H'),
 
@@ -241,8 +244,14 @@ pyconfig = (
     # Define to 1 if you have the `dup2' function.
     Config('HAVE_DUP2'),
 
+    # Define to 1 if you have the `dup3' function.
+    Config('HAVE_DUP3'),
+
     # Defined when any dynamic module loading is enabled.
     Config('HAVE_DYNAMIC_LOADING'),
+
+    # Define to 1 if you have the <endian.h> header file.
+    Config('HAVE_ENDIAN_H'),
 
     # Define if you have the 'epoll' functions.
     Config('HAVE_EPOLL'),
@@ -455,6 +464,9 @@ pyconfig = (
     # Define if you have the 'hstrerror' function.
     Config('HAVE_HSTRERROR'),
 
+    # Define this if you have le64toh()
+    Config('HAVE_HTOLE64'),
+
     # Define to 1 if you have the `hypot' function.
     Config('HAVE_HYPOT'),
 
@@ -547,6 +559,9 @@ pyconfig = (
 
     # Define to 1 if you have the `linkat' function.
     Config('HAVE_LINKAT'),
+
+    # Define to 1 if you have the <linux/can/bcm.h> header file.
+    Config('HAVE_LINUX_CAN_BCM_H'),
 
     # Define to 1 if you have the <linux/can.h> header file.
     Config('HAVE_LINUX_CAN_H'),
@@ -670,6 +685,9 @@ pyconfig = (
 
     # Define to 1 if you have the `pread' function.
     Config('HAVE_PREAD'),
+
+    # Define if you have the 'prlimit' functions.
+    Config('HAVE_PRLIMIT'),
 
     # Define to 1 if you have the <process.h> header file.
     Config('HAVE_PROCESS_H'),
@@ -967,6 +985,9 @@ pyconfig = (
     # `DIR'.
     Config('HAVE_SYS_DIR_H'),
 
+    # Define to 1 if you have the <sys/endian.h> header file.
+    Config('HAVE_SYS_ENDIAN_H'),
+
     # Define to 1 if you have the <sys/epoll.h> header file.
     Config('HAVE_SYS_EPOLL_H'),
 
@@ -1163,6 +1184,9 @@ pyconfig = (
     # Define to 1 if you have the `wcsxfrm' function.
     Config('HAVE_WCSXFRM'),
 
+    # Define to 1 if you have the `wmemcmp' function.
+    Config('HAVE_WMEMCMP'),
+
     # Define if tzset() actually switches the local timezone in a meaningful
     # way.
     Config('HAVE_WORKING_TZSET'),
@@ -1236,6 +1260,10 @@ pyconfig = (
 
     # Defined if Python is built as a shared library.
     Config('Py_ENABLE_SHARED'),
+
+    # Define hash algorithm for str, bytes and memoryview. SipHash24: 1,
+    # FNV: 2, externally defined: 0
+    Config('Py_HASH_ALGORITHM'),
 
     # Define as the size of the unicode type.
     Config('Py_UNICODE_SIZE'),
@@ -1377,6 +1405,9 @@ pyconfig = (
 
     # Define on Linux to activate all library features
     Config('_GNU_SOURCE'),
+
+    # Define to include mbstate_t for mbrtowc
+    Config('_INCLUDE__STDC_A1_SOURCE'),
 
     # This must be defined on some systems to enable large file support.
     Config('_LARGEFILE_SOURCE'),
