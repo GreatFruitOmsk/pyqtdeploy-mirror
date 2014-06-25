@@ -46,8 +46,12 @@ DEFINES += NDEBUG Py_BUILD_CORE
 INCLUDEPATH += Include
 
 !win32 {
-    QMAKE_CFLAGS -= -O2
-    QMAKE_CFLAGS += -fwrapv -O3
+    QMAKE_CFLAGS_RELEASE = -O3
+    QMAKE_CFLAGS += -fwrapv
+
+    !greaterThan(PY_MAJOR_VERSION, 2) {
+        QMAKE_CFLAGS += -fno-strict-aliasing
+    }
 }
 
 target.path = $$SYSROOT/lib
@@ -61,7 +65,6 @@ stdlib.files = Lib/*
 INSTALLS += target headers stdlib
 
 PARSER_SOURCES = \
-    Parser/myreadline.c Parser/parsetok.c Parser/tokenizer.c \
     Parser/acceler.c \
     Parser/grammar1.c \
     Parser/listnode.c \
@@ -71,15 +74,14 @@ PARSER_SOURCES = \
     Parser/metagrammar.c \
     Parser/firstsets.c \
     Parser/grammar.c \
-    Parser/pgen.c
+    Parser/pgen.c \
+    Parser/myreadline.c Parser/parsetok.c Parser/tokenizer.c
 
 OBJECT_SOURCES =\
     Objects/abstract.c \
-    Objects/accu.c \
     Objects/boolobject.c \
     Objects/bytes_methods.c \
     Objects/bytearrayobject.c \
-    Objects/bytesobject.c \
     Objects/cellobject.c \
     Objects/classobject.c \
     Objects/codeobject.c \
@@ -96,13 +98,10 @@ OBJECT_SOURCES =\
     Objects/listobject.c \
     Objects/longobject.c \
     Objects/dictobject.c \
-    Objects/memoryobject.c \
     Objects/methodobject.c \
     Objects/moduleobject.c \
-    Objects/namespaceobject.c \
     Objects/object.c \
     Objects/obmalloc.c \
-    Objects/capsule.c \
     Objects/rangeobject.c \
     Objects/setobject.c \
     Objects/sliceobject.c \
@@ -112,6 +111,26 @@ OBJECT_SOURCES =\
     Objects/unicodeobject.c \
     Objects/unicodectype.c \
     Objects/weakrefobject.c
+
+greaterThan(PY_MAJOR_VERSION, 2) {
+    OBJECT_SOURCES += \
+        Objects/accu.c \
+        Objects/bytesobject.c \
+        Objects/memoryobject.c \
+        Objects/namespaceobject.c \
+        Objects/capsule.c
+} else {
+    OBJECT_SOURCES += \
+        Objects/bufferobject.c \
+        Objects/cobject.c \
+        Objects/intobject.c \
+        Objects/stringobject.c
+
+    greaterThan(PY_MAJOR_VERSION, 6) {
+        OBJECT_SOURCES += \
+            Objects/capsule.c
+    }
+}
 
 PYTHON_SOURCES = \
     Python/_warnings.c \
@@ -138,14 +157,10 @@ PYTHON_SOURCES = \
     Python/mysnprintf.c \
     Python/peephole.c \
     Python/pyarena.c \
-    Python/pyctype.c \
     Python/pyfpe.c \
-    Python/pyhash.c \
     Python/pymath.c \
     Python/pystate.c \
     Python/pythonrun.c \
-    Python/pytime.c \
-    Python/random.c \
     Python/structmember.c \
     Python/symtable.c \
     Python/sysmodule.c \
@@ -153,9 +168,23 @@ PYTHON_SOURCES = \
     Python/getopt.c \
     Python/pystrcmp.c \
     Python/pystrtod.c \
-    Python/dtoa.c \
-    Python/formatter_unicode.c \
-    Python/fileutils.c
+    Python/formatter_unicode.c
+
+greaterThan(PY_MAJOR_VERSION, 2) {
+    PYTHON_SOURCES += \
+        Python/pyctype.c \
+        Python/pyhash.c \
+        Python/pytime.c \
+        Python/random.c \
+        Python/dtoa.c \
+        Python/fileutils.c
+} else {
+    PYTHON_SOURCES += \
+        Python/getmtime.c \
+        Python/formatter_string.c
+}
+
+# TODO: Handle dynload_shlib.c etc. Also importdl.c.
 
 win32 {
     PYTHON_SOURCES += Python/thread_nt.c
@@ -169,35 +198,49 @@ MODULE_SOURCES = \
     Modules/main.c \
     Modules/gcmodule.c
 
-MOD_SOURCES = \
-    Modules/_threadmodule.c \
-    Modules/signalmodule.c \
-    Modules/posixmodule.c \
-    Modules/errnomodule.c \
-    Modules/pwdmodule.c \
-    Modules/_sre.c \
-    Modules/_codecsmodule.c \
-    Modules/_weakref.c \
-    Modules/_functoolsmodule.c \
-    Modules/_operator.c \
-    Modules/_collectionsmodule.c \
-    Modules/itertoolsmodule.c \
-    Modules/atexitmodule.c \
-    Modules/_stat.c \
-    Modules/_localemodule.c \
-    Modules/_io/_iomodule.c \
-    Modules/_io/iobase.c \
-    Modules/_io/fileio.c \
-    Modules/_io/bytesio.c \
-    Modules/_io/bufferedio.c \
-    Modules/_io/textio.c \
-    Modules/_io/stringio.c \
-    Modules/zipimport.c \
-    Modules/faulthandler.c \
-    Modules/_tracemalloc.c \
-    Modules/hashtable.c \
-    Modules/symtablemodule.c \
-    Modules/xxsubtype.c
+greaterThan(PY_MAJOR_VERSION, 2) {
+    MOD_SOURCES = \
+        Modules/_threadmodule.c \
+        Modules/signalmodule.c \
+        Modules/posixmodule.c \
+        Modules/errnomodule.c \
+        Modules/pwdmodule.c \
+        Modules/_sre.c \
+        Modules/_codecsmodule.c \
+        Modules/_weakref.c \
+        Modules/_functoolsmodule.c \
+        Modules/_operator.c \
+        Modules/_collectionsmodule.c \
+        Modules/itertoolsmodule.c \
+        Modules/atexitmodule.c \
+        Modules/_stat.c \
+        Modules/_localemodule.c \
+        Modules/_io/_iomodule.c \
+        Modules/_io/iobase.c \
+        Modules/_io/fileio.c \
+        Modules/_io/bytesio.c \
+        Modules/_io/bufferedio.c \
+        Modules/_io/textio.c \
+        Modules/_io/stringio.c \
+        Modules/zipimport.c \
+        Modules/faulthandler.c \
+        Modules/_tracemalloc.c \
+        Modules/hashtable.c \
+        Modules/symtablemodule.c \
+        Modules/xxsubtype.c
+} else {
+    MOD_SOURCES = \
+        Modules/threadmodule.c \
+        Modules/signalmodule.c \
+        Modules/posixmodule.c \
+        Modules/errnomodule.c \
+        Modules/pwdmodule.c \
+        Modules/_sre.c \
+        Modules/_codecsmodule.c \
+        Modules/zipimport.c \
+        Modules/symtablemodule.c \
+        Modules/xxsubtype.c
+}
 
 SOURCES = Modules/getbuildinfo.c Python/frozen.c
 SOURCES += $$PARSER_SOURCES

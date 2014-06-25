@@ -73,12 +73,13 @@ def configure_python(target, output, message_handler):
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
     # Copy the modules config.c file.
+    config_c_src_file = 'config_py{0}.c'.format(py_major)
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
 
     message_handler.progress_message(
             "Installing {0}".format(config_c_dst_file))
 
-    copy_embedded_file(configurations_dir.absoluteFilePath('config.c'),
+    copy_embedded_file(configurations_dir.absoluteFilePath(config_c_src_file),
             config_c_dst_file)
 
     # Generate the pyconfig.h file.
