@@ -31,6 +31,7 @@ from ..file_utilities import (copy_embedded_file, get_embedded_dir,
 from ..user_exception import UserException
 
 from .patch import apply_diffs
+from .pyconfig import generate_pyconfig_h
 
 
 def configure_python(target, output, message_handler):
@@ -80,18 +81,13 @@ def configure_python(target, output, message_handler):
     copy_embedded_file(configurations_dir.absoluteFilePath('config.c'),
             config_c_dst_file)
 
-    # Copy the pyconfig.h file.
-    pyconfig_h_src_dir = get_embedded_dir(__file__, 'configurations',
-            'pyconfig')
+    # Generate the pyconfig.h file.
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
     message_handler.progress_message(
-            "Installing {0}".format(pyconfig_h_dst_file))
+            "Generating {0}".format(pyconfig_h_dst_file))
 
-    copy_embedded_file(
-            pyconfig_h_src_dir.absoluteFilePath(
-                    'pyconfig-{0}.h'.format(target)),
-            pyconfig_h_dst_file)
+    generate_pyconfig_h(pyconfig_h_dst_file, target)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
@@ -148,10 +144,15 @@ def _extract_version(name):
     directory.  0 is returned if a version number could not be extracted.
     """
 
-    name, _ = os.path.splitext(os.path.basename(name))
-    _, version_str = name.split('-', maxsplit=1)
+    name = os.path.basename(name)
 
-    while version_str != '' and not version_str[-1].isdigit():
+    for version_str in name.split('-'):
+        if len(version_str) != 0 and version_str[0].isdigit():
+            break
+    else:
+        return 0
+
+    while not version_str[-1].isdigit():
         version_str = version_str[:-1]
 
     version_parts = version_str.split('.')

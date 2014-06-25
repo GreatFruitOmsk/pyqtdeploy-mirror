@@ -67,6 +67,9 @@ def parse_diffs(diff):
     if diff.endsWith('\n'):
         diff.chop(1)
 
+    if diff.isEmpty():
+        return diffs
+
     for line_nr, line in enumerate(diff.split('\n')):
         line = line.data().decode('latin1')
         words = line.split()

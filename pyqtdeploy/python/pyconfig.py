@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from ..file_utilities import create_file
+
+
 class Config:
     """ Encapsulate a configuration value defined in pyconfig.h. """
 
@@ -1467,10 +1470,22 @@ pyconfig = (
 
     # Define to empty if the keyword does not work.
     Config('volatile'),
-),
+)
 
 
-def generate_pyconfig_h(file_name, target):
+def generate_pyconfig_h(pyconfig_h_name, target):
     """ Create the pyconfig.h file for a specific target variant. """
 
-    print("Generating %s for %s" % (file_name, target))
+    pyconfig_h = create_file(pyconfig_h_name)
+
+    for config in pyconfig:
+        value = config.value(target)
+
+        if value is None:
+            # We provide an commented out #define to make it easier to modify
+            # the file by hand later.
+            pyconfig_h.write('/* #define {0} */\n'.format(config.name))
+        else:
+            pyconfig_h.write('#define {0} {1}\n'.format(config.name, value))
+
+    pyconfig_h.close()

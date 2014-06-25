@@ -26,7 +26,7 @@
 
 import os
 
-from ..file_utilities import read_embedded_file
+from ..file_utilities import create_file, open_file, read_embedded_file
 from ..user_exception import UserException
 
 from .diff_parser import parse_diffs
@@ -54,8 +54,8 @@ def _apply_diff(diff, patch_dir, message_handler):
 
     message_handler.progress_message("Patching {0}".format(src_file_name))
 
-    src_file = open(src_file_name)
-    dst_file = open(dst_file_name, 'wt')
+    src_file = open_file(src_file_name)
+    dst_file = create_file(dst_file_name)
 
     src_line_nr = 1
 

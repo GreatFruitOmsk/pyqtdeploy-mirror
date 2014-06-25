@@ -115,3 +115,23 @@ def copy_embedded_file(src_name, dst_name, macros={}):
                 dst_file.errorString())
 
     dst_file.close()
+
+
+def create_file(file_name):
+    """ Create a text file.  file_name is the name of the file. """
+
+    try:
+        return open(file_name, 'wt')
+    except Exception as e:
+        raise UserException("Unable to create file {0}".format(file_name),
+                str(e))
+
+
+def open_file(file_name):
+    """ Open a text file.  file_name is the name of the file. """
+
+    try:
+        return open(file_name, 't')
+    except Exception as e:
+        raise UserException("Unable to open file {0}".format(file_name),
+                str(e))

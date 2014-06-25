@@ -32,7 +32,7 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile
 
-from ..file_utilities import get_embedded_dir, read_embedded_file
+from ..file_utilities import create_file, get_embedded_dir, read_embedded_file
 from ..metadata import pyqt4_metadata, pyqt5_metadata
 from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
@@ -692,13 +692,7 @@ int main(int argc, char **argv)
     def _create_file(build_dir, filename):
         """ Create a text file in the build directory. """
 
-        pathname = os.path.join(build_dir, filename)
-
-        try:
-            return open(pathname, 'wt')
-        except Exception as e:
-            raise UserException("Unable to create file {0}".format(pathname),
-                    str(e))
+        return create_file(os.path.join(build_dir, filename))
 
     def _create_directory(self, dir_name):
         """ Create a directory which may already exist. """
