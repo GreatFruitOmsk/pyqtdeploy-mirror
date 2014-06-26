@@ -39,6 +39,9 @@ def main():
     parser.add_argument('action',
             help="the action to perform, otherwise the GUI is started",
             nargs='?', metavar="build|configure|show-packages|show-targets")
+    parser.add_argument('--enable-dynamic-loading',
+            help="enable the dynamic loading of modules (configure)",
+            action='store_true')
     parser.add_argument('--opt',
             help="the optimisation level where 0 is none, 1 is no asserts, 2 "
                     "is no asserts or docstrings (build) [default: 2]",
@@ -141,7 +144,8 @@ def configure(args):
         message_handler = MessageHandler(args.quiet, args.verbose)
 
         try:
-            configure_python(args.target, args.output, message_handler)
+            configure_python(args.target, args.output,
+                    args.enable_dynamic_loading, message_handler)
         except UserException as e:
             handle_exception(e, args.verbose)
             return 1

@@ -27,6 +27,7 @@
 PY_VERSION_MAJOR = @PY_VERSION_MAJOR@
 PY_VERSION_MINOR = @PY_VERSION_MINOR@
 PY_VERSION_PATCH = @PY_VERSION_PATCH@
+PY_DYNAMIC_LOADING = @PY_DYNAMIC_LOADING@
 
 !defined(SYSROOT, var) {
     error("SYSROOT must be defined on the qmake command line")
@@ -185,7 +186,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Python/formatter_string.c
 }
 
-# TODO: Handle dynload_shlib.c etc. Also HAVE_DYNAMIC_LOADING
+equals(PY_DYNAMIC_LOADING, "enabled") {
+    win32 {
+        PYTHON_SOURCES += Python/dynload_win.c
+    } else {
+        PYTHON_SOURCES += Python/dynload_shlib.c
+    }
+}
 
 win32 {
     PYTHON_SOURCES += Python/thread_nt.c

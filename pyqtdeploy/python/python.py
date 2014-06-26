@@ -34,7 +34,7 @@ from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
 
 
-def configure_python(target, output, message_handler):
+def configure_python(target, output, dynamic_loading, message_handler):
     """ Configure a Python source directory for a particular target. """
 
     # Avoid a circular import.
@@ -88,7 +88,7 @@ def configure_python(target, output, message_handler):
     message_handler.progress_message(
             "Generating {0}".format(pyconfig_h_dst_file))
 
-    generate_pyconfig_h(pyconfig_h_dst_file, target)
+    generate_pyconfig_h(pyconfig_h_dst_file, target, dynamic_loading)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
@@ -101,7 +101,8 @@ def configure_python(target, output, message_handler):
             macros={
                 '@PY_VERSION_MAJOR@': str(py_major),
                 '@PY_VERSION_MINOR@': str(py_minor),
-                '@PY_VERSION_PATCH@': str(py_patch)})
+                '@PY_VERSION_PATCH@': str(py_patch),
+                '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
     # Patch with the most appropriate diff.
     python_diff_src_file = _get_file_for_version('patches', py_version)

@@ -41,6 +41,12 @@ The full set of command line options is:
 
     This will display a summary of the command line actions and options.
 
+.. cmdoption:: --enable-dynamic-loading
+
+    When used with the :option:`configure` action to configure the ``python``
+    package this specifies that the Python interpreter will have dynamic
+    loading enabled.  The default is to disable dynamic loading.
+
 .. cmdoption:: --opt LEVEL
 
     When used with the :option:`build` action this specifies the level of

@@ -247,10 +247,6 @@ pyconfig = (
     # Define to 1 if you have the `dup3' function.
     Config('HAVE_DUP3'),
 
-    # Defined when any dynamic module loading is enabled.
-    # TODO
-    #Config('HAVE_DYNAMIC_LOADING', osx=1),
-
     # Define to 1 if you have the <endian.h> header file.
     Config('HAVE_ENDIAN_H'),
 
@@ -1474,10 +1470,13 @@ pyconfig = (
 )
 
 
-def generate_pyconfig_h(pyconfig_h_name, target):
+def generate_pyconfig_h(pyconfig_h_name, target, dynamic_loading):
     """ Create the pyconfig.h file for a specific target variant. """
 
     pyconfig_h = create_file(pyconfig_h_name)
+
+    if dynamic_loading:
+        pyconfig_h.write('#define HAVE_DYNAMIC_LOADING 1\n')
 
     for config in pyconfig:
         value = config.value(target)
