@@ -77,7 +77,7 @@ PARSER_SOURCES = \
     Parser/pgen.c \
     Parser/myreadline.c Parser/parsetok.c Parser/tokenizer.c
 
-OBJECT_SOURCES =\
+OBJECT_SOURCES = \
     Objects/abstract.c \
     Objects/boolobject.c \
     Objects/bytes_methods.c \
@@ -151,6 +151,7 @@ PYTHON_SOURCES = \
     Python/getversion.c \
     Python/graminit.c \
     Python/import.c \
+    Python/importdl.c \
     Python/marshal.c \
     Python/modsupport.c \
     Python/mystrtoul.c \
@@ -184,7 +185,7 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Python/formatter_string.c
 }
 
-# TODO: Handle dynload_shlib.c etc. Also importdl.c.
+# TODO: Handle dynload_shlib.c etc. Also HAVE_DYNAMIC_LOADING
 
 win32 {
     PYTHON_SOURCES += Python/thread_nt.c

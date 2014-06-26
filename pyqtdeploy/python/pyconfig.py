@@ -248,7 +248,8 @@ pyconfig = (
     Config('HAVE_DUP3'),
 
     # Defined when any dynamic module loading is enabled.
-    Config('HAVE_DYNAMIC_LOADING', osx=1),
+    # TODO
+    #Config('HAVE_DYNAMIC_LOADING', osx=1),
 
     # Define to 1 if you have the <endian.h> header file.
     Config('HAVE_ENDIAN_H'),
