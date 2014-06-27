@@ -30,5 +30,6 @@ from .gui import ProjectGUI
 from .message_handler import MessageHandler
 from .packages import configure_package, get_supported_packages
 from .project import Project
-from .python import configure_python, get_supported_targets
+from .python import configure_python
+from .targets import get_supported_targets
 from .user_exception import UserException

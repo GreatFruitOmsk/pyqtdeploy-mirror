@@ -27,8 +27,13 @@
 import struct
 import sys
 
-from .python import get_supported_targets
 from .user_exception import UserException
+
+
+def get_supported_targets():
+    """ Return the sequence of supported targets. """
+
+    return ('linux-32', 'linux-64', 'osx-64')
 
 
 def normalised_target(target):

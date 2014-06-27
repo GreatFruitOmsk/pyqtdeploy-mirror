@@ -25,4 +25,4 @@
 
 
 # Publish the sub-package's API.
-from .python import configure_python, get_supported_targets
+from .python import configure_python

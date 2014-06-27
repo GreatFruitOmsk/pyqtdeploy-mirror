@@ -28,6 +28,7 @@ import os
 
 from ..file_utilities import (copy_embedded_file, get_embedded_dir,
         get_embedded_file_names)
+from ..targets import normalised_target
 from ..user_exception import UserException
 
 from .patch import apply_diffs
@@ -36,9 +37,6 @@ from .pyconfig import generate_pyconfig_h
 
 def configure_python(target, output, dynamic_loading, message_handler):
     """ Configure a Python source directory for a particular target. """
-
-    # Avoid a circular import.
-    from ..targets import normalised_target
 
     # Validate the target.
     target = normalised_target(target)
@@ -108,15 +106,6 @@ def configure_python(target, output, dynamic_loading, message_handler):
     python_diff_src_file = _get_file_for_version('patches', py_version)
 
     apply_diffs(python_diff_src_file, py_src_dir, message_handler)
-
-
-def get_supported_targets():
-    """ Return the list of supported targets. """
-
-    # File names have the format 'pyconfig-TARGET.h'.
-    return [os.path.basename(name)[9:-2]
-            for name in get_embedded_file_names(__file__,
-                    'configurations', 'pyconfig')]
 
 
 def _get_file_for_version(subdir, version):
