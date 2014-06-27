@@ -359,15 +359,13 @@ pyconfig = (
     Config('HAVE_GAMMA', linux=1, osx=1),
 
     # Define if we can use x64 gcc inline assembler
-    # TODO linux-64?
-    Config('HAVE_GCC_ASM_FOR_X64', osx=1),
+    Config('HAVE_GCC_ASM_FOR_X64', linux_64=1, osx_64=1),
 
     # Define if we can use gcc inline assembler to get and set x87 control word
     Config('HAVE_GCC_ASM_FOR_X87', linux=1, osx=1),
 
     # Define if your compiler provides __uint128_t
-    # TODO linux-64?
-    Config('HAVE_GCC_UINT128_T', osx=1),
+    Config('HAVE_GCC_UINT128_T', linux_64, osx_64=1),
 
     # Define if you have the getaddrinfo function.
     Config('HAVE_GETADDRINFO', linux=1, osx=1),
@@ -515,7 +513,7 @@ pyconfig = (
     # and long long is available and at least as big as an off_t. You may need
     # to add some flags for configuration and compilation to enable this mode.
     # (For Solaris and Linux, the necessary defines are already defined.),
-    Config('HAVE_LARGEFILE_SUPPORT', linux=1),
+    Config('HAVE_LARGEFILE_SUPPORT', linux_32=1),
 
     # Define to 1 if you have the `lchflags' function.
     Config('HAVE_LCHFLAGS', osx=1),
@@ -1206,24 +1204,6 @@ pyconfig = (
     # Define if mvwdelch in curses.h is an expression.
     Config('MVWDELCH_IS_EXPRESSION', linux=1, osx=1),
 
-    # Define to the address where bug reports for this package should be sent.
-    Config('PACKAGE_BUGREPORT'),
-
-    # Define to the full name of this package.
-    Config('PACKAGE_NAME'),
-
-    # Define to the full name and version of this package.
-    Config('PACKAGE_STRING'),
-
-    # Define to the one symbol short name of this package.
-    Config('PACKAGE_TARNAME'),
-
-    # Define to the home page for this package.
-    Config('PACKAGE_URL'),
-
-    # Define to the version of this package.
-    Config('PACKAGE_VERSION'),
-
     # Define if POSIX semaphores aren't enabled on your system
     Config('POSIX_SEMAPHORES_NOT_ENABLED'),
 
@@ -1274,10 +1254,10 @@ pyconfig = (
     Config('SIZEOF_INT', linux=4, osx=4),
 
     # The size of `long', as computed by sizeof.
-    Config('SIZEOF_LONG', linux_32=4, osx=8),
+    Config('SIZEOF_LONG', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `long double', as computed by sizeof.
-    Config('SIZEOF_LONG_DOUBLE', linux=12, osx=16),
+    Config('SIZEOF_LONG_DOUBLE', linux_32=12, linux_64=16, osx=16),
 
     # The size of `long long', as computed by sizeof.
     Config('SIZEOF_LONG_LONG', linux=8, osx=8),
@@ -1289,22 +1269,22 @@ pyconfig = (
     Config('SIZEOF_PID_T', linux=4, osx=4),
 
     # The size of `pthread_t', as computed by sizeof.
-    Config('SIZEOF_PTHREAD_T', linux=4, osx=8),
+    Config('SIZEOF_PTHREAD_T', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `short', as computed by sizeof.
     Config('SIZEOF_SHORT', linux=2, osx=2),
 
     # The size of `size_t', as computed by sizeof.
-    Config('SIZEOF_SIZE_T', linux_32=4, osx=8),
+    Config('SIZEOF_SIZE_T', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `time_t', as computed by sizeof.
-    Config('SIZEOF_TIME_T', linux_32=4, osx=8),
+    Config('SIZEOF_TIME_T', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `uintptr_t', as computed by sizeof.
-    Config('SIZEOF_UINTPTR_T', linux_32=4, osx=8),
+    Config('SIZEOF_UINTPTR_T', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `void *', as computed by sizeof.
-    Config('SIZEOF_VOID_P', linux_32=4, osx=8),
+    Config('SIZEOF_VOID_P', linux_32=4, linux_64=8, osx_64=8),
 
     # The size of `wchar_t', as computed by sizeof.
     Config('SIZEOF_WCHAR_T', linux=4, osx=4),
@@ -1338,7 +1318,7 @@ pyconfig = (
     Config('USE_TOOLBOX_OBJECT_GLUE', osx=1),
 
     # Define if a va_list is an array of some kind
-    Config('VA_LIST_IS_ARRAY', osx=1),
+    Config('VA_LIST_IS_ARRAY', linux_64=1, osx_64=1),
 
     # Define if you want SIGFPE handled (see Include/pyfpe.h).
     Config('WANT_SIGFPE_HANDLER'),
@@ -1398,7 +1378,7 @@ pyconfig = (
     Config('_POSIX_1_SOURCE'),
 
     # Define to activate features from IEEE Stds 1003.1-2008
-    Config('_POSIX_C_SOURCE', linux=200809),
+    Config('_POSIX_C_SOURCE', linux='200809L'),
 
     # Define to 1 if you need to in order for `stat' and other things to work.
     Config('_POSIX_SOURCE'),
