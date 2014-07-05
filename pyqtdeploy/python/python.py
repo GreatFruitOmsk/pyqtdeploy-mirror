@@ -80,13 +80,25 @@ def configure_python(target, output, dynamic_loading, message_handler):
     copy_embedded_file(configurations_dir.absoluteFilePath(config_c_src_file),
             config_c_dst_file)
 
-    # Generate the pyconfig.h file.
+    # Generate the pyconfig.h file.  We follow the Python approach of a static
+    # version for Windows and a dynamically created version for other
+    # platforms.
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
-    message_handler.progress_message(
-            "Generating {0}".format(pyconfig_h_dst_file))
+    if target.startswith('win'):
+        message_handler.progress_message(
+                "Installing {0}".format(pyconfig_h_dst_file))
 
-    generate_pyconfig_h(pyconfig_h_dst_file, target, dynamic_loading)
+        pyconfig_h_src_file = _get_file_for_version('pyconfig', py_version)
+
+        copy_embedded_file(pyconfig_h_src_file, python_pro_dst_file,
+                macros={
+                    '@PY_DYNAMIC_LOADING@': '#define' if dynamic_loading else '#undef'})
+    else:
+        message_handler.progress_message(
+                "Generating {0}".format(pyconfig_h_dst_file))
+
+        generate_pyconfig_h(pyconfig_h_dst_file, target, dynamic_loading)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')

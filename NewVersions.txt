@@ -11,8 +11,13 @@ Python
 pyconfig.h
 ..........
 
-``diff`` the ``pyconfig.h.in`` file to see if there are any new configuration
-items.  Add any new ones to ``pyconfig.py``.
+For Windows copy the ``PC/pyconfig.h`` file to the ``configurations/pyconfig``
+directory replacing any existing copy for the same major.minor version.  Edit
+the file and replace the ``#define`` for ``HAVE_DYNAMIC_LOADING`` with
+``@PY_DYNAMIC_LOADING@``.
+
+For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
+new configuration items.  Add any new ones to ``pyconfig.py``.
 
 
 python.pro
@@ -27,7 +32,7 @@ Compare the value of ``OBJECT_OBJS`` with the value of ``OBJECT_SOURCES`` in
 ``python.pro``.
 
 Compare the value of ``PYTHON_OBJS`` with the value of ``PYTHON_SOURCES`` in
-``python.pro``.  Note that ``frozen.o`` shoul dbe ignored.
+``python.pro``.  Note that ``frozen.o`` should be ignored.
 
 Compare the value of ``MODULE_OBJS`` with the value of ``MODULE_SOURCES`` in
 ``python.pro``.
