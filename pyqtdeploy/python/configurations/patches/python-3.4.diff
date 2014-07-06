@@ -1,11 +1,11 @@
-diff -ruN Python-3.4.0/Modules/pwdmodule.c Python-3.4.0-android/Modules/pwdmodule.c
---- Python-3.4.0/Modules/pwdmodule.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0-android/Modules/pwdmodule.c	2014-05-18 18:32:28.000000000 +0100
+diff -ruN Python-3.4.0.orig/Modules/pwdmodule.c Python-3.4.0/Modules/pwdmodule.c
+--- Python-3.4.0.orig/Modules/pwdmodule.c	2014-03-17 02:31:31.000000000 +0000
++++ Python-3.4.0/Modules/pwdmodule.c	2014-07-06 17:46:02.000000000 +0100
 @@ -72,7 +72,11 @@
      SETS(setIndex++, p->pw_passwd);
      PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromUid(p->pw_uid));
      PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromGid(p->pw_gid));
-+#if !defined(ANDROID)
++#if !defined(HAVE_BROKEN_GECOS)
      SETS(setIndex++, p->pw_gecos);
 +#else
 +    SETS(setIndex++, "");
@@ -13,14 +13,14 @@ diff -ruN Python-3.4.0/Modules/pwdmodule.c Python-3.4.0-android/Modules/pwdmodul
      SETS(setIndex++, p->pw_dir);
      SETS(setIndex++, p->pw_shell);
  
-diff -ruN Python-3.4.0/Python/formatter_unicode.c Python-3.4.0-android/Python/formatter_unicode.c
---- Python-3.4.0/Python/formatter_unicode.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0-android/Python/formatter_unicode.c	2014-05-18 18:14:11.000000000 +0100
+diff -ruN Python-3.4.0.orig/Python/formatter_unicode.c Python-3.4.0/Python/formatter_unicode.c
+--- Python-3.4.0.orig/Python/formatter_unicode.c	2014-03-17 02:31:31.000000000 +0000
++++ Python-3.4.0/Python/formatter_unicode.c	2014-07-06 17:47:12.000000000 +0100
 @@ -664,6 +664,7 @@
  get_locale_info(int type, LocaleInfo *locale_info)
  {
      switch (type) {
-+#if !defined(ANDROID)
++#if !defined(HAVE_BROKEN_LOCALECONV)
      case LT_CURRENT_LOCALE: {
          struct lconv *locale_data = localeconv();
          locale_info->decimal_point = PyUnicode_DecodeLocale(
@@ -34,14 +34,14 @@ diff -ruN Python-3.4.0/Python/formatter_unicode.c Python-3.4.0-android/Python/fo
      case LT_DEFAULT_LOCALE:
          locale_info->decimal_point = PyUnicode_FromOrdinal('.');
          locale_info->thousands_sep = PyUnicode_FromOrdinal(',');
-diff -ruN Python-3.4.0/Python/pystrtod.c Python-3.4.0-android/Python/pystrtod.c
---- Python-3.4.0/Python/pystrtod.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0-android/Python/pystrtod.c	2014-05-18 18:09:55.000000000 +0100
+diff -ruN Python-3.4.0.orig/Python/pystrtod.c Python-3.4.0/Python/pystrtod.c
+--- Python-3.4.0.orig/Python/pystrtod.c	2014-03-17 02:31:31.000000000 +0000
++++ Python-3.4.0/Python/pystrtod.c	2014-07-06 17:53:02.000000000 +0100
 @@ -165,7 +165,9 @@
  {
      char *fail_pos;
      double val;
-+#if !defined(ANDROID)
++#if !defined(HAVE_BROKEN_LOCALECONV)
      struct lconv *locale_data;
 +#endif
      const char *decimal_point;
@@ -51,7 +51,7 @@ diff -ruN Python-3.4.0/Python/pystrtod.c Python-3.4.0-android/Python/pystrtod.c
  
      fail_pos = NULL;
  
-+#if !defined(ANDROID)
++#if !defined(HAVE_BROKEN_LOCALECONV)
      locale_data = localeconv();
      decimal_point = locale_data->decimal_point;
 +#else
@@ -60,31 +60,19 @@ diff -ruN Python-3.4.0/Python/pystrtod.c Python-3.4.0-android/Python/pystrtod.c
      decimal_point_len = strlen(decimal_point);
  
      assert(decimal_point_len != 0);
-@@ -372,6 +378,7 @@
+@@ -378,6 +384,7 @@
+ Py_LOCAL_INLINE(void)
+ change_decimal_from_locale_to_dot(char* buffer)
+ {
++#if !defined(HAVE_BROKEN_LOCALECONV)
+     struct lconv *locale_data = localeconv();
+     const char *decimal_point = locale_data->decimal_point;
  
- #ifdef PY_NO_SHORT_FLOAT_REPR
- 
-+#if !defined(ANDROID)
- /* Given a string that may have a decimal point in the current
-    locale, change it back to a dot.  Since the string cannot get
-    longer, no need for a maximum buffer size parameter. */
-@@ -403,6 +410,7 @@
+@@ -402,6 +409,7 @@
+             }
          }
      }
++#endif
  }
-+#endif
  
  
- /* From the C99 standard, section 7.19.6:
-@@ -698,9 +706,11 @@
- 
-     /* Do various fixups on the return string */
- 
-+#if !defined(ANDROID)
-     /* Get the current locale, and find the decimal point string.
-        Convert that string back to a dot. */
-     change_decimal_from_locale_to_dot(buffer);
-+#endif
- 
-     /* If an exponent exists, ensure that the exponent is at least
-        MIN_EXPONENT_DIGITS digits, providing the buffer is large enough

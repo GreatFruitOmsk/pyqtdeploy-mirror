@@ -1457,6 +1457,11 @@ pyconfig = (
 
     # Define to empty if the keyword does not work.
     Config('volatile'),
+
+    # The following are non-standard additions required by Android.  They are
+    # chosen so that the default (i.e. #undef) is correct for everything else.
+    Config('HAVE_BROKEN_GECOS', android=1),
+    Config('HAVE_BROKEN_LOCALECONV', android=1),
 )
 
 
