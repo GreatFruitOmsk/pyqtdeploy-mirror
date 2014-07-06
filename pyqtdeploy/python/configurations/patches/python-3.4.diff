@@ -1,3 +1,33 @@
+diff -ruN Python-3.4.0.orig/Modules/_localemodule.c Python-3.4.0/Modules/_localemodule.c
+--- Python-3.4.0.orig/Modules/_localemodule.c	2014-03-17 02:31:31.000000000 +0000
++++ Python-3.4.0/Modules/_localemodule.c	2014-07-06 18:04:07.000000000 +0100
+@@ -127,6 +127,7 @@
+     return result_object;
+ }
+ 
++#if !defined(HAVE_BROKEN_LOCALECONV)
+ PyDoc_STRVAR(localeconv__doc__,
+ "() -> dict. Returns numeric and monetary locale-specific parameters.");
+ 
+@@ -200,6 +201,7 @@
+     Py_XDECREF(result);
+     return NULL;
+ }
++#endif
+ 
+ #if defined(HAVE_WCSCOLL)
+ PyDoc_STRVAR(strcoll__doc__,
+@@ -569,8 +571,10 @@
+ static struct PyMethodDef PyLocale_Methods[] = {
+   {"setlocale", (PyCFunction) PyLocale_setlocale,
+    METH_VARARGS, setlocale__doc__},
++#if !defined(HAVE_BROKEN_LOCALECONV)
+   {"localeconv", (PyCFunction) PyLocale_localeconv,
+    METH_NOARGS, localeconv__doc__},
++#endif
+ #ifdef HAVE_WCSCOLL
+   {"strcoll", (PyCFunction) PyLocale_strcoll,
+    METH_VARARGS, strcoll__doc__},
 diff -ruN Python-3.4.0.orig/Modules/pwdmodule.c Python-3.4.0/Modules/pwdmodule.c
 --- Python-3.4.0.orig/Modules/pwdmodule.c	2014-03-17 02:31:31.000000000 +0000
 +++ Python-3.4.0/Modules/pwdmodule.c	2014-07-06 17:46:02.000000000 +0100
