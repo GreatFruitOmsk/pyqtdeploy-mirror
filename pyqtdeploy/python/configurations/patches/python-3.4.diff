@@ -175,7 +175,7 @@ diff -ruN Python-3.4.0.orig/Modules/zlib/minigzip.c Python-3.4.0/Modules/zlib/mi
      else {
 diff -ruN Python-3.4.0.orig/Objects/unicodeobject.c Python-3.4.0/Objects/unicodeobject.c
 --- Python-3.4.0.orig/Objects/unicodeobject.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Objects/unicodeobject.c	2014-07-08 10:56:16.000000000 +0100
++++ Python-3.4.0/Objects/unicodeobject.c	2014-07-08 20:44:41.000000000 +0100
 @@ -3191,7 +3191,7 @@
          buf[0] = *wstr;
          wstr++;
@@ -227,8 +227,8 @@ diff -ruN Python-3.4.0.orig/Objects/unicodeobject.c Python-3.4.0/Objects/unicode
  
 +#if defined(HAVE_VERY_BROKEN_MBSTOWCS)
 +/*
-+ * These are the absolutely minimal implementations needed by Python and based
-+ * on the code in Python/fileutils.c.
++ * These are the absolutely minimal implementations needed by Python to
++ * implement PEP 383.
 + */
 +
 +size_t _Py_mbstowcs(wchar_t *pwcs, const char *s, size_t n)

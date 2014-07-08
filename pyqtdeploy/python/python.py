@@ -114,10 +114,11 @@ def configure_python(target, output, dynamic_loading, message_handler):
                 '@PY_VERSION_PATCH@': str(py_patch),
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
-    # Patch with the most appropriate diff.
-    python_diff_src_file = _get_file_for_version('patches', py_version)
+    # Patch with the most appropriate diff.  Only Android needs patches.
+    if target.startswith('android'):
+        python_diff_src_file = _get_file_for_version('patches', py_version)
 
-    apply_diffs(python_diff_src_file, py_src_dir, message_handler)
+        apply_diffs(python_diff_src_file, py_src_dir, message_handler)
 
 
 def _get_file_for_version(subdir, version):

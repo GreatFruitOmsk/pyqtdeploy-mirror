@@ -60,7 +60,9 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 #if PY_MAJOR_VERSION >= 3
     wchar_t **w_argv;
     int i;
+#if defined(ANDROID)
     char *saved_locale;
+#endif
 #endif
 
     Py_FrozenFlag = 1;
@@ -93,37 +95,60 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 
     w_argv[0] = py_main;
 
+#if !defined(ANDROID)
     saved_locale = setlocale(LC_ALL, NULL);
     setlocale(LC_ALL, "");
+#endif
 
     for (i = 1; i < argc; i++)
     {
-#ifdef HAVE_BROKEN_MBSTOWCS
-        size_t len = strlen(argv[i]);
-#else
-        size_t len = mbstowcs(NULL, argv[i], 0);
-#endif
+        char *arg = argv[i];
+        wchar_t *w_arg;
+        size_t len;
+
+#if !defined(ANDROID)
+        len = mbstowcs(NULL, arg, 0);
 
         if (len == (size_t)-1)
         {
             fprintf(stderr, "Could not convert argument %d to string\n", i);
             return 1;
         }
+#else
+        char ch;
 
-        if ((w_argv[i] = PyMem_Malloc((len + 1) * sizeof (wchar_t))) == NULL)
+        len = strlen(arg);
+#endif
+
+        if ((w_arg = PyMem_Malloc((len + 1) * sizeof (wchar_t))) == NULL)
         {
             fprintf(stderr, "PyMem_Malloc() failed\n");
             return 1;
         }
 
-        if (mbstowcs(w_argv[i], argv[i], len + 1) == (size_t)-1)
+        w_argv[i] = w_arg;
+
+#if !defined(ANDROID)
+        if (mbstowcs(w_arg, arg, len + 1) == (size_t)-1)
         {
             fprintf(stderr, "Could not convert argument %d to string\n", i);
             return 1;
         }
+#else
+        /* Convert according to PEP 383. */
+        while ((ch = *arg++) != '\0')
+        {
+            if (ch <= 0x7f)
+                *w_arg++ = ch;
+            else
+                *w_arg++ = 0xdc00 + ch;
+        }
+#endif
     }
 
+#if !defined(ANDROID)
     setlocale(LC_ALL, saved_locale);
+#endif
 
     // Initialise the Python v3 interpreter.
     Py_SetProgramName(w_argv[0]);
