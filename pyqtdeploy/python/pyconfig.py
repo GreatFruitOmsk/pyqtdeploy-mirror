@@ -129,7 +129,7 @@ pyconfig = (
 
     # Define if mbstowcs(NULL, "text", 0) does not return the number of wide
     # chars that would be converted.
-    Config('HAVE_BROKEN_MBSTOWCS', android=1),
+    Config('HAVE_BROKEN_MBSTOWCS'),
 
     # Define if nice() returns success/failure instead of the new priority.
     Config('HAVE_BROKEN_NICE'),
@@ -177,7 +177,7 @@ pyconfig = (
     Config('HAVE_COMPUTED_GOTOS', default=1),
 
     # Define to 1 if you have the `confstr' function.
-    Config('HAVE_CONFSTR', ios=1, linux=1, osx=1),
+    Config('HAVE_CONFSTR', default=1, android=None),
 
     # Define to 1 if you have the <conio.h> header file.
     Config('HAVE_CONIO_H'),
@@ -186,22 +186,22 @@ pyconfig = (
     Config('HAVE_COPYSIGN', default=1),
 
     # Define to 1 if you have the `ctermid' function.
-    Config('HAVE_CTERMID', ios=1, linux=1, osx=1),
+    Config('HAVE_CTERMID', default=1, android=None),
 
     # Define if you have the 'ctermid_r' function.
     Config('HAVE_CTERMID_R', ios=1, osx=1),
 
     # Define to 1 if you have the <curses.h> header file.
-    Config('HAVE_CURSES_H', ios=1, linux=1, osx=1),
+    Config('HAVE_CURSES_H', default=1, android=None),
 
     # Define if you have the 'is_term_resized' function.
-    Config('HAVE_CURSES_IS_TERM_RESIZED', ios=1, linux=1, osx=1),
+    Config('HAVE_CURSES_IS_TERM_RESIZED', default=1, android=None),
 
     # Define if you have the 'resizeterm' function.
-    Config('HAVE_CURSES_RESIZETERM', ios=1, linux=1, osx=1),
+    Config('HAVE_CURSES_RESIZETERM', default=1, android=None),
 
     # Define if you have the 'resize_term' function.
-    Config('HAVE_CURSES_RESIZE_TERM', ios=1, linux=1, osx=1),
+    Config('HAVE_CURSES_RESIZE_TERM', default=1, android=None),
 
     # Define to 1 if you have the declaration of `isfinite'.
     Config('HAVE_DECL_ISFINITE', default=1),
@@ -311,7 +311,7 @@ pyconfig = (
     Config('HAVE_FORK', default=1),
 
     # Define to 1 if you have the `forkpty' function.
-    Config('HAVE_FORKPTY', ios=1, linux=1, osx=1),
+    Config('HAVE_FORKPTY', default=1, android=None),
 
     # Define to 1 if you have the `fpathconf' function.
     Config('HAVE_FPATHCONF', default=1),
@@ -347,7 +347,7 @@ pyconfig = (
     Config('HAVE_FUTIMENS', linux=1),
 
     # Define to 1 if you have the `futimes' function.
-    Config('HAVE_FUTIMES', ios=1, linux=1, osx=1),
+    Config('HAVE_FUTIMES', default=1, android=None),
 
     # Define to 1 if you have the `futimesat' function.
     Config('HAVE_FUTIMESAT', linux=1),
@@ -363,7 +363,7 @@ pyconfig = (
             osx_64=1),
 
     # Define if we can use gcc inline assembler to get and set x87 control word
-    Config('HAVE_GCC_ASM_FOR_X87', ios=1, linux=1, osx=1),
+    Config('HAVE_GCC_ASM_FOR_X87', default=1, android=None),
 
     # Define if your compiler provides __uint128_t
     Config('HAVE_GCC_UINT128_T', android_64=1, ios_64=1, linux_64=1, osx_64=1),
@@ -402,7 +402,7 @@ pyconfig = (
     Config('HAVE_GETITIMER', default=1),
 
     # Define to 1 if you have the `getloadavg' function.
-    Config('HAVE_GETLOADAVG', ios=1, linux=1, osx=1),
+    Config('HAVE_GETLOADAVG', default=1, android=None),
 
     # Define to 1 if you have the `getlogin' function.
     Config('HAVE_GETLOGIN', default=1),
@@ -429,7 +429,7 @@ pyconfig = (
     Config('HAVE_GETPRIORITY', default=1),
 
     # Define to 1 if you have the `getpwent' function.
-    Config('HAVE_GETPWENT', ios=1, linux=1, osx=1),
+    Config('HAVE_GETPWENT', default=1, android=None),
 
     # Define to 1 if you have the `getresgid' function.
     Config('HAVE_GETRESGID', android=1, linux=1),
@@ -438,7 +438,7 @@ pyconfig = (
     Config('HAVE_GETRESUID', android=1, linux=1),
 
     # Define to 1 if you have the `getsid' function.
-    Config('HAVE_GETSID', ios=1, linux=1, osx=1),
+    Config('HAVE_GETSID', default=1, android=None),
 
     # Define to 1 if you have the `getspent' function.
     Config('HAVE_GETSPENT', android=1, linux=1),
@@ -508,7 +508,7 @@ pyconfig = (
     Config('HAVE_KQUEUE', ios=1, osx=1),
 
     # Define to 1 if you have the <langinfo.h> header file.
-    Config('HAVE_LANGINFO_H', ios=1, linux=1, osx=1),
+    Config('HAVE_LANGINFO_H', default=1, android=None),
 
     # Defined to enable large file support when an off_t is bigger than a long
     # and long long is available and at least as big as an off_t. You may need
@@ -541,7 +541,7 @@ pyconfig = (
     Config('HAVE_LIBINTL_H', linux=1),
 
     # Define if you have the `readline' library (-lreadline).
-    Config('HAVE_LIBREADLINE', ios=1, linux=1, osx=1),
+    Config('HAVE_LIBREADLINE', default=1, android=None),
 
     # Define to 1 if you have the `resolv' library (-lresolv).
     Config('HAVE_LIBRESOLV'),
@@ -592,13 +592,13 @@ pyconfig = (
     Config('HAVE_LSTAT', default=1),
 
     # Define to 1 if you have the `lutimes' function.
-    Config('HAVE_LUTIMES', ios=1, linux=1, osx=1),
+    Config('HAVE_LUTIMES', default=1, android=None),
 
     # Define this if you have the makedev macro.
     Config('HAVE_MAKEDEV', default=1),
 
     # Define to 1 if you have the `mbrtowc' function.
-    Config('HAVE_MBRTOWC', default=1),
+    Config('HAVE_MBRTOWC', default=1, android=None),
 
     # Define to 1 if you have the `memmove' function.
     Config('HAVE_MEMMOVE', default=1),
@@ -634,7 +634,7 @@ pyconfig = (
     Config('HAVE_MREMAP', android=1, linux=1),
 
     # Define to 1 if you have the <ncurses.h> header file.
-    Config('HAVE_NCURSES_H', ios=1, linux=1, osx=1),
+    Config('HAVE_NCURSES_H', default=1, android=None),
 
     # Define to 1 if you have the <ndir.h> header file, and it defines `DIR'.
     Config('HAVE_NDIR_H'),
@@ -652,7 +652,7 @@ pyconfig = (
     Config('HAVE_OPENAT', android=1, linux=1),
 
     # Define to 1 if you have the `openpty' function.
-    Config('HAVE_OPENPTY', ios=1, linux=1, osx=1),
+    Config('HAVE_OPENPTY', default=1, android=None),
 
     # Define if compiling using MacOS X 10.5 SDK or later.
     Config('HAVE_OSX105_SDK', ios=1, osx=1),
@@ -736,25 +736,25 @@ pyconfig = (
     Config('HAVE_RENAMEAT', android=1, linux=1),
 
     # Define if you have readline 2.1
-    Config('HAVE_RL_CALLBACK', ios=1, linux=1, osx=1),
+    Config('HAVE_RL_CALLBACK', default=1, android=None),
 
     # Define if you can turn off readline's signal handling.
     Config('HAVE_RL_CATCH_SIGNAL', linux=1),
 
     # Define if you have readline 2.2
-    Config('HAVE_RL_COMPLETION_APPEND_CHARACTER', ios=1, linux=1, osx=1),
+    Config('HAVE_RL_COMPLETION_APPEND_CHARACTER', default=1, android=None),
 
     # Define if you have readline 4.0
-    Config('HAVE_RL_COMPLETION_DISPLAY_MATCHES_HOOK', ios=1, linux=1, osx=1),
+    Config('HAVE_RL_COMPLETION_DISPLAY_MATCHES_HOOK', default=1, android=None),
 
     # Define if you have readline 4.2
-    Config('HAVE_RL_COMPLETION_MATCHES', ios=1, linux=1, osx=1),
+    Config('HAVE_RL_COMPLETION_MATCHES', default=1, android=None),
 
     # Define if you have rl_completion_suppress_append
     Config('HAVE_RL_COMPLETION_SUPPRESS_APPEND', linux=1),
 
     # Define if you have readline 4.0
-    Config('HAVE_RL_PRE_INPUT_HOOK', ios=1, linux=1, osx=1),
+    Config('HAVE_RL_PRE_INPUT_HOOK', default=1, android=None),
 
     # Define to 1 if you have the `round' function.
     Config('HAVE_ROUND', default=1),
@@ -965,7 +965,7 @@ pyconfig = (
     Config('HAVE_SYSCONF', default=1),
 
     # Define to 1 if you have the <sysexits.h> header file.
-    Config('HAVE_SYSEXITS_H', ios=1, linux=1, osx=1),
+    Config('HAVE_SYSEXITS_H', default=1, android=None),
 
     # Define to 1 if you have the <sys/audioio.h> header file.
     Config('HAVE_SYS_AUDIOIO_H'),
@@ -1203,7 +1203,7 @@ pyconfig = (
     Config('MAJOR_IN_SYSMACROS'),
 
     # Define if mvwdelch in curses.h is an expression.
-    Config('MVWDELCH_IS_EXPRESSION', ios=1, linux=1, osx=1),
+    Config('MVWDELCH_IS_EXPRESSION', default=1, android=None),
 
     # Define if POSIX semaphores aren't enabled on your system
     Config('POSIX_SEMAPHORES_NOT_ENABLED'),
@@ -1308,7 +1308,7 @@ pyconfig = (
     Config('SYS_SELECT_WITH_SYS_TIME', default=1),
 
     # Define if tanh(-0.) is -0., or if platform doesn't have signed zeros
-    Config('TANH_PRESERVES_ZERO_SIGN', ios=1, linux=1, osx=1),
+    Config('TANH_PRESERVES_ZERO_SIGN', default=1, android=None),
 
     # Define to 1 if you can safely include both <sys/time.h> and <time.h>.
     Config('TIME_WITH_SYS_TIME', default=1),
@@ -1461,7 +1461,10 @@ pyconfig = (
     # The following are non-standard additions required by Android.  They are
     # chosen so that the default (i.e. #undef) is correct for everything else.
     Config('HAVE_BROKEN_GECOS', android=1),
+    Config('HAVE_BROKEN_GETGRENT', android=1),
     Config('HAVE_BROKEN_LOCALECONV', android=1),
+    Config('HAVE_VERY_BROKEN_MBSTOWCS', android=1),
+    Config('HAVE_BROKEN_TCDRAIN', android=1),
 )
 
 
