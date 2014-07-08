@@ -30,10 +30,11 @@ from ..file_utilities import create_file
 class Config:
     """ Encapsulate a configuration value defined in pyconfig.h. """
 
-    def __init__(self, name, default=None, **targets):
+    def __init__(self, name, py_major=0, default=None, **targets):
         """ Define the value allowing target-specific overrides. """
 
         self.name = name
+        self.py_major = py_major
         self._default = default
         self._targets = targets
 
@@ -1221,7 +1222,7 @@ pyconfig = (
     Config('PY_FORMAT_SIZE_T', default='"z"'),
 
     # Define as the integral type used for Unicode representation.
-    Config('PY_UNICODE_TYPE', default='unsigned short'),
+    Config('PY_UNICODE_TYPE', py_major=2, default='unsigned short'),
 
     # Define if you want to build an interpreter with many run-time checks.
     Config('Py_DEBUG'),
@@ -1231,10 +1232,10 @@ pyconfig = (
     Config('Py_HASH_ALGORITHM'),
 
     # Define as the size of the unicode type.
-    Config('Py_UNICODE_SIZE', default=2),
+    Config('Py_UNICODE_SIZE', py_major=2, default=2),
 
     # Define if you want to have a Unicode type.
-    Config('Py_USING_UNICODE', default=1),
+    Config('Py_USING_UNICODE', py_major=2, default=1),
 
     # Define if setpgrp() must be called as setpgrp(0, 0).
     Config('SETPGRP_HAVE_ARG'),
@@ -1473,10 +1474,26 @@ def generate_pyconfig_h(pyconfig_h_name, target, dynamic_loading):
 
     pyconfig_h = create_file(pyconfig_h_name)
 
+    pyconfig_h.write('''#ifndef Py_PYCONFIG_H
+#define Py_PYCONFIG_H
+
+''')
+
     if dynamic_loading:
         pyconfig_h.write('#define HAVE_DYNAMIC_LOADING 1\n')
 
+    py_major = 0
+
     for config in pyconfig:
+        if py_major != config.py_major:
+            py_major = config.py_major
+
+            if py_major == 0:
+                pyconfig_h.write('#endif\n')
+            else:
+                pyconfig_h.write(
+                        '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
+
         value = config.value(target)
 
         if value is None:
@@ -1485,5 +1502,12 @@ def generate_pyconfig_h(pyconfig_h_name, target, dynamic_loading):
             pyconfig_h.write('/* #define {0} */\n'.format(config.name))
         else:
             pyconfig_h.write('#define {0} {1}\n'.format(config.name, value))
+
+    if py_major != 0:
+        pyconfig_h.write('#endif\n')
+
+    pyconfig_h.write('''
+#endif
+''')
 
     pyconfig_h.close()

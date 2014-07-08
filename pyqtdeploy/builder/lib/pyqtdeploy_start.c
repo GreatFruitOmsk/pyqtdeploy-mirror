@@ -60,7 +60,7 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 #if PY_MAJOR_VERSION >= 3
     wchar_t **w_argv;
     int i;
-#if defined(ANDROID)
+#if !defined(ANDROID)
     char *saved_locale;
 #endif
 #endif

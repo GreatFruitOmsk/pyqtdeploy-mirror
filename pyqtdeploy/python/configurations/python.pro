@@ -24,9 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-PY_VERSION_MAJOR = @PY_VERSION_MAJOR@
-PY_VERSION_MINOR = @PY_VERSION_MINOR@
-PY_VERSION_PATCH = @PY_VERSION_PATCH@
+PY_MAJOR_VERSION = @PY_MAJOR_VERSION@
+PY_MINOR_VERSION = @PY_MINOR_VERSION@
+PY_PATCH_VERSION = @PY_PATCH_VERSION@
 PY_DYNAMIC_LOADING = @PY_DYNAMIC_LOADING@
 
 !defined(SYSROOT, var) {
@@ -35,7 +35,7 @@ PY_DYNAMIC_LOADING = @PY_DYNAMIC_LOADING@
 
 TEMPLATE = lib
 
-TARGET = python$${PY_VERSION_MAJOR}.$${PY_VERSION_MINOR}
+TARGET = python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
 
 CONFIG -= qt
 CONFIG += warn_off staticlib release
@@ -57,10 +57,10 @@ INCLUDEPATH += Include
 
 target.path = $$SYSROOT/lib
 
-headers.path = $$SYSROOT/include/python$${PY_VERSION_MAJOR}.$${PY_VERSION_MINOR}
+headers.path = $$SYSROOT/include/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
 headers.files = pyconfig.h Include/*.h
 
-stdlib.path = $$SYSROOT/lib/python$${PY_VERSION_MAJOR}.$${PY_VERSION_MINOR}
+stdlib.path = $$SYSROOT/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
 stdlib.files = Lib/*
 
 INSTALLS += target headers stdlib
@@ -127,7 +127,7 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Objects/intobject.c \
         Objects/stringobject.c
 
-    greaterThan(PY_MAJOR_VERSION, 6) {
+    greaterThan(PY_MINOR_VERSION, 6) {
         OBJECT_SOURCES += \
             Objects/capsule.c
     }

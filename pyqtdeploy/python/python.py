@@ -109,9 +109,9 @@ def configure_python(target, output, dynamic_loading, message_handler):
     copy_embedded_file(configurations_dir.absoluteFilePath('python.pro'),
             python_pro_dst_file,
             macros={
-                '@PY_VERSION_MAJOR@': str(py_major),
-                '@PY_VERSION_MINOR@': str(py_minor),
-                '@PY_VERSION_PATCH@': str(py_patch),
+                '@PY_MAJOR_VERSION@': str(py_major),
+                '@PY_MINOR_VERSION@': str(py_minor),
+                '@PY_PATCH_VERSION@': str(py_patch),
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
     # Patch with the most appropriate diff.  Only Android needs patches.
