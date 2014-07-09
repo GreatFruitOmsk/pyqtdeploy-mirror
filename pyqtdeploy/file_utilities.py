@@ -131,7 +131,7 @@ def open_file(file_name):
     """ Open a text file.  file_name is the name of the file. """
 
     try:
-        return open(file_name, 't')
+        return open(file_name, 'rt')
     except Exception as e:
         raise UserException("Unable to open file {0}".format(file_name),
                 str(e))

@@ -1,6 +1,6 @@
 diff -ruN Python-3.4.0.orig/Include/unicodeobject.h Python-3.4.0/Include/unicodeobject.h
 --- Python-3.4.0.orig/Include/unicodeobject.h	2014-03-17 02:31:29.000000000 +0000
-+++ Python-3.4.0/Include/unicodeobject.h	2014-07-08 10:02:46.000000000 +0100
++++ Python-3.4.0/Include/unicodeobject.h	2014-07-09 06:38:24.000000000 +0100
 @@ -2262,6 +2262,14 @@
  /* Clear all static strings. */
  PyAPI_FUNC(void) _PyUnicode_ClearStaticStrings(void);
@@ -18,7 +18,7 @@ diff -ruN Python-3.4.0.orig/Include/unicodeobject.h Python-3.4.0/Include/unicode
  #endif
 diff -ruN Python-3.4.0.orig/Modules/_decimal/_decimal.c Python-3.4.0/Modules/_decimal/_decimal.c
 --- Python-3.4.0.orig/Modules/_decimal/_decimal.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/_decimal/_decimal.c	2014-07-08 10:54:19.000000000 +0100
++++ Python-3.4.0/Modules/_decimal/_decimal.c	2014-07-09 06:38:24.000000000 +0100
 @@ -3141,7 +3141,7 @@
      wchar_t buf[2];
      size_t n;
@@ -30,7 +30,7 @@ diff -ruN Python-3.4.0.orig/Modules/_decimal/_decimal.c Python-3.4.0/Modules/_de
              "invalid decimal point or unsupported "
 diff -ruN Python-3.4.0.orig/Modules/_localemodule.c Python-3.4.0/Modules/_localemodule.c
 --- Python-3.4.0.orig/Modules/_localemodule.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/_localemodule.c	2014-07-06 18:04:07.000000000 +0100
++++ Python-3.4.0/Modules/_localemodule.c	2014-07-09 06:38:24.000000000 +0100
 @@ -127,6 +127,7 @@
      return result_object;
  }
@@ -60,7 +60,7 @@ diff -ruN Python-3.4.0.orig/Modules/_localemodule.c Python-3.4.0/Modules/_locale
     METH_VARARGS, strcoll__doc__},
 diff -ruN Python-3.4.0.orig/Modules/getpath.c Python-3.4.0/Modules/getpath.c
 --- Python-3.4.0.orig/Modules/getpath.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/getpath.c	2014-07-08 09:40:59.000000000 +0100
++++ Python-3.4.0/Modules/getpath.c	2014-07-09 06:38:24.000000000 +0100
 @@ -526,7 +526,7 @@
        * absolutize() should help us out below
        */
@@ -72,7 +72,7 @@ diff -ruN Python-3.4.0.orig/Modules/getpath.c Python-3.4.0/Modules/getpath.c
              progpath[0] = '\0';
 diff -ruN Python-3.4.0.orig/Modules/grpmodule.c Python-3.4.0/Modules/grpmodule.c
 --- Python-3.4.0.orig/Modules/grpmodule.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/grpmodule.c	2014-07-08 09:43:08.000000000 +0100
++++ Python-3.4.0/Modules/grpmodule.c	2014-07-09 06:38:24.000000000 +0100
 @@ -135,6 +135,7 @@
  
      if ((d = PyList_New(0)) == NULL)
@@ -91,7 +91,7 @@ diff -ruN Python-3.4.0.orig/Modules/grpmodule.c Python-3.4.0/Modules/grpmodule.c
  
 diff -ruN Python-3.4.0.orig/Modules/main.c Python-3.4.0/Modules/main.c
 --- Python-3.4.0.orig/Modules/main.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/main.c	2014-07-08 10:54:49.000000000 +0100
++++ Python-3.4.0/Modules/main.c	2014-07-09 06:38:24.000000000 +0100
 @@ -620,7 +620,7 @@
                 "not enough memory to copy PYTHONEXECUTABLE");
          }
@@ -101,9 +101,21 @@ diff -ruN Python-3.4.0.orig/Modules/main.c Python-3.4.0/Modules/main.c
          Py_SetProgramName(buffer);
          /* buffer is now handed off - do not free */
      } else {
+diff -ruN Python-3.4.0.orig/Modules/posixmodule.c Python-3.4.0/Modules/posixmodule.c
+--- Python-3.4.0.orig/Modules/posixmodule.c	2014-03-17 02:31:31.000000000 +0000
++++ Python-3.4.0/Modules/posixmodule.c	2014-07-09 06:38:56.000000000 +0100
+@@ -6048,7 +6048,7 @@
+     if (_Py_set_inheritable(master_fd, 0, NULL) < 0)
+         goto posix_error;
+ 
+-#if !defined(__CYGWIN__) && !defined(HAVE_DEV_PTC)
++#if !defined(__CYGWIN__) && !defined(HAVE_DEV_PTC) && defined(I_PUSH)
+     ioctl(slave_fd, I_PUSH, "ptem"); /* push ptem */
+     ioctl(slave_fd, I_PUSH, "ldterm"); /* push ldterm */
+ #ifndef __hpux
 diff -ruN Python-3.4.0.orig/Modules/pwdmodule.c Python-3.4.0/Modules/pwdmodule.c
 --- Python-3.4.0.orig/Modules/pwdmodule.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/pwdmodule.c	2014-07-06 17:46:02.000000000 +0100
++++ Python-3.4.0/Modules/pwdmodule.c	2014-07-09 06:38:24.000000000 +0100
 @@ -72,7 +72,11 @@
      SETS(setIndex++, p->pw_passwd);
      PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromUid(p->pw_uid));
@@ -118,7 +130,7 @@ diff -ruN Python-3.4.0.orig/Modules/pwdmodule.c Python-3.4.0/Modules/pwdmodule.c
  
 diff -ruN Python-3.4.0.orig/Modules/termios.c Python-3.4.0/Modules/termios.c
 --- Python-3.4.0.orig/Modules/termios.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/termios.c	2014-07-08 09:59:46.000000000 +0100
++++ Python-3.4.0/Modules/termios.c	2014-07-09 06:38:24.000000000 +0100
 @@ -233,7 +233,11 @@
      if (!PyArg_ParseTuple(args, "O&:tcdrain",
                            fdconv, &fd))
@@ -133,7 +145,7 @@ diff -ruN Python-3.4.0.orig/Modules/termios.c Python-3.4.0/Modules/termios.c
      Py_INCREF(Py_None);
 diff -ruN Python-3.4.0.orig/Modules/zlib/gzlib.c Python-3.4.0/Modules/zlib/gzlib.c
 --- Python-3.4.0.orig/Modules/zlib/gzlib.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/zlib/gzlib.c	2014-07-08 10:03:52.000000000 +0100
++++ Python-3.4.0/Modules/zlib/gzlib.c	2014-07-09 06:38:24.000000000 +0100
 @@ -58,7 +58,7 @@
              msgbuf[chars] = 0;
          }
@@ -163,7 +175,7 @@ diff -ruN Python-3.4.0.orig/Modules/zlib/gzlib.c Python-3.4.0/Modules/zlib/gzlib
      else
 diff -ruN Python-3.4.0.orig/Modules/zlib/minigzip.c Python-3.4.0/Modules/zlib/minigzip.c
 --- Python-3.4.0.orig/Modules/zlib/minigzip.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Modules/zlib/minigzip.c	2014-07-08 10:04:26.000000000 +0100
++++ Python-3.4.0/Modules/zlib/minigzip.c	2014-07-09 06:38:24.000000000 +0100
 @@ -105,7 +105,7 @@
              msgbuf[chars] = 0;
          }
@@ -175,7 +187,7 @@ diff -ruN Python-3.4.0.orig/Modules/zlib/minigzip.c Python-3.4.0/Modules/zlib/mi
      else {
 diff -ruN Python-3.4.0.orig/Objects/unicodeobject.c Python-3.4.0/Objects/unicodeobject.c
 --- Python-3.4.0.orig/Objects/unicodeobject.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Objects/unicodeobject.c	2014-07-08 20:44:41.000000000 +0100
++++ Python-3.4.0/Objects/unicodeobject.c	2014-07-09 06:38:24.000000000 +0100
 @@ -3191,7 +3191,7 @@
          buf[0] = *wstr;
          wstr++;
@@ -293,7 +305,7 @@ diff -ruN Python-3.4.0.orig/Objects/unicodeobject.c Python-3.4.0/Objects/unicode
  }
 diff -ruN Python-3.4.0.orig/Python/fileutils.c Python-3.4.0/Python/fileutils.c
 --- Python-3.4.0.orig/Python/fileutils.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Python/fileutils.c	2014-07-08 10:56:50.000000000 +0100
++++ Python-3.4.0/Python/fileutils.c	2014-07-09 06:38:24.000000000 +0100
 @@ -300,13 +300,13 @@
       */
      argsize = strlen(arg);
@@ -333,7 +345,7 @@ diff -ruN Python-3.4.0.orig/Python/fileutils.c Python-3.4.0/Python/fileutils.c
          return NULL;
 diff -ruN Python-3.4.0.orig/Python/formatter_unicode.c Python-3.4.0/Python/formatter_unicode.c
 --- Python-3.4.0.orig/Python/formatter_unicode.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Python/formatter_unicode.c	2014-07-06 17:47:12.000000000 +0100
++++ Python-3.4.0/Python/formatter_unicode.c	2014-07-09 06:38:24.000000000 +0100
 @@ -664,6 +664,7 @@
  get_locale_info(int type, LocaleInfo *locale_info)
  {
@@ -354,7 +366,7 @@ diff -ruN Python-3.4.0.orig/Python/formatter_unicode.c Python-3.4.0/Python/forma
          locale_info->thousands_sep = PyUnicode_FromOrdinal(',');
 diff -ruN Python-3.4.0.orig/Python/pystrtod.c Python-3.4.0/Python/pystrtod.c
 --- Python-3.4.0.orig/Python/pystrtod.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Python/pystrtod.c	2014-07-06 17:53:02.000000000 +0100
++++ Python-3.4.0/Python/pystrtod.c	2014-07-09 06:38:24.000000000 +0100
 @@ -165,7 +165,9 @@
  {
      char *fail_pos;
@@ -396,7 +408,7 @@ diff -ruN Python-3.4.0.orig/Python/pystrtod.c Python-3.4.0/Python/pystrtod.c
  
 diff -ruN Python-3.4.0.orig/Python/pythonrun.c Python-3.4.0/Python/pythonrun.c
 --- Python-3.4.0.orig/Python/pythonrun.c	2014-03-17 02:31:31.000000000 +0000
-+++ Python-3.4.0/Python/pythonrun.c	2014-07-08 10:19:08.000000000 +0100
++++ Python-3.4.0/Python/pythonrun.c	2014-07-09 06:38:24.000000000 +0100
 @@ -903,7 +903,7 @@
          char* chome = Py_GETENV("PYTHONHOME");
          if (chome) {
