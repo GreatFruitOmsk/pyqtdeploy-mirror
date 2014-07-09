@@ -5,6 +5,7 @@ User Guide
     :maxdepth: 2
 
     introduction
+    qt_bugs
     command_line
     development_version
     pyqtdeploy_module
