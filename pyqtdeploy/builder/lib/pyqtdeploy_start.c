@@ -67,6 +67,9 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 
     Py_FrozenFlag = 1;
     Py_NoSiteFlag = 1;
+#if defined(ANDROID) && PY_MAJOR_VERSION >= 3
+    Py_FileSystemDefaultEncoding = "utf-8";
+#endif
 
     PyImport_FrozenModules = modules;
 
