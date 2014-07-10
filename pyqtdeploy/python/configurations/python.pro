@@ -40,6 +40,9 @@ TARGET = python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
 CONFIG -= qt
 CONFIG += warn_off staticlib release
 
+# Work around QTBUG-39300.
+CONFIG -= android_install
+
 OBJECTS_DIR = .obj
 
 DEFINES += NDEBUG Py_BUILD_CORE
