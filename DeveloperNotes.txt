@@ -12,8 +12,8 @@ Updating pyqtdeploy When New Package Versions are Released
 These notes assume that immediately prior releases are fully supported by
 pyqtdeploy.
 
-Also the package configurations assume the latest version of PyQt is being
-used (whatever that happens to be).
+Also the package configurations assume the latest versions of Riverbank
+packages are being used (whatever they happen to be).
 
 
 Python
@@ -70,43 +70,54 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 Qt
 --
 
-TODO
+There should be nothing to do.
 
 
 SIP
 ---
 
-TODO
+There should be nothing to do.
 
 
 PyQt5
 -----
 
-TODO
+Changes are only required if a new PyQt5 module has been added.
+
+Update the ``pyqt_modules`` entries in the PyQt5 configuration files.  If the
+release supports a new Qt v5.x.0 release (with new modules) then create a new
+section ``[Qt 5.x]``.  If the release supports a new Python module for an
+existing Qt library then update the existing section.
+
+Consider if the ``pyqt_disabled_features`` entry needs updating.  If so then
+also update the QScintilla, PyQtChart and PyQtDataVisualization configuration
+files.
+
+Add the new modules to the metadata defined in ``pyqt5.py``
 
 
 PyQt4
 -----
 
-TODO
+There should be nothing to do.
 
 
 QScintilla
 ----------
 
-TODO
+There should be nothing to do.
 
 
 PyQtChart
 ---------
 
-TODO
+There should be nothing to do.
 
 
 PyQtDataVisualization
 ---------------------
 
-TODO
+There should be nothing to do.
 
 
 Deploying to Android
