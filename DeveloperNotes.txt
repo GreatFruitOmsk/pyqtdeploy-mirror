@@ -1,0 +1,166 @@
+=================
+ Developer Notes
+=================
+
+These are various notes, instructions and reminders for the pyqtdeploy
+developer.
+
+
+Updating pyqtdeploy When New Package Versions are Released
+==========================================================
+
+These notes assume that immediately prior releases are fully supported by
+pyqtdeploy.
+
+Also the package configurations assume the latest version of PyQt is being
+used (whatever that happens to be).
+
+
+Python
+------
+
+Patches
+.......
+
+Change to the source directory of the new Python version and run::
+
+    pyqtdeploy --package python --target android-32 configure
+
+If the patches apply without error then there is nothing to do.
+
+If the patches fail because of cosmetic changes then consider updating the
+code that applies the patches to cope.
+
+Otherwise generate a new set of patches in the patches directory.
+
+
+pyconfig.h
+..........
+
+For Windows copy the ``PC/pyconfig.h`` file to the ``configurations/pyconfig``
+directory replacing any existing copy for the same major.minor version.  Edit
+the file and replace the ``#define`` for ``HAVE_DYNAMIC_LOADING`` with
+``@PY_DYNAMIC_LOADING@``.
+
+For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
+new configuration items.  Add any new ones to ``pyconfig.py``.
+
+
+python.pro
+..........
+
+Run ``./configure`` for the new version and inspect the generated ``Makefile``.
+
+Compare the value of ``PARSER_OBJS`` with the value of ``PARSER_SOURCES`` in
+``python.pro``.
+
+Compare the value of ``OBJECT_OBJS`` with the value of ``OBJECT_SOURCES`` in
+``python.pro``.
+
+Compare the value of ``PYTHON_OBJS`` with the value of ``PYTHON_SOURCES`` in
+``python.pro``.  Note that ``frozen.o`` should be ignored.
+
+Compare the value of ``MODULE_OBJS`` with the value of ``MODULE_SOURCES`` in
+``python.pro``.
+
+Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
+``python.pro``.
+
+
+Qt
+--
+
+TODO
+
+
+SIP
+---
+
+TODO
+
+
+PyQt5
+-----
+
+TODO
+
+
+PyQt4
+-----
+
+TODO
+
+
+QScintilla
+----------
+
+TODO
+
+
+PyQtChart
+---------
+
+TODO
+
+
+PyQtDataVisualization
+---------------------
+
+TODO
+
+
+Deploying to Android
+====================
+
+Configuring the Environment
+---------------------------
+
+To configure the environment (assuming an OS/X host), run::
+
+    export ANDROID_NDK_ROOT=/path/to/android-ndk-r9d
+    export ANDROID_SDK_ROOT=/path/to/android-sdk-macosx
+    export PATH=/path/to/apache-ant-x.y.z/bin:$PATH
+
+
+Creating an Android Virtual Device
+----------------------------------
+
+To start the AVD Manager, run::
+
+    $ANDROID_SDK_ROOT/tools/android avd
+
+For any device ensure that ``Use Host GPU`` is enabled.
+
+
+Building the .apk
+-----------------
+
+Once the application has been built (i.e. after running ``make``) then run::
+
+    make install INSTALL_ROOT=deploy
+
+To create a debug .apk, run::
+
+    /path/to/Qtx.y.x/x.y/android_arm7/bin/androiddeployqt \
+            --input android-lib*.so-deployment-settings.json \
+            --output deploy
+
+``QtApp-debug.apk`` can be found in the ``deploy/bin`` directory.
+
+
+Deploying the .apk
+------------------
+
+When the AVD is running, run::
+
+    $ANDROID_SDK_ROOT/platform-tools/adb install QtApp-debug.apk
+
+
+Debugging Tips
+--------------
+
+To configure stdout and stderr to redirect to ``logcat``, run::
+
+    $ANDROID_SDK_ROOT/platform-tools/adb shell stop
+    $ANDROID_SDK_ROOT/platform-tools/adb shell setprop log.redirect-stdio true
+    $ANDROID_SDK_ROOT/platform-tools/adb shell start

@@ -36,18 +36,18 @@ line options related to static and cross-compiled builds are specifed - you
 will probably want to specify other options to fully configure each package.
 
 The package configuration files created by the :option:`configure` action of
-:program:`pyqtdeploy` assume (for desktop platforms) a full-featured Qt
-installation (including OpenSSL support on Windows) and (for mobile devices)
-a Qt installation from the binary installers from Digia.  If your Qt
-installation is different then you may need to modify the configuration files
-appropriately.
+:program:`pyqtdeploy` assume a default Qt installation, i.e. with features that
+would only be enabled by default on the particular platform.  For example,
+SSL support is disabled for Windows and Android targets.  If you have
+configured your Qt installation differently then you may need to modify the
+configuration files appropriately.
 
 
 Python
 ------
 
-To build a static version of Python (either native or cross-compiling), change
-to the Python source directory and run::
+To build a static version of Python, change to the Python source directory and
+run::
 
     pyqtdeploy --package python --target TARGET configure
 
@@ -89,8 +89,7 @@ the binary installers provided by Digia.
 sip
 ---
 
-To build a static version of sip (either native or cross-compiling), change to
-the sip source directory and run::
+To build a static version of sip, change to the sip source directory and run::
 
     pyqtdeploy --package sip --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-tools --use-qmake --configuration=sip-TARGET.cfg
@@ -104,8 +103,8 @@ See note [#target]_.
 PyQt5
 -----
 
-To build a static version of PyQt5 (either native or cross-compiling), change
-to the PyQt5 source directory and run::
+To build a static version of PyQt5, change to the PyQt5 source directory and
+run::
 
     pyqtdeploy --package pyqt5 --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration=pyqt5-TARGET.cfg
@@ -118,8 +117,8 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 PyQt4
 -----
 
-To build a static version of PyQt4 (either native or cross-compiling), change
-to the PyQt4 source directory and run::
+To build a static version of PyQt4, change to the PyQt4 source directory and
+run::
 
     pyqtdeploy --package pyqt4 --target TARGET configure
     python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --configuration=pyqt4-TARGET.cfg
@@ -132,16 +131,16 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 QScintilla
 ----------
 
-To build a static version of the QScintilla library (either native or
-cross-compiling), change to the QScintilla source directory and run::
+To build a static version of the QScintilla library, change to the QScintilla
+source directory and run::
 
     cd Qt4/Qt5
     qmake CONFIG+=staticlib
     make
     make install
 
-To build a static version of the Python bindings (either native or
-cross-compiling), change to the QScintilla source directory and run::
+To build a static version of the Python bindings, change to the QScintilla
+source directory and run::
 
     cd Python
     pyqtdeploy --package qscintilla --target TARGET configure
@@ -158,15 +157,15 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 Qt Charts
 ---------
 
-To build a static version of the Qt Charts library (either native or
-cross-compiling), change to the Qt Charts source directory and run::
+To build a static version of the Qt Charts library, change to the Qt Charts
+source directory and run::
 
     qmake "CONFIG+=release staticlib"
     make
     make install
 
-To build a static version of the Python bindings (either native or
-cross-compiling), change to the PyQtChart source directory and run::
+To build a static version of the Python bindings, change to the PyQtChart
+source directory and run::
 
     pyqtdeploy --package pyqtchart --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
@@ -176,30 +175,28 @@ cross-compiling), change to the PyQtChart source directory and run::
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_.
 
 
 Qt Data Visualization
 ---------------------
 
-To build a static version of the Qt Data Visualization library (either native
-or cross-compiling), change to the Qt Data Visualization source directory and
-run::
+To build a static version of the Qt Data Visualization library, change to the
+Qt Data Visualization source directory and run::
 
     qmake "CONFIG+=release staticlib"
     make
     make install
 
-To build a static version of the Python bindings (either native or
-cross-compiling), change to the PyQtDataVisualization source directory and
-run::
+To build a static version of the Python bindings, change to the
+PyQtDataVisualization source directory and run::
 
     pyqtdeploy --package pyqtdatavisualization --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_.
 
 
 .. rubric:: Notes
@@ -216,3 +213,8 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
 
 .. [#sip] You may also need to specify the ``sip`` executable using the
     ``--sip`` option.
+
+.. [#qtbug39300] If your Qt installation is affected by `QTBUG-39300
+    <https://bugreports.qt-project.org/browse/QTBUG-39300>`_ then you will also
+    need to add ``"CONFIG-=android_install"`` to the :program:`qmake` command
+    line.
