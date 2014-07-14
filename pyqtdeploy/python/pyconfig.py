@@ -1106,7 +1106,7 @@ pyconfig = (
     Config('HAVE_TMPNAM', default=1),
 
     # Define to 1 if you have the `tmpnam_r' function.
-    Config('HAVE_TMPNAM_R', android=1, linux=1),
+    Config('HAVE_TMPNAM_R', linux=1),
 
     # Define to 1 if you have the `truncate' function.
     Config('HAVE_TRUNCATE', default=1),

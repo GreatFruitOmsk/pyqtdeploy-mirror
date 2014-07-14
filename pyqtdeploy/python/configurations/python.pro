@@ -189,8 +189,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     }
 } else {
     PYTHON_SOURCES += \
-        Python/getmtime.c \
         Python/formatter_string.c
+
+    greaterThan(PY_MINOR_VERSION, 6) {
+    } else {
+        PYTHON_SOURCES += \
+            Python/getmtime.c
+    }
 }
 
 equals(PY_DYNAMIC_LOADING, "enabled") {
