@@ -178,11 +178,15 @@ PYTHON_SOURCES = \
 greaterThan(PY_MAJOR_VERSION, 2) {
     PYTHON_SOURCES += \
         Python/pyctype.c \
-        Python/pyhash.c \
         Python/pytime.c \
         Python/random.c \
         Python/dtoa.c \
         Python/fileutils.c
+
+    greaterThan(PY_MINOR_VERSION, 3) {
+        PYTHON_SOURCES += \
+            Python/pyhash.c
+    }
 } else {
     PYTHON_SOURCES += \
         Python/getmtime.c \
@@ -220,11 +224,9 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_codecsmodule.c \
         Modules/_weakref.c \
         Modules/_functoolsmodule.c \
-        Modules/_operator.c \
         Modules/_collectionsmodule.c \
         Modules/itertoolsmodule.c \
         Modules/atexitmodule.c \
-        Modules/_stat.c \
         Modules/_localemodule.c \
         Modules/_io/_iomodule.c \
         Modules/_io/iobase.c \
@@ -235,10 +237,16 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_io/stringio.c \
         Modules/zipimport.c \
         Modules/faulthandler.c \
-        Modules/_tracemalloc.c \
-        Modules/hashtable.c \
         Modules/symtablemodule.c \
         Modules/xxsubtype.c
+
+    greaterThan(PY_MINOR_VERSION, 3) {
+        MOD_SOURCES += \
+            Modules/_operator.c \
+            Modules/_stat.c \
+            Modules/_tracemalloc.c \
+            Modules/hashtable.c
+    }
 } else {
     MOD_SOURCES = \
         Modules/threadmodule.c \

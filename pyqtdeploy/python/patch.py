@@ -45,9 +45,9 @@ def _apply_diff(diff, patch_dir, message_handler):
     """ Apply a single diff. """
 
     # Note that (at the moment) we don't support a fuzz factor and the old
-    # lines of a hunk must be found at the exepected line.  If it turns out
-    # that we would significantly reduce the need for new patches for later
-    # versions of Python by supporting a fuzz factor then we will do so.
+    # lines of a hunk must be found at the expected line.  If it turns out that
+    # we would significantly reduce the need for new patches for later versions
+    # of Python by supporting a fuzz factor then we will do so.
 
     src_file_name = os.path.join(patch_dir, diff.file_name)
     dst_file_name = src_file_name + '.new'

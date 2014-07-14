@@ -106,6 +106,11 @@ Simply check all the PyQt modules that are used.  :program:`pyqtdeploy`
 understands the dependencies between the different PyQt modules and will
 automatically check any additional modules that are required.
 
+.. note::
+    These modules must be compiled statically.  If you plan to use a separately
+    deployed copy of PyQt that will be dynamically loaded by your application
+    then do not specify any modules here.
+
 In this example only the :mod:`~PyQt5.QtWidgets` module has been explicitly
 specified and the :mod:`~PyQt5.QtCore` and :mod:`~PyQt5.QtGui` modules are
 automatically included as dependencies.
