@@ -70,6 +70,18 @@ def configure_python(target, output, dynamic_loading, message_handler):
 
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
+    # Patch with the most appropriate diff.  Only Android needs patches.
+    if target.startswith('android'):
+        python_diff_src_file = _get_file_for_version('patches', py_version)
+
+        # I'm too lazy to generate patches for all old versions.
+        if python_diff_src_file == '':
+            raise UserException(
+                    "Python v{0} is not supported on the {1} target".format(
+                            py_version_str, target))
+
+        apply_diffs(python_diff_src_file, py_src_dir, message_handler)
+
     # Copy the modules config.c file.
     config_c_src_file = 'config_py{0}.c'.format(py_major)
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
@@ -114,20 +126,15 @@ def configure_python(target, output, dynamic_loading, message_handler):
                 '@PY_PATCH_VERSION@': str(py_patch),
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
-    # Patch with the most appropriate diff.  Only Android needs patches.
-    if target.startswith('android'):
-        python_diff_src_file = _get_file_for_version('patches', py_version)
-
-        apply_diffs(python_diff_src_file, py_src_dir, message_handler)
-
 
 def _get_file_for_version(subdir, version):
     """ Return the name of a file in a sub-directory of the 'configurations'
-    directory that is most appropriate for a particular version.
+    directory that is most appropriate for a particular version.  An empty
+    string is returned if the version is not supported.
     """
 
     best_version = 0
-    best_name = None
+    best_name = ''
 
     for name in get_embedded_file_names(__file__, 'configurations', subdir):
         this_version = _extract_version(name)
@@ -135,10 +142,6 @@ def _get_file_for_version(subdir, version):
         if this_version <= version and this_version > best_version:
             best_version = this_version
             best_name = name
-
-    if best_version == 0:
-        raise UserException(
-                "Internal error", "No '{0}' file for version".format(subdir))
 
     return best_name
 
