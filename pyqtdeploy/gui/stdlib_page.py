@@ -47,6 +47,7 @@ class StdlibPage(QWidget):
 
         if self._project != value:
             self._project = value
+            self._package_edit.set_project(value)
             self._update_page()
 
     def __init__(self):
