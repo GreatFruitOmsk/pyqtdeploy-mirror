@@ -132,6 +132,7 @@ greaterThan(PY_MAJOR_VERSION, 2) {
 
     greaterThan(PY_MINOR_VERSION, 6) {
         OBJECT_SOURCES += \
+            Objects/memoryobject.c \
             Objects/capsule.c
     }
 }
@@ -192,6 +193,10 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Python/formatter_string.c
 
     greaterThan(PY_MINOR_VERSION, 6) {
+        PYTHON_SOURCES += \
+            Python/pyctype.c \
+            Python/random.c \
+            Python/dtoa.c
     } else {
         PYTHON_SOURCES += \
             Python/getmtime.c
