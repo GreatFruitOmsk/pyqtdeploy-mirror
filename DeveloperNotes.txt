@@ -175,3 +175,8 @@ To configure stdout and stderr to redirect to ``logcat``, run::
     $ANDROID_SDK_ROOT/platform-tools/adb shell stop
     $ANDROID_SDK_ROOT/platform-tools/adb shell setprop log.redirect-stdio true
     $ANDROID_SDK_ROOT/platform-tools/adb shell start
+
+The adb server is flakely.  If ``adb devices`` doesn't show anything then run::
+
+    $ANDROID_SDK_ROOT/platform-tools/adb kill-server
+    $ANDROID_SDK_ROOT/platform-tools/adb start-server

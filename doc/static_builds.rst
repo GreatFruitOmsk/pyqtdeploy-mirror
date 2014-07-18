@@ -43,29 +43,6 @@ configured your Qt installation differently then you may need to modify the
 configuration files appropriately.
 
 
-Python
-------
-
-To build a static version of Python, change to the Python source directory and
-run::
-
-    pyqtdeploy --package python --target TARGET configure
-
-This will configure Python for a small sub-set of standard extension modules.
-Your application will probably require additional ones to be enabled.  To do
-this you will need to make changes to the ``python.pro`` file and the
-``config.c`` file (in the ``Modules`` directory).  See the comments in those
-files for more information.
-
-To complete the build run::
-
-    qmake SYSROOT=$SYSROOT
-    make
-    make install
-
-See notes [#target]_, [#qmake]_.
-
-
 Qt
 --
 
@@ -86,6 +63,29 @@ When cross-compiling for mobile devices it is recommended that you use one of
 the binary installers provided by Digia.
 
 
+Python
+------
+
+To build a static version of Python, change to the Python source directory and
+run::
+
+    pyqtdeploy --package python --target TARGET configure
+
+This will configure Python for a small sub-set of standard extension modules.
+Your application will probably require additional ones to be enabled.  To do
+this you will need to make changes to the ``python.pro`` file and the
+``config.c`` file (in the ``Modules`` directory).  See the comments in those
+files for more information.
+
+To complete the build run::
+
+    qmake SYSROOT=$SYSROOT
+    make
+    make install
+
+See notes [#target]_, [#qmake]_ and [#iphone]_.
+
+
 sip
 ---
 
@@ -97,7 +97,7 @@ To build a static version of sip, change to the sip source directory and run::
     make
     make install
 
-See note [#target]_.
+See notes [#target]_ and [#iphone]_.
 
 
 PyQt5
@@ -111,7 +111,7 @@ run::
     make
     make install
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
 
 
 PyQt4
@@ -125,7 +125,7 @@ run::
     make
     make install
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
 
 
 QScintilla
@@ -151,7 +151,7 @@ source directory and run::
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
 
 
 Qt Charts
@@ -175,7 +175,8 @@ source directory and run::
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
+[#iphone]_.
 
 
 Qt Data Visualization
@@ -196,7 +197,8 @@ PyQtDataVisualization source directory and run::
     make
     make install
 
-See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_.
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
+[#iphone]_.
 
 
 .. rubric:: Notes
@@ -218,3 +220,24 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_.
     <https://bugreports.qt-project.org/browse/QTBUG-39300>`_ then you will also
     need to add ``"CONFIG-=android_install"`` to the :program:`qmake` command
     line.
+
+.. [#iphone] :program:`qmake` generates ``Makefile``\s that support iOS devices
+    and the simulator.  The default is to build and install for a device.  To
+    build and install for the simulator, run the following commands::
+
+        make iphonesimulator
+        make iphonesimulator-install
+
+    However, the support for the ``subdirs`` template in ``.pro`` files is
+    broken in that :program:`qmake` does not generate the
+    ``iphonesimulator-install`` target in the top-level ``Makefile``.  It is,
+    therefore, necessary to explictly install from each of the sub-directories.
+
+    For example, for sip you would run::
+
+        make -C siplib iphonesimulator-install
+
+    For PyQt you would run (for the ``QtCore`` module)::
+
+        make -C QtCore iphonesimulator-install
+        make install_init_py install_uic_package
