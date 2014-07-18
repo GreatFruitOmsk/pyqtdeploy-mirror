@@ -59,16 +59,22 @@ extern PyObject* PyInit__sre(void);
 extern PyObject* PyInit__codecs(void);
 extern PyObject* PyInit__weakref(void);
 extern PyObject* PyInit__functools(void);
+#if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__operator(void);
+#endif
 extern PyObject* PyInit__collections(void);
 extern PyObject* PyInit_itertools(void);
 extern PyObject* PyInit_atexit(void);
+#if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__stat(void);
+#endif
 extern PyObject* PyInit__locale(void);
 extern PyObject* PyInit__io(void);
 extern PyObject* PyInit_zipimport(void);
 extern PyObject* PyInit_faulthandler(void);
+#if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__tracemalloc(void);
+#endif
 extern PyObject* PyInit__symtable(void);
 extern PyObject* PyInit_xxsubtype(void);
 
@@ -92,16 +98,22 @@ struct _inittab _PyImport_Inittab[] = {
 	{"_codecs", PyInit__codecs},
 	{"_weakref", PyInit__weakref},
 	{"_functools", PyInit__functools},
+#if PY_MINOR_VERSION >= 4
 	{"_operator", PyInit__operator},
+#endif
 	{"_collections", PyInit__collections},
 	{"itertools", PyInit_itertools},
 	{"atexit", PyInit_atexit},
+#if PY_MINOR_VERSION >= 4
 	{"_stat", PyInit__stat},
+#endif
 	{"_locale", PyInit__locale},
 	{"_io", PyInit__io},
 	{"zipimport", PyInit_zipimport},
 	{"faulthandler", PyInit_faulthandler},
+#if PY_MINOR_VERSION >= 4
 	{"_tracemalloc", PyInit__tracemalloc},
+#endif
 	{"_symtable", PyInit__symtable},
 	{"xxsubtype", PyInit_xxsubtype},
 
