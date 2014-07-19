@@ -47,8 +47,12 @@ extern void initpyqtdeploy(void);
 #endif
 
 
+// Foward declarations.
+static int append_strings(PyObject *list, const char **values);
+
+
 int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
-        struct _inittab *extension_modules)
+        struct _inittab *extension_modules, const char **path)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
@@ -57,6 +61,15 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
         {NULL, NULL, 0}
     };
 
+    // The minimal sys.path.
+    static const char *minimal_path[] = {
+        ":/",
+        ":/stdlib",
+        ":/site-packages",
+        NULL
+    };
+
+    PyObject *py_path;
 #if PY_MAJOR_VERSION >= 3
     wchar_t **w_argv;
     int i;
@@ -167,21 +180,62 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 
     // Initialise the path hooks.
     if (PyImport_ImportFrozenModule(BOOTSTRAP_MODULE) < 0)
-    {
-        PyErr_Print();
-        return 1;
-    }
+        goto py_error;
 #endif
+
+    // Configure sys.path.
+    if ((py_path = PyList_New(0)) == NULL)
+        goto py_error;
+
+    if (append_strings(py_path, minimal_path) < 0)
+        goto py_error;
+
+    if (path != NULL && append_strings(py_path, path) < 0)
+        goto py_error;
+
+    if (PySys_SetObject("path", py_path) < 0)
+        goto py_error;
 
     // Import the main module, ie. execute the application.
     if (PyImport_ImportFrozenModule("__main__") < 0)
-    {
-        PyErr_Print();
-        return 1;
-    }
+        goto py_error;
 
     // Tidy up.
     Py_Finalize();
+
+    return 0;
+
+py_error:
+    PyErr_Print();
+    return 1;
+}
+
+
+// Extend a list with an array of strings.  Return -1 if there was an error.
+static int append_strings(PyObject *list, const char **values)
+{
+    const char *value;
+
+    while ((value = *values++) != NULL)
+    {
+        int rc;
+        PyObject *py_value;
+
+#if PY_MAJOR_VERSION >= 3
+        py_value = PyUnicode_FromString(value);
+#else
+        py_value = PyString_FromString(value);
+#endif
+
+        if (py_value == NULL)
+            return -1;
+
+        rc = PyList_Append(list, py_value);
+        Py_DECREF(py_value);
+
+        if (rc < 0)
+            return -1;
+    }
 
     return 0;
 }

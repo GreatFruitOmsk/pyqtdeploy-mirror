@@ -67,6 +67,13 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 ``python.pro``.
 
 
+_bootstrap.py
+.............
+
+Check if ``Lib/importlib/_bootstrap.py`` has any changes and update the
+builder's version if necessary.
+
+
 Qt
 --
 
