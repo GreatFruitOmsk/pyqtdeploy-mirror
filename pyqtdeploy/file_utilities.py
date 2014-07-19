@@ -24,6 +24,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
+
 from PyQt5.QtCore import QDir, QFile, QFileInfo, QIODevice
 
 from .user_exception import UserException
@@ -135,3 +137,61 @@ def open_file(file_name):
     except Exception as e:
         raise UserException("Unable to open file {0}".format(file_name),
                 str(e))
+
+
+def get_embedded_file_for_version(version, root, *subdirs):
+    """ Return the absolute file name in an embedded directory of a file that
+    is the most appropriate for a particular version.  version is the encoded
+    version.  root is the root directory and will be the __file__ attribute of
+    a pyqtdeploy module.  subdirs is a sequence of sub-directories from the
+    root.  An empty string is returned if the version is not supported.
+    """
+
+    best_version = 0
+    best_name = ''
+
+    for name in get_embedded_file_names(root, *subdirs):
+        this_version = extract_version(name)
+
+        if this_version <= version and this_version > best_version:
+            best_version = this_version
+            best_name = name
+
+    return best_name
+
+
+def extract_version(name):
+    """ Return an encoded version number from the name of a file or directory.
+    name is the name of the file or directory.  0 is returned if a version
+    number could not be extracted.
+    """
+
+    name = os.path.basename(name)
+
+    for version_str in name.split('-'):
+        if len(version_str) != 0 and version_str[0].isdigit():
+            break
+    else:
+        return 0
+
+    while not version_str[-1].isdigit():
+        version_str = version_str[:-1]
+
+    version_parts = version_str.split('.')
+
+    while len(version_parts) < 3:
+        version_parts.append('0')
+
+    version = 0
+
+    if len(version_parts) == 3:
+        for part in version_parts:
+            try:
+                part = int(part)
+            except ValueError:
+                version = 0
+                break
+
+            version = (version << 8) + part
+
+    return version

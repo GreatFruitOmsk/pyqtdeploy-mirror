@@ -32,7 +32,8 @@ import tempfile
 
 from PyQt5.QtCore import QDir, QFile
 
-from ..file_utilities import create_file, get_embedded_dir, read_embedded_file
+from ..file_utilities import (create_file, get_embedded_dir,
+        get_embedded_file_for_version, read_embedded_file)
 from ..metadata import pyqt4_metadata, pyqt5_metadata
 from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
@@ -329,12 +330,16 @@ class Builder():
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
 
-        major, _ = project.python_target_version
+        major, minor = project.python_target_version
         if major is None:
             raise UserException("Unable to determine target Python version")
 
-        bootstrap = self._copy_lib_file(
-                'bootstrap_py3.py' if major == 3 else 'bootstrap_py2.py')
+        py_version = (major << 16) + (minor << 8)
+
+        bootstrap_src = get_embedded_file_for_version(py_version, __file__,
+                'lib', 'bootstrap')
+        bootstrap = self._copy_lib_file(bootstrap_src,
+                dst_file_name='bootstrap.py')
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
                 freeze, opt, name='pyqtdeploy_bootstrap')
         os.remove(bootstrap)
@@ -662,7 +667,7 @@ int main(int argc, char **argv)
         return get_embedded_dir(__file__, 'lib').absoluteFilePath(file_name)
 
     @classmethod
-    def _copy_lib_file(cls, file_name, dir_name=None):
+    def _copy_lib_file(cls, file_name, dir_name=None, dst_file_name=None):
         """ Copy a library file to a directory and return the full pathname of
         the copy.  If the directory wasn't specified then copy it to a
         temporary directory.
@@ -671,14 +676,16 @@ int main(int argc, char **argv)
         # Note that we use the Qt file operations to support the possibility
         # that pyqtdeploy itself has been deployed as a single executable.
 
-        # The destination file name.
         if dir_name is None:
             dir_name = tempfile.gettempdir()
 
-        d_file_name = os.path.join(dir_name, file_name)
+        if dst_file_name is None:
+            dst_file_name = file_name
+            s_file_name = cls._get_lib_file_name(file_name)
+        else:
+            s_file_name = file_name
 
-        # The source file name.
-        s_file_name = cls._get_lib_file_name(file_name)
+        d_file_name = os.path.join(dir_name, dst_file_name)
 
         # Make sure the destination doesn't exist.
         QFile.remove(d_file_name)

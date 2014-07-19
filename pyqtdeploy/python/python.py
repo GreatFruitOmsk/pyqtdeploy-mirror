@@ -26,8 +26,8 @@
 
 import os
 
-from ..file_utilities import (copy_embedded_file, get_embedded_dir,
-        get_embedded_file_names)
+from ..file_utilities import (copy_embedded_file, extract_version,
+        get_embedded_dir, get_embedded_file_for_version)
 from ..targets import normalised_target
 from ..user_exception import UserException
 
@@ -47,7 +47,7 @@ def configure_python(target, output, dynamic_loading, message_handler):
         output = '.'
 
     py_src_dir = os.path.abspath(output)
-    py_version = _extract_version(py_src_dir)
+    py_version = extract_version(py_src_dir)
 
     if py_version == 0:
         raise UserException(
@@ -127,56 +127,11 @@ def configure_python(target, output, dynamic_loading, message_handler):
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
 
-def _get_file_for_version(subdir, version):
+def _get_file_for_version(version, subdir):
     """ Return the name of a file in a sub-directory of the 'configurations'
     directory that is most appropriate for a particular version.  An empty
     string is returned if the version is not supported.
     """
 
-    best_version = 0
-    best_name = ''
-
-    for name in get_embedded_file_names(__file__, 'configurations', subdir):
-        this_version = _extract_version(name)
-
-        if this_version <= version and this_version > best_version:
-            best_version = this_version
-            best_name = name
-
-    return best_name
-
-
-def _extract_version(name):
-    """ Return a two or three part version number from the name of a file or
-    directory.  0 is returned if a version number could not be extracted.
-    """
-
-    name = os.path.basename(name)
-
-    for version_str in name.split('-'):
-        if len(version_str) != 0 and version_str[0].isdigit():
-            break
-    else:
-        return 0
-
-    while not version_str[-1].isdigit():
-        version_str = version_str[:-1]
-
-    version_parts = version_str.split('.')
-
-    if len(version_parts) == 2:
-        version_parts.append('0')
-
-    version = 0
-
-    if len(version_parts) == 3:
-        for part in version_parts:
-            try:
-                part = int(part)
-            except ValueError:
-                version = 0
-                break
-
-            version = (version << 8) + part
-
-    return version
+    return get_embedded_file_for_version(version, __file__, 'configurations',
+            subdir)
