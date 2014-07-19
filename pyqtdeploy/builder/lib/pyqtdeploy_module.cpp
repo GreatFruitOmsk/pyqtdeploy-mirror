@@ -209,7 +209,7 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 
     QString *q_path = new QString(str_to_qstring(path));
 
-    if (!QFileInfo(*q_path).isDir())
+    if (!q_path->startsWith(QChar(':')) || !QFileInfo(*q_path).isDir())
     {
         delete q_path;
 
