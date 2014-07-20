@@ -40,8 +40,8 @@ shared versions of any of these components in order to reduce the size of the
 application, but at the cost of increasing the complexity of the deployment.
 
 :program:`pyqtdeploy` also provides support for compiling certain packages
-(e.g. PyQt) both natively and cross-compiling by providing configuration files
-that can be used by those package's build systems.
+(e.g. Python itself and PyQt) both natively and cross-compiling by providing
+configuration files that can be used by those package's build systems.
 
 There are some things that :program:`pyqtdeploy` does not do (although this may
 change in future versions):
@@ -65,17 +65,6 @@ License
 -------
 
 :program:`pyqtdeploy` is released under the BSD license.
-
-
-Future Versions
-===============
-
-The following enhancements may be included in future versions.  Comments and
-requests are welcome.
-
-- Support for cross-compilation of the Python interpreter library.
-
-- Support for the auto-discovery of required modules.
 
 
 Installation

@@ -35,6 +35,11 @@ The supported actions are:
     This will display a list of packages that :program:`pyqtdeploy` can create
     configuration files for.
 
+.. cmdoption:: show-targets
+
+    This will display a list of targets that :program:`pyqtdeploy` can create
+    configuration files for.
+
 The full set of command line options is:
 
 .. cmdoption:: -h, --help
@@ -83,8 +88,11 @@ The full set of command line options is:
 .. cmdoption:: --target TARGET
 
     This is used with the :option:`configure` action to specify the target
-    platform.  By default the host platform is used.  The supported targets are
-    ``linux``, ``win``, ``osx``, ``ios`` and ``android``.
+    platform.  By default the host platform is used.  The full target consists
+    of the base target and an optional target variant (usually related to the
+    target's word size).  The supported base targets are ``linux``, ``win``,
+    ``osx``, ``ios`` and ``android``.  The :option:`show-targets` action will
+    list the supported targets including the target variants.
 
 .. cmdoption:: --quiet
 

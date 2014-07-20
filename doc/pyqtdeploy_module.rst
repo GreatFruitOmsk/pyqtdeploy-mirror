@@ -12,18 +12,3 @@ application and, if necessary, change its behaviour accordingly.
     This is the version number of :program:`pyqtdeploy` encoded as a single
     (non-zero) integer.  The encoding used is the same as that used by
     :data:`sys.hexversion`.
-
-    The following code fragment shows how this might be used to locate a QML
-    file differently in a deployed application::
-
-        import os
-
-        try:
-            from pyqtdeploy import hexversion as pyqtdeploy_hexversion
-        except ImportError:
-            pyqtdeploy_hexversion = 0
-
-        if pyqtdeploy_hexversion:
-            qml_url = 'qrc:/main.qml'
-        else:
-            qml_url = os.path.join(os.path.dirname(__file__), 'main.qml')

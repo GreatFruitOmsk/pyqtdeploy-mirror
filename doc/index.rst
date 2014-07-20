@@ -7,6 +7,7 @@ User Guide
     introduction
     command_line
     development_version
+    pyrcc
     pyqtdeploy_module
     tutorial
     static_builds

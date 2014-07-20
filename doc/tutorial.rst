@@ -67,11 +67,11 @@ The tab for defining the application source is shown below.
     .. note::
         Non-Python (i.e. data) files can also be included in the package.  An
         application typically accesses such files by using the
-        :func:`os.path.dirname` function on the ``__file__`` of a module to
-        obtain the name of the directory containing the data file.  This
-        approach will also work with deployed applications so long as the file
-        is accessed using the :class:`~PyQt5.QtCore.QFile` class (rather than
-        the standard Python file access functions).
+        :func:`QFileInfo.absolutePath` function on the :data:`__file__`
+        attribute of a module to obtain the name of the directory containing
+        the data file.  This approach will also work with deployed applications
+        so long as the file is accessed using the :class:`~PyQt5.QtCore.QFile`
+        class (rather than the standard Python file access functions).
 
 **Remove all**
     is clicked to remove all the scanned files and directories.

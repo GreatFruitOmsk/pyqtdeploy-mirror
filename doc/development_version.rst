@@ -43,3 +43,7 @@ The repository contains a ``Makefile`` which has the following useful targets.
 
 If you run :program:`make` without any arguments then you will be given a list
 of available targets.
+
+.. note::
+    The ``Makefile`` isn't designed to be used on Windows.  It also requires
+    both Python v2 and Python v3 to be installed.
