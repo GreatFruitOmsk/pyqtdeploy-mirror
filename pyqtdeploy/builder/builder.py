@@ -604,10 +604,11 @@ int main(int argc, char **argv)
             name_prefix = ''
 
         f.write('''    extern int pyqtdeploy_start(int argc, char **argv, %s *py_main,
-            struct _inittab *extension_modules, const char **path);
+            const char *py_main_filename, struct _inittab *extension_modules,
+            const char **path);
 
-    return pyqtdeploy_start(argc, argv, %s"%s", %s, NULL);
-''' % (name_type, name_prefix, app_name, inittab))
+    return pyqtdeploy_start(argc, argv, %s"%s", ":/%s.pyf", %s, NULL);
+''' % (name_type, name_prefix, app_name, app_name, inittab))
 
     def _freeze(self, output, py_filename, freeze, opt, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """

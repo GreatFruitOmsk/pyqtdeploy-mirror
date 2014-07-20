@@ -52,7 +52,8 @@ static int append_strings(PyObject *list, const char **values);
 
 
 int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
-        struct _inittab *extension_modules, const char **path)
+        const char *py_main_filename, struct _inittab *extension_modules,
+        const char **path)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
@@ -69,7 +70,7 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
         NULL
     };
 
-    PyObject *py_path;
+    PyObject *py_path, *mod, *mod_dict, *py_filename;
 #if PY_MAJOR_VERSION >= 3
     wchar_t **w_argv;
     int i;
@@ -195,6 +196,26 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 
     if (PySys_SetObject("path", py_path) < 0)
         goto py_error;
+
+    // Set the __file__ attribute of the main module.
+    if ((mod = PyImport_AddModule("__main__")) == NULL)
+        goto py_error;
+
+    mod_dict = PyModule_GetDict(mod);
+
+#if PY_MAJOR_VERSION >= 3
+    py_filename = PyUnicode_FromString(py_main_filename);
+#else
+    py_filename = PyString_FromString(py_main_filename);
+#endif
+
+    if (py_filename == NULL)
+        goto py_error;
+
+    if (PyDict_SetItemString(mod_dict, "__file__", py_filename) < 0)
+        goto py_error;
+
+    Py_DECREF(py_filename);
 
     // Import the main module, ie. execute the application.
     if (PyImport_ImportFrozenModule("__main__") < 0)
