@@ -25,8 +25,8 @@
 
 
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout,
-        QHBoxLayout, QRadioButton, QWidget)
+from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout, QLineEdit,
+        QRadioButton, QVBoxLayout, QWidget)
 
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
@@ -76,9 +76,17 @@ class ApplicationPage(QWidget):
                 textEdited=self._script_changed)
         form.addRow("Main script file", self._script_edit)
 
+        self._sys_path_edit = QLineEdit(
+                placeholderText="Additional sys.path directories",
+                whatsThis="A space separated list of additional directories "
+                        "to add to <tt>sys.path</tt>.  Only set this if you "
+                        "want to allow external packages to be imported.",
+                textEdited=self._sys_path_changed)
+        form.addRow("sys.path", self._sys_path_edit)
+
         layout.addLayout(form, 0, 0)
 
-        versions_layout = QHBoxLayout()
+        versions_layout = QVBoxLayout()
         self._pyqt_versions_bg = QButtonGroup()
 
         for version in ('PyQt5', 'PyQt4'):
@@ -103,6 +111,7 @@ class ApplicationPage(QWidget):
         project = self.project
 
         self._script_edit.setText(project.application_script)
+        self._sys_path_edit.setText(project.sys_path)
         self._package_edit.configure(project.application_package, project)
 
         self._pyqt_versions_bg.blockSignals(True)
@@ -128,6 +137,12 @@ class ApplicationPage(QWidget):
         """ Invoked when the user edits the application script name. """
 
         self.project.application_script = value
+        self.project.modified = True
+
+    def _sys_path_changed(self, value):
+        """ Invoked when the user edits the sys.path directories. """
+
+        self.project.sys_path = value.strip()
         self.project.modified = True
 
     def _package_changed(self):

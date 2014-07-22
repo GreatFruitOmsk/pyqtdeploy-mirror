@@ -40,6 +40,7 @@ class Project(QObject):
     #   1: Added the Others element with the builddir and qmake attributes.
     #   2: The SitePackages element can now contain multiple Package
     #      sub-elements.
+    #      Added the syspath attribute to the Application element.
     version = 2
 
     # Emitted when the modification state of the project changes.
@@ -126,6 +127,7 @@ class Project(QObject):
         self.qmake = ''
         self.packages = [QrcPackage()]
         self.stdlib_package = QrcPackage()
+        self.sys_path = ''
 
     def relative_path(self, filename):
         """ Convert a filename to one that is relative to the project
@@ -210,6 +212,7 @@ class Project(QObject):
         project.application_is_pyqt5 = cls._get_bool(application, 'ispyqt5',
                 'Application')
         project.application_script = application.get('script', '')
+        project.sys_path = application.get('syspath', '')
 
         app_package = application.find('Package')
         cls._assert(app_package is not None,
@@ -356,7 +359,8 @@ class Project(QObject):
 
         application = SubElement(root, 'Application', attrib={
             'ispyqt5': str(int(self.application_is_pyqt5)),
-            'script': self.application_script})
+            'script': self.application_script,
+            'syspath': self.sys_path})
 
         self._save_package(application, self.application_package)
 

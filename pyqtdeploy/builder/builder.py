@@ -157,9 +157,8 @@ class Builder():
 
         project = self._project
 
-        app_name = project.application_basename()
-
-        f = self._create_file(build_dir, app_name + '.pro')
+        f = self._create_file(build_dir,
+                project.application_basename() + '.pro')
 
         f.write('TEMPLATE = app\n')
         f.write('\n')
@@ -324,7 +323,7 @@ class Builder():
         f.write('\n')
 
         f.write('SOURCES = main.c pyqtdeploy_start.c pyqtdeploy_module.cpp\n')
-        self._write_main_c(build_dir, app_name, extensions.keys())
+        self._write_main_c(build_dir, extensions.keys())
         self._copy_lib_file('pyqtdeploy_start.c', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
@@ -530,11 +529,12 @@ class Builder():
                 else:
                     shutil.copyfile(src_path, dst_path)
 
-    @classmethod
-    def _write_main_c(cls, build_dir, app_name, extension_names):
+    def _write_main_c(self, build_dir, extension_names):
         """ Create the application specific main.c file. """
 
-        f = cls._create_file(build_dir, 'main.c')
+        project = self._project
+
+        f = self._create_file(build_dir, 'main.c')
 
         f.write('''#include <wchar.h>
 #include <Python.h>
@@ -547,17 +547,55 @@ int main(int argc, char **argv)
             inittab = 'extension_modules'
 
             f.write('#if PY_MAJOR_VERSION >= 3\n')
-            cls._write_inittab(f, extension_names, inittab, py3=True)
+            self._write_inittab(f, extension_names, inittab, py3=True)
             f.write('#else\n')
-            cls._write_inittab(f, extension_names, inittab, py3=False)
+            self._write_inittab(f, extension_names, inittab, py3=False)
             f.write('#endif\n\n')
         else:
             inittab = 'NULL'
 
+        sys_path = project.sys_path
+
+        if sys_path != '':
+            f.write('    static const char *sys_path[] = {\n')
+
+            # Extract the (possibly quoted) individual directories.
+            start = -1
+            quote = ''
+
+            for i, ch in enumerate(sys_path):
+                dir_name = None
+
+                if ch == quote:
+                    dir_name = sys_path[start:i]
+                    start = -1
+                    quote = ''
+                elif ch in ('"\''):
+                    start = i + 1
+                    quote = ch
+                elif quote == '' and ch == ' ':
+                    if start != -1:
+                        dir_name = sys_path[start:i]
+                        start = -1
+                else:
+                    if start == -1:
+                        start = i
+
+                if dir_name is not None:
+                    f.write('        "{0}",\n'.format(dir_name))
+
+            if start != -1:
+                f.write('        "{0}",\n'.format(sys_path[start:]))
+
+            f.write('''        NULL
+    };
+
+''')
+
         f.write('#if PY_MAJOR_VERSION >= 3\n')
-        cls._write_main_call(f, app_name, inittab, py3=True)
+        self._write_main_call(f, inittab, py3=True)
         f.write('#else\n')
-        cls._write_main_call(f, app_name, inittab, py3=False)
+        self._write_main_call(f, inittab, py3=False)
         f.write('#endif\n}\n')
 
         f.close()
@@ -592,9 +630,12 @@ int main(int argc, char **argv)
     };
 ''')
 
-    @staticmethod
-    def _write_main_call(f, app_name, inittab, py3):
+    def _write_main_call(self, f, inittab, py3):
         """ Write the Python version specific call to pyqtdeploy_start(). """
+
+        project = self._project
+        app_name = project.application_basename()
+        sys_path = "sys_path" if project.sys_path != '' else "NULL"
 
         if py3:
             name_type = 'wchar_t'
@@ -607,8 +648,8 @@ int main(int argc, char **argv)
             const char *py_main_filename, struct _inittab *extension_modules,
             const char **path);
 
-    return pyqtdeploy_start(argc, argv, %s"%s", ":/%s.pyf", %s, NULL);
-''' % (name_type, name_prefix, app_name, app_name, inittab))
+    return pyqtdeploy_start(argc, argv, %s"%s", ":/%s.pyf", %s, %s);
+''' % (name_type, name_prefix, app_name, app_name, inittab, sys_path))
 
     def _freeze(self, output, py_filename, freeze, opt, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """
