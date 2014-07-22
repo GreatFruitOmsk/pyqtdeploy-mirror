@@ -322,9 +322,9 @@ class Builder():
         # Specify the source and header files.
         f.write('\n')
 
-        f.write('SOURCES = main.c pyqtdeploy_start.c pyqtdeploy_module.cpp\n')
+        f.write('SOURCES = main.c pyqtdeploy_start.cpp pyqtdeploy_module.cpp\n')
         self._write_main_c(build_dir, extensions.keys())
-        self._copy_lib_file('pyqtdeploy_start.c', build_dir)
+        self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
@@ -536,11 +536,8 @@ class Builder():
 
         f = self._create_file(build_dir, 'main.c')
 
-        f.write('''#include <wchar.h>
-#include <Python.h>
+        f.write('''#include <Python.h>
 
-int main(int argc, char **argv)
-{
 ''')
 
         if len(extension_names) > 0:
@@ -557,7 +554,7 @@ int main(int argc, char **argv)
         sys_path = project.sys_path
 
         if sys_path != '':
-            f.write('    static const char *sys_path[] = {\n')
+            f.write('static const char *sys_path[] = {\n')
 
             # Extract the (possibly quoted) individual directories.
             start = -1
@@ -582,21 +579,30 @@ int main(int argc, char **argv)
                         start = i
 
                 if dir_name is not None:
-                    f.write('        "{0}",\n'.format(dir_name))
+                    f.write('    "{0}",\n'.format(dir_name))
 
             if start != -1:
-                f.write('        "{0}",\n'.format(sys_path[start:]))
+                f.write('    "{0}",\n'.format(sys_path[start:]))
 
-            f.write('''        NULL
-    };
+            f.write('''    NULL
+};
 
 ''')
 
-        f.write('#if PY_MAJOR_VERSION >= 3\n')
-        self._write_main_call(f, inittab, py3=True)
-        f.write('#else\n')
-        self._write_main_call(f, inittab, py3=False)
-        f.write('#endif\n}\n')
+        app_name = project.application_basename()
+        sys_path_array = "sys_path" if sys_path != '' else "NULL"
+
+        f.write('''extern int pyqtdeploy_start(int argc, char **argv,
+        const char *py_main_filename, struct _inittab *extension_modules,
+        const char **path);
+''')
+
+        f.write('''
+int main(int argc, char **argv)
+{
+    return pyqtdeploy_start(argc, argv, ":/%s.pyf", %s, %s);
+}
+''' % (app_name, inittab, sys_path_array))
 
         f.close()
 
@@ -614,42 +620,21 @@ int main(int argc, char **argv)
         for ext in extension_names:
             base_ext = ext.split('.')[-1]
 
-            f.write('    extern %s%s%s(void);\n' % (init_type, init_prefix,
+            f.write('extern %s%s%s(void);\n' % (init_type, init_prefix,
                     base_ext))
 
         f.write('''
-    static struct _inittab %s[] = {
+static struct _inittab %s[] = {
 ''' % inittab)
 
         for ext in extension_names:
             base_ext = ext.split('.')[-1]
 
-            f.write('        {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
+            f.write('    {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
 
-        f.write('''        {NULL, NULL}
-    };
+        f.write('''    {NULL, NULL}
+};
 ''')
-
-    def _write_main_call(self, f, inittab, py3):
-        """ Write the Python version specific call to pyqtdeploy_start(). """
-
-        project = self._project
-        app_name = project.application_basename()
-        sys_path = "sys_path" if project.sys_path != '' else "NULL"
-
-        if py3:
-            name_type = 'wchar_t'
-            name_prefix = 'L'
-        else:
-            name_type = 'char'
-            name_prefix = ''
-
-        f.write('''    extern int pyqtdeploy_start(int argc, char **argv, %s *py_main,
-            const char *py_main_filename, struct _inittab *extension_modules,
-            const char **path);
-
-    return pyqtdeploy_start(argc, argv, %s"%s", ":/%s.pyf", %s, %s);
-''' % (name_type, name_prefix, app_name, app_name, inittab, sys_path))
 
     def _freeze(self, output, py_filename, freeze, opt, name=None, as_data=False):
         """ Freeze a Python source file to a C header file or a data file. """

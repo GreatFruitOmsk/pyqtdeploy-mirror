@@ -123,7 +123,7 @@ def create_file(file_name):
     """ Create a text file.  file_name is the name of the file. """
 
     try:
-        return open(file_name, 'wt')
+        return open(file_name, 'wt', encoding='UTF-8')
     except Exception as e:
         raise UserException("Unable to create file {0}".format(file_name),
                 str(e))

@@ -24,11 +24,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <Python.h>
+
+#include <QByteArray>
+#include <QString>
+#include <QTextCodec>
 
 #include "frozen_bootstrap.h"
 #include "frozen_main.h"
@@ -37,21 +40,22 @@
 #if PY_MAJOR_VERSION >= 3
 #define BOOTSTRAP_MODULE    "_frozen_importlib"
 #define PYQTDEPLOY_INIT     PyInit_pyqtdeploy
-#define PYMAIN_TYPE         wchar_t
-extern PyObject *PyInit_pyqtdeploy(void);
+extern "C" PyObject *PyInit_pyqtdeploy(void);
 #else
 #define BOOTSTRAP_MODULE    "__bootstrap__"
 #define PYQTDEPLOY_INIT     initpyqtdeploy
-#define PYMAIN_TYPE         char
-extern void initpyqtdeploy(void);
+extern "C" void initpyqtdeploy(void);
 #endif
 
 
 // Foward declarations.
-static int append_strings(PyObject *list, const char **values);
+static int append_utf8_strings(PyObject *list, const char **utf8_strings);
+#if PY_MAJOR_VERSION < 3
+static PyObject *string_from_ut8_string(const char *utf8)
+#endif
 
 
-int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
+extern "C" int pyqtdeploy_start(int argc, char **argv,
         const char *py_main_filename, struct _inittab *extension_modules,
         const char **path)
 {
@@ -70,19 +74,14 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
         NULL
     };
 
-    PyObject *py_path, *mod, *mod_dict, *py_filename;
-#if PY_MAJOR_VERSION >= 3
-    wchar_t **w_argv;
-    int i;
-#if !defined(ANDROID)
-    char *saved_locale;
-#endif
-#endif
-
     Py_FrozenFlag = 1;
     Py_NoSiteFlag = 1;
-#if defined(ANDROID) && PY_MAJOR_VERSION >= 3
-    Py_FileSystemDefaultEncoding = "utf-8";
+
+#if PY_MAJOR_VERSION >= 3
+    // We use Qt as the source of the locale information, partly because it
+    // officially supports Android.
+    QByteArray default_codec = QTextCodec::codecForLocale()->name();
+    Py_FileSystemDefaultEncoding = default_codec.constData();
 #endif
 
     PyImport_FrozenModules = modules;
@@ -103,77 +102,27 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
         }
 
 #if PY_MAJOR_VERSION >= 3
-    // Convert the argument list to wide characters.
-    if ((w_argv = PyMem_Malloc(sizeof (wchar_t *) * argc)) == NULL)
+    // Convert the argument list to wide characters using the default codec.
+    wchar_t *w_argv[argc + 1];
+
+    for (int i = 0; i < argc; i++)
     {
-        fprintf(stderr, "PyMem_Malloc() failed\n");
-        return 1;
-    }
+        QString qs_arg = QString::fromLocal8Bit(argv[i]);
 
-    w_argv[0] = py_main;
+        wchar_t *w_arg = new wchar_t[qs_arg.length() + 1];
 
-#if !defined(ANDROID)
-    saved_locale = setlocale(LC_ALL, NULL);
-    setlocale(LC_ALL, "");
-#endif
-
-    for (i = 1; i < argc; i++)
-    {
-        char *arg = argv[i];
-        wchar_t *w_arg;
-        size_t len;
-
-#if !defined(ANDROID)
-        len = mbstowcs(NULL, arg, 0);
-
-        if (len == (size_t)-1)
-        {
-            fprintf(stderr, "Could not convert argument %d to string\n", i);
-            return 1;
-        }
-#else
-        char ch;
-
-        len = strlen(arg);
-#endif
-
-        if ((w_arg = PyMem_Malloc((len + 1) * sizeof (wchar_t))) == NULL)
-        {
-            fprintf(stderr, "PyMem_Malloc() failed\n");
-            return 1;
-        }
+        w_arg[qs_arg.toWCharArray(w_arg)] = 0;
 
         w_argv[i] = w_arg;
-
-#if !defined(ANDROID)
-        if (mbstowcs(w_arg, arg, len + 1) == (size_t)-1)
-        {
-            fprintf(stderr, "Could not convert argument %d to string\n", i);
-            return 1;
-        }
-#else
-        /* Convert according to PEP 383. */
-        while ((ch = *arg++) != '\0')
-        {
-            if (ch <= 0x7f)
-                *w_arg++ = ch;
-            else
-                *w_arg++ = 0xdc00 + ch;
-        }
-#endif
     }
 
-#if !defined(ANDROID)
-    setlocale(LC_ALL, saved_locale);
-#endif
+    w_argv[argc] = NULL;
 
     // Initialise the Python v3 interpreter.
     Py_SetProgramName(w_argv[0]);
     Py_Initialize();
     PySys_SetArgv(argc, w_argv);
 #else
-    argv[0] = py_main;
-
     // Initialise the Python v2 interpreter.
     Py_SetProgramName(argv[0]);
     Py_Initialize();
@@ -185,19 +134,23 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 #endif
 
     // Configure sys.path.
+    PyObject *py_path;
+
     if ((py_path = PyList_New(0)) == NULL)
         goto py_error;
 
-    if (append_strings(py_path, minimal_path) < 0)
+    if (append_utf8_strings(py_path, minimal_path) < 0)
         goto py_error;
 
-    if (path != NULL && append_strings(py_path, path) < 0)
+    if (path != NULL && append_utf8_strings(py_path, path) < 0)
         goto py_error;
 
     if (PySys_SetObject("path", py_path) < 0)
         goto py_error;
 
     // Set the __file__ attribute of the main module.
+    PyObject *mod, *mod_dict, *py_filename;
+
     if ((mod = PyImport_AddModule("__main__")) == NULL)
         goto py_error;
 
@@ -206,7 +159,7 @@ int pyqtdeploy_start(int argc, char **argv, PYMAIN_TYPE *py_main,
 #if PY_MAJOR_VERSION >= 3
     py_filename = PyUnicode_FromString(py_main_filename);
 #else
-    py_filename = PyString_FromString(py_main_filename);
+    py_filename = string_from_utf8_string(py_main_filename);
 #endif
 
     if (py_filename == NULL)
@@ -232,27 +185,28 @@ py_error:
 }
 
 
-// Extend a list with an array of strings.  Return -1 if there was an error.
-static int append_strings(PyObject *list, const char **values)
+// Extend a list with an array of UTF-8 encoded strings.  Return -1 if there
+// was an error.
+static int append_utf8_strings(PyObject *list, const char **utf8_strings)
 {
-    const char *value;
+    const char *utf8;
 
-    while ((value = *values++) != NULL)
+    while ((utf8 = *utf8_strings++) != NULL)
     {
         int rc;
-        PyObject *py_value;
+        PyObject *py_str;
 
 #if PY_MAJOR_VERSION >= 3
-        py_value = PyUnicode_FromString(value);
+        py_str = PyUnicode_FromString(utf8);
 #else
-        py_value = PyString_FromString(value);
+        py_str = string_from_utf8_string(utf8);
 #endif
 
-        if (py_value == NULL)
+        if (py_str == NULL)
             return -1;
 
-        rc = PyList_Append(list, py_value);
-        Py_DECREF(py_value);
+        rc = PyList_Append(list, py_str);
+        Py_DECREF(py_str);
 
         if (rc < 0)
             return -1;
@@ -260,3 +214,12 @@ static int append_strings(PyObject *list, const char **values)
 
     return 0;
 }
+
+
+#if PY_MAJOR_VERSION < 3
+// Convert a UTF-8 encoded C string to a Python v2 str object.
+static PyObject *string_from_ut8_string(const char *utf8)
+{
+    return PyString_Decode(utf8, strlen(utf8), "UTF-8", NULL);
+}
+#endif
