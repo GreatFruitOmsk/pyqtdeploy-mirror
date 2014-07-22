@@ -228,10 +228,12 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
         make iphonesimulator
         make iphonesimulator-install
 
-    However, the support for the ``subdirs`` template in ``.pro`` files is
-    broken in that :program:`qmake` does not generate the
-    ``iphonesimulator-install`` target in the top-level ``Makefile``.  It is,
-    therefore, necessary to explictly install from each of the sub-directories.
+    However, if your Qt installation is affected by `QTBUG-40353
+    <https://bugreports.qt-project.org/browse/QTBUG-40353>`_ then the support
+    for the ``subdirs`` template in ``.pro`` files is broken in that
+    :program:`qmake` does not generate the ``iphonesimulator-install`` target
+    in the top-level ``Makefile``.  It is, therefore, necessary to explictly
+    install from each of the sub-directories.
 
     For example, for sip you would run::
 
