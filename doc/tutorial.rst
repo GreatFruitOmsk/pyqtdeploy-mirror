@@ -48,6 +48,34 @@ The tab for defining the application source is shown below.
         embedding of environment variables which will be expanded when
         necessary.
 
+**sys.path**
+    is used to specify additional directories that will be added to
+    :data:`sys.path`.  By default :program:`pyqtdeploy` generates an
+    application that does not support the importing of packages or extension
+    modules that are not embedded in the application.  Indeed, some platforms
+    specifically disallow this.  However there are circumstances where this
+    ability is desired:
+
+    - you need to use an extension module that does not support being
+      statically compiled
+
+    - you allow users to write Python code that is imported by the application
+      to configure or extend its functionality.
+
+    The path is specified as a space separated list of directories.  Single or
+    double quotes may be used to embed spaces in directory names.  Environment
+    variables (specified using the standard UNIX notation) are expanded when
+    the application is run.  Any relative directory names are assumed to be
+    relative to the directory containing the application executable.  UNIX path
+    separators should be used - the application will automatically do the
+    appropriate conversions when running on Windows.
+
+    .. note::
+        If you wish to allow the importing of external extension modules then
+        you will also need to ensure that Python has been built with this
+        enabled.  See the :option:`--enable-dynamic-loading` option of the
+        :option:`configure` action.
+
 **PyQt5**
     is used to specify that the application is a PyQt5 application.
 
