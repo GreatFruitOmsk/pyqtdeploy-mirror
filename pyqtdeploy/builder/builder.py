@@ -681,6 +681,8 @@ static struct _inittab %s[] = {
                     universal_newlines=True)
         except subprocess.CalledProcessError as e:
             raise UserException(error_message, e.output)
+        except FileNotFoundError:
+            raise UserException("{0} does not seem to exist".format(argv[0]))
         finally:
             if saved_cwd is not None:
                 os.chdir(saved_cwd)
