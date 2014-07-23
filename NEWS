@@ -1,3 +1,19 @@
+v0.5 ??? July 2014
+  - Added support for configuring Python, SIP, PyQt etc. for native and
+    cross-compilation for all target platforms (Linux, OS/X, Windows, iOS and
+    Android).
+  - The Site Packages tab is now the Packages tab.  It is now possible to
+    specify multiple directories to scan for packages to be included.
+  - The syntax of the command line interface has changed so that it is action
+    based and implements the build, configure, show-packages and show-targets
+    actions.
+  - Added support for configuring the optimisations used when freezing Python
+    code.
+  - Added support for enabling the import of external Python packages and
+    extension modules.
+  - The main application module now has a __file__ attribute set.
+  - Added support for modules introduced in PyQt v5.3.
+
 v0.4 4th May 2014
   - Replaced the Build menu with the Build tab and allow applications to be
     generated, built and run from within the GUI.
