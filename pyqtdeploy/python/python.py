@@ -72,7 +72,7 @@ def configure_python(target, output, dynamic_loading, message_handler):
 
     # Patch with the most appropriate diff.  Only Android needs patches.
     if target.startswith('android'):
-        python_diff_src_file = _get_file_for_version('patches', py_version)
+        python_diff_src_file = _get_file_for_version(py_version, 'patches')
 
         # I'm too lazy to generate patches for all old versions.
         if python_diff_src_file == '':
