@@ -25,12 +25,13 @@
 
 
 #include <stdio.h>
-#include <string.h>
 
 #include <Python.h>
 
 #include <QByteArray>
+#include <QDir>
 #include <QString>
+#include <QRegExp>
 #include <QTextCodec>
 
 #include "frozen_bootstrap.h"
@@ -48,16 +49,23 @@ extern "C" void initpyqtdeploy(void);
 #endif
 
 
+// We use Qt as the source of the locale information, partly because it
+// officially supports Android.
+static QTextCodec *locale_codec;
+
+
 // Foward declarations.
-static int append_utf8_strings(PyObject *list, const char **utf8_strings);
+static int append_ascii_strings(PyObject *list, const char **ascii_strings);
+static int append_path_dirs(PyObject *list, const char **path_dirs,
+        const QDir &exec_dir);
 #if PY_MAJOR_VERSION < 3
-static PyObject *string_from_ut8_string(const char *utf8)
+static PyObject *string_from_qstring(const QString &qs);
 #endif
 
 
 extern "C" int pyqtdeploy_start(int argc, char **argv,
         const char *py_main_filename, struct _inittab *extension_modules,
-        const char **path)
+        const char **path_dirs)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
@@ -66,7 +74,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
         {NULL, NULL, 0}
     };
 
-    // The minimal sys.path.
+    // The minimal (ASCII) sys.path.
     static const char *minimal_path[] = {
         ":/",
         ":/stdlib",
@@ -74,14 +82,22 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
         NULL
     };
 
+    // Get the codec for the locale.
+    locale_codec = QTextCodec::codecForLocale();
+
+    if (!locale_codec)
+    {
+        fprintf(stderr, "%s: no locale codec found\n", argv[0]);
+        return 1;
+    }
+
+    // Initialise some Python globals.
     Py_FrozenFlag = 1;
     Py_NoSiteFlag = 1;
 
 #if PY_MAJOR_VERSION >= 3
-    // We use Qt as the source of the locale information, partly because it
-    // officially supports Android.
-    QByteArray default_codec = QTextCodec::codecForLocale()->name();
-    Py_FileSystemDefaultEncoding = default_codec.constData();
+    QByteArray locale_codec_name = locale_codec->name();
+    Py_FileSystemDefaultEncoding = locale_codec_name.data();
 #endif
 
     PyImport_FrozenModules = modules;
@@ -89,7 +105,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     // Add the importer to the table of builtins.
     if (PyImport_AppendInittab("pyqtdeploy", PYQTDEPLOY_INIT) < 0)
     {
-        fprintf(stderr, "PyImport_AppendInittab() failed\n");
+        fprintf(stderr, "%s: PyImport_AppendInittab() failed\n", argv[0]);
         return 1;
     }
 
@@ -97,17 +113,17 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     if (extension_modules != NULL)
         if (PyImport_ExtendInittab(extension_modules) < 0)
         {
-            fprintf(stderr, "PyImport_ExtendInittab() failed\n");
+            fprintf(stderr, "%s: PyImport_ExtendInittab() failed\n", argv[0]);
             return 1;
         }
 
 #if PY_MAJOR_VERSION >= 3
-    // Convert the argument list to wide characters using the default codec.
+    // Convert the argument list to wide characters using the locale codec.
     wchar_t *w_argv[argc + 1];
 
     for (int i = 0; i < argc; i++)
     {
-        QString qs_arg = QString::fromLocal8Bit(argv[i]);
+        QString qs_arg = locale_codec->toUnicode(argv[i]);
 
         wchar_t *w_arg = new wchar_t[qs_arg.length() + 1];
 
@@ -139,11 +155,19 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     if ((py_path = PyList_New(0)) == NULL)
         goto py_error;
 
-    if (append_utf8_strings(py_path, minimal_path) < 0)
+    if (append_ascii_strings(py_path, minimal_path) < 0)
         goto py_error;
 
-    if (path != NULL && append_utf8_strings(py_path, path) < 0)
-        goto py_error;
+    if (path_dirs != NULL)
+    {
+        // Get the directory containing the executable.
+        QDir exec_dir(locale_codec->toUnicode(argv[0]));
+        exec_dir.makeAbsolute();
+        exec_dir.cdUp();
+
+        if (append_path_dirs(py_path, path_dirs, exec_dir) < 0)
+            goto py_error;
+    }
 
     if (PySys_SetObject("path", py_path) < 0)
         goto py_error;
@@ -159,7 +183,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
 #if PY_MAJOR_VERSION >= 3
     py_filename = PyUnicode_FromString(py_main_filename);
 #else
-    py_filename = string_from_utf8_string(py_main_filename);
+    py_filename = string_from_qstring(QString::fromUtf8(py_main_filename));
 #endif
 
     if (py_filename == NULL)
@@ -180,32 +204,34 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     return 0;
 
 py_error:
+    fprintf(stderr, "%s: a Python exception occurred:\n", argv[0]);
     PyErr_Print();
     return 1;
 }
 
 
-// Extend a list with an array of UTF-8 encoded strings.  Return -1 if there
+// Extend a list with an array of ASCII encoded strings.  Return -1 if there
 // was an error.
-static int append_utf8_strings(PyObject *list, const char **utf8_strings)
+static int append_ascii_strings(PyObject *list, const char **ascii_strings)
 {
-    const char *utf8;
+    const char *ascii;
 
-    while ((utf8 = *utf8_strings++) != NULL)
+    while ((ascii = *ascii_strings++) != NULL)
     {
-        int rc;
+        // Convert to a Python string.
         PyObject *py_str;
 
 #if PY_MAJOR_VERSION >= 3
-        py_str = PyUnicode_FromString(utf8);
+        py_str = PyUnicode_FromString(ascii);
 #else
-        py_str = string_from_utf8_string(utf8);
+        py_str = PyString_FromString(ascii);
 #endif
 
-        if (py_str == NULL)
+        if (!py_str)
             return -1;
 
-        rc = PyList_Append(list, py_str);
+        // Append to the list.
+        int rc = PyList_Append(list, py_str);
         Py_DECREF(py_str);
 
         if (rc < 0)
@@ -216,10 +242,71 @@ static int append_utf8_strings(PyObject *list, const char **utf8_strings)
 }
 
 
-#if PY_MAJOR_VERSION < 3
-// Convert a UTF-8 encoded C string to a Python v2 str object.
-static PyObject *string_from_ut8_string(const char *utf8)
+// Extend a list with an array of UTF-8 encoded path directory names.  Return
+// -1 if there was an error.
+static int append_path_dirs(PyObject *list, const char **path_dirs,
+        const QDir &exec_dir)
 {
-    return PyString_Decode(utf8, strlen(utf8), "UTF-8", NULL);
+    const char *path_dir_utf8;
+
+    while ((path_dir_utf8 = *path_dirs++) != NULL)
+    {
+        // Convert to a QString.
+        QString path_dir(QString::fromUtf8(path_dir_utf8));
+
+        // Expand any (locale encoded) environment variables.
+        QRegExp env_var_name_re("\\$([A-Za-z0-9_]+)");
+
+        int i;
+
+        while ((i = env_var_name_re.indexIn(path_dir)) != -1)
+        {
+            QByteArray name(locale_codec->fromUnicode(env_var_name_re.cap(1)));
+            QByteArray value(qgetenv(name.data()));
+
+            path_dir.replace(i, env_var_name_re.matchedLength(),
+                    locale_codec->toUnicode(value));
+        }
+
+        // Make sure the path is absolute.
+        if (QDir::isRelativePath(path_dir))
+            path_dir = exec_dir.filePath(path_dir);
+
+        // Convert to the native format.  (Note that we don't resolve symbolic
+        // links.
+        path_dir = QDir::toNativeSeparators(QDir::cleanPath(path_dir));
+
+        // Convert to a Python string.
+        PyObject *py_path_dir;
+
+#if PY_MAJOR_VERSION >= 3
+        QByteArray utf8(path_dir.toUtf8());
+        py_path_dir = PyUnicode_FromStringAndSize(utf8.data(), utf8.length());
+#else
+        py_path_dir = string_from_qstring(path_dir);
+#endif
+
+        if (!py_path_dir)
+            return -1;
+
+        // Append to the list.
+        int rc = PyList_Append(list, py_path_dir);
+        Py_DECREF(py_path_dir);
+
+        if (rc < 0)
+            return -1;
+    }
+
+    return 0;
+}
+
+
+#if PY_MAJOR_VERSION < 3
+// Convert a QString to a Python v2 locale encoded str object.
+static PyObject *string_from_qstring(const QString &qs)
+{
+    QByteArray locale_s(locale_codec->fromUnicode(qs));
+
+    return PyString_FromStringAndSize(locale_s, locale_s.length());
 }
 #endif

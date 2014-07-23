@@ -554,7 +554,7 @@ class Builder():
         sys_path = project.sys_path
 
         if sys_path != '':
-            f.write('static const char *sys_path[] = {\n')
+            f.write('static const char *path_dirs[] = {\n')
 
             # Extract the (possibly quoted) individual directories.
             start = -1
@@ -590,11 +590,11 @@ class Builder():
 ''')
 
         app_name = project.application_basename()
-        sys_path_array = "sys_path" if sys_path != '' else "NULL"
+        path_dirs = "path_dirs" if sys_path != '' else "NULL"
 
         f.write('''extern int pyqtdeploy_start(int argc, char **argv,
         const char *py_main_filename, struct _inittab *extension_modules,
-        const char **path);
+        const char **path_dirs);
 ''')
 
         f.write('''
@@ -602,7 +602,7 @@ int main(int argc, char **argv)
 {
     return pyqtdeploy_start(argc, argv, ":/%s.pyf", %s, %s);
 }
-''' % (app_name, inittab, sys_path_array))
+''' % (app_name, inittab, path_dirs))
 
         f.close()
 
