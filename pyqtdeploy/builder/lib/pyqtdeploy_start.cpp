@@ -41,10 +41,12 @@
 #if PY_MAJOR_VERSION >= 3
 #define BOOTSTRAP_MODULE    "_frozen_importlib"
 #define PYQTDEPLOY_INIT     PyInit_pyqtdeploy
+#define CONST_CAST(s)       s
 extern "C" PyObject *PyInit_pyqtdeploy(void);
 #else
 #define BOOTSTRAP_MODULE    "__bootstrap__"
 #define PYQTDEPLOY_INIT     initpyqtdeploy
+#define CONST_CAST(s)       const_cast<char *>(s)
 extern "C" void initpyqtdeploy(void);
 #endif
 
@@ -69,8 +71,8 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
-        {BOOTSTRAP_MODULE, frozen_pyqtdeploy_bootstrap, sizeof (frozen_pyqtdeploy_bootstrap)},
-        {"__main__", frozen_pyqtdeploy_main, sizeof (frozen_pyqtdeploy_main)},
+        {CONST_CAST(BOOTSTRAP_MODULE), frozen_pyqtdeploy_bootstrap, sizeof (frozen_pyqtdeploy_bootstrap)},
+        {CONST_CAST("__main__"), frozen_pyqtdeploy_main, sizeof (frozen_pyqtdeploy_main)},
         {NULL, NULL, 0}
     };
 
@@ -145,7 +147,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     PySys_SetArgv(argc, argv);
 
     // Initialise the path hooks.
-    if (PyImport_ImportFrozenModule(BOOTSTRAP_MODULE) < 0)
+    if (PyImport_ImportFrozenModule(CONST_CAST(BOOTSTRAP_MODULE)) < 0)
         goto py_error;
 #endif
 
@@ -169,7 +171,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
             goto py_error;
     }
 
-    if (PySys_SetObject("path", py_path) < 0)
+    if (PySys_SetObject(CONST_CAST("path"), py_path) < 0)
         goto py_error;
 
     // Set the __file__ attribute of the main module.
@@ -195,7 +197,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     Py_DECREF(py_filename);
 
     // Import the main module, ie. execute the application.
-    if (PyImport_ImportFrozenModule("__main__") < 0)
+    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0)
         goto py_error;
 
     // Tidy up.
