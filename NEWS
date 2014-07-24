@@ -1,4 +1,4 @@
-v0.5 ??? July 2014
+v0.5 24th July 2014
   - Added support for configuring Python, SIP, PyQt etc. for native and
     cross-compilation for all target platforms (Linux, OS/X, Windows, iOS and
     Android).
