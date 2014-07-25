@@ -96,6 +96,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     // Initialise some Python globals.
     Py_FrozenFlag = 1;
     Py_NoSiteFlag = 1;
+    Py_IgnoreEnvironmentFlag = 1;
 
 #if PY_MAJOR_VERSION >= 3
     QByteArray locale_codec_name = locale_codec->name();
