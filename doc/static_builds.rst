@@ -168,9 +168,12 @@ To build a static version of the Python bindings, change to the PyQtChart
 source directory and run::
 
     pyqtdeploy --package pyqtchart --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
+    python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
     make
     make install
+
+Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Charts
+installation.
 
 The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
 substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
@@ -193,9 +196,12 @@ To build a static version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
     pyqtdeploy --package pyqtdatavisualization --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
+    python configure.py --qtdatavisualization-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
+
+Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Data
+Visualization installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -215,9 +221,12 @@ To build a static version of the Python bindings, change to the PyQtPurchasing
 source directory and run::
 
     pyqtdeploy --package pyqtpurchasing --target TARGET configure
-    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
+    python configure.py --qtpurchasing-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
     make
     make install
+
+Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Purchasing
+installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
