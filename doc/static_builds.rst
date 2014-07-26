@@ -201,6 +201,28 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
 
 
+Qt Purchasing
+-------------
+
+To build a static version of the Qt Purchasing library, change to the Qt
+Purchasing source directory and run::
+
+    qmake "CONFIG+=release staticlib"
+    make
+    make install
+
+To build a static version of the Python bindings, change to the PyQtPurchasing
+source directory and run::
+
+    pyqtdeploy --package pyqtpurchasing --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
+    make
+    make install
+
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
+[#iphone]_.
+
+
 .. rubric:: Notes
 
 .. [#target] If you are building a native version of the package then you may

@@ -179,6 +179,11 @@ pyqt5_metadata = {
                                     deps=['QtGui'],
                                     qt5=['datavisualization']),
 
+    'QtPurchasing':             PyQt5Metadata(
+                                    group='addon',
+                                    deps=['QtCore'],
+                                    qt5=['purchasing']),
+
     'Qsci':                     PyQt5Metadata(
                                     group='addon',
                                     deps=['QtWidgets'],
