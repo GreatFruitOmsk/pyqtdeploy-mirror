@@ -129,7 +129,9 @@ class PackagesPage(QWidget):
     def _package_selector_changed(self, new, old):
         """ Invoked when the user selects a package directory. """
 
-        self._package_edit.configure(new.data(0, Qt.UserRole), self.project)
+        if new is not None:
+            self._package_edit.configure(new.data(0, Qt.UserRole),
+                    self.project)
 
     def _package_dir_changed(self, itm, column):
         """ Invoked when the user edits a package directory name. """
