@@ -90,8 +90,7 @@ class Builder():
                         contents)
             elif resource == 'stdlib':
                 contents = self._write_package(resources_dir, resource,
-                        project.stdlib_package, os.path.join(stdlib_dir, ''),
-                        freeze, opt)
+                        project.stdlib_package, stdlib_dir, freeze, opt)
                 self._write_resource_qrc(resources_dir, 'stdlib.qrc',
                         contents)
             else:
@@ -115,14 +114,11 @@ class Builder():
 
                 contents = self._write_package(resources_dir, resource,
                         site_packages_package,
-                        os.path.join(stdlib_dir, 'site-packages', ''), freeze,
-                        opt)
+                        os.path.join(stdlib_dir, 'site-packages'), freeze, opt)
 
                 for package in project.packages[1:]:
                     contents += self._write_package(resources_dir, resource,
-                            package,
-                            os.path.join(project.absolute_path(package.name),
-                                    ''),
+                            package, project.absolute_path(package.name),
                             freeze, opt)
 
                 self._write_resource_qrc(resources_dir, 'site-packages.qrc',
@@ -447,47 +443,29 @@ class Builder():
 
         f.close()
 
-    def _write_package(self, resources_dir, resource, package, src, freeze, opt):
+    def _write_package(self, resources_dir, resource, package, src_dir, freeze, opt):
         """ Write the contents of a single package and return the list of files
         written relative to the resources directory.
         """
 
-        # The main application resource does not go in a sub-directory.
         if resource == '':
-            dst_root_dir = resources_dir
+            dst_dir = resources_dir
+            dir_stack = []
         else:
-            dst_root_dir = os.path.join(resources_dir, resource)
-            self._create_directory(dst_root_dir)
-
-        src_root_dir, src_root = os.path.split(src)
+            dst_dir = os.path.join(resources_dir, resource)
+            dir_stack = [resource]
 
         resource_contents = []
 
-        self._write_package_contents(package.contents, dst_root_dir,
-                src_root_dir, [src_root], freeze, opt, resource_contents)
+        self._write_package_contents(package.contents, dst_dir, src_dir,
+                dir_stack, freeze, opt, resource_contents)
 
         return resource_contents
 
-    def _write_package_contents(self, contents, dst_root_dir, src_root_dir, dir_stack, freeze, opt, resource_contents):
+    def _write_package_contents(self, contents, dst_dir, src_dir, dir_stack, freeze, opt, resource_contents):
         """ Write the contents of a single package directory. """
 
-        dir_tail = os.path.join(*dir_stack)
-
-        if dir_tail == '':
-            dir_stack = []
-            dst_dir = dst_root_dir
-        else:
-            if dir_tail == '.':
-                dir_stack = []
-
-            dst_dir = os.path.join(dst_root_dir, dir_tail)
-            self._create_directory(dst_dir)
-
-        prefix = os.path.basename(dst_root_dir)
-        if prefix != 'resources':
-            prefix = [prefix]
-        else:
-            prefix = []
+        self._create_directory(dst_dir)
 
         for content in contents:
             if not content.included:
@@ -495,14 +473,17 @@ class Builder():
 
             if isinstance(content, QrcDirectory):
                 dir_stack.append(content.name)
-                self._write_package_contents(content.contents, dst_root_dir,
-                        src_root_dir, dir_stack, freeze, opt,
-                        resource_contents)
+
+                self._write_package_contents(content.contents,
+                        os.path.join(dst_dir, content.name),
+                        os.path.join(src_dir, content.name), dir_stack, freeze,
+                        opt, resource_contents)
+
                 dir_stack.pop()
             else:
                 freeze_file = True
                 src_file = content.name
-                src_path = os.path.join(src_root_dir, dir_tail, src_file)
+                src_path = os.path.join(src_dir, src_file)
 
                 if src_file.endswith('.py'):
                     dst_file = src_file[:-3] + '.pyf'
@@ -515,19 +496,14 @@ class Builder():
 
                 dst_path = os.path.join(dst_dir, dst_file)
 
-                file_path = list(prefix)
-
-                if dir_tail != '':
-                    file_path.extend(dir_stack)
-
-                file_path.append(dst_file)
-
-                resource_contents.append('/'.join(file_path))
-
                 if freeze_file:
                     self._freeze(dst_path, src_path, freeze, opt, as_data=True)
                 else:
                     shutil.copyfile(src_path, dst_path)
+
+                file_path = list(dir_stack)
+                file_path.append(dst_file)
+                resource_contents.append('/'.join(file_path))
 
     def _write_main_c(self, build_dir, extension_names):
         """ Create the application specific main.c file. """
