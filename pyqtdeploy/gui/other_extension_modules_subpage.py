@@ -31,8 +31,8 @@ from ..project import ExtensionModule
 from .filename_editor_delegate import FilenameEditorDelegate
 
 
-class ExtensionModulesPage(QWidget):
-    """ The GUI for the extension modules page of a project. """
+class OtherExtensionModulesSubpage(QWidget):
+    """ The GUI for the other extension modules sub-page of a project. """
 
     # The page's label.
     label = "Extension Modules"

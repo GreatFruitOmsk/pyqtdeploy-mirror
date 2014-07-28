@@ -28,49 +28,48 @@ import fnmatch
 import os
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import (QGridLayout, QGroupBox, QPushButton, QTreeWidget,
+from PyQt5.QtWidgets import (QGridLayout, QPushButton, QTreeWidget,
         QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ..project import QrcDirectory, QrcFile
 
 
-class QrcPackageEditor(QGroupBox):
-    """ A resource file system package editor. """
+class QrcPackageEditor(QGridLayout):
+    """ A resource file system package editor.  Note that this is a QLayout and
+    not a QWidget.
+    """
 
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, title, show_root=False, scan="Scan"):
+    def __init__(self, show_root=False, scan="Scan"):
         """ Initialise the editor. """
 
-        super().__init__(title)
+        super().__init__()
 
         self.package = None
         self.project = None
 
-        self._title = title
         self._show_root = show_root
-
-        layout = QGridLayout()
 
         self._package_edit = QTreeWidget()
         self._package_edit.header().hide()
         self._package_edit.itemChanged.connect(self._package_changed)
-        layout.addWidget(self._package_edit, 0, 0, 3, 1)
+        self.addWidget(self._package_edit, 0, 0, 3, 1)
 
-        layout.addWidget(QPushButton(scan, clicked=self._scan), 0, 1)
+        self.addWidget(QPushButton(scan, clicked=self._scan), 0, 1)
 
         self._remove_button = QPushButton("Remove all",
                 clicked=self._remove_all, enabled=False)
-        layout.addWidget(self._remove_button, 0, 2)
+        self.addWidget(self._remove_button, 0, 2)
 
         self._include_button = QPushButton("Include all",
                 clicked=self._include_all, enabled=False)
-        layout.addWidget(self._include_button, 1, 1)
+        self.addWidget(self._include_button, 1, 1)
 
         self._exclude_button = QPushButton("Exclude all",
                 clicked=self._exclude_all, enabled=False)
-        layout.addWidget(self._exclude_button, 1, 2)
+        self.addWidget(self._exclude_button, 1, 2)
 
         self._exclusions_edit = QTreeWidget()
         self._exclusions_edit.setHeaderLabel("Exclusions")
@@ -80,9 +79,7 @@ class QrcPackageEditor(QGroupBox):
         self._exclusions_edit.setRootIsDecorated(False)
         self._exclusions_edit.itemChanged.connect(self._exclusion_changed)
 
-        layout.addWidget(self._exclusions_edit, 2, 1, 1, 2)
-
-        self.setLayout(layout)
+        self.addWidget(self._exclusions_edit, 2, 1, 1, 2)
 
     def configure(self, package, project):
         """ Configure the editor with the contents of the given package and

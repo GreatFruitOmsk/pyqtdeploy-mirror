@@ -25,8 +25,8 @@
 
 
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout, QLineEdit,
-        QRadioButton, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout, QGroupBox,
+        QLineEdit, QRadioButton, QVBoxLayout, QWidget)
 
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
@@ -101,7 +101,9 @@ class ApplicationPage(QWidget):
 
         self._package_edit = _ApplicationPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
-        layout.addWidget(self._package_edit, 1, 0, 1, 2)
+        package_edit_gb = QGroupBox(self._package_edit.title)
+        package_edit_gb.setLayout(self._package_edit)
+        layout.addWidget(package_edit_gb, 1, 0, 1, 2)
 
         self.setLayout(layout)
 
@@ -155,12 +157,12 @@ class _ApplicationPackageEditor(QrcPackageEditor):
     """ A memory filesystem package editor for the application package. """
 
     # The editor title.
-    _title = "Application Package"
+    title = "Application Package Directory"
 
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title, show_root=True, scan="Scan...")
+        super().__init__(show_root=True, scan="Scan...")
 
         self._project = None
 
@@ -174,7 +176,8 @@ class _ApplicationPackageEditor(QrcPackageEditor):
         if default != '':
             default = project.absolute_path(default)
 
-        root = QFileDialog.getExistingDirectory(self, self._title, default)
+        root = QFileDialog.getExistingDirectory(self.widget(), self.title,
+                default)
 
         if root != '':
             application_package.name = project.relative_path(root)

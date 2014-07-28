@@ -27,7 +27,7 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QHBoxLayout, QMessageBox, QTreeWidget,
+from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QMessageBox, QTreeWidget,
         QTreeWidgetItem, QWidget)
 
 from ..project import QrcPackage
@@ -35,8 +35,8 @@ from .filename_editor_delegate import FilenameEditorDelegate
 from .qrc_package_editor import QrcPackageEditor
 
 
-class PackagesPage(QWidget):
-    """ The GUI for the packages page of a project. """
+class OtherPackagesSubpage(QWidget):
+    """ The GUI for the other packages sub-page of a project. """
 
     # The page's label.
     label = "Packages"
@@ -86,7 +86,10 @@ class PackagesPage(QWidget):
 
         self._package_edit = _PackageDirectoryEditor()
         self._package_edit.package_changed.connect(self._package_changed)
-        layout.addWidget(self._package_edit)
+
+        package_edit_gb = QGroupBox(self._package_edit.title)
+        package_edit_gb.setLayout(self._package_edit)
+        layout.addWidget(package_edit_gb)
 
         self.setLayout(layout)
 
@@ -170,12 +173,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
     """ A memory filesystem package editor for a package directory. """
 
     # The editor title.
-    _title = "Packages Directory Contents"
-
-    def __init__(self):
-        """ Initialise the editor. """
-
-        super().__init__(self._title)
+    title = "Packages Directory Contents"
 
     def get_root_dir(self):
         """ Get the name of the packages directory. """
@@ -188,7 +186,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
                     project.python_target_stdlib_dir)
 
             if stdlib_dir == '':
-                QMessageBox.warning(self, self._title,
+                QMessageBox.warning(self.widget(), self.title,
                         "site-packages cannot be scanned because the "
                         "directory name of the standard library has not been "
                         "set in the Locations tab.")
@@ -197,7 +195,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
             return os.path.join(stdlib_dir, 'site-packages')
 
         if package.name == '':
-            QMessageBox.warning(self, self._title,
+            QMessageBox.warning(self.widget(), self.title,
                         "The name of the package directory has not been set.")
             return ''
 

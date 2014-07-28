@@ -24,16 +24,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QMessageBox, QWidget
 
 from .qrc_package_editor import QrcPackageEditor
 
 
-class StdlibPage(QWidget):
-    """ The GUI for the standard library page of a project. """
+class StdlibPackagesSubpage(QWidget):
+    """ The GUI for the standard library packages sub-page of a project. """
 
     # The page's label.
-    label = "Standard Library"
+    label = "Packages"
 
     @property
     def project(self):
@@ -58,13 +58,10 @@ class StdlibPage(QWidget):
         self._project = None
 
         # Create the page's GUI.
-        layout = QVBoxLayout()
-
         self._package_edit = _StdlibPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
-        layout.addWidget(self._package_edit)
 
-        self.setLayout(layout)
+        self.setLayout(self._package_edit)
 
     def _update_page(self):
         """ Update the page using the current project. """
@@ -85,7 +82,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
     """
 
     # The editor title.
-    _title = "Standard Library"
+    title = "Standard Library Packages"
 
     # The required Python v3 modules.
     _py3_required = ('_weakrefset.py', 'abc.py', 'codecs.py',
@@ -100,7 +97,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(self._title)
+        super().__init__()
 
         self._project = None
         self._py_version = None
@@ -113,20 +110,20 @@ class _StdlibPackageEditor(QrcPackageEditor):
         major, minor = project.python_target_version
 
         if major is None:
-            QMessageBox.warning(self, self._title,
+            QMessageBox.warning(self.widget(), self.title,
                     "The standard library cannot be scanned because the "
                     "Python version cannot be obtained from the Python "
                     "library name in the Locations tab.")
             return ''
 
         if major == 3 and minor < 3:
-            QMessageBox.warning(self, self._title,
+            QMessageBox.warning(self.widget(), self.title,
                     "When targetting Python v3, Python v3.3 or later is "
                     "required.")
             return ''
 
         if major == 2 and minor < 6:
-            QMessageBox.warning(self, self._title,
+            QMessageBox.warning(self.widget(), self.title,
                     "When targetting Python v2, Python v2.6 or later is "
                     "required.")
             return ''
@@ -136,7 +133,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
         stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         if stdlib_dir == '':
-            QMessageBox.warning(self, self._title,
+            QMessageBox.warning(self.widget(), self.title,
                     "The standard library cannot be scanned because its "
                     "directory name has not been set in the Locations tab.")
             return ''

@@ -38,11 +38,10 @@ from ..version import PYQTDEPLOY_RELEASE
 from .application_page import ApplicationPage
 from .build_page import BuildPage
 from .exception_handlers import handle_user_exception
-from .extension_modules_page import ExtensionModulesPage
 from .locations_page import LocationsPage
-from .packages_page import PackagesPage
+from .other_libraries_page import OtherLibrariesPage
 from .pyqt_page import PyQtPage
-from .stdlib_page import StdlibPage
+from .standard_library_page import StandardLibraryPage
 
 
 class ProjectGUI(QMainWindow):
@@ -135,14 +134,11 @@ class ProjectGUI(QMainWindow):
         pyqt_page = PyQtPage()
         tabs.addTab(pyqt_page, pyqt_page.label)
 
-        stdlib_page = StdlibPage()
-        tabs.addTab(stdlib_page, stdlib_page.label)
+        standard_library_page = StandardLibraryPage()
+        tabs.addTab(standard_library_page, standard_library_page.label)
 
-        packages_page = PackagesPage()
-        tabs.addTab(packages_page, packages_page.label)
-
-        extension_modules_page = ExtensionModulesPage()
-        tabs.addTab(extension_modules_page, extension_modules_page.label)
+        other_libraries_page = OtherLibrariesPage()
+        tabs.addTab(other_libraries_page, other_libraries_page.label)
 
         locations_page = LocationsPage()
         tabs.addTab(locations_page, locations_page.label)
