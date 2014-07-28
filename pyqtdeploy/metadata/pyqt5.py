@@ -158,6 +158,11 @@ pyqt5_metadata = {
                                     gui=False,
                                     qt5=['xmlpatterns', 'network']),
 
+    'Enginio':                  PyQt5Metadata(
+                                    deps=['QtNetwork'],
+                                    gui=False,
+                                    qt5=['enginio']),
+
     'uic':                      PyQt5Metadata(
                                     deps=['QtWidgets']),
 
