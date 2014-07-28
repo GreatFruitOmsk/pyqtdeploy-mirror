@@ -198,7 +198,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     Py_DECREF(py_filename);
 
     // Import the main module, ie. execute the application.
-    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0)
+    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0 && !PyErr_ExceptionMatches(PyExc_SystemExit))
         goto py_error;
 
     // Tidy up.
