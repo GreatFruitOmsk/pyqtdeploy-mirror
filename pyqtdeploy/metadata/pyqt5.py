@@ -24,10 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from .metadata import Metadata
+from .pyqt_metadata import PyQtMetadata
 
 
-class PyQt5Metadata(Metadata):
+class PyQt5Metadata(PyQtMetadata):
     """ Encapsulate the meta-data for a single PyQt5 module. """
 
     def __init__(self, group='base', deps=(), gui=True, qt5=(), config5=()):

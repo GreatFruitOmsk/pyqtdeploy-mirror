@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-class Metadata:
+class PyQtMetadata:
     """ Encapsulate the meta-data for a single PyQt module. """
 
     def __init__(self, group, deps, gui, qt4, qt5, config4, config5, needs_suffix):

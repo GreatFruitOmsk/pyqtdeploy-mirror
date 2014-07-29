@@ -26,6 +26,8 @@
 
 from PyQt5.QtWidgets import QMessageBox, QWidget
 
+from ..metadata import get_python_metadata
+
 from .qrc_package_editor import QrcPackageEditor
 
 
@@ -84,23 +86,13 @@ class _StdlibPackageEditor(QrcPackageEditor):
     # The editor title.
     title = "Standard Library Packages"
 
-    # The required Python v3 modules.
-    _py3_required = ('_weakrefset.py', 'abc.py', 'codecs.py',
-        'encodings/__init__.py', 'encodings/aliases.py', 'encodings/ascii.py',
-        'encodings/cp437.py', 'encodings/latin_1.py', 'encodings/mbcs.py',
-        'encodings/utf_8.py', 'importlib/__init__.py', 'io.py', 'types.py',
-        'warnings.py')
-
-    # The required Python v2 modules.
-    _py2_required = ('atexit.py', )
-
     def __init__(self):
         """ Initialise the editor. """
 
         super().__init__()
 
         self._project = None
-        self._py_version = None
+        self._py_metadata = None
 
     def get_root_dir(self):
         """ Get the name of the Python standard library directory. """
@@ -128,7 +120,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
                     "required.")
             return ''
 
-        self._py_version = major
+        self._py_metadata = get_python_metadata(major, minor)
 
         stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
@@ -151,9 +143,7 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def required(self, name):
         """ See if a name is required. """
 
-        required_modules = self._py3_required if self._py_version == 3 else self._py2_required
-
-        if name in required_modules:
+        if name in self._py_metadata.required:
             return True
 
         return super().filter(name)
