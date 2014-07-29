@@ -37,11 +37,12 @@ class Project(QObject):
 
     # The current project version.
     #   0: The original version.
-    #   1: Added the Others element with the builddir and qmake attributes.
+    #   1: Added the Others element.
     #   2: The SitePackages element can now contain multiple Package
     #      sub-elements.
     #      Added the syspath attribute to the Application element.
-    #   3: The Python element now has the sourcedir attribute.
+    #   3: Added the sourcedir attribute to the Python element.
+    #      Added the StdlibExtensionModule element to the Stdlib element.
     version = 3
 
     # Emitted when the modification state of the project changes.
@@ -129,6 +130,7 @@ class Project(QObject):
         self.qmake = ''
         self.packages = [QrcPackage()]
         self.stdlib_package = QrcPackage()
+        self.stdlib_extension_modules = []
         self.sys_path = ''
 
     def relative_path(self, filename):
@@ -241,6 +243,19 @@ class Project(QObject):
         cls._assert(stdlib_package is not None,
                 "Missing 'Application.Stdlib.Package' tag.")
         project.stdlib_package = cls._load_package(stdlib_package)
+
+        for stdlib_extension_module_element in stdlib.iterfind('StdlibExtensionModule'):
+            name = stdlib_extension_module_element.get('name')
+            cls._assert(name is not None,
+                    "Missing 'Application.Stdlib.StdlibExtensionModule.name' attribute.")
+
+            defines = stdlib_extension_module_element.get('defines', '')
+            includepath = stdlib_extension_module_element.get('includepath',
+                    '')
+            libs = stdlib_extension_module_element.get('libs', '')
+
+            project.stdlib_extension_modules.append(
+                    StdlibExtensionModule(name, defines, includepath, libs))
 
         for extension_module_element in application.iterfind('ExtensionModule'):
             name = extension_module_element.get('name')
@@ -378,6 +393,13 @@ class Project(QObject):
         stdlib = SubElement(application, 'Stdlib')
         self._save_package(stdlib, self.stdlib_package)
 
+        for stdlib_extension_module in self.stdlib_extension_modules:
+            SubElement(stdlib, 'StdlibExtensionModule', attrib={
+                'name': stdlib_extension_module.name,
+                'defines': stdlib_extension_module.defines,
+                'includepath': stdlib_extension_module.includepath,
+                'libs': stdlib_extension_module.libs})
+
         for extension_module in self.extension_modules:
             SubElement(application, 'ExtensionModule', attrib={
                 'name': extension_module.name,
@@ -497,11 +519,23 @@ class QrcDirectory(QrcFile):
         return copy
 
 
+class StdlibExtensionModule():
+    """ The encapsulation of a standard library extension module. """
+
+    def __init__(self, name, defines, includepath, libs):
+        """ Initialise the extension module. """
+
+        self.name = name
+        self.defines = defines
+        self.includepath = includepath
+        self.libs = libs
+
+
 class ExtensionModule():
     """ The encapsulation of an extension module. """
 
     def __init__(self, name, path):
-        """ Initialise the extension. """
+        """ Initialise the extension module. """
 
         self.name = name
         self.path = path
