@@ -176,8 +176,8 @@ class _ApplicationPackageEditor(QrcPackageEditor):
         if default != '':
             default = project.absolute_path(default)
 
-        root = QFileDialog.getExistingDirectory(self.widget(), self.title,
-                default)
+        root = QFileDialog.getExistingDirectory(self.parentWidget(),
+                self.title, default)
 
         if root != '':
             application_package.name = project.relative_path(root)

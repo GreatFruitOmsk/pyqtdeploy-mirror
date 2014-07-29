@@ -186,7 +186,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
                     project.python_target_stdlib_dir)
 
             if stdlib_dir == '':
-                QMessageBox.warning(self.widget(), self.title,
+                QMessageBox.warning(self.parentWidget(), self.title,
                         "site-packages cannot be scanned because the "
                         "directory name of the standard library has not been "
                         "set in the Locations tab.")
@@ -195,7 +195,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
             return os.path.join(stdlib_dir, 'site-packages')
 
         if package.name == '':
-            QMessageBox.warning(self.widget(), self.title,
+            QMessageBox.warning(self.parentWidget(), self.title,
                         "The name of the package directory has not been set.")
             return ''
 
