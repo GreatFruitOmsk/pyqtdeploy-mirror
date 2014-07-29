@@ -137,4 +137,4 @@ class OtherExtensionModulesSubpage(QWidget):
                         project.relative_path(em_edit.topLevelItem(i).data(1, Qt.DisplayRole)))
                         for i in range(em_edit.topLevelItemCount() - 1)]
 
-        self.project.modified = True
+        project.modified = True
