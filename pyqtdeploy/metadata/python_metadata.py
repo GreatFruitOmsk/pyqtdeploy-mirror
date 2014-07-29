@@ -65,8 +65,8 @@ class Python2Metadata(PythonMetadata):
 
 # The version-specific meta-data.
 _python_metadata = {
-    (3, 3):     Python3MetaData(),
-    (2, 6):     Python2MetaData()
+    (3, 3):     Python3Metadata(),
+    (2, 6):     Python2Metadata()
 }
 
 

@@ -120,8 +120,6 @@ class _StdlibPackageEditor(QrcPackageEditor):
                     "required.")
             return ''
 
-        self._py_metadata = get_python_metadata(major, minor)
-
         stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         if stdlib_dir == '':
@@ -143,6 +141,10 @@ class _StdlibPackageEditor(QrcPackageEditor):
     def required(self, name):
         """ See if a name is required. """
 
+        if self._py_metadata is None:
+            self._py_metadata = get_python_metadata(
+                    *self._project.python_target_version)
+
         if name in self._py_metadata.required:
             return True
 
@@ -152,3 +154,5 @@ class _StdlibPackageEditor(QrcPackageEditor):
         """ Set the project. """
 
         self._project = project
+
+        self._py_metadata = None
