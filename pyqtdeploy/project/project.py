@@ -41,7 +41,8 @@ class Project(QObject):
     #   2: The SitePackages element can now contain multiple Package
     #      sub-elements.
     #      Added the syspath attribute to the Application element.
-    version = 2
+    #   3: The Python element now has the sourcedir attribute.
+    version = 3
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -121,6 +122,7 @@ class Project(QObject):
         self.extension_modules = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
+        self.python_source_dir = ''
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
@@ -256,6 +258,7 @@ class Project(QObject):
         cls._assert(python is not None, "Missing 'Python' tag.")
 
         project.python_host_interpreter = python.get('hostinterpreter', '')
+        project.python_source_dir = python.get('sourcedir', '')
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
         project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
@@ -382,6 +385,7 @@ class Project(QObject):
 
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,
+            'sourcedir': self.python_source_dir,
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library,
             'targetstdlibdir': self.python_target_stdlib_dir})

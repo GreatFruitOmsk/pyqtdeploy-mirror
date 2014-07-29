@@ -48,6 +48,7 @@ class LocationsPage(QWidget):
 
         if self._project != value:
             self._project = value
+            self._source_edit.set_project(value)
             self._target_inc_edit.set_project(value)
             self._target_lib_edit.set_project(value)
             self._target_stdlib_edit.set_project(value)
@@ -71,6 +72,12 @@ class LocationsPage(QWidget):
                         "This must be on PATH or be an absolute pathname.",
                 textEdited=self._host_interp_changed)
         py_host_layout.addRow("Interpreter", self._host_interp_edit)
+
+        self._source_edit = FilenameEditor("Source Directory",
+                placeholderText="Source directory name",
+                whatsThis="The name of the source directory.",
+                textEdited=self._source_changed, directory=True)
+        py_host_layout.addRow("Source directory", self._source_edit)
 
         py_host_group.setLayout(py_host_layout)
 
@@ -134,6 +141,7 @@ class LocationsPage(QWidget):
         project = self.project
 
         self._host_interp_edit.setText(project.python_host_interpreter)
+        self._source_edit.setText(project.python_source_dir)
         self._target_inc_edit.setText(project.python_target_include_dir)
         self._target_lib_edit.setText(project.python_target_library)
         self._target_stdlib_edit.setText(project.python_target_stdlib_dir)
@@ -144,6 +152,12 @@ class LocationsPage(QWidget):
         """ Invoked when the user edits the host interpreter name. """
 
         self.project.python_host_interpreter = value
+        self.project.modified = True
+
+    def _source_changed(self, value):
+        """ Invoked when the user edits the source directory name. """
+
+        self.project.python_source_dir = value
         self.project.modified = True
 
     def _target_inc_changed(self, value):
