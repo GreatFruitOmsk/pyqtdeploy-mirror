@@ -24,43 +24,85 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+class ModuleMetadata:
+    """ Encapsulate the meta-data for a single extension module. """
+
+    def __init__(self, name, source='', defines='', includepath='', libs=''):
+        """ Initialise the object. """
+
+        # The name of the module.
+        self.name = name
+
+        # The name of the source file relative to the Modules directory.
+        self.source = source if source != '' else name + 'module.c'
+
+        # The DEFINES to add to the .pro file.
+        self.defines = defines
+
+        # The INCLUDEPATH to add to the .pro file.
+        self.includepath = includepath
+
+        # The LIBS to add to the .pro file.
+        self.libs = libs
+
+
 class PythonMetadata:
     """ Encapsulate the meta-data for a single Python version. """
 
-    def __init__(self, required):
+    # These modules are common to all Python versions.
+    _common_modules = (
+        ModuleMetadata('cmath', libs='-lm'),
+    )
+
+    def __init__(self, required, modules):
         """ Initialise the object. """
 
         # The sequence of the names of standard library packages that are
         # required by every application.
         self.required = required
 
+        # The sequence of standard library extension modules meta-data.
+        self.modules = modules + self._common_modules
+
 
 class Python3Metadata(PythonMetadata):
     """ Encapsulate the meta-data for a single Python v3 minor version. """
 
+    # These modules are common to all Python v3 minor versions.
+    _py3_modules = (
+        ModuleMetadata('_datetime'),
+    )
+
     # The required Python v3 modules.
-    _required = ('_weakrefset.py', 'abc.py', 'codecs.py',
+    _py3_required = ('_weakrefset.py', 'abc.py', 'codecs.py',
         'encodings/__init__.py', 'encodings/aliases.py', 'encodings/ascii.py',
         'encodings/cp437.py', 'encodings/latin_1.py', 'encodings/mbcs.py',
         'encodings/utf_8.py', 'importlib/__init__.py', 'io.py', 'types.py',
         'warnings.py')
 
-    def __init__(self):
+    def __init__(self, modules=()):
         """ Initialise the object. """
 
-        super().__init__(self._required)
+        super().__init__(required=self._py3_required,
+                modules=modules + self._py3_modules)
 
 
 class Python2Metadata(PythonMetadata):
     """ Encapsulate the meta-data for a single Python v2 minor version. """
 
-    # The required Python v2 modules.
-    _required = ('atexit.py', )
+    # These modules are common to all Python v3 minor versions.
+    _py2_modules = (
+        ModuleMetadata('datetime'),
+    )
 
-    def __init__(self):
+    # The required Python v2 modules.
+    _py2_required = ('atexit.py', )
+
+    def __init__(self, modules=()):
         """ Initialise the object. """
 
-        super().__init__(self._required)
+        super().__init__(required=self._py2_required,
+                modules=modules + self._py2_modules)
 
 
 # The version-specific meta-data.

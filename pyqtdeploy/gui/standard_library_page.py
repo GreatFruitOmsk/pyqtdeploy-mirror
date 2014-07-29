@@ -24,13 +24,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QTabWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QStackedWidget, QTabWidget
 
 from .stdlib_extension_modules_subpage import StdlibExtensionModulesSubpage
 from .stdlib_packages_subpage import StdlibPackagesSubpage
 
 
-class StandardLibraryPage(QTabWidget):
+class StandardLibraryPage(QStackedWidget):
     """ The GUI for the standard library page of a project. """
 
     # The page's label.
@@ -50,6 +51,11 @@ class StandardLibraryPage(QTabWidget):
             self._project = value
             self._packages.project = value
             self._extension_modules.project = value
+            self._update_page()
+
+            if self._tab_widget is None:
+                self._tab_widget = self.parent().parent()
+                self._tab_widget.currentChanged.connect(self._tab_changed)
 
     def __init__(self):
         """ Initialise the page. """
@@ -57,10 +63,53 @@ class StandardLibraryPage(QTabWidget):
         super().__init__()
 
         self._project = None
+        self._tab_widget = None
 
         # Create the page's GUI.
+        self._sub_pages = QTabWidget()
+
         self._packages = StdlibPackagesSubpage()
-        self.addTab(self._packages, self._packages.label)
+        self._sub_pages.addTab(self._packages, self._packages.label)
 
         self._extension_modules = StdlibExtensionModulesSubpage()
-        self.addTab(self._extension_modules, self._extension_modules.label)
+        self._sub_pages.addTab(self._extension_modules,
+                self._extension_modules.label)
+
+        self.addWidget(self._sub_pages)
+
+        self._warning = QLabel()
+        self._warning.setAlignment(Qt.AlignCenter)
+        self.addWidget(self._warning)
+
+    def _update_page(self):
+        """ Update the page using the current project. """
+
+        project = self.project
+
+        major, minor = project.python_target_version
+
+        if major is None:
+            warning_text = "The Python version cannot be obtained from the " \
+                    "<b>Python library</b> field of the <b>Locations</b> tab."
+        elif major == 3 and minor < 3:
+            warning_text = "You seem to be using Python v{0}.{1}. When " \
+                    "targetting Python v3, Python v3.3 or later is " \
+                    "required.".format(major, minor)
+        elif major == 2 and minor < 6:
+            warning_text = "You seem to be using Python v{0}.{1}. When " \
+                    "targetting Python v2, Python v2.6 or later is " \
+                    "required.".format(major, minor)
+        else:
+            warning_text = ''
+
+        if warning_text == '':
+            self.setCurrentWidget(self._sub_pages)
+        else:
+            self._warning.setText(warning_text)
+            self.setCurrentWidget(self._warning)
+
+    def _tab_changed(self, idx):
+        """ Invoked when the current tab of the containing widget changes. """
+
+        if self._tab_widget.widget(idx) is self:
+            self._update_page()

@@ -99,33 +99,13 @@ class _StdlibPackageEditor(QrcPackageEditor):
 
         project = self._project
 
-        major, minor = project.python_target_version
-
-        if major is None:
-            QMessageBox.warning(self.parentWidget(), self.title,
-                    "The standard library cannot be scanned because the "
-                    "Python version cannot be obtained from the Python "
-                    "library name in the Locations tab.")
-            return ''
-
-        if major == 3 and minor < 3:
-            QMessageBox.warning(self.parentWidget(), self.title,
-                    "When targetting Python v3, Python v3.3 or later is "
-                    "required.")
-            return ''
-
-        if major == 2 and minor < 6:
-            QMessageBox.warning(self.parentWidget(), self.title,
-                    "When targetting Python v2, Python v2.6 or later is "
-                    "required.")
-            return ''
-
         stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
 
         if stdlib_dir == '':
             QMessageBox.warning(self.parentWidget(), self.title,
                     "The standard library cannot be scanned because its "
-                    "directory name has not been set in the Locations tab.")
+                    "directory name has not been set in the <b>Standard "
+                    "library directory</b> field of the <b>Locations</b> tab.")
             return ''
 
         return stdlib_dir
