@@ -24,7 +24,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QVBoxLayout,
+        QWidget)
+
+from ..metadata import get_python_metadata
 
 
 class StdlibExtensionModulesSubpage(QWidget):
@@ -59,11 +63,24 @@ class StdlibExtensionModulesSubpage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        sub_page = QTreeWidget()
+        em_edit = QTableWidget()
+        self._extension_modules_edit = em_edit
 
-        sub_page.setHeaderLabels(["Name", "DEFINES", "INCLUDEPATH", "LIBS"])
+        em_edit.setColumnCount(4)
+        em_edit.setHorizontalHeaderLabels(
+                ["Name", "DEFINES", "INCLUDEPATH", "LIBS"])
+        h_header = em_edit.horizontalHeader()
+        h_header.setDefaultAlignment(Qt.AlignLeft)
+        h_header.setStretchLastSection(True)
+        h_header.setHighlightSections(False)
+        em_edit.verticalHeader().hide()
 
-        layout.addWidget(sub_page)
+        em_edit.setEditTriggers(
+                QTableWidget.DoubleClicked|QTableWidget.SelectedClicked|
+                QTableWidget.EditKeyPressed)
+        em_edit.cellChanged.connect(self._cell_changed)
+
+        layout.addWidget(em_edit)
 
         self.setLayout(layout)
 
@@ -71,3 +88,45 @@ class StdlibExtensionModulesSubpage(QWidget):
         """ Update the page using the current project. """
 
         project = self.project
+        em_edit = self._extension_modules_edit
+
+        # Set the extension modules.
+        em_edit.clearContents()
+
+        modules = get_python_metadata(*project.python_target_version).modules
+        modules = sorted(modules,
+                key=lambda m: m.name[1:] if m.name.startswith('_') else m.name)
+
+        blocked = em_edit.blockSignals(True)
+
+        em_edit.setRowCount(len(modules))
+
+        for row, module in enumerate(modules):
+            self._add_cell(module.name, row, 0)
+            self._add_cell(module.defines, row, 1)
+            self._add_cell(module.includepath, row, 2)
+            self._add_cell(module.libs, row, 3)
+
+        em_edit.resizeColumnToContents(0)
+
+        em_edit.blockSignals(blocked)
+
+    def _add_cell(self, text, row, col):
+        """ Add a cell to the table. """
+
+        itm = QTableWidgetItem(text)
+
+        if col == 0:
+            itm.setCheckState(Qt.Unchecked)
+            flags = Qt.ItemIsUserCheckable|Qt.ItemIsEnabled
+        else:
+            flags = Qt.ItemIsSelectable|Qt.ItemIsEditable|Qt.ItemIsEnabled
+
+        itm.setFlags(flags)
+
+        self._extension_modules_edit.setItem(row, col, itm)
+
+    def _cell_changed(self, row, col):
+        """ Invoked when a cell has changed. """
+
+        print(row, col)
