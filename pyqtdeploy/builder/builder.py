@@ -34,7 +34,7 @@ from PyQt5.QtCore import QDir, QFile
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
-from ..metadata import pyqt4_metadata, pyqt5_metadata
+from ..metadata import get_python_metadata, pyqt4_metadata, pyqt5_metadata
 from ..project import QrcDirectory, QrcFile
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
@@ -51,6 +51,11 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
+        # These will be set when we do the build.
+        self._py_major = None
+        self._py_minor = None
+        self._py_metadata = None
+
     def build(self, opt, build_dir=None, clean=False, console=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
@@ -58,6 +63,25 @@ class Builder():
 
         project = self._project
 
+        # Initialise and check we have the information we need.
+        self._py_major, self._py_minor = project.python_target_version
+        if self._py_major is None:
+            raise UserException("Unable to determine target Python version")
+
+        if project.stdlib_extension_modules:
+            self._py_metadata = get_python_metadata(self._py_major,
+                    self._py_minor)
+            if self._py_metadata is None:
+                raise UserException(
+                        "No valid meta-data for Python v{0}.{1}".format(
+                                self._py_major, self._py_minor))
+
+            if project.python_source_dir == '':
+                raise UserException(
+                        "The name of the Python source directory has not been "
+                        "specified")
+
+        # Get the name of the build directory.
         if build_dir is None:
             build_dir = project.build_dir
             if build_dir == '':
@@ -65,17 +89,43 @@ class Builder():
 
             build_dir = project.absolute_path(build_dir)
 
+        # Remove any build directory if required.
         if clean:
             self._message_handler.progress_message(
                     "Cleaning {0}".format(build_dir))
             shutil.rmtree(build_dir, ignore_errors=True)
 
+        # Now start the build.
         self._create_directory(build_dir)
 
         freeze = self._copy_lib_file('freeze.py')
 
         self._write_qmake(build_dir, console, freeze, opt)
 
+        # Freeze the bootstrap.
+        py_version = (self._py_major << 16) + (self._py_minor << 8)
+
+        bootstrap_src = get_embedded_file_for_version(py_version, __file__,
+                'lib', 'bootstrap')
+        bootstrap = self._copy_lib_file(bootstrap_src,
+                dst_file_name='bootstrap.py')
+        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
+                freeze, opt, name='pyqtdeploy_bootstrap')
+        os.remove(bootstrap)
+
+        # Freeze the main application script.
+        self._freeze(os.path.join(build_dir, 'frozen_main.h'),
+                project.absolute_path(project.application_script), freeze, opt,
+                name='pyqtdeploy_main')
+
+        # Create the pyqtdeploy module version file.
+        version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
+        version_f.write(
+                '#define PYQTDEPLOY_HEXVERSION %s\n' % hex(
+                        PYQTDEPLOY_HEXVERSION))
+        version_f.close()
+
+        # Generate the resource files.
         resources_dir = os.path.join(build_dir, 'resources')
         self._create_directory(resources_dir)
         stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
@@ -325,29 +375,32 @@ class Builder():
 
         f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
 
-        major, minor = project.python_target_version
-        if major is None:
-            raise UserException("Unable to determine target Python version")
+        # Handle any standard library extension modules.
+        if project.stdlib_extension_modules:
+            source_dir = project.absolute_path(project.python_source_dir)
 
-        py_version = (major << 16) + (minor << 8)
+            f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
 
-        bootstrap_src = get_embedded_file_for_version(py_version, __file__,
-                'lib', 'bootstrap')
-        bootstrap = self._copy_lib_file(bootstrap_src,
-                dst_file_name='bootstrap.py')
-        self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
-                freeze, opt, name='pyqtdeploy_bootstrap')
-        os.remove(bootstrap)
+            for module in project.stdlib_extension_modules:
+                for module_metadata in self._py_metadata.modules:
+                    # We ignore any module in the project that we don't have
+                    # meta-data for.  This can happen if the application has
+                    # been configured for one Python version then switched to
+                    # another.
+                    if module_metadata.name == module.name:
+                        f.write('\n')
 
-        self._freeze(os.path.join(build_dir, 'frozen_main.h'),
-                project.absolute_path(project.application_script), freeze, opt,
-                name='pyqtdeploy_main')
+                        if module.defines != '':
+                            f.write('DEFINES += {0}\n'.format(module.defines))
 
-        version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
-        version_f.write(
-                '#define PYQTDEPLOY_HEXVERSION %s\n' % hex(
-                        PYQTDEPLOY_HEXVERSION))
-        version_f.close()
+                        if module.includepath != '':
+                            f.write('INCLUDEPATH += {0}\n'.format(module.includepath))
+
+                        if module.libs != '':
+                            f.write('LIBS += {0}\n'.format(module.libs))
+
+                        f.write('SOURCES += {0}\n'.format(
+                                ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_metadata.sources])))
 
         # All done.
         f.close()

@@ -27,14 +27,17 @@
 class ModuleMetadata:
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, name, source='', defines='', includepath='', libs=''):
+    def __init__(self, name, sources=None, defines='', includepath='', libs=''):
         """ Initialise the object. """
 
         # The name of the module.
         self.name = name
 
-        # The name of the source file relative to the Modules directory.
-        self.source = source if source != '' else name + 'module.c'
+        # The sequence of the source files relative to the Modules directory.
+        if sources is None:
+            sources = [name + 'module.c']
+
+        self.sources = sources
 
         # The DEFINES to add to the .pro file.
         self.defines = defines
@@ -52,6 +55,7 @@ class PythonMetadata:
     # These modules are common to all Python versions.
     _common_modules = (
         ModuleMetadata('cmath', libs='-lm'),
+        ModuleMetadata('time', libs='-lm'),
     )
 
     def __init__(self, required, modules):
@@ -71,6 +75,8 @@ class Python3Metadata(PythonMetadata):
     # These modules are common to all Python v3 minor versions.
     _py3_modules = (
         ModuleMetadata('_datetime'),
+        ModuleMetadata('math', sources=['mathmodule.c', '_math.c'],
+                libs='-lm'),
     )
 
     # The required Python v3 modules.
@@ -93,6 +99,7 @@ class Python2Metadata(PythonMetadata):
     # These modules are common to all Python v3 minor versions.
     _py2_modules = (
         ModuleMetadata('datetime'),
+        ModuleMetadata('math', libs='-lm'),
     )
 
     # The required Python v2 modules.

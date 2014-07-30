@@ -49,9 +49,10 @@ class StandardLibraryPage(QStackedWidget):
 
         if self._project != value:
             self._project = value
-            self._packages.project = value
-            self._extension_modules.project = value
-            self._update_page()
+
+            if self._update_page():
+                self._packages.project = value
+                self._extension_modules.project = value
 
             if self._tab_widget is None:
                 self._tab_widget = self.parent().parent()
@@ -82,7 +83,9 @@ class StandardLibraryPage(QStackedWidget):
         self.addWidget(self._warning)
 
     def _update_page(self):
-        """ Update the page using the current project. """
+        """ Update the page using the current project.  Return True if the
+        sub-pages are enabled.
+        """
 
         project = self.project
 
@@ -104,9 +107,13 @@ class StandardLibraryPage(QStackedWidget):
 
         if warning_text == '':
             self.setCurrentWidget(self._sub_pages)
+            enabled = True
         else:
             self._warning.setText(warning_text)
             self.setCurrentWidget(self._warning)
+            enabled = False
+
+        return enabled
 
     def _tab_changed(self, idx):
         """ Invoked when the current tab of the containing widget changes. """
