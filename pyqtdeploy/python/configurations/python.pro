@@ -248,7 +248,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/zipimport.c \
         Modules/faulthandler.c \
         Modules/symtablemodule.c \
-        Modules/xxsubtype.c
 
     greaterThan(PY_MINOR_VERSION, 3) {
         MOD_SOURCES += \
@@ -268,7 +267,10 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_codecsmodule.c \
         Modules/zipimport.c \
         Modules/symtablemodule.c \
-        Modules/xxsubtype.c
+
+    greaterThan(PY_MINOR_VERSION, 6) {
+        Modules/_weakref.c
+    }
 }
 
 SOURCES = Modules/getbuildinfo.c Python/frozen.c

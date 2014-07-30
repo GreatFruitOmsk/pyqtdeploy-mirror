@@ -387,6 +387,10 @@ class Builder():
 
             f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
 
+            # Modules can share sources so we need to make sure we don't
+            # include them more than once.
+            used_sources = []
+
             for module in project.stdlib_extension_modules:
                 # We ignore any module in the project that we don't have
                 # meta-data for.  This can happen if the application has been
@@ -402,11 +406,21 @@ class Builder():
                     if module.includepath != '':
                         f.write('INCLUDEPATH += {0}\n'.format(module.includepath))
 
+                    if module_metadata.subdir != '':
+                        f.write('INCLUDEPATH += {0}/Modules/{1}\n'.format(source_dir, module_metadata.subdir))
+
                     if module.libs != '':
                         f.write('LIBS += {0}\n'.format(module.libs))
 
-                    f.write('SOURCES += {0}\n'.format(
-                            ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_metadata.sources])))
+                    module_sources = []
+                    for src in module_metadata.sources:
+                        if src not in used_sources:
+                            module_sources.append(src)
+                            used_sources.append(src)
+
+                    if module_sources:
+                        f.write('SOURCES += {0}\n'.format(
+                            ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_sources])))
 
         # All done.
         f.close()

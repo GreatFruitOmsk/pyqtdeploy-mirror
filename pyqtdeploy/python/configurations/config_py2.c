@@ -57,9 +57,11 @@ extern void initerrno(void);
 extern void initpwd(void);
 extern void init_sre(void);
 extern void init_codecs(void);
+#if PY_MINOR_VERSION >= 7
+extern void init_weakref(void);
+#endif
 extern void initzipimport(void);
 extern void init_symtable(void);
-extern void initxxsubtype(void);
 /* -- ADDMODULE MARKER 1 -- */
 
 extern void PyMarshal_Init(void);
@@ -77,9 +79,11 @@ struct _inittab _PyImport_Inittab[] = {
 {"pwd", initpwd},
 {"_sre", init_sre},
 {"_codecs", init_codecs},
+#if PY_MINOR_VERSION >= 7
+{"_weakref", init_weakref},
+#endif
 {"zipimport", initzipimport},
 {"_symtable", init_symtable},
-{"xxsubtype", initxxsubtype},
 /* -- ADDMODULE MARKER 2 -- */
 
 	/* This module lives in marshal.c */

@@ -46,6 +46,13 @@ For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
 new configuration items.  Add any new ones to ``pyconfig.py``.
 
 
+setup.py
+........
+
+See if there are any changes to ``setup.py`` and update the Python module
+meta-data accordingly.
+
+
 python.pro
 ..........
 

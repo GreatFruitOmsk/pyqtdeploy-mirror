@@ -107,7 +107,7 @@ class StdlibExtensionModulesSubpage(QWidget):
                     break
             else:
                 defines = metadata.defines
-                includepath = metadata.includepath
+                includepath = ''
                 libs = metadata.libs
                 project_module = None
 
@@ -157,7 +157,7 @@ class StdlibExtensionModulesSubpage(QWidget):
                 # Add the module.
                 metadata = itm._module_metadata
                 module = StdlibExtensionModule(metadata.name, metadata.defines,
-                        metadata.includepath, metadata.libs)
+                        '', metadata.libs)
                 project.stdlib_extension_modules.append(module)
                 itm._module = module
 
@@ -171,7 +171,7 @@ class StdlibExtensionModulesSubpage(QWidget):
                 metadata = itm._module_metadata
 
                 model.item(row, 1).setText(metadata.defines)
-                model.item(row, 2).setText(metadata.includepath)
+                model.item(row, 2).setText('')
                 model.item(row, 3).setText(metadata.libs)
 
                 new_flags = Qt.ItemIsEnabled
