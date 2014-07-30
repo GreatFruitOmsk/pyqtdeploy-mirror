@@ -217,7 +217,7 @@ class Builder():
         qmake_config5 = set()
 
         for pyqt_m in project.pyqt_modules:
-            metadata = self._get_module_metadata(pyqt_m)
+            metadata = self._get_pyqt_module_metadata(pyqt_m)
 
             if metadata.gui:
                 needs_gui = True
@@ -295,7 +295,7 @@ class Builder():
             for pyqt in self._get_all_pyqt_modules():
                 if pyqt != 'uic':
                     lib_name = pyqt
-                    if self._get_module_metadata(pyqt).needs_suffix:
+                    if self._get_pyqt_module_metadata(pyqt).needs_suffix:
                         # Qt4's qmake thinks -lQtCore etc. always refer to the
                         # Qt libraries so PyQt4 creates static libraries with a
                         # suffix.
@@ -368,8 +368,14 @@ class Builder():
         # Specify the source and header files.
         f.write('\n')
 
+        # Add any standard library modules to the inittab list.
+        extension_module_names = list(extensions.keys())
+        for module in project.stdlib_extension_modules:
+            if self._get_py_module_metadata(module.name) is not None:
+                extension_module_names.append(module.name)
+
         f.write('SOURCES = main.c pyqtdeploy_start.cpp pyqtdeploy_module.cpp\n')
-        self._write_main_c(build_dir, extensions.keys())
+        self._write_main_c(build_dir, extension_module_names)
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
@@ -382,25 +388,25 @@ class Builder():
             f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
 
             for module in project.stdlib_extension_modules:
-                for module_metadata in self._py_metadata.modules:
-                    # We ignore any module in the project that we don't have
-                    # meta-data for.  This can happen if the application has
-                    # been configured for one Python version then switched to
-                    # another.
-                    if module_metadata.name == module.name:
-                        f.write('\n')
+                # We ignore any module in the project that we don't have
+                # meta-data for.  This can happen if the application has been
+                # configured for one Python version then switched to another.
+                module_metadata = self._get_py_module_metadata(module.name)
 
-                        if module.defines != '':
-                            f.write('DEFINES += {0}\n'.format(module.defines))
+                if module_metadata is not None:
+                    f.write('\n')
 
-                        if module.includepath != '':
-                            f.write('INCLUDEPATH += {0}\n'.format(module.includepath))
+                    if module.defines != '':
+                        f.write('DEFINES += {0}\n'.format(module.defines))
 
-                        if module.libs != '':
-                            f.write('LIBS += {0}\n'.format(module.libs))
+                    if module.includepath != '':
+                        f.write('INCLUDEPATH += {0}\n'.format(module.includepath))
 
-                        f.write('SOURCES += {0}\n'.format(
-                                ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_metadata.sources])))
+                    if module.libs != '':
+                        f.write('LIBS += {0}\n'.format(module.libs))
+
+                    f.write('SOURCES += {0}\n'.format(
+                            ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_metadata.sources])))
 
         # All done.
         f.close()
@@ -435,8 +441,17 @@ class Builder():
 
         return resources
 
-    def _get_module_metadata(self, module_name):
-        """ Get the metadata for a module. """
+    def _get_py_module_metadata(self, name):
+        """ Get the meta-data for a Python module. """
+
+        for module_metadata in self._py_metadata.modules:
+            if module_metadata.name == name:
+                return module_metadata
+
+        return None
+
+    def _get_pyqt_module_metadata(self, module_name):
+        """ Get the meta-data for a PyQt module. """
 
         if self._project.application_is_pyqt5:
             metadata = pyqt5_metadata
@@ -451,22 +466,22 @@ class Builder():
         all_modules = []
 
         for module_name in self._project.pyqt_modules:
-            self._get_module_dependencies(module_name, all_modules)
+            self._get_pyqt_module_dependencies(module_name, all_modules)
 
             if module_name not in all_modules:
                 all_modules.append(module_name)
 
         return all_modules
 
-    def _get_module_dependencies(self, module_name, all_modules):
-        """ Update a list of dependencies for a module. """
+    def _get_pyqt_module_dependencies(self, module_name, all_modules):
+        """ Update a list of dependencies for a PyQt module. """
 
-        for dep in self._get_module_metadata(module_name).deps:
+        for dep in self._get_pyqt_module_metadata(module_name).deps:
             if dep not in all_modules:
                 all_modules.append(dep)
 
             # Handle sub-dependencies.
-            self._get_module_dependencies(dep, all_modules)
+            self._get_pyqt_module_dependencies(dep, all_modules)
 
     @staticmethod
     def _quote(name):
