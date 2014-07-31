@@ -147,13 +147,13 @@ automatically included as dependencies.
 Defining the Standard Library Packages
 --------------------------------------
 
-The tab for defining the Python standard library packages used by the
+The sub-tab for defining the Python standard library packages used by the
 application is shown below.
 
 .. image:: /images/stdlib_packages_tab.png
     :align: center
 
-This tab is used to scan the directory containing the target Python
+This sub-tab is used to scan the directory containing the target Python
 interpreter's standard library.  You then specify which individual modules are
 needed, either implicitly or explicitly, by the application.
 :program:`pyqtdeploy` does not automatically handle inter-module dependencies.
@@ -161,22 +161,56 @@ needed, either implicitly or explicitly, by the application.
 The ``wiggly.py`` script does not explicitly import any standard Python module
 (except for the :mod:`sys` module which is implemented as a builtin).  However,
 :program:`pyqtdeploy` will ensure that all modules that it depends on
-internally are included so, for example, the above shows that the :mod:`types`
-and :mod:`warnings` modules will be included and cannot be changed.
+internally are included so, for example, the above shows that the
+:mod:`_weakrefset` and :mod:`abc` modules will be included and cannot be
+changed.
+
+
+Defining the Standard Library Extension Modules
+-----------------------------------------------
+
+The sub-tab for defining the Python standard library C extension modules used
+by the application is shown below.
+
+.. image:: /images/stdlib_extension_modules_tab.png
+    :align: center
+
+This sub-tab is used to select which of the standard library C extension
+modules are needed by the application and, optionally, to configure how those
+modules are compiled.  These extension modules usually exist for one of two
+reasons:
+
+- they interface with external libraries to allow those libraries to be
+  accessed from Python.  For example if you require SSL support then you need
+  to specify the :mod:`_ssl` extension module.
+
+- they provide an optional, faster implementation of a standard library package
+  implemented in Python.  For example the :mod:`_datetime` extension module, if
+  available, will provide a speedup to the :mod:`datetime` package.
+
+To enable an extension module simply click on the corresponding check box.
+This will also make the ``DEFINES``, ``INCLUDEPATH`` and ``LIBS`` fields for
+the extension module editable allowing those values to be set appropriately.
+If the extension module is linked against an external library then you may need
+to specify the location of the library's header files in the ``INCLUDEPATH``
+field and add a ``-L`` flag to the ``LIBS`` field if the library is not
+installed in locations that will be found automatically by the compiler and
+linker.
 
 
 Defining Additional Packages
 ----------------------------
 
-The tab for defining additional packages used by the application is shown
+The sub-tab for defining additional packages used by the application is shown
 below.
 
-.. image:: /images/packages_tab.png
+.. image:: /images/other_packages_tab.png
     :align: center
 
 This tab is used to scan a number of directories containing additional Python
-packages.  You then specify which individual modules are needed, either
-implicitly or explicitly, by the application.
+packages (i.e. other than those that are part of the Python standard library).
+You then specify which individual modules are needed, either implicitly or
+explicitly, by the application.
 
 By default the only directory defined is the target Python interpreter's
 ``site-packages`` directory which, unless you have installed additional
@@ -192,25 +226,26 @@ installed.
 The ``wiggly.py`` script does not use any additional Python packages.
 
 
-Defining the Extension Modules
-------------------------------
+Defining Additional Extension Modules
+-------------------------------------
 
-The tab for defining the C extension modules used by the application is shown
-below.
+The sub-tab for defining additional C extension modules used by the application
+is shown below.
 
-.. image:: /images/extension_modules_tab.png
+.. image:: /images/other_extension_modules_tab.png
     :align: center
 
-This tab is used to specify any third-party C extension modules that will be
-statically linked into the Python interpreter library.  For each extension
-module its name and the directory containing it must be specified.  On Windows
-an extension module will have a ``.lib`` filename suffix.  The suffix will be
-``.a`` on most other platforms.
+This tab is used to specify any additional C extension modules (i.e. other than
+those that are part of the Python standard library) that will be statically
+linked into the Python interpreter library.  For each extension module its name
+and the directory containing it must be specified.  On Windows an extension
+module will have a ``.lib`` filename suffix.  The suffix will be ``.a`` on most
+other platforms.
 
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.
 
-The ``wiggly.py`` script does not use any third-party C extension modules.
+The ``wiggly.py`` script does not use any additional C extension modules.
 
 
 Defining File and Directory Locations
@@ -229,6 +264,11 @@ The tab for defining the locations of various files and directories needed by
     can be executed by the deployed application.  (Of course if you are not
     cross-compiling the application then the host and target Python
     installations are the same.)
+
+**Source directory**
+    is used to specify the name of the directory containing the Python source
+    code.  It is only required if you are including one or more of the Python
+    standard library C extension modules in your application.
 
 **Include directory**
     is used to specify the name of the directory containing the target Python
