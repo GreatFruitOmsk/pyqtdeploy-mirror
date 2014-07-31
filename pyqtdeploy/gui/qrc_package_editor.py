@@ -28,8 +28,8 @@ import fnmatch
 import os
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import (QGridLayout, QPushButton, QTreeWidget,
-        QTreeWidgetItem, QTreeWidgetItemIterator)
+from PyQt5.QtWidgets import (QGridLayout, QMessageBox, QPushButton,
+        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
 from ..project import QrcDirectory, QrcFile
 
@@ -232,6 +232,11 @@ class QrcPackageEditor(QGridLayout):
             old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
 
         # Walk the package.
+        if not os.path.exists(root):
+            QMessageBox.warning(self.parentWidget(), "Scan Directory",
+                    "{0} is not a valid directory.".format(root))
+            return
+
         self._add_to_container(package, project.relative_path(root),
                 os.listdir(root), [], old_state)
         self._visualise()
