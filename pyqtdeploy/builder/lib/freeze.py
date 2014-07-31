@@ -68,7 +68,7 @@ def freeze_as_c(py_filename, c_filename, name):
 def _get_marshalled_code(py_filename):
     """ Convert a Python source file to a marshalled code object. """
 
-    source_file = open(py_filename)
+    source_file = open(py_filename, 'rb')
     source = source_file.read()
     source_file.close()
 
