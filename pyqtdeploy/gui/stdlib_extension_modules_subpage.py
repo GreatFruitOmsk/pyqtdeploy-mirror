@@ -89,7 +89,7 @@ class StdlibExtensionModulesSubpage(QWidget):
         # Set the extension modules.
         modules = get_python_metadata(*project.python_target_version).modules
         modules = sorted(modules,
-                key=lambda m: m.name[1:] if m.name.startswith('_') else m.name)
+                key=lambda m: m.name[1:].lower() if m.name.startswith('_') else m.name.lower())
 
         model = self._extension_modules_edit.model()
         model.removeRows(0, model.rowCount())

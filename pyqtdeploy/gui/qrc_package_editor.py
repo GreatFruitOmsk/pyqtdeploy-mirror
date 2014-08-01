@@ -249,7 +249,7 @@ class QrcPackageEditor(QGridLayout):
         """
 
         # Make sure any filter is applied in a predictable order.
-        path_contents.sort(key=str.lower)
+        path_contents.sort(key=lambda p: p[1:].lower() if p.startswith('_') else p.lower())
 
         dir_stack.append(os.path.basename(path))
         contents = []
