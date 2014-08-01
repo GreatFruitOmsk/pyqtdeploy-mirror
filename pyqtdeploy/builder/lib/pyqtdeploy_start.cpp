@@ -67,7 +67,7 @@ static PyObject *string_from_qstring(const QString &qs);
 
 extern "C" int pyqtdeploy_start(int argc, char **argv,
         const char *py_main_filename, struct _inittab *extension_modules,
-        const char **path_dirs)
+        const char *entry_point, const char **path_dirs)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
@@ -83,6 +83,8 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
         ":/site-packages",
         NULL
     };
+
+    bool sys_exit = false;
 
     // Get the codec for the locale.
     locale_codec = QTextCodec::codecForLocale();
@@ -197,8 +199,17 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
 
     Py_DECREF(py_filename);
 
-    // Import the main module, ie. execute the application.
-    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0 && !PyErr_ExceptionMatches(PyExc_SystemExit))
+    // Import the main module.
+    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0)
+    {
+        if (!PyErr_ExceptionMatches(PyExc_SystemExit))
+            goto py_error;
+
+        sys_exit = true;
+    }
+
+    // Call the entry point if there is one.
+    if (!sys_exit && entry_point && !PyObject_CallMethod(mod, entry_point, NULL))
         goto py_error;
 
     // Tidy up.

@@ -648,19 +648,20 @@ class Builder():
 ''')
 
         app_name = project.get_script_basename()
-        path_dirs = "path_dirs" if sys_path != '' else "NULL"
+        entry_point = '"{0}"'.format(project.application_entry_point) if project.application_entry_point != '' else 'NULL'
+        path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
         f.write('''extern int pyqtdeploy_start(int argc, char **argv,
         const char *py_main_filename, struct _inittab *extension_modules,
-        const char **path_dirs);
+        const char *entry_point, const char **path_dirs);
 ''')
 
         f.write('''
 int main(int argc, char **argv)
 {
-    return pyqtdeploy_start(argc, argv, ":/%s.pyf", %s, %s);
+    return pyqtdeploy_start(argc, argv, ":/%s.pyf", %s, %s, %s);
 }
-''' % (app_name, inittab, path_dirs))
+''' % (app_name, inittab, entry_point, path_dirs))
 
         f.close()
 
