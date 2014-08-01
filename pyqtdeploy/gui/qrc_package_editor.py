@@ -229,6 +229,9 @@ class QrcPackageEditor(QGridLayout):
 
             rel_path.reverse()
 
+            if self._show_root:
+                rel_path = rel_path[1:]
+
             old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
 
         # Walk the package.
@@ -276,8 +279,7 @@ class QrcPackageEditor(QGridLayout):
                 continue
 
             # See if we already know the included state.
-            rel_path = os.path.join(os.path.join(*dir_stack), name)
-            included = old_state.get(rel_path, False)
+            included = old_state.get(path_name, False)
 
             # Add the content.
             full_name = os.path.join(path, name)
