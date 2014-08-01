@@ -113,7 +113,10 @@ class Builder():
         # Now start the build.
         self._create_directory(build_dir)
 
-        freeze = self._copy_lib_file('freeze.py')
+        # The odd naming of the Python source files is to prevent them from
+        # being frozen if we deploy ourself.
+        freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
+                dst_file_name='freeze.py')
 
         self._write_qmake(build_dir, console, freeze, opt)
 
