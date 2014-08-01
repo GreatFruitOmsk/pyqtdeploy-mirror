@@ -43,6 +43,7 @@ class Project(QObject):
     #      Added the syspath attribute to the Application element.
     #   3: Added the sourcedir attribute to the Python element.
     #      Added the StdlibExtensionModule element to the Stdlib element.
+    #      Added the name and entrypoint attributes to the Application element.
     version = 3
 
     # Emitted when the modification state of the project changes.
@@ -116,9 +117,11 @@ class Project(QObject):
         self._name = os.path.abspath(name) if name != '' else ''
 
         # Initialise the project data.
+        self.application_name = ''
         self.application_is_pyqt5 = True
         self.application_package = QrcPackage()
         self.application_script = ''
+        self.application_entry_point = ''
         self.build_dir = 'build'
         self.extension_modules = []
         self.pyqt_modules = []
@@ -160,7 +163,14 @@ class Project(QObject):
 
         return filename
 
-    def application_basename(self):
+    def get_executable_basename(self):
+        """ Return the basename of the application executable (i.e. with no
+        path or extension.
+        """
+
+        return self.application_name if self.application_name != '' else self.get_script_basename()
+
+    def get_script_basename(self):
         """ Return the basename of the application script (i.e. with no path or
         extension.
         """
@@ -213,8 +223,10 @@ class Project(QObject):
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
 
+        project.application_entry_point = application.get('entrypoint', '')
         project.application_is_pyqt5 = cls._get_bool(application, 'ispyqt5',
                 'Application')
+        project.application_name = application.get('name', '')
         project.application_script = application.get('script', '')
         project.sys_path = application.get('syspath', '')
 
@@ -376,7 +388,9 @@ class Project(QObject):
             'version': str(self.version)})
 
         application = SubElement(root, 'Application', attrib={
+            'entrypoint': self.application_entry_point,
             'ispyqt5': str(int(self.application_is_pyqt5)),
+            'name': self.application_name,
             'script': self.application_script,
             'syspath': self.sys_path})
 

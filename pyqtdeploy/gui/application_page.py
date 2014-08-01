@@ -70,16 +70,31 @@ class ApplicationPage(QWidget):
 
         form = BetterForm()
 
+        self._name_edit = QLineEdit(
+                placeholderText="Application name",
+                whatsThis="The name of the application. It will default to "
+                        "the base name of the application script without any "
+                        "extension.",
+                textEdited=self._name_changed)
+        form.addRow("Name", self._name_edit)
+
         self._script_edit = FilenameEditor("Application Script",
                 placeholderText="Application script",
                 whatsThis="The name of the application's main script file.",
                 textEdited=self._script_changed)
         form.addRow("Main script file", self._script_edit)
 
+        self._entry_point_edit = QLineEdit(
+                placeholderText="Entry point in main script",
+                whatsThis="The name of the optional entry point in the "
+                        "application's main script file.",
+                textEdited=self._entry_point_changed)
+        form.addRow("Entry point", self._entry_point_edit)
+
         self._sys_path_edit = QLineEdit(
                 placeholderText="Additional sys.path directories",
                 whatsThis="A space separated list of additional directories "
-                        "to add to <tt>sys.path</tt>.  Only set this if you "
+                        "to add to <tt>sys.path</tt>. Only set this if you "
                         "want to allow external packages to be imported.",
                 textEdited=self._sys_path_changed)
         form.addRow("sys.path", self._sys_path_edit)
@@ -97,6 +112,8 @@ class ApplicationPage(QWidget):
         self._pyqt_versions_bg.buttonToggled.connect(
                 self._pyqt_version_changed)
 
+        versions_layout.addStretch()
+
         layout.addLayout(versions_layout, 0, 1)
 
         self._package_edit = _ApplicationPackageEditor()
@@ -112,7 +129,9 @@ class ApplicationPage(QWidget):
 
         project = self.project
 
+        self._name_edit.setText(project.application_name)
         self._script_edit.setText(project.application_script)
+        self._entry_point_edit.setText(project.application_entry_point)
         self._sys_path_edit.setText(project.sys_path)
         self._package_edit.configure(project.application_package, project)
 
@@ -135,10 +154,22 @@ class ApplicationPage(QWidget):
 
             self.pyqt_version_changed.emit(checked)
 
+    def _name_changed(self, value):
+        """ Invoked when the user edits the application name. """
+
+        self.project.application_name = value
+        self.project.modified = True
+
     def _script_changed(self, value):
         """ Invoked when the user edits the application script name. """
 
         self.project.application_script = value
+        self.project.modified = True
+
+    def _entry_point_changed(self, value):
+        """ Invoked when the user edits the entry point. """
+
+        self.project.application_entry_point = value
         self.project.modified = True
 
     def _sys_path_changed(self, value):

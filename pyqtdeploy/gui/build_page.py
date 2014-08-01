@@ -191,18 +191,18 @@ class BuildPage(QWidget):
 
         if self._run_application_button.checkState() != Qt.Unchecked:
             build_dir = project.absolute_path(project.build_dir)
-            app_name = project.application_basename()
+            exe_name = project.get_executable_basename()
 
             if sys.platform == 'win32':
                 application = os.path.join(build_dir, 'Release',
-                        app_name + '.exe')
+                        exe_name + '.exe')
             elif sys.platform == 'darwin':
-                application = os.path.join(build_dir, app_name + '.app',
-                        'Contents', 'MacOS', app_name)
+                application = os.path.join(build_dir, exe_name + '.app',
+                        'Contents', 'MacOS', exe_name)
             else:
-                application = os.path.join(build_dir, app_name)
+                application = os.path.join(build_dir, exe_name)
 
-            logger.status_message("Running {0}...".format(app_name))
+            logger.status_message("Running {0}...".format(exe_name))
 
             try:
                 builder.run([application], "{0} failed.".format(application))
@@ -211,7 +211,7 @@ class BuildPage(QWidget):
                 handle_user_exception(e, self.label, self)
                 return
 
-            logger.status_message("{0} succeeded.".format(app_name))
+            logger.status_message("{0} succeeded.".format(exe_name))
 
     def _missing_prereq(self, missing):
         """ Tell the user about a missing prerequisite. """

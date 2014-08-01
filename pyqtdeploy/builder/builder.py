@@ -204,7 +204,7 @@ class Builder():
         project = self._project
 
         f = self._create_file(build_dir,
-                project.application_basename() + '.pro')
+                project.get_executable_basename() + '.pro')
 
         f.write('TEMPLATE = app\n')
         f.write('\n')
@@ -647,7 +647,7 @@ class Builder():
 
 ''')
 
-        app_name = project.application_basename()
+        app_name = project.get_script_basename()
         path_dirs = "path_dirs" if sys_path != '' else "NULL"
 
         f.write('''extern int pyqtdeploy_start(int argc, char **argv,
