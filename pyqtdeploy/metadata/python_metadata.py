@@ -27,11 +27,14 @@
 class ModuleMetadata:
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, name, sources=None, defines='', libs='', subdir=''):
+    def __init__(self, name, core=False, sources=None, defines='', libs='', subdir=''):
         """ Initialise the object. """
 
         # The name of the module.
         self.name = name
+
+        # Set if the module is always compiled in to the interpreter library.
+        self.core = core
 
         # The sequence of the source files relative to the Modules directory.
         if sources is None:
@@ -47,6 +50,17 @@ class ModuleMetadata:
 
         # A sub-directory of the Modules directory to add to INCLUDEPATH.
         self.subdir = subdir
+
+
+class CoreModuleMetadata(ModuleMetadata):
+    """ Encapsulate the meta-data for an extension module that is always
+    compiled in to the interpreter library.
+    """
+
+    def __init__(self, name):
+        """ Initialise the object. """
+
+        super().__init__(name, core=True)
 
 
 class PythonMetadata:
@@ -147,6 +161,32 @@ class Python_3_Metadata(PythonMetadata):
         ModuleMetadata('_gdbm', libs='-lgdbm'),
         ModuleMetadata('_bz2', libs='-lbz2'),
         ModuleMetadata('_lzma', libs='-llzma'),
+
+        # Core modules as defined in config.c.
+        CoreModuleMetadata('_thread'),
+        CoreModuleMetadata('signal'),
+        CoreModuleMetadata('posix'),
+        CoreModuleMetadata('errno'),
+        CoreModuleMetadata('pwd'),
+        CoreModuleMetadata('_sre'),
+        CoreModuleMetadata('_codecs'),
+        CoreModuleMetadata('_weakref'),
+        CoreModuleMetadata('_functools'),
+        CoreModuleMetadata('_collections'),
+        CoreModuleMetadata('itertools'),
+        CoreModuleMetadata('atexit'),
+        CoreModuleMetadata('_locale'),
+        CoreModuleMetadata('_io'),
+        CoreModuleMetadata('zipimport'),
+        CoreModuleMetadata('faulthandler'),
+        CoreModuleMetadata('_symtable'),
+        CoreModuleMetadata('marshal'),
+        CoreModuleMetadata('_imp'),
+        CoreModuleMetadata('_ast'),
+        CoreModuleMetadata('sys'),
+        CoreModuleMetadata('gc'),
+        CoreModuleMetadata('_warnings'),
+        CoreModuleMetadata('_string'),
     )
 
     # The required Python v3 modules.
@@ -172,6 +212,11 @@ class Python_3_4_Metadata(Python_3_Metadata):
 
     _py_3_4_modules = (
         ModuleMetadata('_opcode', sources=['_opcode.c']),
+
+        # Core modules as defined in config.c.
+        CoreModuleMetadata('_operator'),
+        CoreModuleMetadata('_stat'),
+        CoreModuleMetadata('_tracemalloc'),
     )
 
     def __init__(self, modules=()):
@@ -205,6 +250,24 @@ class Python_2_Metadata(PythonMetadata):
         ModuleMetadata('gdbm', libs='-lgdbm'),
         ModuleMetadata('bz2', libs='-lbz2'),
         ModuleMetadata('linuxaudiodev', sources=['linuxaudiodev.c']),
+
+        # Core modules as defined in config.c.
+        CoreModuleMetadata('thread'),
+        CoreModuleMetadata('signal'),
+        CoreModuleMetadata('posix'),
+        CoreModuleMetadata('errno'),
+        CoreModuleMetadata('pwd'),
+        CoreModuleMetadata('_sre'),
+        CoreModuleMetadata('_codecs'),
+        CoreModuleMetadata('zipimport'),
+        CoreModuleMetadata('_symtable'),
+        CoreModuleMetadata('marshal'),
+        CoreModuleMetadata('imp'),
+        CoreModuleMetadata('_ast'),
+        CoreModuleMetadata('sys'),
+        CoreModuleMetadata('exceptions'),
+        CoreModuleMetadata('gc'),
+        CoreModuleMetadata('_warnings'),
     )
 
     # The required Python v2 modules.
@@ -252,6 +315,9 @@ class Python_2_7_Metadata(Python_2_Metadata):
                         '_io/textio.c'],
                 subdir='_io'),
         ModuleMetadata('_socket', sources=['socketmodule.c', 'timemodule.c']),
+
+        # Core modules as defined in config.c.
+        CoreModuleMetadata('_weakref'),
     )
 
     def __init__(self, modules=()):

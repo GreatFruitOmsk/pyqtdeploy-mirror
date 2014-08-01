@@ -95,8 +95,10 @@ class StdlibExtensionModulesSubpage(QWidget):
         model.removeRows(0, model.rowCount())
 
         for row, metadata in enumerate(modules):
-            col0 = self._new_item(metadata.name)
-            col0.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
+            # Core modules are permanently disabled.
+            flags = Qt.NoItemFlags if metadata.core else Qt.ItemIsEnabled
+
+            col0 = self._new_item(metadata.name, flags|Qt.ItemIsUserCheckable)
 
             # See if the module is enabled.
             for project_module in project.stdlib_extension_modules:
@@ -104,19 +106,24 @@ class StdlibExtensionModulesSubpage(QWidget):
                     defines = project_module.defines
                     includepath = project_module.includepath
                     libs = project_module.libs
+                    check_state = Qt.Checked
+
+                    # The module can't be core if we are here.
+                    flags |= Qt.ItemIsEditable
+
                     break
             else:
+                project_module = None
                 defines = metadata.defines
                 includepath = ''
                 libs = metadata.libs
-                project_module = None
+                check_state = Qt.Checked if metadata.core else Qt.Unchecked
 
-            col0.setCheckState(Qt.Checked if project_module is not None
-                    else Qt.Unchecked)
+            col0.setCheckState(check_state)
 
-            col1 = self._new_item(defines, project_module is not None)
-            col2 = self._new_item(includepath, project_module is not None)
-            col3 = self._new_item(libs, project_module is not None)
+            col1 = self._new_item(defines, flags)
+            col2 = self._new_item(includepath, flags)
+            col3 = self._new_item(libs, flags)
 
             model.appendRow([col0, col1, col2, col3])
 
@@ -126,15 +133,10 @@ class StdlibExtensionModulesSubpage(QWidget):
 
         self._extension_modules_edit.resizeColumnToContents(0)
 
-    def _new_item(self, text, editable=False):
+    def _new_item(self, text, flags):
         """ Create a new model item. """
 
         itm = QStandardItem(text)
-
-        flags = Qt.ItemIsEnabled
-        if editable:
-            flags |= Qt.ItemIsEditable
-
         itm.setFlags(flags)
 
         return itm
