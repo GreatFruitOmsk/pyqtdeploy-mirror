@@ -2463,7 +2463,7 @@ def _install(sys_module, _imp_module):
     # pyqtdeploy changes required.  This has to be done here to allow the parts
     # of the standard library needed by the bootstrap process to be stored in
     # resource files.
-    import pyqtdeploy
+    import pdytools
 
-    sys.path_hooks.insert(0, pyqtdeploy.qrcimporter)
+    sys.path_hooks.insert(0, pdytools.qrcimporter)
     sys.path = [':/']

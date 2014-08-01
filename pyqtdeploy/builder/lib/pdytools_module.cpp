@@ -50,7 +50,7 @@ extern "C" {
 #error "Python v3.3 or later is required"
 #endif
 
-#define PYQTDEPLOY_INIT                 PyInit_pyqtdeploy
+#define PYQTDEPLOY_INIT                 PyInit_pdytools
 #define PYQTDEPLOY_TYPE                 PyObject *
 #define PYQTDEPLOY_MODULE_DISCARD(m)    Py_DECREF(m)
 #define PYQTDEPLOY_FATAL(s)             return NULL
@@ -58,9 +58,9 @@ extern "C" {
 #define PYQTDEPLOY_PARSE_STR            "U"
 
 // The module definition structure.
-static struct PyModuleDef pyqtdeploymodule = {
+static struct PyModuleDef pdytoolsmodule = {
     PyModuleDef_HEAD_INIT,
-    "pyqtdeploy",
+    "pdytools",
     NULL,
     -1,
     NULL,
@@ -74,7 +74,7 @@ static struct PyModuleDef pyqtdeploymodule = {
 #error "Python v2.6 or later is required"
 #endif
 
-#define PYQTDEPLOY_INIT                 initpyqtdeploy
+#define PYQTDEPLOY_INIT                 initpdytools
 #define PYQTDEPLOY_TYPE                 void
 #define PYQTDEPLOY_MODULE_DISCARD(m)
 #define PYQTDEPLOY_FATAL(s)             Py_FatalError(s)
@@ -120,7 +120,7 @@ static PyMethodDef qrcimporter_methods[] = {
 // The importer type structure.
 static PyTypeObject QrcImporter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "pyqtdeploy.qrcimporter",
+    "pdytools.qrcimporter",
     sizeof (QrcImporter),
     0,                                          // tp_itemsize
     qrcimporter_dealloc,                        // tp_dealloc
@@ -555,27 +555,27 @@ PYQTDEPLOY_TYPE PYQTDEPLOY_INIT()
     QrcImporter_Type.tp_new = PyType_GenericNew;
 
     if (PyType_Ready(&QrcImporter_Type) < 0)
-        PYQTDEPLOY_FATAL("Failed to initialise pyqtdeploy.qrcimporter type");
+        PYQTDEPLOY_FATAL("Failed to initialise pdytools.qrcimporter type");
 
 #if PY_MAJOR_VERSION >= 3
-    mod = PyModule_Create(&pyqtdeploymodule);
+    mod = PyModule_Create(&pdytoolsmodule);
 #else
-    mod = Py_InitModule("pyqtdeploy", NULL);
+    mod = Py_InitModule("pdytools", NULL);
 #endif
     if (mod == NULL)
-        PYQTDEPLOY_FATAL("Failed to initialise pyqtdeploy module");
+        PYQTDEPLOY_FATAL("Failed to initialise pdytools module");
 
     if (PyModule_AddIntConstant(mod, "hexversion", PYQTDEPLOY_HEXVERSION) < 0)
     {
         PYQTDEPLOY_MODULE_DISCARD(mod);
-        PYQTDEPLOY_FATAL("Failed to add hexversion to pyqtdeploy module");
+        PYQTDEPLOY_FATAL("Failed to add hexversion to pdytools module");
     }
 
     Py_INCREF(&QrcImporter_Type);
     if (PyModule_AddObject(mod, "qrcimporter", (PyObject *)&QrcImporter_Type) < 0)
     {
         PYQTDEPLOY_MODULE_DISCARD(mod);
-        PYQTDEPLOY_FATAL("Failed to add qrcimporter to pyqtdeploy module");
+        PYQTDEPLOY_FATAL("Failed to add qrcimporter to pdytools module");
     }
 
     PYQTDEPLOY_RETURN(mod);

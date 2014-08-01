@@ -1,5 +1,5 @@
 import sys
-import pyqtdeploy
+import pdytools
 
-sys.path_hooks.insert(0, pyqtdeploy.qrcimporter)
+sys.path_hooks.insert(0, pdytools.qrcimporter)
 sys.path = [':/']

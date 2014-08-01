@@ -8,6 +8,6 @@ User Guide
     command_line
     development_version
     pyrcc
-    pyqtdeploy_module
+    pdytools_module
     tutorial
     static_builds

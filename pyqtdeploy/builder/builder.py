@@ -411,10 +411,10 @@ class Builder():
             if self._get_py_module_metadata(module.name) is not None:
                 extension_module_names.append(module.name)
 
-        f.write('SOURCES = main.c pyqtdeploy_start.cpp pyqtdeploy_module.cpp\n')
+        f.write('SOURCES = main.c pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_main_c(build_dir, extension_module_names)
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
-        self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
+        self._copy_lib_file('pdytools_module.cpp', build_dir)
 
         headers = 'HEADERS = pyqtdeploy_version.h frozen_bootstrap.h'
         if project.application_script != '':

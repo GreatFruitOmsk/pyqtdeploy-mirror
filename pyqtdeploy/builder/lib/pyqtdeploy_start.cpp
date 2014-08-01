@@ -43,14 +43,14 @@
 
 #if PY_MAJOR_VERSION >= 3
 #define BOOTSTRAP_MODULE    "_frozen_importlib"
-#define PYQTDEPLOY_INIT     PyInit_pyqtdeploy
+#define PDYTOOLS_INIT       PyInit_pdytools
 #define CONST_CAST(s)       s
-extern "C" PyObject *PyInit_pyqtdeploy(void);
+extern "C" PyObject *PyInit_pdytools(void);
 #else
 #define BOOTSTRAP_MODULE    "__bootstrap__"
-#define PYQTDEPLOY_INIT     initpyqtdeploy
+#define PDYTOOLS_INIT       initpdytools
 #define CONST_CAST(s)       const_cast<char *>(s)
-extern "C" void initpyqtdeploy(void);
+extern "C" void initpdytools(void);
 #endif
 
 
@@ -102,7 +102,7 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     PyImport_FrozenModules = modules;
 
     // Add the importer to the table of builtins.
-    if (PyImport_AppendInittab("pyqtdeploy", PYQTDEPLOY_INIT) < 0)
+    if (PyImport_AppendInittab("pdytools", PDYTOOLS_INIT) < 0)
     {
         fprintf(stderr, "%s: PyImport_AppendInittab() failed\n", argv[0]);
         return 1;
