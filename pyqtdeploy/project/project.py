@@ -168,17 +168,19 @@ class Project(QObject):
         path or extension.
         """
 
-        return self.application_name if self.application_name != '' else self.get_script_basename()
+        if self.application_name != '':
+            return self.application_name
 
-    def get_script_basename(self):
-        """ Return the basename of the application script (i.e. with no path or
-        extension.
-        """
+        name = self.application_script
+        if name == '':
+            name = self.application_package.name
+            if name == '':
+                return ''
 
-        app_name, _ = os.path.splitext(
-                os.path.basename(self.absolute_path(self.application_script)))
+        basename, _ = os.path.splitext(
+                os.path.basename(self.absolute_path(name)))
 
-        return app_name
+        return basename
 
     @classmethod
     def load(cls, filename):

@@ -35,7 +35,10 @@
 #include <QTextCodec>
 
 #include "frozen_bootstrap.h"
+
+#if defined(PYQTDEPLOY_FROZEN_MAIN)
 #include "frozen_main.h"
+#endif
 
 
 #if PY_MAJOR_VERSION >= 3
@@ -57,7 +60,6 @@ static QTextCodec *locale_codec;
 
 
 // Foward declarations.
-static int append_ascii_strings(PyObject *list, const char **ascii_strings);
 static int append_path_dirs(PyObject *list, const char **path_dirs,
         const QDir &exec_dir);
 #if PY_MAJOR_VERSION < 3
@@ -66,25 +68,17 @@ static PyObject *string_from_qstring(const QString &qs);
 
 
 extern "C" int pyqtdeploy_start(int argc, char **argv,
-        const char *py_main_filename, struct _inittab *extension_modules,
+        struct _inittab *extension_modules, const char *main_module,
         const char *entry_point, const char **path_dirs)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
         {CONST_CAST(BOOTSTRAP_MODULE), frozen_pyqtdeploy_bootstrap, sizeof (frozen_pyqtdeploy_bootstrap)},
+#if defined(PYQTDEPLOY_FROZEN_MAIN)
         {CONST_CAST("__main__"), frozen_pyqtdeploy_main, sizeof (frozen_pyqtdeploy_main)},
+#endif
         {NULL, NULL, 0}
     };
-
-    // The minimal (ASCII) sys.path.
-    static const char *minimal_path[] = {
-        ":/",
-        ":/stdlib",
-        ":/site-packages",
-        NULL
-    };
-
-    bool sys_exit = false;
 
     // Get the codec for the locale.
     locale_codec = QTextCodec::codecForLocale();
@@ -155,40 +149,37 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
 #endif
 
     // Configure sys.path.
-    PyObject *py_path;
-
-    if ((py_path = PyList_New(0)) == NULL)
-        goto py_error;
-
-    if (append_ascii_strings(py_path, minimal_path) < 0)
-        goto py_error;
-
     if (path_dirs != NULL)
     {
-        // Get the directory containing the executable.
-        QDir exec_dir(locale_codec->toUnicode(argv[0]));
-        exec_dir.makeAbsolute();
-        exec_dir.cdUp();
+        PyObject *py_path = PySys_GetObject(CONST_CAST("path"));
 
-        if (append_path_dirs(py_path, path_dirs, exec_dir) < 0)
-            goto py_error;
+        if (py_path)
+        {
+            // Get the directory containing the executable.
+            QDir exec_dir(locale_codec->toUnicode(argv[0]));
+            exec_dir.makeAbsolute();
+            exec_dir.cdUp();
+
+            if (append_path_dirs(py_path, path_dirs, exec_dir) < 0)
+                goto py_error;
+        }
     }
 
-    if (PySys_SetObject(CONST_CAST("path"), py_path) < 0)
-        goto py_error;
+#if defined(PYQTDEPLOY_FROZEN_MAIN)
+    Q_UNUSED(entry_point)
 
     // Set the __file__ attribute of the main module.
     PyObject *mod, *mod_dict, *py_filename;
 
-    if ((mod = PyImport_AddModule("__main__")) == NULL)
+    if ((mod = PyImport_AddModule(main_module)) == NULL)
         goto py_error;
 
     mod_dict = PyModule_GetDict(mod);
 
 #if PY_MAJOR_VERSION >= 3
-    py_filename = PyUnicode_FromString(py_main_filename);
+    py_filename = PyUnicode_FromString(":/__main__.pyo");
 #else
-    py_filename = string_from_qstring(QString::fromUtf8(py_main_filename));
+    py_filename = PyString_FromString(":/__main__.pyo");
 #endif
 
     if (py_filename == NULL)
@@ -200,17 +191,40 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
     Py_DECREF(py_filename);
 
     // Import the main module.
-    if (PyImport_ImportFrozenModule(CONST_CAST("__main__")) < 0)
+    if (PyImport_ImportFrozenModule(CONST_CAST(main_module)) < 0)
     {
         if (!PyErr_ExceptionMatches(PyExc_SystemExit))
             goto py_error;
-
-        sys_exit = true;
     }
+#else
+    // Import the main module.
+    PyObject *mod, *main_module_obj;
 
-    // Call the entry point if there is one.
-    if (!sys_exit && entry_point && !PyObject_CallMethod(mod, entry_point, NULL))
+#if PY_MAJOR_VERSION >= 3
+    main_module_obj = PyUnicode_FromString(main_module);
+#else
+    main_module_obj = string_from_qstring(QString::fromUtf8(main_module));
+#endif
+
+    if (main_module_obj == NULL)
         goto py_error;
+
+    mod = PyImport_Import(main_module_obj);
+
+    if (mod)
+    {
+        // Call the entry point.
+        if (!PyObject_CallMethod(mod, entry_point, NULL))
+        {
+            if (!PyErr_ExceptionMatches(PyExc_SystemExit))
+                goto py_error;
+        }
+    }
+    else if (!PyErr_ExceptionMatches(PyExc_SystemExit))
+    {
+        goto py_error;
+    }
+#endif
 
     // Tidy up.
     Py_Finalize();
@@ -221,38 +235,6 @@ py_error:
     fprintf(stderr, "%s: a Python exception occurred:\n", argv[0]);
     PyErr_Print();
     return 1;
-}
-
-
-// Extend a list with an array of ASCII encoded strings.  Return -1 if there
-// was an error.
-static int append_ascii_strings(PyObject *list, const char **ascii_strings)
-{
-    const char *ascii;
-
-    while ((ascii = *ascii_strings++) != NULL)
-    {
-        // Convert to a Python string.
-        PyObject *py_str;
-
-#if PY_MAJOR_VERSION >= 3
-        py_str = PyUnicode_FromString(ascii);
-#else
-        py_str = PyString_FromString(ascii);
-#endif
-
-        if (!py_str)
-            return -1;
-
-        // Append to the list.
-        int rc = PyList_Append(list, py_str);
-        Py_DECREF(py_str);
-
-        if (rc < 0)
-            return -1;
-    }
-
-    return 0;
 }
 
 

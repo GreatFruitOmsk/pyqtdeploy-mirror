@@ -35,7 +35,7 @@ from PyQt5.QtCore import QDir, QFile
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
 from ..metadata import get_python_metadata, pyqt4_metadata, pyqt5_metadata
-from ..project import QrcDirectory, QrcFile
+from ..project import QrcDirectory
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 
@@ -81,6 +81,21 @@ class Builder():
                         "The name of the Python source directory has not been "
                         "specified")
 
+        if project.get_executable_basename() == '':
+            raise UserException("The name of the application has not been "
+                    "specified and cannot be inferred")
+
+        if project.application_script == '':
+            if project.application_entry_point == '':
+                raise UserException("Either the application script name or "
+                        "the entry point must be specified")
+            elif len(project.application_entry_point.split(':')) != 2:
+                raise UserException("An entry point must be a module name and "
+                        "a callable separated by a colon.")
+        elif project.application_entry_point != '':
+            raise UserException("Either the application script name or the "
+                    "entry point must be specified but not both")
+
         # Get the name of the build directory.
         if build_dir is None:
             build_dir = project.build_dir
@@ -113,10 +128,11 @@ class Builder():
                 freeze, opt, name='pyqtdeploy_bootstrap')
         os.remove(bootstrap)
 
-        # Freeze the main application script.
-        self._freeze(os.path.join(build_dir, 'frozen_main.h'),
-                project.absolute_path(project.application_script), freeze, opt,
-                name='pyqtdeploy_main')
+        # Freeze any main application script.
+        if project.application_script != '':
+            self._freeze(os.path.join(build_dir, 'frozen_main.h'),
+                    project.absolute_path(project.application_script), freeze,
+                    opt, name='pyqtdeploy_main')
 
         # Create the pyqtdeploy module version file.
         version_f = self._create_file(build_dir, 'pyqtdeploy_version.h')
@@ -125,78 +141,111 @@ class Builder():
                         PYQTDEPLOY_HEXVERSION))
         version_f.close()
 
-        # Generate the resource files.
-        resources_dir = os.path.join(build_dir, 'resources')
-        self._create_directory(resources_dir)
-        stdlib_dir = project.absolute_path(project.python_target_stdlib_dir)
-
-        for resource in self.resources():
-            if resource == '':
-                package = project.application_package
-                contents = self._write_package(resources_dir, resource,
-                        package, project.absolute_path(package.name), freeze,
-                        opt)
-                self._write_resource_qrc(resources_dir, 'pyqtdeploy.qrc',
-                        contents)
-            elif resource == 'stdlib':
-                contents = self._write_package(resources_dir, resource,
-                        project.stdlib_package, stdlib_dir, freeze, opt)
-                self._write_resource_qrc(resources_dir, 'stdlib.qrc',
-                        contents)
-            else:
-                # Add the PyQt package to a temporary copy of the site-packages
-                # package.
-                site_packages_package = project.packages[0].copy()
-                pyqt_dir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
-
-                if len(project.pyqt_modules) != 0:
-                    pyqt_pkg_init = QrcFile('__init__.py')
-                    pyqt_pkg_dir = QrcDirectory(pyqt_dir)
-                    pyqt_pkg_dir.contents.append(pyqt_pkg_init)
-                    site_packages_package.contents.append(pyqt_pkg_dir)
-
-                    # Add uic if requested.
-                    if 'uic' in project.pyqt_modules:
-                        self._add_uic_dir(pyqt_pkg_dir,
-                                os.path.join(stdlib_dir, 'site-packages',
-                                        pyqt_dir),
-                                'uic', [])
-
-                contents = self._write_package(resources_dir, resource,
-                        site_packages_package,
-                        os.path.join(stdlib_dir, 'site-packages'), freeze, opt)
-
-                for package in project.packages[1:]:
-                    contents += self._write_package(resources_dir, resource,
-                            package, project.absolute_path(package.name),
-                            freeze, opt)
-
-                self._write_resource_qrc(resources_dir, 'site-packages.qrc',
-                        contents)
+        # Generate the application resource.
+        self._generate_resource(os.path.join(build_dir, 'resources'), freeze,
+                opt)
 
         os.remove(freeze)
 
-    def _add_uic_dir(self, package, pyqt_dir, dir_name, dir_stack):
-        """ Add a uic directory to a package. """
+    def _generate_resource(self, resources_dir, freeze, opt):
+        """ Generate the application resource. """
 
-        dir_pkg = QrcDirectory(dir_name)
-        package.contents.append(dir_pkg)
+        project = self._project
 
-        dirpath = [pyqt_dir] + dir_stack + [dir_name]
-        dirpath = os.path.join(*dirpath)
+        self._create_directory(resources_dir)
+        resource_contents = []
 
-        for content in os.listdir(dirpath):
-            if content in ('port_v2', '__pycache__'):
-                continue
+        # Handle any application package.
+        if project.application_package.name != '':
+            package_src_dir, package_name = self._package_details(
+                    project.application_package)
 
-            content_path = os.path.join(dirpath, content)
+            self._write_package(resource_contents, resources_dir, package_name,
+                    project.application_package, package_src_dir, freeze, opt)
 
-            if os.path.isfile(content_path):
-                dir_pkg.contents.append(QrcFile(content))
-            elif os.path.isdir(content_path):
-                dir_stack.append(dir_name)
-                self._add_uic_dir(dir_pkg, pyqt_dir, content, dir_stack)
-                dir_stack.pop()
+        # Handle the Python standard library.
+        stdlib_src_dir = project.absolute_path(
+                project.python_target_stdlib_dir)
+
+        self._write_package(resource_contents, resources_dir, '',
+                project.stdlib_package, stdlib_src_dir, freeze, opt)
+
+        # Handle site-packages.
+        sitepackages_src_dir = os.path.join(stdlib_src_dir, 'site-packages')
+
+        self._write_package(resource_contents, resources_dir, '',
+                project.packages[0], sitepackages_src_dir, freeze, opt)
+
+        # Handle any additional packages.
+        for package in project.packages[1:]:
+            package_src_dir, package_name = self._package_details(package)
+
+            self._write_package(resource_contents, resources_dir, package_name,
+                    package, package_src_dir, freeze, opt)
+
+        # Handle the PyQt package.
+        if len(project.pyqt_modules) != 0:
+            pyqt_subdir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
+            pyqt_dst_dir = os.path.join(resources_dir, pyqt_subdir)
+            pyqt_src_dir = os.path.join(sitepackages_src_dir, pyqt_subdir)
+
+            self._create_directory(pyqt_dst_dir)
+
+            self._freeze(os.path.join(pyqt_dst_dir, '__init__.pyo'),
+                    os.path.join(pyqt_src_dir, '__init__.py'), freeze, opt,
+                    as_data=True)
+
+            resource_contents.append(pyqt_subdir + '/__init__.pyo')
+
+            # Handle the PyQt.uic package.
+            if 'uic' in project.pyqt_modules:
+                uic_src_dir = os.path.join(pyqt_src_dir, 'uic')
+
+                skip_dirs = ['__pycache__']
+                if self._py_major == 3:
+                    skip_dirs.append('port_v2')
+                else:
+                    skip_dirs.append('port_v3')
+
+                def copy_freeze(src, dst):
+                    for skip in skip_dirs:
+                        if skip in src:
+                            break
+                    else:
+                        if dst.endswith('.py'):
+                            dst += 'o'
+                            self._freeze(dst, src, freeze, opt, as_data=True)
+                            rel_dst = dst[len(resources_dir) + 1:]
+                            resource_contents.append(rel_dst.replace('\\', '/'))
+
+                shutil.copytree(os.path.join(pyqt_src_dir, 'uic'),
+                        os.path.join(pyqt_dst_dir, 'uic'),
+                        copy_function=copy_freeze)
+
+        # Write the .qrc file.
+        f = self._create_file(resources_dir, 'pyqtdeploy.qrc')
+
+        f.write('''<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+''')
+
+        for content in resource_contents:
+            f.write('        <file>{0}</file>\n'.format(content))
+
+        f.write('''    </qresource>
+</RCC>
+''')
+
+        f.close()
+
+    def _package_details(self, package):
+        """ Return the absolute source directory of a package and its name. """
+
+        package_src_dir = self._project.absolute_path(package.name)
+        package_name, _ = os.path.splitext(os.path.basename(package_src_dir))
+
+        return package_src_dir, package_name
 
     def _write_qmake(self, build_dir, console, freeze, opt):
         """ Create the .pro file for qmake. """
@@ -349,21 +398,9 @@ class Builder():
         f.write('\n')
         f.write(platforms.data().decode('latin1'))
 
-        # Specify any resource files.
-        resources = self.resources()
-
-        if len(resources) != 0:
-            f.write('\n')
-
-            f.write('RESOURCES =')
-
-            for resource in resources:
-                if resource == '':
-                    resource = 'pyqtdeploy'
-
-                f.write(' \\\n    resources/{0}.qrc'.format(resource))
-
-            f.write('\n')
+        # Specify the resource file.
+        f.write('\n')
+        f.write('RESOURCES = resources/pyqtdeploy.qrc\n')
 
         # Specify the source and header files.
         f.write('\n')
@@ -379,7 +416,13 @@ class Builder():
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pyqtdeploy_module.cpp', build_dir)
 
-        f.write('HEADERS = frozen_bootstrap.h frozen_main.h pyqtdeploy_version.h\n')
+        headers = 'HEADERS = pyqtdeploy_version.h frozen_bootstrap.h'
+        if project.application_script != '':
+            f.write('DEFINES += PYQTDEPLOY_FROZEN_MAIN\n')
+            headers += ' frozen_main.h'
+
+        f.write(headers)
+        f.write('\n')
 
         # Handle any standard library extension modules.
         if project.stdlib_extension_modules:
@@ -424,36 +467,6 @@ class Builder():
 
         # All done.
         f.close()
-
-    def resources(self):
-        """ Return the list of resources needed. """
-
-        project = self._project
-
-        resources = []
-
-        for content in project.application_package.contents:
-            if content.included:
-                resources.append('')
-                break
-
-        resources.append('stdlib')
-
-        need_site_packages = False
-
-        if len(project.pyqt_modules) != 0:
-            need_site_packages = True
-        else:
-            for package in project.packages:
-                for content in package.contents:
-                    if content.included:
-                        need_site_packages = True
-                        break
-
-        if need_site_packages:
-            resources.append('site-packages')
-
-        return resources
 
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """
@@ -506,26 +519,7 @@ class Builder():
 
         return name
 
-    def _write_resource_qrc(self, resources_dir, qrc_file, resource_contents):
-        """ Create a .qrc file for a resource. """
-
-        f = self._create_file(resources_dir, qrc_file)
-
-        f.write('''<!DOCTYPE RCC>
-<RCC version="1.0">
-    <qresource>
-''')
-
-        for content in resource_contents:
-            f.write('        <file>{0}</file>\n'.format(content))
-
-        f.write('''    </qresource>
-</RCC>
-''')
-
-        f.close()
-
-    def _write_package(self, resources_dir, resource, package, src_dir, freeze, opt):
+    def _write_package(self, resource_contents, resources_dir, resource, package, src_dir, freeze, opt):
         """ Write the contents of a single package and return the list of files
         written relative to the resources directory.
         """
@@ -537,12 +531,8 @@ class Builder():
             dst_dir = os.path.join(resources_dir, resource)
             dir_stack = [resource]
 
-        resource_contents = []
-
         self._write_package_contents(package.contents, dst_dir, src_dir,
                 dir_stack, freeze, opt, resource_contents)
-
-        return resource_contents
 
     def _write_package_contents(self, contents, dst_dir, src_dir, dir_stack, freeze, opt, resource_contents):
         """ Write the contents of a single package directory. """
@@ -568,9 +558,9 @@ class Builder():
                 src_path = os.path.join(src_dir, src_file)
 
                 if src_file.endswith('.py'):
-                    dst_file = src_file[:-3] + '.pyf'
+                    dst_file = src_file[:-3] + '.pyo'
                 elif src_file.endswith('.pyw'):
-                    dst_file = src_file[:-4] + '.pyf'
+                    dst_file = src_file[:-4] + '.pyo'
                 else:
                     # Just copy the file.
                     dst_file = src_file
@@ -647,21 +637,27 @@ class Builder():
 
 ''')
 
-        app_name = project.get_script_basename()
-        entry_point = '"{0}"'.format(project.application_entry_point) if project.application_entry_point != '' else 'NULL'
+        if project.application_script != '':
+            main_module = '__main__'
+            entry_point = 'NULL'
+        else:
+            main_module, entry_point = project.application_entry_point.split(
+                    ':')
+            entry_point = '"' + entry_point + '"'
+
         path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
         f.write('''extern int pyqtdeploy_start(int argc, char **argv,
-        const char *py_main_filename, struct _inittab *extension_modules,
+        struct _inittab *extension_modules, const char *main_module,
         const char *entry_point, const char **path_dirs);
 ''')
 
         f.write('''
 int main(int argc, char **argv)
 {
-    return pyqtdeploy_start(argc, argv, ":/%s.pyf", %s, %s, %s);
+    return pyqtdeploy_start(argc, argv, %s, "%s", %s, %s);
 }
-''' % (app_name, inittab, entry_point, path_dirs))
+''' % (inittab, main_module, entry_point, path_dirs))
 
         f.close()
 

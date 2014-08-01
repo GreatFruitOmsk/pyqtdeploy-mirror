@@ -1783,4 +1783,4 @@ def _install(sys_module, _imp_module):
     import pyqtdeploy
 
     sys.path_hooks.insert(0, pyqtdeploy.qrcimporter)
-    sys.path = [':/stdlib']
+    sys.path = [':/']

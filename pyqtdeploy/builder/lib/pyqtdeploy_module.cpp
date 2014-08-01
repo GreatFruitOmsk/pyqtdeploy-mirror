@@ -484,13 +484,13 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
     pathname = *self->path + fqmn.split(QChar('.')).last();
 
     // See if it is an ordinary module.
-    filename = pathname + ".pyf";
+    filename = pathname + ".pyo";
 
     if (QFileInfo(filename).isFile())
         return ModuleIsModule;
 
     // See if it is a package.
-    filename = pathname + "/__init__.pyf";
+    filename = pathname + "/__init__.pyo";
 
     if (QFileInfo(filename).isFile())
         return ModuleIsPackage;
