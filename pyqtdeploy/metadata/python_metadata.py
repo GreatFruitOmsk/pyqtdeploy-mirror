@@ -152,7 +152,6 @@ class Python_3_Metadata(PythonMetadata):
                 libs='-lm'),
         ModuleMetadata('_datetime'),
         ModuleMetadata('_pickle', sources=['_pickle.c']),
-        ModuleMetadata('atexit'),
         ModuleMetadata('_posixsubprocess', sources=['_posixsubprocess.c']),
         ModuleMetadata('_socket', sources=['socketmodule.c']),
         ModuleMetadata('_md5', sources=['md5module.c']),
