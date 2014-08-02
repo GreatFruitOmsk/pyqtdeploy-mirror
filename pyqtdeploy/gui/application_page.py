@@ -80,14 +80,15 @@ class ApplicationPage(QWidget):
 
         self._script_edit = FilenameEditor("Application Script",
                 placeholderText="Application script",
-                whatsThis="The name of the application's main script file.",
+                whatsThis="The name of the application's optional main script "
+                        "file.",
                 textEdited=self._script_changed)
         form.addRow("Main script file", self._script_edit)
 
         self._entry_point_edit = QLineEdit(
-                placeholderText="Entry point in main script",
+                placeholderText="Entry point in application package",
                 whatsThis="The name of the optional entry point in the "
-                        "application's main script file.",
+                        "application's package.",
                 textEdited=self._entry_point_changed)
         form.addRow("Entry point", self._entry_point_edit)
 
