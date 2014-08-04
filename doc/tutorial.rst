@@ -242,11 +242,8 @@ packages (i.e. other than those that are part of the Python standard library).
 You then specify which individual modules are needed, either implicitly or
 explicitly, by the application.
 
-By default the only directory defined is the target Python interpreter's
-``site-packages`` directory which, unless you have installed additional
-packages, will be empty.  To edit the list of directories just double-click on
-the entry to modify or delete.  To add a new entry just double-click the list
-after the last entry.
+To edit the list of directories just double-click on the entry to modify or
+delete.  To add a new entry just double-click the list after the last entry.
 
 In many cases you will want to add the ``site-packages`` directory of your host
 Python interpreter, i.e. the interpreter being used to develop the application,

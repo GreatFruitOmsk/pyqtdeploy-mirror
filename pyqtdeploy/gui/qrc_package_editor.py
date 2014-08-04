@@ -57,7 +57,9 @@ class QrcPackageEditor(QGridLayout):
         self._package_edit.itemChanged.connect(self._package_changed)
         self.addWidget(self._package_edit, 0, 0, 3, 1)
 
-        self.addWidget(QPushButton(scan, clicked=self._scan), 0, 1)
+        self._scan_button = QPushButton(scan,
+                clicked=self._scan, enabled=False)
+        self.addWidget(self._scan_button, 0, 1)
 
         self._remove_button = QPushButton("Remove all",
                 clicked=self._remove_all, enabled=False)
@@ -101,6 +103,8 @@ class QrcPackageEditor(QGridLayout):
 
         # Add one to be edited to create a new entry.
         self._add_exclusion_item()
+
+        self._scan_button.setEnabled(package is not None)
 
     def get_root_dir(self):
         """ Return the root directory to scan, or '' if there was an error or

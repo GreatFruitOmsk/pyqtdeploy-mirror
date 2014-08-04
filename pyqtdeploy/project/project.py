@@ -44,6 +44,8 @@ class Project(QObject):
     #   3: Added the sourcedir attribute to the Python element.
     #      Added the StdlibExtensionModule element to the Stdlib element.
     #      Added the name and entrypoint attributes to the Application element.
+    #      The first Package element of the SitePackages element is now not
+    #      treated specially as the standard library site-packages directory.
     version = 3
 
     # Emitted when the modification state of the project changes.
@@ -221,6 +223,16 @@ class Project(QObject):
         project = cls()
         project.name = abs_filename
 
+        # The Python specific configuration.
+        python = root.find('Python')
+        cls._assert(python is not None, "Missing 'Python' tag.")
+
+        project.python_host_interpreter = python.get('hostinterpreter', '')
+        project.python_source_dir = python.get('sourcedir', '')
+        project.python_target_include_dir = python.get('targetincludedir', '')
+        project.python_target_library = python.get('targetlibrary', '')
+        project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
+
         # The application specific configuration.
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
@@ -243,14 +255,26 @@ class Project(QObject):
                     "Missing or empty 'PyQtModule.name' attribute.")
             project.pyqt_modules.append(name)
 
+        # Note that SitePackages is now mis-named - OtherLibraries would be
+        # more accurate.
         site_packages = application.find('SitePackages')
         cls._assert(site_packages is not None,
                 "Missing 'Application.SitePackages' tag.")
         project.packages = [cls._load_package(package)
                 for package in site_packages.iterfind('Package')]
-        cls._assert(len(project.packages) != 0,
-                "Missing 'Application.SitePackages.Package' tag.")
 
+        # If the first package has a blank name then we have the version 2
+        # format or earlier.
+        if len(project.packages) != 0 and project.packages[0].name == '':
+            # If it is empty just remove it.
+            if len(project.packages[0].contents) == 0:
+                del project.packages[0]
+            else:
+                # Give it a name.
+                project.packages[0].name = project.relative_path(
+                        os.path.join(project.python_target_stdlib_dir,
+                                'site-packages'))
+                
         stdlib = application.find('Stdlib')
         cls._assert(stdlib is not None, "Missing 'Application.Stdlib' tag.")
         stdlib_package = stdlib.find('Package')
@@ -282,17 +306,7 @@ class Project(QObject):
 
             project.extension_modules.append(ExtensionModule(name, path))
 
-        # The Python specific configuration.
-        python = root.find('Python')
-        cls._assert(python is not None, "Missing 'Python' tag.")
-
-        project.python_host_interpreter = python.get('hostinterpreter', '')
-        project.python_source_dir = python.get('sourcedir', '')
-        project.python_target_include_dir = python.get('targetincludedir', '')
-        project.python_target_library = python.get('targetlibrary', '')
-        project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
-
-        # The other configuration (added in version 1).
+        # The other configuration.
         others = root.find('Others')
         if others is not None:
             project.build_dir = others.get('builddir', '')

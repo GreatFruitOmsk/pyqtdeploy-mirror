@@ -105,27 +105,18 @@ class OtherPackagesSubpage(QWidget):
 
         self._add_package_dir()
 
-        self._package_selector.setCurrentItem(
-                self._package_selector.topLevelItem(0))
-
     def _add_package_dir(self, package=None):
         """ Add a QTreeWidgetItem that holds a package directory. """
-
-        flags = Qt.ItemIsSelectable|Qt.ItemIsEnabled|Qt.ItemNeverHasChildren
 
         if package is None:
             package = QrcPackage()
             name = ''
-            flags |= Qt.ItemIsEditable
-        elif package is self.project.packages[0]:
-            name = 'site-packages'
         else:
             name = package.name
-            flags |= Qt.ItemIsEditable
 
         itm = QTreeWidgetItem([name])
         itm.setData(0, Qt.UserRole, package)
-        itm.setFlags(flags)
+        itm.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled|Qt.ItemNeverHasChildren|Qt.ItemIsEditable)
 
         self._package_selector.addTopLevelItem(itm)
 
@@ -181,19 +172,6 @@ class _PackageDirectoryEditor(QrcPackageEditor):
         project = self.project
         package = self.package
 
-        if package is project.packages[0]:
-            stdlib_dir = project.absolute_path(
-                    project.python_target_stdlib_dir)
-
-            if stdlib_dir == '':
-                QMessageBox.warning(self.parentWidget(), self.title,
-                        "site-packages cannot be scanned because the "
-                        "directory name of the standard library has not been "
-                        "set in the Locations tab.")
-                return ''
-
-            return os.path.join(stdlib_dir, 'site-packages')
-
         if package.name == '':
             QMessageBox.warning(self.parentWidget(), self.title,
                         "The name of the package directory has not been set.")
@@ -202,7 +180,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
         return project.absolute_path(package.name)
 
     def filter(self, name):
-        """ Reimplemented to filter out the PyQt related stuff. """
+        """ Reimplemented to filter out any PyQt related stuff. """
 
         if name in ('libsip.a', 'sip.so', 'sip.lib', 'sip.pyd', 'PyQt5', 'PyQt4'):
             return True
