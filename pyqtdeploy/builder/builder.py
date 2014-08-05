@@ -173,14 +173,8 @@ class Builder():
         self._write_package(resource_contents, resources_dir, '',
                 project.stdlib_package, stdlib_src_dir, freeze, opt)
 
-        # Handle site-packages.
-        sitepackages_src_dir = os.path.join(stdlib_src_dir, 'site-packages')
-
-        self._write_package(resource_contents, resources_dir, '',
-                project.packages[0], sitepackages_src_dir, freeze, opt)
-
         # Handle any additional packages.
-        for package in project.packages[1:]:
+        for package in project.packages:
             package_src_dir, package_name = self._package_details(package)
 
             self._write_package(resource_contents, resources_dir, package_name,
