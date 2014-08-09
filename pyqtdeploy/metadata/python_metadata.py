@@ -27,7 +27,7 @@
 class BaseMetadata:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, windows=None, deps=(), core=False, defines='', libs=''):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', libs=''):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -54,6 +54,10 @@ class BaseMetadata:
         # Set if the module is internal.
         self.internal = internal
 
+        # True if the module is required if SSL is enabled, False if it is
+        # required if SSL is disabled and None if SSL is not relevant.
+        self.ssl = ssl
+
         # True if the module is Windows-specific, False if non-Windows and None
         # if present on all platforms.
         self.windows = windows
@@ -76,12 +80,13 @@ class BaseMetadata:
 class ExtensionModule(BaseMetadata):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, windows=None, deps=(), core=False, defines='', libs=''):
+    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, defines='', libs=''):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, windows=windows,
-                deps=deps, core=core, defines=defines, libs=libs)
+                max_version=max_version, internal=internal, ssl=ssl,
+                windows=windows, deps=deps, core=core, defines=defines,
+                libs=libs)
 
         # The sequence of source files relative to the Modules directory.
         self.source = (source, ) if isinstance(source, str) else source
@@ -95,23 +100,23 @@ class CoreExtensionModule(ExtensionModule):
     compiled in to the interpreter library.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, windows=None, deps=()):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=()):
         """ Initialise the object. """
 
         super().__init__(source=(), min_version=min_version, version=version,
-                max_version=max_version, internal=internal, windows=windows,
-                deps=deps, core=True)
+                max_version=max_version, internal=internal, ssl=ssl,
+                windows=windows, deps=deps, core=True)
 
 
 class PythonModule(BaseMetadata):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, windows=None, deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, windows=windows,
-                deps=deps, core=core)
+                max_version=max_version, internal=internal, ssl=ssl,
+                windows=windows, deps=deps, core=core)
 
         # The dict of modules or sub-packages if this is a package, otherwise
         # None.
@@ -123,12 +128,12 @@ class CorePythonModule(PythonModule):
     an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, windows=None, deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, windows=windows,
-                deps=deps, core=True, modules=modules)
+                max_version=max_version, internal=internal, ssl=ssl,
+                windows=windows, deps=deps, core=True, modules=modules)
 
 
 # The meta-data for each module.
@@ -167,6 +172,34 @@ _metadata = {
                                 source=['cmathmodule.c', '_math.c'],
                                 libs='-lm')),
     'codecs':           PythonModule(deps='_codecs'),
+    'collections': (    PythonModule(version=(2, 6),
+                                deps=('_abcoll', '_collections', 'keyword',
+                                        'operator')),
+                        PythonModule(version=(2, 7),
+                                deps=('_abcoll', '_collections', 'heapq',
+                                        'itertools', 'keyword', 'operator',
+                                        'thread')),
+                        PythonModule(version=(3, 3),
+                                deps=('collections.abc', '_collections',
+                                        'copy', 'heapq', 'itertools',
+                                        'keyword', 'operator', 'reprlib',
+                                        'weakref'),
+                                modules={
+                                    'abc':  PythonModule(deps='abc')}),
+                        PythonModule(min_version=(3, 4),
+                                deps=('_collections', '_collections_abc',
+                                        'copy', 'heapq', 'itertools',
+                                        'keyword', 'operator', 'reprlib',
+                                        '_weakref'),
+                                modules={
+                                    'abc':  PythonModule(
+                                                    deps='_collections_abc')})),
+    'copy': (           PythonModule(version=(2, 6),
+                                deps=('copy_reg', 'types')),
+                        PythonModule(version=(2, 7),
+                                deps=('copy_reg', 'types', 'weakref')),
+                        PythonModule(version=3,
+                                deps=('copyreg', 'types', 'weakref'))),
     'copy_reg':         PythonModule(version=2, deps='types'),
     'copyreg':          PythonModule(version=3),
     'cPickle':          ExtensionModule(version=2, source='cPickle.c'),
@@ -232,6 +265,23 @@ _metadata = {
     'genericpath':      PythonModule(internal=True, deps=('os', 'stat')),
     'grp':              ExtensionModule(source='grpmodule.c'),
 
+    'hashlib': (        PythonModule(version=(2, 6),
+                                deps=('_hashlib', '_md5', '_sha', '_sha256',
+                                        '_sha512')),
+                        PythonModule(version=(2, 7),
+                                deps=('binascii', '_hashlib', '_md5', '_sha',
+                                        '_sha256', '_sha512', 'struct')),
+                        PythonModule(version=3,
+                                deps=('_hashlib', '_md5', '_sha1', '_sha256',
+                                        '_sha512'))),
+    'heapq': (          PythonModule(version=(2, 6),
+                                deps=('bisect', '_heapq', 'itertools',
+                                        'operator')),
+                        PythonModule(version=(2, 7),
+                                deps=('_heapq', 'itertools', 'operator')),
+                        PythonModule(version=3,
+                                deps=('_heapq', 'itertools'))),
+
     'imageop':          ExtensionModule(version=2, source='imageop.c'),
     'imp': (            CoreExtensionModule(version=2),
                         PythonModule(version=(3, 3),
@@ -256,6 +306,10 @@ _metadata = {
     'itertools': (      ExtensionModule(version=2, source='itertoolsmodule.c'),
                         CoreExtensionModule(version=3)),
 
+    'linecache': (      PythonModule(version=2,
+                                deps='os'),
+                        PythonModule(version=3,
+                                deps=('os', 'tokenize'))),
     'linuxaudiodev':    ExtensionModule(version=2, source='linuxaudiodev.c'),
     'locale': (         PythonModule(version=2,
                                 deps=('encodings', 'encodings.aliases',
@@ -344,12 +398,18 @@ _metadata = {
     'resource':         ExtensionModule(source='resource.c'),
 
     'select':           ExtensionModule(source='selectmodule.c'),
+    'selectors':        PythonModule(min_version=(3, 4),
+                                deps=('abc', 'collections', 'math', 'select')),
     'signal':           CoreExtensionModule(),
     'spwd':             ExtensionModule(source='spwdmodule.c'),
     'stat': (           PythonModule(version=2),
                         PythonModule(version=(3, 3)),
                         PythonModule(min_version=(3, 4),
                                 deps='_stat')),
+    'string': (         PythonModule(version=2,
+                                deps=('re', 'strop')),
+                        PythonModule(version=3,
+                                deps=('collections', 're', '_string'))),
     'struct':           PythonModule(deps='_struct'),
     'subprocess': (     PythonModule(version=2,
                                 deps=('errno', 'fcntl', 'gc', 'msvcrt', 'os',
@@ -478,7 +538,8 @@ _metadata = {
     '_gdbm':            ExtensionModule(version=3, internal=True,
                                 source='_gdbmmodule.c', libs='-lgdbm'),
 
-    '_hashlib':         ExtensionModule(internal=True, source='_hashopenssl.c',
+    '_hashlib':         ExtensionModule(internal=True, ssl=True,
+                                source='_hashopenssl.c',
                                 libs='-lssl -lcrypto'),
     '_heapq':           ExtensionModule(internal=True,
                                 source='_heapqmodule.c'),
@@ -509,7 +570,7 @@ _metadata = {
                                 source='_lzmamodule.c', libs='-llzma'),
 
     '_md5': (           ExtensionModule(version=2,
-                                internal=True,
+                                internal=True, ssl=False,
                                 source=('md5module.c', 'md5.c')),
                         ExtensionModule(version=3,
                                 internal=True, source='md5module.c')),
@@ -537,13 +598,13 @@ _metadata = {
 
     '_random':          ExtensionModule(source='_randommodule.c'),
 
-    '_sha':             ExtensionModule(version=2, internal=True,
+    '_sha':             ExtensionModule(version=2, internal=True, ssl=False,
                                 source='shamodule.c'),
-    '_sha1':            ExtensionModule(version=3, internal=True,
+    '_sha1':            ExtensionModule(version=3, internal=True, ssl=False,
                                 source='sha1module.c'),
-    '_sha256':          ExtensionModule(internal=True,
+    '_sha256':          ExtensionModule(internal=True, ssl=False,
                                 source='sha256module.c'),
-    '_sha512':          ExtensionModule(internal=True,
+    '_sha512':          ExtensionModule(internal=True, ssl=False,
                                 source='sha512module.c'),
 
     '_socket': (        ExtensionModule(version=(2, 6),
@@ -579,8 +640,8 @@ _metadata = {
                         PythonModule(version=3,
                                 internal=True,
                                 deps=('sre_constants', 'warnings'))),
-    '_ssl':             ExtensionModule(internal=True, source='_ssl.c',
-                                libs='-lssl -lcrypto'),
+    '_ssl':             ExtensionModule(internal=True, ssl=True,
+                                source='_ssl.c', libs='-lssl -lcrypto'),
     '_stat':            CoreExtensionModule(min_version=(3, 4), internal=True),
     '_string':          CoreExtensionModule(version=3, internal=True),
     '_strptime': (      PythonModule(version=2,
@@ -617,12 +678,12 @@ _metadata = {
 }
 
 
-def _get_module_for_version(name, major, minor):
+def _get_submodule_for_version(name, metadata, major, minor):
     """ Return the module meta-data for a particular version.  None is returned
     if there is none but this should not happen with correct meta-data.
     """
 
-    versions = _metadata.get(name)
+    versions = metadata.get(name)
 
     if versions is None:
         return None
@@ -643,7 +704,25 @@ def _get_module_for_version(name, major, minor):
     return module
 
 
-def get_python_metadata(major, minor):
+def _get_module_for_version(name, major, minor):
+    """ Return the module meta-data for a particular version.  None is returned
+    if there is none but this should not happen with correct meta-data.
+    """
+
+    metadata = _metadata
+
+    for part in name.split('.'):
+        module = _get_submodule_for_version(part, metadata, major, minor)
+        if module is None:
+            return None
+
+        if isinstance(module, PythonModule) and module.modules is not None:
+            metadata = module.modules
+
+    return module
+
+
+def get_python_metadata(major, minor, ssl):
     """ Return the dict of PythonMetadata instances for a particular version of
     Python.  It is assumed that the version is valid.
     """
