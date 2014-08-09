@@ -25,10 +25,12 @@
 
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel, QStackedWidget, QTabWidget
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import (QLabel, QStackedWidget, QTreeView, QVBoxLayout,
+        QWidget)
 
-from .stdlib_extension_modules_subpage import StdlibExtensionModulesSubpage
-from .stdlib_packages_subpage import StdlibPackagesSubpage
+from ..metadata import ExtensionModule, get_python_metadata
+from ..project import QrcFile, StdlibModule
 
 
 class StandardLibraryPage(QStackedWidget):
@@ -50,9 +52,7 @@ class StandardLibraryPage(QStackedWidget):
         if self._project != value:
             self._project = value
 
-            if self._update_page():
-                self._packages.project = value
-                self._extension_modules.project = value
+            self._update_page()
 
             if self._tab_widget is None:
                 self._tab_widget = self.parent().parent()
@@ -67,25 +67,32 @@ class StandardLibraryPage(QStackedWidget):
         self._tab_widget = None
 
         # Create the page's GUI.
-        self._sub_pages = QTabWidget()
+        layout = QVBoxLayout()
 
-        self._packages = StdlibPackagesSubpage()
-        self._sub_pages.addTab(self._packages, self._packages.label)
+        self._stdlib_edit = QTreeView()
 
-        self._extension_modules = StdlibExtensionModulesSubpage()
-        self._sub_pages.addTab(self._extension_modules,
-                self._extension_modules.label)
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels(
+                ["Name", "DEFINES", "INCLUDEPATH", "LIBS"])
+        model.itemChanged.connect(self._item_changed)
 
-        self.addWidget(self._sub_pages)
+        self._stdlib_edit.setEditTriggers(
+                QTreeView.DoubleClicked|QTreeView.SelectedClicked|
+                QTreeView.EditKeyPressed)
+
+        self._stdlib_edit.setModel(model)
+
+        layout.addWidget(self._stdlib_edit)
+        self._stdlib_subpage = QWidget()
+        self._stdlib_subpage.setLayout(layout)
+        self.addWidget(self._stdlib_subpage)
 
         self._warning = QLabel()
         self._warning.setAlignment(Qt.AlignCenter)
         self.addWidget(self._warning)
 
     def _update_page(self):
-        """ Update the page using the current project.  Return True if the
-        sub-pages are enabled.
-        """
+        """ Update the page using the current project. """
 
         project = self.project
 
@@ -106,17 +113,133 @@ class StandardLibraryPage(QStackedWidget):
             warning_text = ''
 
         if warning_text == '':
-            self.setCurrentWidget(self._sub_pages)
-            enabled = True
+            self.setCurrentWidget(self._stdlib_subpage)
+
+            # Configure the editor if it is empty.
+            if self._stdlib_edit.model().rowCount() == 0:
+                self._configure_stdlib_editor()
         else:
             self._warning.setText(warning_text)
             self.setCurrentWidget(self._warning)
-            enabled = False
-
-        return enabled
 
     def _tab_changed(self, idx):
         """ Invoked when the current tab of the containing widget changes. """
 
         if self._tab_widget.widget(idx) is self:
             self._update_page()
+
+    def _configure_stdlib_editor(self):
+        """ Configure the standard library editor for the current project. """
+
+        project = self.project
+
+        # Set the extension modules.
+        modules = get_python_metadata(*project.python_target_version).modules
+        modules = sorted(modules,
+                key=lambda m: m.name[1:].lower() if m.name.startswith('_') else m.name.lower())
+
+        model = self._stdlib_edit.model()
+        model.removeRows(0, model.rowCount())
+
+        for row, metadata in enumerate(modules):
+            # Core modules are permanently disabled.
+            flags = Qt.NoItemFlags if metadata.core else Qt.ItemIsEnabled
+
+            col0 = self._new_item(metadata.name, flags|Qt.ItemIsUserCheckable)
+
+            # See if the module is enabled.
+            for project_module in project.standard_library:
+                if project_module.name == metadata.name:
+                    defines = project_module.defines
+                    includepath = project_module.includepath
+                    libs = project_module.libs
+                    check_state = Qt.Checked
+
+                    # The module can't be core if we are here.
+                    flags |= Qt.ItemIsEditable
+
+                    break
+            else:
+                project_module = None
+                defines = metadata.defines
+                includepath = ''
+                libs = metadata.libs
+                check_state = Qt.Checked if metadata.core else Qt.Unchecked
+
+            col0.setCheckState(check_state)
+
+            col1 = self._new_item(defines, flags)
+            col2 = self._new_item(includepath, flags)
+            col3 = self._new_item(libs, flags)
+
+            model.appendRow([col0, col1, col2, col3])
+
+            # Save for later.
+            col0._module_metadata = metadata
+            col0._module = project_module
+
+        self._stdlib_edit.resizeColumnToContents(0)
+
+    def _new_item(self, text, flags):
+        """ Create a new model item. """
+
+        itm = QStandardItem(text)
+        itm.setFlags(flags)
+
+        return itm
+
+    def _item_changed(self, itm):
+        """ Invoked when an item has changed. """
+
+        project = self.project
+        model = self._stdlib_edit.model()
+
+        # Convert to a row and column.
+        idx = model.indexFromItem(itm)
+        row = idx.row()
+        col = idx.column()
+
+        if col == 0:
+            blocked = model.blockSignals(True)
+
+            metadata = itm._module_metadata
+            new_flags = Qt.ItemIsEnabled
+
+            if itm.checkState() == Qt.Checked:
+                # Add the module.
+                module = StdlibModule(metadata.name, metadata.defines, '',
+                        metadata.libs)
+                project.standard_library.append(module)
+                new_flags |= Qt.ItemIsEditable
+                itm._module = module
+            else:
+                # Remove the module.
+                project.standard_library.remove(itm._module)
+                defines = metadata.defines
+                libs = metadata.libs
+
+                itm._module = None
+
+                # Reset the other columns to the meta-data defaults.
+                model.item(row, 1).setText(defines)
+                model.item(row, 2).setText('')
+                model.item(row, 3).setText(libs)
+
+            # Update the editable state of the other columns in the row.
+            for c in range(1, 4):
+                model.item(row, c).setFlags(new_flags)
+
+            model.blockSignals(blocked)
+        else:
+            # The module must be an extension module in the project.
+            text = itm.text().strip()
+            module = model.item(row, 0)._module
+
+            if col == 1:
+                module.defines = text
+            elif col == 2:
+                module.includepath = text
+            elif col == 3:
+                module.libs = text
+
+        project.modified = True

@@ -27,4 +27,4 @@
 # Publish the sub-package's API.
 from .pyqt4 import pyqt4_metadata
 from .pyqt5 import pyqt5_metadata
-from .python_metadata import get_python_metadata
+from .python_metadata import ExtensionModule, get_python_metadata

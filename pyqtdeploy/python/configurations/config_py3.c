@@ -61,10 +61,14 @@ extern PyObject* PyInit__weakref(void);
 extern PyObject* PyInit__functools(void);
 #if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__operator(void);
+#else
+extern PyObject* PyInit_operator(void);
 #endif
 extern PyObject* PyInit__collections(void);
 extern PyObject* PyInit_itertools(void);
+#if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit_atexit(void);
+#endif
 #if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__stat(void);
 #endif
@@ -99,10 +103,14 @@ struct _inittab _PyImport_Inittab[] = {
 	{"_functools", PyInit__functools},
 #if PY_MINOR_VERSION >= 4
 	{"_operator", PyInit__operator},
+#else
+	{"operator", PyInit_operator},
 #endif
 	{"_collections", PyInit__collections},
 	{"itertools", PyInit_itertools},
+#if PY_MINOR_VERSION >= 4
 	{"atexit", PyInit_atexit},
+#endif
 #if PY_MINOR_VERSION >= 4
 	{"_stat", PyInit__stat},
 #endif

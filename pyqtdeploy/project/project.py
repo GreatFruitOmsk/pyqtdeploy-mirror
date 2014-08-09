@@ -35,18 +35,8 @@ from ..user_exception import UserException
 class Project(QObject):
     """ The encapsulation of a project. """
 
-    # The current project version.
-    #   0: The original version.
-    #   1: Added the Others element.
-    #   2: The SitePackages element can now contain multiple Package
-    #      sub-elements.
-    #      Added the syspath attribute to the Application element.
-    #   3: Added the sourcedir attribute to the Python element.
-    #      Added the StdlibExtensionModule element to the Stdlib element.
-    #      Added the name and entrypoint attributes to the Application element.
-    #      The first Package element of the SitePackages element is now not
-    #      treated specially as the standard library site-packages directory.
-    version = 3
+    # The current project version.  Versions 0 to 3 are no longer supported.
+    version = 4
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -133,9 +123,8 @@ class Project(QObject):
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
         self.qmake = ''
-        self.packages = [QrcPackage()]
-        self.stdlib_package = QrcPackage()
-        self.stdlib_extension_modules = []
+        self.packages = []
+        self.standard_library = []
         self.sys_path = ''
 
     def relative_path(self, filename):
@@ -215,6 +204,9 @@ class Project(QObject):
 
         cls._assert(version is not None, "Invalid 'version'.")
 
+        if version <= 3:
+            raise UserException("The project's format is no longer supported.")
+
         if version > cls.version:
             raise UserException(
                     "The project's format is version {0} but only version {1} is supported.".format(version, cls.version))
@@ -244,65 +236,46 @@ class Project(QObject):
         project.application_script = application.get('script', '')
         project.sys_path = application.get('syspath', '')
 
+        # Any application package.
         app_package = application.find('Package')
         cls._assert(app_package is not None,
-                "Missing 'Application.Package' tag.")
+                "Missing 'Application.Python' tag.")
+
         project.application_package = cls._load_package(app_package)
 
-        for pyqt_m in application.iterfind('PyQtModule'):
+        # Any PyQt modules.
+        for pyqt_m in root.iterfind('PyQtModule'):
             name = pyqt_m.get('name', '')
             cls._assert(name != '',
                     "Missing or empty 'PyQtModule.name' attribute.")
             project.pyqt_modules.append(name)
 
-        # Note that SitePackages is now mis-named - OtherLibraries would be
-        # more accurate.
-        site_packages = application.find('SitePackages')
-        cls._assert(site_packages is not None,
-                "Missing 'Application.SitePackages' tag.")
-        project.packages = [cls._load_package(package)
-                for package in site_packages.iterfind('Package')]
-
-        # If the first package has a blank name then we have the version 2
-        # format or earlier.
-        if len(project.packages) != 0 and project.packages[0].name == '':
-            # If it is empty just remove it.
-            if len(project.packages[0].contents) == 0:
-                del project.packages[0]
-            else:
-                # Give it a name.
-                project.packages[0].name = project.relative_path(
-                        os.path.join(project.python_target_stdlib_dir,
-                                'site-packages'))
-                
-        stdlib = application.find('Stdlib')
-        cls._assert(stdlib is not None, "Missing 'Application.Stdlib' tag.")
-        stdlib_package = stdlib.find('Package')
-        cls._assert(stdlib_package is not None,
-                "Missing 'Application.Stdlib.Package' tag.")
-        project.stdlib_package = cls._load_package(stdlib_package)
-
-        for stdlib_extension_module_element in stdlib.iterfind('StdlibExtensionModule'):
-            name = stdlib_extension_module_element.get('name')
+        # Any standard library modules.
+        for stdlib_module_element in root.iterfind('StdlibModule'):
+            name = stdlib_module_element.get('name')
             cls._assert(name is not None,
-                    "Missing 'Application.Stdlib.StdlibExtensionModule.name' attribute.")
+                    "Missing 'StdlibModule.name' attribute.")
 
-            defines = stdlib_extension_module_element.get('defines', '')
-            includepath = stdlib_extension_module_element.get('includepath',
-                    '')
-            libs = stdlib_extension_module_element.get('libs', '')
+            defines = stdlib_module_element.get('defines', '')
+            includepath = stdlib_module_element.get('includepath', '')
+            libs = stdlib_module_element.get('libs', '')
 
-            project.stdlib_extension_modules.append(
-                    StdlibExtensionModule(name, defines, includepath, libs))
+            project.standard_library.append(
+                    StdlibModule(name, defines, includepath, libs))
 
-        for extension_module_element in application.iterfind('ExtensionModule'):
+        # Any other Python packages.
+        project.packages = [cls._load_package(package)
+                for package in root.iterfind('Package')]
+
+        # Any other extension module.
+        for extension_module_element in root.iterfind('ExtensionModule'):
             name = extension_module_element.get('name')
             cls._assert(name is not None,
-                    "Missing 'Application.ExtensionModule.name' attribute.")
+                    "Missing 'ExtensionModule.name' attribute.")
 
             path = extension_module_element.get('path')
             cls._assert(path is not None,
-                    "Missing 'Application.ExtensionModule.path' attribute.")
+                    "Missing 'ExtensionModule.path' attribute.")
 
             project.extension_modules.append(ExtensionModule(name, path))
 
@@ -403,6 +376,13 @@ class Project(QObject):
         root = Element('Project', attrib={
             'version': str(self.version)})
 
+        SubElement(root, 'Python', attrib={
+            'hostinterpreter': self.python_host_interpreter,
+            'sourcedir': self.python_source_dir,
+            'targetincludedir': self.python_target_include_dir,
+            'targetlibrary': self.python_target_library,
+            'targetstdlibdir': self.python_target_stdlib_dir})
+
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,
             'ispyqt5': str(int(self.application_is_pyqt5)),
@@ -413,34 +393,31 @@ class Project(QObject):
         self._save_package(application, self.application_package)
 
         for pyqt_module in self.pyqt_modules:
-            SubElement(application, 'PyQtModule', attrib={
+            SubElement(root, 'PyQtModule', attrib={
                 'name': pyqt_module})
 
-        site_packages = SubElement(application, 'SitePackages')
+        for stdlib_module in self.standard_library:
+            # Trim the attributes to keep things small.
+            attribs = dict(name=stdlib_module.name)
+
+            if stdlib_module.defines != '':
+                attribs['defines'] = stdlib_module.defines
+
+            if stdlib_module.includepath != '':
+                attribs['includepath'] = stdlib_module.includepath
+
+            if stdlib_module.defines != '':
+                attribs['libs'] = stdlib_module.libs
+
+            SubElement(root, 'StdlibModule', attrib=attribs)
+
         for package in self.packages:
-            self._save_package(site_packages, package)
-
-        stdlib = SubElement(application, 'Stdlib')
-        self._save_package(stdlib, self.stdlib_package)
-
-        for stdlib_extension_module in self.stdlib_extension_modules:
-            SubElement(stdlib, 'StdlibExtensionModule', attrib={
-                'name': stdlib_extension_module.name,
-                'defines': stdlib_extension_module.defines,
-                'includepath': stdlib_extension_module.includepath,
-                'libs': stdlib_extension_module.libs})
+            self._save_package(root, package)
 
         for extension_module in self.extension_modules:
-            SubElement(application, 'ExtensionModule', attrib={
+            SubElement(root, 'ExtensionModule', attrib={
                 'name': extension_module.name,
                 'path': extension_module.path})
-
-        SubElement(root, 'Python', attrib={
-            'hostinterpreter': self.python_host_interpreter,
-            'sourcedir': self.python_source_dir,
-            'targetincludedir': self.python_target_include_dir,
-            'targetlibrary': self.python_target_library,
-            'targetstdlibdir': self.python_target_stdlib_dir})
 
         SubElement(root, 'Others', attrib={
             'builddir': self.build_dir,
@@ -549,8 +526,8 @@ class QrcDirectory(QrcFile):
         return copy
 
 
-class StdlibExtensionModule():
-    """ The encapsulation of a standard library extension module. """
+class StdlibModule():
+    """ The encapsulation of a standard library module. """
 
     def __init__(self, name, defines, includepath, libs):
         """ Initialise the extension module. """
