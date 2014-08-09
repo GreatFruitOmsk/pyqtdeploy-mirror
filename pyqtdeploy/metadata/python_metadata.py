@@ -118,9 +118,9 @@ class PythonModule(BaseMetadata):
                 max_version=max_version, internal=internal, ssl=ssl,
                 windows=windows, deps=deps, core=core)
 
-        # The dict of modules or sub-packages if this is a package, otherwise
-        # None.
-        self.modules = modules
+        # The sequence of modules or sub-packages if this is a package,
+        # otherwise None.
+        self.modules = (modules, ) if isinstance(modules, str) else modules
 
 
 class CorePythonModule(PythonModule):
@@ -184,16 +184,17 @@ _metadata = {
                                         'copy', 'heapq', 'itertools',
                                         'keyword', 'operator', 'reprlib',
                                         'weakref'),
-                                modules={
-                                    'abc':  PythonModule(deps='abc')}),
+                                modules='collections.abc'),
                         PythonModule(min_version=(3, 4),
                                 deps=('_collections', '_collections_abc',
                                         'copy', 'heapq', 'itertools',
                                         'keyword', 'operator', 'reprlib',
                                         '_weakref'),
-                                modules={
-                                    'abc':  PythonModule(
-                                                    deps='_collections_abc')})),
+                                modules='collections.abc')),
+    'collections.abc': (PythonModule(version=(3, 3),
+                                deps='abc'),
+                        PythonModule(min_version=(3, 4),
+                                deps='_collections_abc')),
     'copy': (           PythonModule(version=(2, 6),
                                 deps=('copy_reg', 'types')),
                         PythonModule(version=(2, 7),
@@ -221,30 +222,36 @@ _metadata = {
                                 defines='HAVE_NDBM_H', libs='-lndbm'),
                         PythonModule(version=3,
                                 deps=('io', 'os', 'struct'),
-                                modules={
-                                    'dumb': PythonModule(deps=('collections',
-                                                    'io', 'os')),
-                                    'gnu':  PythonModule(deps='_gdbm'),
-                                    'ndbm': PythonModule(deps='_dbm')})),
+                                modules=('dbm.dumb', 'dbm.gnu', 'dbm.ndbm'))),
+    'dbm.dumb':         PythonModule(version=3,
+                                deps=('collections', 'io', 'os')),
+    'dbm.gnu':          PythonModule(version=3, deps='_gdbm'),
+    'dbm.ndbm':         PythonModule(version=3, deps='_dbm'),
     # TODO - the non-core encodings.
     'encodings': (      PythonModule(version=2,
                                 deps=('codecs', 'encodings.aliases'),
-                                modules={
-                                    'aliases':  PythonModule(),
-                                    'ascii':    PythonModule(),
-                                    'cp437':    PythonModule(),
-                                    'latin_1':  PythonModule(),
-                                    'mbcs':     PythonModule(),
-                                    'utf_8':    PythonModule()}),
+                                modules=('encodings.aliases',
+                                        'encodings.ascii', 'encodings.cp437',
+                                        'encodings.latin_1', 'encodings.mbcs',
+                                        'encodings.utf_8')),
                         CorePythonModule(version=3,
                                 deps=('codecs', 'encodings.aliases'),
-                                modules={
-                                    'aliases':  CorePythonModule(),
-                                    'ascii':    CorePythonModule(),
-                                    'cp437':    CorePythonModule(),
-                                    'latin_1':  CorePythonModule(),
-                                    'mbcs':     CorePythonModule(),
-                                    'utf_8':    CorePythonModule()})),
+                                modules=('encodings.aliases',
+                                        'encodings.ascii', 'encodings.cp437',
+                                        'encodings.latin_1', 'encodings.mbcs',
+                                        'encodings.utf_8'))),
+    'encodings.aliases': (  PythonModule(version=2),
+                            CorePythonModule(version=3)),
+    'encodings.ascii': (    PythonModule(version=2),
+                            CorePythonModule(version=3)),
+    'encodings.cp437': (    PythonModule(version=2),
+                            CorePythonModule(version=3)),
+    'encodings.latin_1': (  PythonModule(version=2),
+                            CorePythonModule(version=3)),
+    'encodings.mbcs': (     PythonModule(version=2),
+                            CorePythonModule(version=3)),
+    'encodings.utf_8': (    PythonModule(version=2),
+                            CorePythonModule(version=3)),
     'errno':            CoreExtensionModule(),
     'exceptions':       CoreExtensionModule(version=2),
 
@@ -292,9 +299,9 @@ _metadata = {
                                         'types', 'warnings'))),
 
     'importlib': (      PythonModule(version=(2, 7),
-                                modules={}),
+                                modules=()),
                         CorePythonModule(version=3,
-                                deps=('types', 'warnings'), modules={})),
+                                deps=('types', 'warnings'), modules=())),
     'io': (             PythonModule(version=(2, 6),
                                 deps=('__future__', 'abc', 'array', '_bytesio',
                                         'codecs', '_fileio', 'locale',
@@ -467,6 +474,21 @@ _metadata = {
                                         '_warnings')),
                         PythonModule(version=3,
                                 deps=('linecache', 're', '_warnings'))),
+    'weakref': (        PythonModule(version=(2, 6),
+                                deps=('exceptions', 'UserDict', '_weakref')),
+                        PythonModule(version=(2, 7),
+                                deps=('exceptions', 'UserDict', '_weakref',
+                                        '_weakrefset')),
+                        PythonModule(version=(3, 3),
+                                deps=('collections', 'copy', '_weakref',
+                                        '_weakrefset')),
+                        PythonModule(min_version=(3, 4),
+                                deps=('atexit', 'collections', 'copy', 'gc',
+                                        'itertools', '_weakref',
+                                        '_weakrefset'))),
+
+    'xml':              PythonModule(
+                                modules=('dom', 'etree', 'parsers', 'sax')),
 
     'zipimport':        CoreExtensionModule(),
     'zlib':             ExtensionModule(source='zlibmodule.c', libs='-lz'),
@@ -678,12 +700,12 @@ _metadata = {
 }
 
 
-def _get_submodule_for_version(name, metadata, major, minor):
+def _get_module_for_version(name, major, minor):
     """ Return the module meta-data for a particular version.  None is returned
     if there is none but this should not happen with correct meta-data.
     """
 
-    versions = metadata.get(name)
+    versions = _metadata.get(name)
 
     if versions is None:
         return None
@@ -700,24 +722,6 @@ def _get_submodule_for_version(name, metadata, major, minor):
                 break
     else:
         module = None
-
-    return module
-
-
-def _get_module_for_version(name, major, minor):
-    """ Return the module meta-data for a particular version.  None is returned
-    if there is none but this should not happen with correct meta-data.
-    """
-
-    metadata = _metadata
-
-    for part in name.split('.'):
-        module = _get_submodule_for_version(part, metadata, major, minor)
-        if module is None:
-            return None
-
-        if isinstance(module, PythonModule) and module.modules is not None:
-            metadata = module.modules
 
     return module
 
@@ -742,28 +746,25 @@ def get_python_metadata(major, minor, ssl):
 
 if __name__ == '__main__':
 
-    def check_module_for_version(name, module, major, minor, unused):
-        """ Sanity check a particular module. """
+    def check_modules_for_version(names, major, minor, seen=None):
+        """ Sanity check a list of module names. """
 
-        for dep in module.deps:
-            dep_module = _get_module_for_version(dep, major, minor)
-            if dep_module is None:
-                print("Unknown module '{0}'".format(dep))
-            elif dep_module.internal and not dep_module.core:
-                # This internal, non-core module is used.
-                unused[dep] = False
+        if seen is None:
+            top_level = True
+            seen = {}
+        else:
+            top_level = False
 
-        if module.internal and not module.core and name not in unused:
-            # This internal, non-core module is not used so far.
-            unused[name] = True
+        for name in names:
+            # Detect recursive dependences.
+            if name in seen:
+                continue
 
-        if isinstance(module, PythonModule) and module.modules is not None:
-            check_metadata_for_version(module.modules, major, minor, unused)
+            versions = _metadata.get(name)
+            if versions is None:
+                print("Unknown module '{0}'".format(name))
+                continue
 
-    def check_metadata_for_version(metadata, major, minor, unused):
-        """ Sanity check a dict of modules. """
-
-        for name, versions in metadata.items():
             if not isinstance(versions, tuple):
                 versions = (versions, )
 
@@ -790,21 +791,38 @@ if __name__ == '__main__':
 
                 continue
 
-            check_module_for_version(name, matches[0], major, minor, unused)
+            module = matches[0]
+
+            if module.internal and not module.core:
+                if top_level:
+                    if name not in seen:
+                        # This internal, non-core module is not used so far.
+                        seen[name] = True
+                else:
+                    # This internal, non-core module is used.
+                    seen[name] = False
+            else:
+                seen[name] = None
+
+            # Check the dependencies.
+            check_modules_for_version(module.deps, major, minor, seen)
+
+            # Check the package contents.
+            if isinstance(module, PythonModule) and module.modules is not None:
+                check_modules_for_version(module.modules, major, minor, seen)
+
+        if top_level:
+            # See if there are any internal, non-core modules that are unused.
+            for name, unused in seen.items():
+                if unused is True:
+                    print("Unused module '{0}'".format(name))
 
     def check_version(major, minor):
         """ Carry out sanity checks for a particular version of Python. """
 
         print("Checking Python v{0}.{1}...".format(major, minor))
 
-        unused = {}
-
-        check_metadata_for_version(_metadata, major, minor, unused)
-
-        # See if there are any internal, non-core modules that are unused.
-        for name, unused_state in unused.items():
-            if unused_state:
-                print("Unused module '{0}'".format(name))
+        check_modules_for_version(_metadata.keys(), major, minor)
 
     # Check each supported version.
     check_version(2, 6)
