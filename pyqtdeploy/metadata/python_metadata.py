@@ -757,6 +757,7 @@ _metadata = {
     'repr':             PythonModule(version=2, deps='itertools'),
     'reprlib':          PythonModule(version=3, deps=('itertools', '_thread')),
     'resource':         ExtensionModule(source='resource.c'),
+    'rfc822':           PythonModule(version=2, deps=('time', 'warnings')),
 
     'select':           ExtensionModule(source='selectmodule.c'),
     'selectors':        PythonModule(min_version=(3, 4),
@@ -822,6 +823,7 @@ _metadata = {
                                 deps=('re', 'strop')),
                         PythonModule(version=3,
                                 deps=('collections', 're', '_string'))),
+    'StringIO':         PythonModule(version=2, deps='errno'),
     'struct':           PythonModule(deps='_struct'),
     'subprocess': (     PythonModule(version=2,
                                 deps=('errno', 'fcntl', 'gc', 'msvcrt', 'os',
@@ -839,6 +841,7 @@ _metadata = {
                                         'selectors', 'signal', 'threading',
                                         'time', 'traceback', 'warnings',
                                         '_winapi'))),
+    'symbol':           PythonModule(),
     'syslog':           ExtensionModule(source='syslogmodule.c'),
 
     'tarfile': (        PythonModule(version=2,
@@ -1068,6 +1071,7 @@ _metadata = {
     'zlib':             ExtensionModule(source='zlibmodule.c', libs='-lz'),
 
     # These are internal modules.
+    '_abcoll':          PythonModule(version=2, internal=True, deps='abc'),
     '_ast':             CoreExtensionModule(internal=True),
 
     '_bisect':          ExtensionModule(internal=True,
@@ -1082,6 +1086,8 @@ _metadata = {
     '_bz2':             ExtensionModule(version=3, internal=True,
                                 source='_bz2module.c', libs='-lbz2'),
 
+    'cl':               ExtensionModule(version=2, internal=True,
+                                source='clmodule.c'),
     '_codecs':          CoreExtensionModule(internal=True),
     #'_codecs_cn':       ExtensionModule(internal=True,
     #                            source='cjkcodecs/_codecs_cn.c'),
@@ -1325,6 +1331,8 @@ _metadata = {
                                 source='_ssl.c', libs='-lssl -lcrypto'),
     '_stat':            CoreExtensionModule(min_version=(3, 4), internal=True),
     '_string':          CoreExtensionModule(version=3, internal=True),
+    'strop':            ExtensionModule(version=2, internal=True,
+                                source='stropmodule.c'),
     '_strptime': (      PythonModule(version=2,
                                 internal=True,
                                 deps=('calendar', 'datetime', 'locale', 're',
