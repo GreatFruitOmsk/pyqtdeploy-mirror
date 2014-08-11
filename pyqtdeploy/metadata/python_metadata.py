@@ -232,12 +232,41 @@ _metadata = {
     'copy_reg':         PythonModule(version=2, deps='types'),
     'copyreg':          PythonModule(version=3),
     'cPickle':          ExtensionModule(version=2, source='cPickle.c'),
+    'cProfile': (       PythonModule(max_version=(3, 3),
+                                deps=('_lsprof', 'marshal', 'pstats')),
+                        PythonModule(min_version=(3, 4),
+                                deps=('_lsprof', 'marshal', 'profile',
+                                        'pstats'))),
     'crypt': (          ExtensionModule(version=2,
                                 source='cryptmodule.c', libs='-lcrypt'),
                         PythonModule(version=3,
                                 deps=('collections', '_crypt', 'random',
                                         'string'))),
     'cStringIO':        ExtensionModule(version=2, source='cStringIO.c'),
+    'csv': (            PythonModule(version=2,
+                                deps=('cStringIO', '_csv', 'functools', 're')),
+                        PythonModule(version=3,
+                                deps=('_csv', 'io', 're'))),
+    'curses': (         PythonModule(version=(2, 6),
+                                deps=('curses.has_key', 'curses.wrapper',
+                                        '_curses', 'os'),
+                                modules=('curses.ascii', 'curses.panel',
+                                        'curses.textpad', 'curses.wrapper')),
+                        PythonModule(version=(2, 7),
+                                deps=('curses.has_key', 'curses.wrapper',
+                                        '_curses', 'os'),
+                                modules=('curses.ascii', 'curses.panel',
+                                        'curses.textpad')),
+                        PythonModule(version=3,
+                                deps=('curses.has_key', '_curses', 'os'),
+                                modules=('curses.ascii', 'curses.panel',
+                                        'curses.textpad'))),
+    'curses.ascii':     PythonModule(),
+    'curses.panel':     PythonModule(deps='_curses_panel'),
+    'curses.textpad':   PythonModule(deps='curses.ascii'),
+    'curses.wrapper': ( PythonModule(version=(2, 6)),
+                        PythonModule(version=(2, 7),
+                                internal=True)),
 
     'datetime': (       ExtensionModule(version=2,
                                 source=('datetimemodule.c', 'timemodule.c'),
@@ -585,6 +614,9 @@ _metadata = {
     'itertools': (      ExtensionModule(version=2, source='itertoolsmodule.c'),
                         CoreExtensionModule(version=3)),
 
+    'json':             PythonModule(deps=('json.decoder', 'json.encoder'),
+                                modules=()),
+
     'keyword':          PythonModule(),
 
     'linecache': (      PythonModule(version=2,
@@ -600,6 +632,7 @@ _metadata = {
                                 deps=('collections', 'encodings',
                                         'encodings.aliases', 'functools',
                                         '_locale', 'os', 're'))),
+    'lzma':             PythonModule(version=3, deps=('io', '_lzma')),
 
     'marshal':          CoreExtensionModule(),
     'math': (           ExtensionModule(version=(2, 6),
@@ -623,11 +656,18 @@ _metadata = {
 
     'nis':              ExtensionModule(source='nismodule.c', libs='-lnsl'),
 
+    'opcode': (         PythonModule(max_version=(3, 3)),
+                        PythonModule(min_version=(3, 4),
+                                deps='_opcode')),
     'operator': (       ExtensionModule(version=2,
                                 source='operator.c'),
                         CoreExtensionModule(version=(3, 3)),
                         PythonModule(min_version=(3, 4),
                                 deps='_operator')),
+    'optparse': (       PythonModule(version=2,
+                                deps=('gettext', 'os', 'textwrap', 'types')),
+                        PythonModule(version=3,
+                                deps=('gettext', 'os', 'textwrap'))),
     'os': (             PythonModule(version=2,
                                 deps=('copy_reg', 'errno', 'nt', 'ntpath',
                                         'posix', 'posixpath', 'subprocess',
@@ -650,6 +690,14 @@ _metadata = {
                                 deps=('codecs', '_compat_pickle', 'copyreg',
                                         'io', 'itertools', 'marshal',
                                         '_pickle', 're', 'struct', 'types'))),
+    'profile':          PythonModule(
+                                deps=('marshal', 'optparse', 'os', 'pstats',
+                                        'resource', 'time')),
+    'pstats': (         PythonModule(version=(2, 6),
+                                deps=('marshal', 'os', 're', 'time')),
+                        PythonModule(min_version=(2, 7),
+                                deps=('functools', 'marshal', 'os', 're',
+                                        'time'))),
     'pwd':              CoreExtensionModule(),
 
     'quopri': (         PythonModule(version=2,
@@ -722,6 +770,15 @@ _metadata = {
     'socketserver':     PythonModule(version=3,
                                 deps=('errno', 'io', 'os', 'select', 'socket',
                                         'traceback', 'threading')),
+    'sqlite3':          PythonModule(deps='sqlite3.dbapi2',
+                                modules=('sqlite3.dbapi2')),
+    'sqlite3.dbapi2': ( PythonModule(version=(2, 6),
+                                deps=('datetime', '_sqlite3', 'time')),
+                        PythonModule(version=(2, 7),
+                                deps=('collections', 'datetime', '_sqlite3',
+                                        'time')),
+                        PythonModule(version=3,
+                                deps=('datetime', '_sqlite3', 'time'))),
     'ssl': (            PythonModule(version=2,
                                 ssl=True,
                                 deps=('base64', 'errno', 'socket', '_ssl',
@@ -996,21 +1053,21 @@ _metadata = {
     '_bytesio':         ExtensionModule(version=(2, 6),
                                 internal=True, source='_bytesio.c'),
     '_bz2':             ExtensionModule(version=3, internal=True,
-                                source='_bz2mocule.c', libs='-lbz2'),
+                                source='_bz2module.c', libs='-lbz2'),
 
     '_codecs':          CoreExtensionModule(internal=True),
-    '_codecs_cn':       ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_cn.c'),
-    '_codecs_hk':       ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_hk.c'),
-    '_codecs_iso2022':  ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_iso2022.c'),
-    '_codecs_jp':       ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_jp.c'),
-    '_codecs_kr':       ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_kr.c'),
-    '_codecs_tw':       ExtensionModule(internal=True,
-                                source='cjkcodecs/_codecs_tw.c'),
+    #'_codecs_cn':       ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_cn.c'),
+    #'_codecs_hk':       ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_hk.c'),
+    #'_codecs_iso2022':  ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_iso2022.c'),
+    #'_codecs_jp':       ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_jp.c'),
+    #'_codecs_kr':       ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_kr.c'),
+    #'_codecs_tw':       ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_codecs_tw.c'),
     '_collections': (   ExtensionModule(version=2,
                                 internal=True, source='_collectionsmodule.c'),
                         CoreExtensionModule(version=3,
@@ -1021,6 +1078,7 @@ _metadata = {
     '_crypt':           ExtensionModule(version=3, internal=True,
                                 source='_cryptmodule.c', libs='-lcrypt'),
     '_csv':             ExtensionModule(internal=True, source='_csv.c'),
+    'curses.has_key':   PythonModule(internal=True, deps='_curses'),
     '_curses':          ExtensionModule(internal=True,
                                 source='_cursesmodule.c',
                                 libs='-lcurses -ltermcap'),
@@ -1115,6 +1173,30 @@ _metadata = {
                         CoreExtensionModule(version=3,
                                 internal=True)),
 
+    'json.decoder': (   PythonModule(version=(2, 6),
+                                internal=True,
+                                deps=('json.scanner', '_json', 're')),
+                        PythonModule(version=(2, 7),
+                                internal=True,
+                                deps=('json.scanner', '_json', 're',
+                                        'struct')),
+                        PythonModule(version=(3, 3),
+                                internal=True,
+                                deps=('binascii', 'json.scanner', '_json',
+                                        're', 'struct')),
+                        PythonModule(min_version=(3, 4),
+                                internal=True,
+                                deps=('json.scanner', '_json', 're'))),
+    'json.encoder': (   PythonModule(version=(2, 6),
+                                internal=True, deps=('_json', 'math', 're')),
+                        PythonModule(min_version=(2, 7),
+                                internal=True, deps=('_json', 're'))),
+    'json.scanner': (   PythonModule(version=(2, 6),
+                                internal=True,
+                                deps=('re', 'sre_compile', 'sre_constants',
+                                        'sre_parse')),
+                        PythonModule(min_version=(2, 7),
+                                internal=True, deps=('_json', 're'))),
     '_json':            ExtensionModule(internal=True, source='_jsonmodule.c'),
 
     '_locale': (        ExtensionModule(version=2,
@@ -1133,8 +1215,8 @@ _metadata = {
                                 source=('md5module.c', 'md5.c')),
                         ExtensionModule(version=3,
                                 internal=True, source='md5module.c')),
-    '_multibytecodec':  ExtensionModule(internal=True,
-                                source='cjkcodecs/_multibytecodec.c'),
+    #'_multibytecodec':  ExtensionModule(internal=True,
+    #                            source='cjkcodecs/_multibytecodec.c'),
 
     # TODO - nt on Windows
     'nt':               ExtensionModule(internal=True, source='TODO',
@@ -1224,8 +1306,6 @@ _metadata = {
                                 source='TODO', windows=True),
     '_symtable':        CoreExtensionModule(internal=True),
 
-    '_testcapi':        ExtensionModule(internal=True,
-                                source='_testcapimodule.c'),
     '_tracemalloc':     CoreExtensionModule(min_version=(3, 4), internal=True),
 
     '_warnings':        CoreExtensionModule(internal=True),
@@ -1267,32 +1347,6 @@ _metadata = {
 }
 
 
-def _get_module_for_version(name, major, minor):
-    """ Return the module meta-data for a particular version.  None is returned
-    if there is none but this should not happen with correct meta-data.
-    """
-
-    versions = _metadata.get(name)
-
-    if versions is None:
-        return None
-
-    if not isinstance(versions, tuple):
-        versions = (versions, )
-
-    for module in versions:
-        min_major, min_minor = module.min_version
-        max_major, max_minor = module.max_version
-
-        if major >= min_major and major <= max_major:
-            if minor >= min_minor and minor <= max_minor:
-                break
-    else:
-        module = None
-
-    return module
-
-
 def get_python_metadata(major, minor, ssl):
     """ Return the dict of PythonMetadata instances for a particular version of
     Python.  It is assumed that the version is valid.
@@ -1313,25 +1367,29 @@ def get_python_metadata(major, minor, ssl):
 
 if __name__ == '__main__':
 
-    def check_modules_for_version(names, major, minor, seen=None):
+    def check_modules(names, metadata, unused):
         """ Sanity check a list of module names. """
 
-        if seen is None:
-            top_level = True
-            seen = {}
-        else:
-            top_level = False
-
         for name in names:
-            # Detect recursive dependences.
-            if name in seen:
-                continue
-
-            versions = _metadata.get(name)
-            if versions is None:
+            module = metadata.get(name)
+            if module is None:
                 print("Unknown module '{0}'".format(name))
                 continue
 
+            try:
+                del unused[name]
+            except KeyError:
+                pass
+
+    def check_version(major, minor):
+        """ Carry out sanity checks for a particular version of Python. """
+
+        print("Checking Python v{0}.{1}...".format(major, minor))
+
+        # Get the meta-data for this version.
+        version_metadata = {}
+
+        for name, versions in _metadata.items():
             if not isinstance(versions, tuple):
                 versions = (versions, )
 
@@ -1341,14 +1399,15 @@ if __name__ == '__main__':
                 min_major, min_minor = module.min_version
                 max_major, max_minor = module.max_version
 
-                if min_major > max_major:
-                    print("Module '{0}' major version numbers are swapped".format(name))
-                elif min_major == max_major and min_minor > max_minor:
-                    print("Module '{0}' minor version numbers are swapped".format(name))
+                min_nr = min_major * 100 + min_minor
+                max_nr = max_major * 100 + max_minor
+                nr = major * 100 + minor
 
-                if major >= min_major and major <= max_major:
-                    if minor >= min_minor and minor <= max_minor:
-                        matches.append(module)
+                if min_nr > max_nr:
+                    print("Module '{0}' version numbers are swapped".format(name))
+
+                if nr >= min_nr and nr <= max_nr:
+                    matches.append(module)
 
             nr_matches = len(matches)
 
@@ -1358,38 +1417,21 @@ if __name__ == '__main__':
 
                 continue
 
-            module = matches[0]
+            version_metadata[name] = matches[0]
 
-            if module.internal and not module.core:
-                if top_level:
-                    if name not in seen:
-                        # This internal, non-core module is not used so far.
-                        seen[name] = True
-                else:
-                    # This internal, non-core module is used.
-                    seen[name] = False
-            else:
-                seen[name] = None
+        # Check all the dependencies and sub-modules exist.
+        unused = version_metadata.copy()
 
-            # Check the dependencies.
-            check_modules_for_version(module.deps, major, minor, seen)
+        for name, module in version_metadata.items():
+            check_modules(module.deps, version_metadata, unused)
 
-            # Check the package contents.
             if isinstance(module, PythonModule) and module.modules is not None:
-                check_modules_for_version(module.modules, major, minor, seen)
+                check_modules(module.modules, version_metadata, unused)
 
-        if top_level:
-            # See if there are any internal, non-core modules that are unused.
-            for name, unused in seen.items():
-                if unused is True:
-                    print("Unused module '{0}'".format(name))
-
-    def check_version(major, minor):
-        """ Carry out sanity checks for a particular version of Python. """
-
-        print("Checking Python v{0}.{1}...".format(major, minor))
-
-        check_modules_for_version(_metadata.keys(), major, minor)
+        # See if there are any internal, non-core modules that are unused.
+        for name, module in unused.items():
+            if module.internal and not module.core:
+                print("Unused module '{0}'".format(name))
 
     # Check each supported version.
     check_version(2, 6)
