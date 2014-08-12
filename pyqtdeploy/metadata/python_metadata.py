@@ -27,7 +27,7 @@
 class BaseMetadata:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', libs=''):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -73,20 +73,20 @@ class BaseMetadata:
         # The DEFINES to add to the .pro file.
         self.defines = defines
 
-        # The LIBS to add to the .pro file.
-        self.libs = libs
+        # The internal identifier of a required external library.
+        self.xlib = xlib
 
 
 class ExtensionModule(BaseMetadata):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, defines='', libs=''):
+    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
                 windows=windows, deps=deps, core=core, defines=defines,
-                libs=libs)
+                xlib=xlib)
 
         # The sequence of source files relative to the Modules directory.
         self.source = (source, ) if isinstance(source, str) else source
@@ -176,27 +176,27 @@ _metadata = {
                                 deps=('binascii', 're', 'struct',
                                         'warnings'))),
     'binascii':         ExtensionModule(source='binascii.c',
-                                defines='USE_ZLIB_CRC32', libs='-lz'),
+                                defines='USE_ZLIB_CRC32', xlib='zlib'),
     'bisect':           PythonModule(deps='_bisect'),
     'bsddb':            PythonModule(version=2,
                                 deps=('bsddb.dbutils', '_bsddb', 'collections',
                                         'os', 'thread', 'warnings',
                                         'weakref')),
     'bz2': (            ExtensionModule(version=2,
-                                source='bz2module.c', libs='-lbz2'),
+                                source='bz2module.c', xlib='bz2'),
                         PythonModule(version=3,
                                 deps=('_thread', '_bz2', 'io', 'warnings'))),
 
     'calendar':         PythonModule(deps=('datetime', 'locale')),
     'chunk':            PythonModule(deps='struct'),
     'cmath': (          ExtensionModule(version=(2, 6),
-                                source='cmathmodule.c', libs='-lm'),
+                                source='cmathmodule.c', xlib='math'),
                         ExtensionModule(version=(2, 7),
                                 source=['cmathmodule.c', '_math.c'],
-                                libs='-lm'),
+                                xlib='math'),
                         ExtensionModule(version=3,
                                 source=['cmathmodule.c', '_math.c'],
-                                libs='-lm')),
+                                xlib='math')),
     'codecs':           PythonModule(deps='_codecs'),
     'collections': (    PythonModule(version=(2, 6),
                                 deps=('_abcoll', '_collections', 'keyword',
@@ -247,7 +247,7 @@ _metadata = {
                                 deps=('_lsprof', 'marshal', 'profile',
                                         'pstats'))),
     'crypt': (          ExtensionModule(version=2,
-                                source='cryptmodule.c', libs='-lcrypt'),
+                                source='cryptmodule.c', xlib='crypt'),
                         PythonModule(version=3,
                                 deps=('collections', '_crypt', 'random',
                                         'string'))),
@@ -285,7 +285,7 @@ _metadata = {
                                         'time'))),
     'dbm': (            ExtensionModule(version=2,
                                 source='dbmmodule.c',
-                                defines='HAVE_NDBM_H', libs='-lndbm'),
+                                defines='HAVE_NDBM_H', xlib='ndbm'),
                         PythonModule(version=3,
                                 deps=('io', 'os', 'struct'),
                                 modules=('dbm.dumb', 'dbm.gnu', 'dbm.ndbm'))),
@@ -490,7 +490,7 @@ _metadata = {
 
     'gc':               CoreExtensionModule(),
     'gdbm':             ExtensionModule(version=2, source='gdbmmodule.c',
-                                libs='-lgdbm'),
+                                xlib='gdbm'),
     'getpass': (        PythonModule(version=2,
                                 deps=('msvcrt', 'os', 'pwd', 'termios',
                                         'warnings')),
@@ -654,13 +654,13 @@ _metadata = {
 
     'marshal':          CoreExtensionModule(),
     'math': (           ExtensionModule(version=(2, 6),
-                                source='mathmodule.c', libs='-lm'),
+                                source='mathmodule.c', xlib='math'),
                         ExtensionModule(version=(2, 7),
                                 source=('mathmodule.c', '_math.c'),
-                                libs='-lm'),
+                                xlib='math'),
                         ExtensionModule(version=3,
                                 source=('mathmodule.c', '_math.c'),
-                                libs='-lm')),
+                                xlib='math')),
     'mimetools':        PythonModule(version=2,
                                 deps=('base64', 'os', 'quopri', 'rfc822',
                                         'socket', 'tempfile', 'thread', 'time',
@@ -676,7 +676,7 @@ _metadata = {
     # TODO - msvcrt on Windows
     'msvcrt':           ExtensionModule(source='TODO', windows=True),
 
-    'nis':              ExtensionModule(source='nismodule.c', libs='-lnsl'),
+    'nis':              ExtensionModule(source='nismodule.c', xlib='nsl'),
 
     'opcode': (         PythonModule(max_version=(3, 3)),
                         PythonModule(min_version=(3, 4),
@@ -752,8 +752,7 @@ _metadata = {
                         PythonModule(min_version=(3, 4),
                                 deps=('copyreg', 'sre_compile',
                                         'sre_constants', 'sre_parse'))),
-    'readline':         ExtensionModule(source='readline.c',
-                                libs='-lreadline -ltermcap'),
+    'readline':         ExtensionModule(source='readline.c', xlib='readline'),
     'repr':             PythonModule(version=2, deps='itertools'),
     'reprlib':          PythonModule(version=3, deps=('itertools', '_thread')),
     'resource':         ExtensionModule(source='resource.c'),
@@ -803,15 +802,12 @@ _metadata = {
                         PythonModule(version=3,
                                 deps=('datetime', '_sqlite3', 'time'))),
     'ssl': (            PythonModule(version=2,
-                                ssl=True,
                                 deps=('base64', 'errno', 'socket', '_ssl',
                                         'textwrap', 'time')),
                         PythonModule(version=(3, 3),
-                                ssl=True,
                                 deps=('base64', 'errno', 're', 'socket', '_ssl',
                                         'textwrap', 'time', 'traceback')),
                         PythonModule(min_version=(3, 4),
-                                ssl=True,
                                 deps=('base64', 'collections', 'enum', 'errno',
                                         'os', 're', 'socket', '_ssl',
                                         'textwrap', 'time'))),
@@ -873,7 +869,7 @@ _metadata = {
                         PythonModule(version=3,
                                 deps='re')),
     'thread':           CoreExtensionModule(version=2),
-    'time':             ExtensionModule(source='timemodule.c', libs='-lm'),
+    'time':             ExtensionModule(source='timemodule.c', xlib='math'),
     'threading': (      PythonModule(version=(2, 6),
                                 deps=('collections', 'functools', 'random',
                                         'thread', 'time', 'traceback',
@@ -1068,7 +1064,7 @@ _metadata = {
                                         're', 'shutil', 'stat', 'struct',
                                         'time', 'warnings', 'zlib'))),
     'zipimport':        CoreExtensionModule(),
-    'zlib':             ExtensionModule(source='zlibmodule.c', libs='-lz'),
+    'zlib':             ExtensionModule(source='zlibmodule.c', xlib='zlib'),
 
     # These are internal modules.
     '_abcoll':          PythonModule(version=2, internal=True, deps='abc'),
@@ -1080,11 +1076,12 @@ _metadata = {
     'bsddb.dbutils':    PythonModule(version=2, internal=True,
                                 deps=('bsddb.db', 'time')),
     '_bsddb':           ExtensionModule(version=2,
-                                internal=True, source='_bsddb.c', libs='-ldb'),
+                                internal=True, source='_bsddb.c',
+                                xlib='bsddb'),
     '_bytesio':         ExtensionModule(version=(2, 6),
                                 internal=True, source='_bytesio.c'),
     '_bz2':             ExtensionModule(version=3, internal=True,
-                                source='_bz2module.c', libs='-lbz2'),
+                                source='_bz2module.c', xlib='bz2'),
 
     'cl':               ExtensionModule(version=2, internal=True,
                                 source='clmodule.c'),
@@ -1109,20 +1106,18 @@ _metadata = {
                                 internal=True, deps='abc'),
     '_compat_pickle':   PythonModule(version=3, internal=True),
     '_crypt':           ExtensionModule(version=3, internal=True,
-                                source='_cryptmodule.c', libs='-lcrypt'),
+                                source='_cryptmodule.c', xlib='crypt'),
     '_csv':             ExtensionModule(internal=True, source='_csv.c'),
     'curses.has_key':   PythonModule(internal=True, deps='_curses'),
     '_curses':          ExtensionModule(internal=True,
-                                source='_cursesmodule.c',
-                                libs='-lcurses -ltermcap'),
+                                source='_cursesmodule.c', xlib='curses'),
     '_curses_panel':    ExtensionModule(internal=True,
-                                source='_curses_panel.c',
-                                libs='-lpanel -lcurses'),
+                                source='_curses_panel.c', xlib='panel'),
 
     '_datetime':        ExtensionModule(version=3,
                                 internal=True, source='_datetimemodule.c'),
     '_dbm':             ExtensionModule(version=3, source='_dbmmodule.c',
-                                defines='HAVE_NDBM_H', libs='-lndbm'),
+                                defines='HAVE_NDBM_H', xlib='ndbm'),
 
     '_elementtree': (   ExtensionModule(version=2,
                                 internal=True, source='_elementtree.c',
@@ -1184,11 +1179,10 @@ _metadata = {
 
     'genericpath':      PythonModule(internal=True, deps=('os', 'stat')),
     '_gdbm':            ExtensionModule(version=3, internal=True,
-                                source='_gdbmmodule.c', libs='-lgdbm'),
+                                source='_gdbmmodule.c', xlib='gdbm'),
 
     '_hashlib':         ExtensionModule(internal=True, ssl=True,
-                                source='_hashopenssl.c',
-                                libs='-lssl -lcrypto'),
+                                source='_hashopenssl.c', xlib='ssl'),
     '_heapq':           ExtensionModule(internal=True,
                                 source='_heapqmodule.c'),
     'hotshot.log':      PythonModule(version=2, internal=True,
@@ -1236,7 +1230,7 @@ _metadata = {
 
     '_locale': (        ExtensionModule(version=2,
                                 internal=True, source='_localemodule.c',
-                                libs='-lintl'),
+                                xlib='intl'),
                         CoreExtensionModule(version=3,
                                 internal=True)),
     '_lsprof':          ExtensionModule(internal=True,
@@ -1244,7 +1238,7 @@ _metadata = {
     '_LWPCookieJar':    PythonModule(version=2, internal=True,
                                 deps=('cookielib', 're', 'time')),
     '_lzma':            ExtensionModule(version=3, internal=True,
-                                source='_lzmamodule.c', libs='-llzma'),
+                                source='_lzmamodule.c', xlib='lzma'),
 
     '_markupbase':      PythonModule(version=3, internal=True, deps='re'),
     '_md5': (           ExtensionModule(version=2,
@@ -1328,7 +1322,7 @@ _metadata = {
                                 internal=True,
                                 deps=('sre_constants', 'warnings'))),
     '_ssl':             ExtensionModule(internal=True, ssl=True,
-                                source='_ssl.c', libs='-lssl -lcrypto'),
+                                source='_ssl.c', xlib='ssl'),
     '_stat':            CoreExtensionModule(min_version=(3, 4), internal=True),
     '_string':          CoreExtensionModule(version=3, internal=True),
     'strop':            ExtensionModule(version=2, internal=True,
