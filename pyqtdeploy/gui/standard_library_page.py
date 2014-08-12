@@ -26,14 +26,18 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QLabel, QStackedWidget, QTreeView, QVBoxLayout,
-        QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QSplitter,
+        QTreeView, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
-from ..metadata import ExtensionModule, get_python_metadata
+from ..metadata import (ExtensionModule, external_libraries_metadata,
+        get_python_metadata)
 from ..project import QrcFile, ExternalLibrary
 
 
-class StandardLibraryPage(QStackedWidget):
+SUPPORTED_PYTHON_VERSIONS = ((2, 6), (2, 7), (3, 3), (3, 4))
+
+
+class StandardLibraryPage(QSplitter):
     """ The GUI for the standard library page of a project. """
 
     # The page's label.
@@ -54,94 +58,177 @@ class StandardLibraryPage(QStackedWidget):
 
             self._update_page()
 
-            if self._tab_widget is None:
-                self._tab_widget = self.parent().parent()
-                self._tab_widget.currentChanged.connect(self._tab_changed)
-
     def __init__(self):
         """ Initialise the page. """
 
         super().__init__()
 
         self._project = None
-        self._tab_widget = None
+        self._modules = None
 
         # Create the page's GUI.
-        layout = QVBoxLayout()
+        stdlib_pane = QWidget()
+        stdlib_layout = QVBoxLayout()
 
-        self._stdlib_edit = QTreeView()
+        self._stdlib_edit = QTreeWidget()
+        self._stdlib_edit.setHeaderLabels(["Module"])
+        self._stdlib_edit.itemChanged.connect(self._module_changed)
 
-        model = QStandardItemModel()
-        model.setHorizontalHeaderLabels(
-                ["Name", "DEFINES", "INCLUDEPATH", "LIBS"])
-        model.itemChanged.connect(self._item_changed)
+        stdlib_layout.addWidget(self._stdlib_edit)
 
-        self._stdlib_edit.setEditTriggers(
+        stdlib_pane.setLayout(stdlib_layout)
+        self.addWidget(stdlib_pane)
+
+        extlib_pane = QWidget()
+        extlib_layout = QVBoxLayout()
+        extlib_sublayout = QFormLayout()
+
+        self._version_edit = QComboBox()
+        self._version_edit.addItems(
+                ['{0}.{1}'.format(major, minor)
+                        for major, minor in SUPPORTED_PYTHON_VERSIONS])
+        self._version_edit.currentIndexChanged.connect(self._version_changed)
+        extlib_sublayout.addRow("Target Python version", self._version_edit)
+
+        self._ssl_edit = QCheckBox(stateChanged=self._ssl_changed)
+        extlib_sublayout.addRow("Use SSL support", self._ssl_edit)
+
+        extlib_layout.addLayout(extlib_sublayout)
+
+        self._extlib_edit = QTreeView()
+        self._extlib_edit.setEditTriggers(
                 QTreeView.DoubleClicked|QTreeView.SelectedClicked|
                 QTreeView.EditKeyPressed)
 
-        self._stdlib_edit.setModel(model)
+        model = QStandardItemModel(self._extlib_edit)
+        model.setHorizontalHeaderLabels(
+                ("External Library", 'DEFINES', 'INCLUDEPATH', 'LIBS'))
+        #model.itemChanged.connect(self._extlib_model_changed)
 
-        layout.addWidget(self._stdlib_edit)
-        self._stdlib_subpage = QWidget()
-        self._stdlib_subpage.setLayout(layout)
-        self.addWidget(self._stdlib_subpage)
+        for extlib in external_libraries_metadata:
+            col0 = QStandardItem(extlib.user_name)
+            col0.setFlags(Qt.NoItemFlags)
 
-        self._warning = QLabel()
-        self._warning.setAlignment(Qt.AlignCenter)
-        self.addWidget(self._warning)
+            col1 = QStandardItem()
+            col2 = QStandardItem()
+            col3 = QStandardItem()
+
+            model.appendRow((col0, col1, col2, col3))
+
+        self._extlib_edit.setModel(model)
+
+        for col in range(3):
+            self._extlib_edit.resizeColumnToContents(col)
+
+        extlib_layout.addWidget(self._extlib_edit)
+
+        extlib_pane.setLayout(extlib_layout)
+        self.addWidget(extlib_pane)
 
     def _update_page(self):
         """ Update the page using the current project. """
 
         project = self.project
 
-        major, minor = project.python_target_version
+        self._modules = get_python_metadata(*project.python_target_version)
 
-        if major is None:
-            warning_text = "The Python version cannot be obtained from the " \
-                    "<b>Python library</b> field of the <b>Locations</b> tab."
-        elif major == 3 and minor < 3:
-            warning_text = "You seem to be using Python v{0}.{1}. When " \
-                    "targetting Python v3, Python v3.3 or later is " \
-                    "required.".format(major, minor)
-        elif major == 2 and minor < 6:
-            warning_text = "You seem to be using Python v{0}.{1}. When " \
-                    "targetting Python v2, Python v2.6 or later is " \
-                    "required.".format(major, minor)
-        else:
-            warning_text = ''
+        blocked = self._version_edit.blockSignals(True)
+        self._version_edit.setCurrentIndex(
+                SUPPORTED_PYTHON_VERSIONS.index(project.python_target_version))
+        self._version_edit.blockSignals(blocked)
 
-        if warning_text == '':
-            self.setCurrentWidget(self._stdlib_subpage)
+        blocked = self._ssl_edit.blockSignals(True)
+        self._ssl_edit.setCheckState(
+                Qt.Checked if project.python_ssl else Qt.Unchecked)
+        self._ssl_edit.blockSignals(blocked)
 
-            # Configure the editor if it is empty.
-            if self._stdlib_edit.model().rowCount() == 0:
-                self._configure_stdlib_editor()
-        else:
-            self._warning.setText(warning_text)
-            self.setCurrentWidget(self._warning)
+        self._update_stdlib_editor()
+        self._update_extlib_editor()
 
-    def _tab_changed(self, idx):
-        """ Invoked when the current tab of the containing widget changes. """
+    @staticmethod
+    def _reset_dependency_state(module, itm=None):
+        """ Reset a module's dependency state. """
 
-        if self._tab_widget.widget(idx) is self:
-            self._update_page()
+        module._item = itm
+        module._explicit = False
+        module._implicit = False
+        module._visit = -1
 
-    def _configure_stdlib_editor(self):
-        """ Configure the standard library editor for the current project. """
+    def _update_stdlib_editor(self):
+        """ Update the standard library module editor. """
+
+        project = self.project
+        editor = self._stdlib_edit
+
+        blocked = editor.blockSignals(True)
+
+        editor.clear()
+
+        def add_module(name, module, parent):
+            itm = QTreeWidgetItem(parent, name.split('.')[-1:])
+            itm.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
+
+            itm._name = name
+            self._reset_dependency_state(module, itm)
+
+            # Handle any sub-modules.
+            if module.modules is not None:
+                for submodule in module.modules:
+                    add_module(submodule, self._modules[submodule], itm)
+
+        for name, module in self._modules.items():
+            if module.internal:
+                self._reset_dependency_state(module)
+            elif '.' not in name:
+                add_module(name, module, editor)
+
+        editor.sortItems(0, Qt.AscendingOrder)
+
+        # Apply the project data and the dependencies.
+        def add_dependency(name, module, visit, is_dep=False):
+            if module._visit == visit:
+                return
+
+            module._visit = visit
+
+            this_is_dep = False
+
+            if name in project.standard_library:
+                module._explicit = True
+                this_is_dep = True
+
+            if module.core or is_dep:
+                module._implicit = True
+                this_is_dep = True
+
+            for dep in module.deps:
+                add_dependency(dep, self._modules[dep], visit, this_is_dep)
+
+        visit = 0
+        for name, module in self._modules.items():
+            add_dependency(name, module, visit)
+            visit += 1
+
+        for name, module in self._modules.items():
+            itm = module._item
+            if itm is not None:
+                if module._explicit:
+                    state = Qt.Checked
+                elif module._implicit:
+                    state = Qt.PartiallyChecked
+                else:
+                    state = Qt.Unchecked
+
+                itm.setCheckState(0, state)
+
+        editor.blockSignals(blocked)
+
+    def _update_extlib_editor(self):
+        """ Update the external library editor. """
 
         project = self.project
 
-        # Set the extension modules.
-        modules = get_python_metadata(*project.python_target_version).modules
-        modules = sorted(modules,
-                key=lambda m: m.name[1:].lower() if m.name.startswith('_') else m.name.lower())
-
-        model = self._stdlib_edit.model()
-        model.removeRows(0, model.rowCount())
-
-        for row, metadata in enumerate(modules):
+        if 0:
             # Core modules are permanently disabled.
             flags = Qt.NoItemFlags if metadata.core else Qt.ItemIsEnabled
 
@@ -178,18 +265,31 @@ class StandardLibraryPage(QStackedWidget):
             col0._module_metadata = metadata
             col0._module = project_module
 
-        self._stdlib_edit.resizeColumnToContents(0)
+    def _version_changed(self, idx):
+        """ Invoked when the target Python version changes. """
 
-    def _new_item(self, text, flags):
-        """ Create a new model item. """
+        project = self.project
 
-        itm = QStandardItem(text)
-        itm.setFlags(flags)
+        project.python_target_version = SUPPORTED_PYTHON_VERSIONS[idx]
+        self._update_page()
 
-        return itm
+        project.modified = True
 
-    def _item_changed(self, itm):
+    def _ssl_changed(self, state):
+        """ Invoked when the SSL support changes. """
+
+        project = self.project
+
+        project.python_ssl = (state == Qt.Checked)
+        self._update_dependencies()
+
+        project.modified = True
+
+    def _module_changed(self, itm, col):
         """ Invoked when an item has changed. """
+
+        print("Item changed:", itm, col)
+        return
 
         project = self.project
         model = self._stdlib_edit.model()

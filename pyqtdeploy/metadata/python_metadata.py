@@ -27,7 +27,7 @@
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, ssl, windows, deps, core, defines, xlib):
+    def __init__(self, internal, ssl, windows, deps, core, defines, xlib, modules, source, subdir):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -55,11 +55,22 @@ class StdlibModule:
         # The internal identifier of a required external library.
         self.xlib = xlib
 
+        # The sequence of modules or sub-packages if this is a package,
+        # otherwise None.
+        self.modules = (modules, ) if isinstance(modules, str) else modules
+
+        # The sequence of source files relative to the Modules directory if
+        # this is an extension module, otherwise None.
+        self.source = (source, ) if isinstance(source, str) else source
+
+        # A sub-directory of the Modules directory to add to INCLUDEPATH.
+        self.subdir = subdir
+
 
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None, modules=None, source=None, subdir=''):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -84,25 +95,19 @@ class VersionedModule:
                 self.max_version = (3, 99)
 
         self.module = StdlibModule(internal, ssl, windows, deps, core, defines,
-                xlib)
+                xlib, modules, source, subdir)
 
 
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
+    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
                 windows=windows, deps=deps, core=core, defines=defines,
-                xlib=xlib)
-
-        # The sequence of source files relative to the Modules directory.
-        self.source = (source, ) if isinstance(source, str) else source
-
-        # A sub-directory of the Modules directory to add to INCLUDEPATH.
-        self.subdir = subdir
+                xlib=xlib, source=source, subdir=subdir)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -110,7 +115,7 @@ class CoreExtensionModule(ExtensionModule):
     compiled in to the interpreter library.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=()):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=()):
         """ Initialise the object. """
 
         super().__init__(source=(), min_version=min_version, version=version,
@@ -121,16 +126,12 @@ class CoreExtensionModule(ExtensionModule):
 class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, core=core)
-
-        # The sequence of modules or sub-packages if this is a package,
-        # otherwise None.
-        self.modules = (modules, ) if isinstance(modules, str) else modules
+                windows=windows, deps=deps, core=core, modules=modules)
 
 
 class CorePythonModule(PythonModule):
@@ -138,7 +139,7 @@ class CorePythonModule(PythonModule):
     an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
@@ -1126,8 +1127,9 @@ _metadata = {
 
     '_datetime':        ExtensionModule(version=3,
                                 internal=True, source='_datetimemodule.c'),
-    '_dbm':             ExtensionModule(version=3, source='_dbmmodule.c',
-                                defines='HAVE_NDBM_H', xlib='ndbm'),
+    '_dbm':             ExtensionModule(version=3, internal=True,
+                                source='_dbmmodule.c', defines='HAVE_NDBM_H',
+                                xlib='ndbm'),
 
     '_elementtree': (   ExtensionModule(version=2,
                                 internal=True, source='_elementtree.c',
@@ -1273,9 +1275,10 @@ _metadata = {
 
     '_opcode':          ExtensionModule(min_version=(3, 4),
                                 internal=True, source='_opcode.c'),
-    '_operator':        CoreExtensionModule(min_version=(3, 4)),
+    '_operator':        CoreExtensionModule(min_version=(3, 4), internal=True),
 
-    '_pickle':          ExtensionModule(version=3, source='_pickle.c'),
+    '_pickle':          ExtensionModule(version=3, internal=True,
+                                source='_pickle.c'),
     'posix':            CoreExtensionModule(internal=True, windows=False),
     'posixpath':        PythonModule(internal=True, windows=False,
                                 deps=('genericpath', 'os', 'pwd', 're', 'stat',
@@ -1287,7 +1290,8 @@ _metadata = {
                                         'expat/xmltok.c', 'pyexpat.c'),
                                 defines='HAVE_EXPAT_CONFIG_H', subdir='expat'),
 
-    '_random':          ExtensionModule(source='_randommodule.c'),
+    '_random':          ExtensionModule(internal=True,
+                                source='_randommodule.c'),
 
     '_sha':             ExtensionModule(version=2, internal=True, ssl=False,
                                 source='shamodule.c'),
@@ -1316,7 +1320,7 @@ _metadata = {
                                         '_sqlite/util.c'),
                                 defines='SQLITE_OMIT_LOAD_EXTENSION',
                                 subdir='_sqlite'),
-    '_sre':             CoreExtensionModule(),
+    '_sre':             CoreExtensionModule(internal=True),
     'sre_compile':      PythonModule(internal=True,
                                 deps=('array', '_sre', 'sre_constants',
                                         'sre_parse')),
@@ -1358,7 +1362,8 @@ _metadata = {
                                 internal=True, source='_weakref.c'),
                         CoreExtensionModule(version=(2, 7),
                                 internal=True),
-                        CoreExtensionModule(version=3)),
+                        CoreExtensionModule(version=3,
+                                internal=True)),
     '_weakrefset': (    PythonModule(version=(2, 7),
                                 internal=True, deps='_weakref'),
                         PythonModule(version=3,

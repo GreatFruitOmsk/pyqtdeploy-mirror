@@ -72,33 +72,6 @@ class Project(QObject):
             self._name = value
             self.name_changed.emit(value)
 
-    @property
-    def python_target_version(self):
-        """ The target Python version getter. """
-
-        if self.python_target_library != '':
-            lib_name = os.path.basename(self.python_target_library)
-
-            # Strip everything up to the leading digit.
-            while lib_name != '' and not lib_name[0].isdigit():
-                lib_name = lib_name[1:]
-
-            # Strip everything after the trailing digit.
-            while lib_name != '' and not lib_name[-1].isdigit():
-                lib_name = lib_name[:-1]
-
-            version_str = lib_name.replace('.', '')
-
-            # We should now have a 2-digit string.
-            try:
-                version = int(version_str)
-
-                return version // 10, version % 10
-            except ValueError:
-                pass
-
-        return None, None
-
     def __init__(self, name=''):
         """ Initialise the project. """
 
@@ -120,9 +93,11 @@ class Project(QObject):
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_source_dir = ''
+        self.python_ssl = False
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
+        self.python_target_version = (3, 4)
         self.qmake = ''
         self.packages = []
         self.standard_library = []
@@ -222,9 +197,14 @@ class Project(QObject):
 
         project.python_host_interpreter = python.get('hostinterpreter', '')
         project.python_source_dir = python.get('sourcedir', '')
+        project.python_ssl = cls._get_bool(python, 'ssl', 'Python')
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
         project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
+
+        major = cls._get_int(python, 'major', 'Python')
+        minor = cls._get_int(python, 'minor', 'Python')
+        project.python_target_version = (major, minor)
 
         # The application specific configuration.
         application = root.find('Application')
@@ -377,6 +357,22 @@ class Project(QObject):
 
         return bool(value)
 
+    @classmethod
+    def _get_int(cls, element, name, context):
+        """ Get an integer attribute from an element. """
+
+        value = element.get(name)
+        try:
+            value = int(value)
+        except:
+            value = None
+
+        cls._assert(value is not None,
+                "Missing or invalid integer value of '{0}.{1}'.".format(
+                        context, name))
+
+        return value
+
     def _save_project(self, abs_filename):
         """ Save the project to the given file.  Raise a UserException if there
         was an error.
@@ -388,9 +384,12 @@ class Project(QObject):
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,
             'sourcedir': self.python_source_dir,
+            'ssl': str(int(self.python_ssl)),
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library,
-            'targetstdlibdir': self.python_target_stdlib_dir})
+            'targetstdlibdir': self.python_target_stdlib_dir,
+            'major': str(self.python_target_version[0]),
+            'minor': str(self.python_target_version[1])})
 
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,
