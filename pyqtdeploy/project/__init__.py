@@ -25,5 +25,5 @@
 
 
 # Publish the sub-package's API.
-from .project import (ExtensionModule, Project, QrcDirectory, QrcFile,
-        QrcPackage, StdlibModule)
+from .project import (ExtensionModule, ExternalLibrary, Project, QrcDirectory,
+        QrcFile, QrcPackage)

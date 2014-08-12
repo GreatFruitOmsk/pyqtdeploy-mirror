@@ -24,32 +24,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-class BaseMetadata:
-    """ Encapsulate the meta-data common to all types of module. """
+class StdlibModule:
+    """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
+    def __init__(self, internal, ssl, windows, deps, core, defines, xlib):
         """ Initialise the object. """
-
-        # A meta-datum is uniquely identified by a range of version numbers.  A
-        # version number is a 2-tuple of major and minor version number.  It is
-        # an error if version numbers for a particular module overlaps.
-        if version is not None:
-            if isinstance(version, tuple):
-                self.min_version = self.max_version = version
-            else:
-                # A single digit is interpreted as a range.
-                self.min_version = (version, 0)
-                self.max_version = (version, 99)
-        else:
-            if min_version is not None:
-                self.min_version = min_version
-            else:
-                self.min_version = (2, 0)
-
-            if max_version is not None:
-                self.max_version = max_version
-            else:
-                self.max_version = (3, 99)
 
         # Set if the module is internal.
         self.internal = internal
@@ -77,7 +56,38 @@ class BaseMetadata:
         self.xlib = xlib
 
 
-class ExtensionModule(BaseMetadata):
+class VersionedModule:
+    """ Encapsulate the meta-data common to all types of module. """
+
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
+        """ Initialise the object. """
+
+        # A meta-datum is uniquely identified by a range of version numbers.  A
+        # version number is a 2-tuple of major and minor version number.  It is
+        # an error if version numbers for a particular module overlaps.
+        if version is not None:
+            if isinstance(version, tuple):
+                self.min_version = self.max_version = version
+            else:
+                # A single digit is interpreted as a range.
+                self.min_version = (version, 0)
+                self.max_version = (version, 99)
+        else:
+            if min_version is not None:
+                self.min_version = min_version
+            else:
+                self.min_version = (2, 0)
+
+            if max_version is not None:
+                self.max_version = max_version
+            else:
+                self.max_version = (3, 99)
+
+        self.module = StdlibModule(internal, ssl, windows, deps, core, defines,
+                xlib)
+
+
+class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
     def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
@@ -108,7 +118,7 @@ class CoreExtensionModule(ExtensionModule):
                 windows=windows, deps=deps, core=True)
 
 
-class PythonModule(BaseMetadata):
+class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
     def __init__(self, min_version=None, version=None, max_version=None, internal=None, ssl=None, windows=None, deps=(), core=False, modules=None):
@@ -1382,22 +1392,32 @@ _metadata = {
 }
 
 
-def get_python_metadata(major, minor, ssl):
-    """ Return the dict of PythonMetadata instances for a particular version of
+def get_python_metadata(major, minor):
+    """ Return the dict of StdlibModule instances for a particular version of
     Python.  It is assumed that the version is valid.
     """
 
-    # Find the most recent version that is not later than the desired version.
-    version = (major, minor)
-    best = None
-    best_version = (0, 0)
+    version_metadata = {}
 
-    for key, value in _python_metadata.items():
-        if version >= key and key > best_version:
-            best = value
-            best_version = key
+    for name, versions in _metadata.items():
+        if not isinstance(versions, tuple):
+            versions = (versions, )
 
-    return best
+        nr = major * 100 + minor
+
+        for versioned_module in versions:
+            min_major, min_minor = versioned_module.min_version
+            min_nr = min_major * 100 + min_minor
+
+            if nr >= min_nr:
+                max_major, max_minor = versioned_module.max_version
+                max_nr = max_major * 100 + max_minor
+
+                if nr <= max_nr:
+                    version_metadata[name] = versioned_module.module
+                    break
+
+    return version_metadata
 
 
 if __name__ == '__main__':
@@ -1429,6 +1449,7 @@ if __name__ == '__main__':
                 versions = (versions, )
 
             # Check the version numbers.
+            nr = major * 100 + minor
             matches = []
             for module in versions:
                 min_major, min_minor = module.min_version
@@ -1436,7 +1457,6 @@ if __name__ == '__main__':
 
                 min_nr = min_major * 100 + min_minor
                 max_nr = max_major * 100 + max_minor
-                nr = major * 100 + minor
 
                 if min_nr > max_nr:
                     print("Module '{0}' version numbers are swapped".format(name))
@@ -1457,14 +1477,18 @@ if __name__ == '__main__':
         # Check all the dependencies and sub-modules exist.
         unused = version_metadata.copy()
 
-        for name, module in version_metadata.items():
+        for name, versioned_module in version_metadata.items():
+            module = versioned_module.module
+
             check_modules(module.deps, version_metadata, unused)
 
             if isinstance(module, PythonModule) and module.modules is not None:
                 check_modules(module.modules, version_metadata, unused)
 
         # See if there are any internal, non-core modules that are unused.
-        for name, module in unused.items():
+        for name, versioned_module in unused.items():
+            module = versioned_module.module
+
             if module.internal and not module.core:
                 print("Unused module '{0}'".format(name))
 

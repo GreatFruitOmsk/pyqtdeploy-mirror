@@ -116,6 +116,7 @@ class Project(QObject):
         self.application_entry_point = ''
         self.build_dir = 'build'
         self.extension_modules = []
+        self.external_libraries = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_source_dir = ''
@@ -256,12 +257,20 @@ class Project(QObject):
             cls._assert(name is not None,
                     "Missing 'StdlibModule.name' attribute.")
 
-            defines = stdlib_module_element.get('defines', '')
-            includepath = stdlib_module_element.get('includepath', '')
-            libs = stdlib_module_element.get('libs', '')
+            project.standard_library.append(name)
 
-            project.standard_library.append(
-                    StdlibModule(name, defines, includepath, libs))
+        # Any external C libraries.
+        for external_lib_element in root.iterfind('ExternalLib'):
+            name = external_lib_element.get('name')
+            cls._assert(name is not None,
+                    "Missing 'ExternalLib.name' attribute.")
+
+            defines = external_lib_element.get('defines', '')
+            includepath = external_lib_element.get('includepath', '')
+            libs = external_lib_element.get('libs', '')
+
+            project.external_libraries.append(
+                    ExternalLibrary(name, defines, includepath, libs))
 
         # Any other Python packages.
         project.packages = [cls._load_package(package)
@@ -397,19 +406,15 @@ class Project(QObject):
                 'name': pyqt_module})
 
         for stdlib_module in self.standard_library:
-            # Trim the attributes to keep things small.
-            attribs = dict(name=stdlib_module.name)
+            SubElement(root, 'StdlibModule', attrib={
+                'name': stdlib_module.name})
 
-            if stdlib_module.defines != '':
-                attribs['defines'] = stdlib_module.defines
-
-            if stdlib_module.includepath != '':
-                attribs['includepath'] = stdlib_module.includepath
-
-            if stdlib_module.defines != '':
-                attribs['libs'] = stdlib_module.libs
-
-            SubElement(root, 'StdlibModule', attrib=attribs)
+        for external_lib in self.external_libraries:
+            SubElement(root, 'ExternalLib', attrib={
+                'name': external_lib.name,
+                'defines': external_lib.defines,
+                'includepath': external_lib.includepath,
+                'libs': external_lib.libs})
 
         for package in self.packages:
             self._save_package(root, package)
@@ -526,11 +531,11 @@ class QrcDirectory(QrcFile):
         return copy
 
 
-class StdlibModule():
-    """ The encapsulation of a standard library module. """
+class ExternalLibrary():
+    """ The encapsulation of an external library. """
 
     def __init__(self, name, defines, includepath, libs):
-        """ Initialise the extension module. """
+        """ Initialise the external library. """
 
         self.name = name
         self.defines = defines

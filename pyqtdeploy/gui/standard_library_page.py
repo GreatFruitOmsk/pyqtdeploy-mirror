@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import (QLabel, QStackedWidget, QTreeView, QVBoxLayout,
         QWidget)
 
 from ..metadata import ExtensionModule, get_python_metadata
-from ..project import QrcFile, StdlibModule
+from ..project import QrcFile, ExternalLibrary
 
 
 class StandardLibraryPage(QStackedWidget):

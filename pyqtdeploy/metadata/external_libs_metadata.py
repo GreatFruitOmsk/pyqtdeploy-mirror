@@ -25,12 +25,14 @@
 
 
 class ExternalLibraryMetadata:
-    """ Encapsulate the meta-data common to all types of module. """
+    """ Encapsulate the meta-data for an external C library used by the Python
+    standard library.
+    """
 
     def __init__(self, name, libs, user_name):
         """ Initialise the object. """
 
-        # The internal identifier of the library.
+        # The well known internal identifier of the library.
         self.name = name
 
         # The default LIBS to add to the .pro file.
