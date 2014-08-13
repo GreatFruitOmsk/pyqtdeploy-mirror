@@ -145,15 +145,6 @@ class StandardLibraryPage(QSplitter):
         self._update_stdlib_editor()
         self._update_extlib_editor()
 
-    @staticmethod
-    def _reset_dependency_state(module, itm=None):
-        """ Reset a module's dependency state. """
-
-        module._item = itm
-        module._explicit = False
-        module._implicit = False
-        module._visit = -1
-
     def _update_stdlib_editor(self):
         """ Update the standard library module editor. """
 
@@ -169,7 +160,7 @@ class StandardLibraryPage(QSplitter):
             itm.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
 
             itm._name = name
-            self._reset_dependency_state(module, itm)
+            module._item = itm
 
             # Handle any sub-modules.
             if module.modules is not None:
@@ -178,35 +169,46 @@ class StandardLibraryPage(QSplitter):
 
         for name, module in self._modules.items():
             if module.internal:
-                self._reset_dependency_state(module)
+                module._item = None
             elif '.' not in name:
                 add_module(name, module, editor)
 
         editor.sortItems(0, Qt.AscendingOrder)
 
-        # Apply the project data and the dependencies.
-        def add_dependency(name, module, visit, is_dep=False):
-            if module._visit == visit:
-                return
+        editor.blockSignals(blocked)
 
-            module._visit = visit
+        self._set_dependencies()
 
-            this_is_dep = False
+    def _set_dependency_state(self, name, module, visit, is_dep=False):
+        """ Set a module's dependency state. """
 
-            if name in project.standard_library:
-                module._explicit = True
-                this_is_dep = True
+        if module._visit == visit:
+            return
 
-            if module.core or is_dep:
-                module._implicit = True
-                this_is_dep = True
+        module._visit = visit
 
-            for dep in module.deps:
-                add_dependency(dep, self._modules[dep], visit, this_is_dep)
+        module._explicit = (name in self._project.standard_library)
+
+        if module.core or is_dep:
+            module._implicit = True
+
+        for dep in module.deps:
+            self._set_dependency_state(dep, self._modules[dep], visit,
+                    (module._explicit or module._implicit))
+
+    def _set_dependencies(self):
+        """ Set the dependency information. """
+
+        blocked = self._stdlib_edit.blockSignals(True)
+
+        for module in self._modules.values():
+            module._explicit = False
+            module._implicit = False
+            module._visit = -1
 
         visit = 0
         for name, module in self._modules.items():
-            add_dependency(name, module, visit)
+            self._set_dependency_state(name, module, visit)
             visit += 1
 
         for name, module in self._modules.items():
@@ -221,7 +223,7 @@ class StandardLibraryPage(QSplitter):
 
                 itm.setCheckState(0, state)
 
-        editor.blockSignals(blocked)
+        self._stdlib_edit.blockSignals(blocked)
 
     def _update_extlib_editor(self):
         """ Update the external library editor. """
@@ -286,10 +288,22 @@ class StandardLibraryPage(QSplitter):
         project.modified = True
 
     def _module_changed(self, itm, col):
-        """ Invoked when an item has changed. """
+        """ Invoked when a standard library module has changed. """
 
-        print("Item changed:", itm, col)
-        return
+        project = self._project
+        name = itm._name
+
+        if name in project.standard_library:
+            project.standard_library.remove(name)
+        else:
+            project.standard_library.append(name)
+
+        self._set_dependencies()
+
+        project.modified = True
+
+    def _extlib_changed(self, itm, col):
+        """ Invoked when an external library has changed. """
 
         project = self.project
         model = self._stdlib_edit.model()
