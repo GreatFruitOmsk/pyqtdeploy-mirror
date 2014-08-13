@@ -406,7 +406,7 @@ class Project(QObject):
 
         for stdlib_module in self.standard_library:
             SubElement(root, 'StdlibModule', attrib={
-                'name': stdlib_module.name})
+                'name': stdlib_module})
 
         for external_lib in self.external_libraries:
             SubElement(root, 'ExternalLib', attrib={

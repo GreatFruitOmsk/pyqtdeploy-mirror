@@ -29,9 +29,8 @@ from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QSplitter,
         QTreeView, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
-from ..metadata import (ExtensionModule, external_libraries_metadata,
-        get_python_metadata)
-from ..project import QrcFile, ExternalLibrary
+from ..metadata import external_libraries_metadata, get_python_metadata
+from ..project import ExternalLibrary
 
 
 SUPPORTED_PYTHON_VERSIONS = ((2, 6), (2, 7), (3, 3), (3, 4))
@@ -103,17 +102,15 @@ class StandardLibraryPage(QSplitter):
         model = QStandardItemModel(self._extlib_edit)
         model.setHorizontalHeaderLabels(
                 ("External Library", 'DEFINES', 'INCLUDEPATH', 'LIBS'))
-        #model.itemChanged.connect(self._extlib_model_changed)
+        model.itemChanged.connect(self._extlib_changed)
 
         for extlib in external_libraries_metadata:
-            col0 = QStandardItem(extlib.user_name)
-            col0.setFlags(Qt.NoItemFlags)
+            name_itm = QStandardItem(extlib.user_name)
 
-            col1 = QStandardItem()
-            col2 = QStandardItem()
-            col3 = QStandardItem()
+            extlib._items = (name_itm, QStandardItem(), QStandardItem(),
+                    QStandardItem())
 
-            model.appendRow((col0, col1, col2, col3))
+            model.appendRow(extlib._items)
 
         self._extlib_edit.setModel(model)
 
@@ -142,8 +139,8 @@ class StandardLibraryPage(QSplitter):
                 Qt.Checked if project.python_ssl else Qt.Unchecked)
         self._ssl_edit.blockSignals(blocked)
 
-        self._update_stdlib_editor()
         self._update_extlib_editor()
+        self._update_stdlib_editor()
 
     def _update_stdlib_editor(self):
         """ Update the standard library module editor. """
@@ -201,17 +198,22 @@ class StandardLibraryPage(QSplitter):
 
         blocked = self._stdlib_edit.blockSignals(True)
 
+        # Initialise.
         for module in self._modules.values():
             module._explicit = False
             module._implicit = False
             module._visit = -1
 
+        # Work out the dependencies.
         visit = 0
         for name, module in self._modules.items():
             self._set_dependency_state(name, module, visit)
             visit += 1
 
-        for name, module in self._modules.items():
+        # Update the view.
+        xlibs = set()
+
+        for module in self._modules.values():
             itm = module._item
             if itm is not None:
                 if module._explicit:
@@ -223,6 +225,20 @@ class StandardLibraryPage(QSplitter):
 
                 itm.setCheckState(0, state)
 
+            if module._explicit or module._implicit:
+                if module.xlib is not None:
+                    xlibs.add(module.xlib)
+
+        for extlib in external_libraries_metadata:
+            if extlib.name in xlibs:
+                for idx, itm in enumerate(extlib._items):
+                    itm.setFlags(
+                            Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
+                                    else Qt.ItemIsEnabled)
+            else:
+                for itm in extlib._items:
+                    itm.setFlags(Qt.NoItemFlags)
+
         self._stdlib_edit.blockSignals(blocked)
 
     def _update_extlib_editor(self):
@@ -230,42 +246,19 @@ class StandardLibraryPage(QSplitter):
 
         project = self.project
 
-        if 0:
-            # Core modules are permanently disabled.
-            flags = Qt.NoItemFlags if metadata.core else Qt.ItemIsEnabled
+        for extlib in external_libraries_metadata:
+            _, defs, incp, libs = extlib._items
 
-            col0 = self._new_item(metadata.name, flags|Qt.ItemIsUserCheckable)
-
-            # See if the module is enabled.
-            for project_module in project.standard_library:
-                if project_module.name == metadata.name:
-                    defines = project_module.defines
-                    includepath = project_module.includepath
-                    libs = project_module.libs
-                    check_state = Qt.Checked
-
-                    # The module can't be core if we are here.
-                    flags |= Qt.ItemIsEditable
-
+            for prj_extlib in project.external_libraries:
+                if prj_extlib.name == extlib.name:
+                    defs.setText(prj_extlib.defines)
+                    incp.setText(prj_extlib.includepath)
+                    libs.setText(prj_extlib.libs)
                     break
             else:
-                project_module = None
-                defines = metadata.defines
-                includepath = ''
-                libs = metadata.libs
-                check_state = Qt.Checked if metadata.core else Qt.Unchecked
-
-            col0.setCheckState(check_state)
-
-            col1 = self._new_item(defines, flags)
-            col2 = self._new_item(includepath, flags)
-            col3 = self._new_item(libs, flags)
-
-            model.appendRow([col0, col1, col2, col3])
-
-            # Save for later.
-            col0._module_metadata = metadata
-            col0._module = project_module
+                defs.setText('')
+                incp.setText('')
+                libs.setText(extlib.libs)
 
     def _version_changed(self, idx):
         """ Invoked when the target Python version changes. """
@@ -283,7 +276,7 @@ class StandardLibraryPage(QSplitter):
         project = self.project
 
         project.python_ssl = (state == Qt.Checked)
-        self._update_dependencies()
+        self._set_dependencies()
 
         project.modified = True
 
@@ -302,58 +295,39 @@ class StandardLibraryPage(QSplitter):
 
         project.modified = True
 
-    def _extlib_changed(self, itm, col):
+    def _extlib_changed(self, itm):
         """ Invoked when an external library has changed. """
 
         project = self.project
-        model = self._stdlib_edit.model()
 
-        # Convert to a row and column.
-        idx = model.indexFromItem(itm)
-        row = idx.row()
+        idx = self._extlib_edit.model().indexFromItem(itm)
+        extlib = external_libraries_metadata[idx.row()]
         col = idx.column()
 
-        if col == 0:
-            blocked = model.blockSignals(True)
-
-            metadata = itm._module_metadata
-            new_flags = Qt.ItemIsEnabled
-
-            if itm.checkState() == Qt.Checked:
-                # Add the module.
-                module = StdlibModule(metadata.name, metadata.defines, '',
-                        metadata.libs)
-                project.standard_library.append(module)
-                new_flags |= Qt.ItemIsEditable
-                itm._module = module
-            else:
-                # Remove the module.
-                project.standard_library.remove(itm._module)
-                defines = metadata.defines
-                libs = metadata.libs
-
-                itm._module = None
-
-                # Reset the other columns to the meta-data defaults.
-                model.item(row, 1).setText(defines)
-                model.item(row, 2).setText('')
-                model.item(row, 3).setText(libs)
-
-            # Update the editable state of the other columns in the row.
-            for c in range(1, 4):
-                model.item(row, c).setFlags(new_flags)
-
-            model.blockSignals(blocked)
+        # Get the project entry, creating it if necessary.
+        for prj_extlib in project.external_libraries:
+            if prj_extlib.name == extlib.name:
+                break
         else:
-            # The module must be an extension module in the project.
-            text = itm.text().strip()
-            module = model.item(row, 0)._module
+            prj_extlib = ExternalLibrary(extlib.name, '', '', extlib.libs)
+            project.external_libraries.append(prj_extlib)
 
-            if col == 1:
-                module.defines = text
-            elif col == 2:
-                module.includepath = text
-            elif col == 3:
-                module.libs = text
+        # Update the project.
+        text = itm.text().strip()
+
+        if col == 1:
+            prj_extlib.defines = text
+        elif col == 2:
+            prj_extlib.includepath = text
+        elif col == 3:
+            if text == '':
+                text = extlib.libs
+                itm.setText(text)
+
+            prj_extlib.libs = text
+
+        # If the project entry corresponds to the default then remove it.
+        if prj_extlib.defines == '' and prj_extlib.includepath == '' and prj_extlib.libs == extlib.libs:
+            project.external_libraries.remove(prj_extlib)
 
         project.modified = True
