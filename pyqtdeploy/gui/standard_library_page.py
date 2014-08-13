@@ -184,7 +184,13 @@ class StandardLibraryPage(QSplitter):
 
         module._visit = visit
 
-        module._explicit = (name in self._project.standard_library)
+        project = self._project
+
+        if module.ssl is not None:
+            if module.ssl != project.python_ssl:
+                return
+
+        module._explicit = (name in project.standard_library)
 
         if module.core or is_dep:
             module._implicit = True
