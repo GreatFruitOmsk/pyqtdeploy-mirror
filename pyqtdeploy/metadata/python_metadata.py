@@ -27,7 +27,7 @@
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, ssl, windows, deps, core, defines, xlib, modules, source, subdir):
+    def __init__(self, internal, ssl, windows, deps, hidden_deps, core, defines, xlib, modules, source, subdir):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -43,6 +43,14 @@ class StdlibModule:
 
         # The sequence of modules that this one is dependent on.
         self.deps = (deps, ) if isinstance(deps, str) else deps
+
+        # The sequence of additional modules that this one is dependent on.
+        # These dependencies are hidden from the user and (most importantly)
+        # further sub-dependencies are ignored.  The use case is the warnings
+        # module in Python v3 which is a dependence of the core (for a simple
+        # function that should never be called) but drags in a lot of other
+        # stuff.
+        self.hidden_deps = (hidden_deps, ) if isinstance(hidden_deps, str) else hidden_deps
 
         # Set if the module is always compiled in to the interpreter library
         # (if it is an extension module) or if it is required (if it is a
@@ -70,7 +78,7 @@ class StdlibModule:
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None, modules=None, source=None, subdir=''):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, subdir=''):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -94,20 +102,20 @@ class VersionedModule:
             else:
                 self.max_version = (3, 99)
 
-        self.module = StdlibModule(internal, ssl, windows, deps, core, defines,
-                xlib, modules, source, subdir)
+        self.module = StdlibModule(internal, ssl, windows, deps, hidden_deps,
+                core, defines, xlib, modules, source, subdir)
 
 
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, defines='', xlib=None):
+    def __init__(self, source, subdir='', min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, core=core, defines=defines,
-                xlib=xlib, source=source, subdir=subdir)
+                windows=windows, deps=deps, hidden_deps=hidden_deps, core=core,
+                defines=defines, xlib=xlib, source=source, subdir=subdir)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -115,23 +123,24 @@ class CoreExtensionModule(ExtensionModule):
     compiled in to the interpreter library.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=()):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=()):
         """ Initialise the object. """
 
         super().__init__(source=(), min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, core=True)
+                windows=windows, deps=deps, hidden_deps=hidden_deps, core=True)
 
 
 class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, core=core, modules=modules)
+                windows=windows, deps=deps, hidden_deps=hidden_deps, core=core,
+                modules=modules)
 
 
 class CorePythonModule(PythonModule):
@@ -139,12 +148,13 @@ class CorePythonModule(PythonModule):
     an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, core=True, modules=modules)
+                windows=windows, deps=deps, hidden_deps=hidden_deps, core=True,
+                modules=modules)
 
 
 # The meta-data for each module.
@@ -612,8 +622,8 @@ _metadata = {
                                         'importlib.machinery',
                                         'importlib.util')),
                         CorePythonModule(min_version=(3, 4),
-                                deps=('importlib._bootstrap', '_imp', 'types',
-                                        'warnings'),
+                                deps=('importlib._bootstrap', '_imp', 'types'),
+                                hidden_deps='warnings',
                                 modules=('importlib.abc',
                                         'importlib.machinery',
                                         'importlib.util'))),
