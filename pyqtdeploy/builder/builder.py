@@ -34,7 +34,8 @@ from PyQt5.QtCore import QDir, QFile
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
-from ..metadata import get_python_metadata, pyqt4_metadata, pyqt5_metadata
+from ..metadata import (external_libraries_metadata, get_python_metadata,
+        pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
@@ -51,11 +52,6 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-        # These will be set when we do the build.
-        self._py_major = None
-        self._py_minor = None
-        self._py_metadata = None
-
     def build(self, opt, build_dir=None, clean=False, console=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
@@ -63,19 +59,24 @@ class Builder():
 
         project = self._project
 
+        # Get the names of the required Python modules, extension modules and
+        # libraries.
+        metadata = get_python_metadata(project.python_target_version)
+        required_modules, required_libraries = project.get_stdlib_requirements(
+                include_hidden=True)
+
+        required_py = {}
+        required_ext = {}
+        for name in required_modules.keys():
+            module = metadata[name]
+
+            if module.source is None:
+                required_py[name] = module
+            elif not module.core:
+                required_ext[name] = module
+
         # Initialise and check we have the information we need.
-        self._py_major, self._py_minor = project.python_target_version
-        if self._py_major is None:
-            raise UserException("Unable to determine target Python version")
-
-        if project.stdlib_extension_modules:
-            self._py_metadata = get_python_metadata(self._py_major,
-                    self._py_minor)
-            if self._py_metadata is None:
-                raise UserException(
-                        "No valid meta-data for Python v{0}.{1}".format(
-                                self._py_major, self._py_minor))
-
+        if len(required_py) != 0 or len(required_ext) != 0:
             if project.python_source_dir == '':
                 raise UserException(
                         "The name of the Python source directory has not been "
@@ -118,10 +119,12 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 dst_file_name='freeze.py')
 
-        self._write_qmake(build_dir, console, freeze, opt)
+        self._write_qmake(build_dir, required_ext, required_libraries, console,
+                freeze, opt)
 
         # Freeze the bootstrap.
-        py_version = (self._py_major << 16) + (self._py_minor << 8)
+        py_major, py_minor = project.python_target_version
+        py_version = (py_major << 16) + (py_minor << 8)
 
         bootstrap_src = get_embedded_file_for_version(py_version, __file__,
                 'lib', 'bootstrap')
@@ -145,12 +148,12 @@ class Builder():
         version_f.close()
 
         # Generate the application resource.
-        self._generate_resource(os.path.join(build_dir, 'resources'), freeze,
-                opt)
+        self._generate_resource(os.path.join(build_dir, 'resources'),
+                required_py, freeze, opt)
 
         os.remove(freeze)
 
-    def _generate_resource(self, resources_dir, freeze, opt):
+    def _generate_resource(self, resources_dir, required_py, freeze, opt):
         """ Generate the application resource. """
 
         project = self._project
@@ -167,11 +170,8 @@ class Builder():
                     project.application_package, package_src_dir, freeze, opt)
 
         # Handle the Python standard library.
-        stdlib_src_dir = project.absolute_path(
-                project.python_target_stdlib_dir)
-
-        self._write_package(resource_contents, resources_dir, '',
-                project.stdlib_package, stdlib_src_dir, freeze, opt)
+        self._write_stdlib(resource_contents, resources_dir, required_py,
+                freeze, opt)
 
         # Handle any additional packages.
         for package in project.packages:
@@ -189,8 +189,7 @@ class Builder():
             self._create_directory(pyqt_dst_dir)
 
             self._freeze(os.path.join(pyqt_dst_dir, '__init__.pyo'),
-                    os.path.join(pyqt_src_dir, '__init__.py'), freeze, opt,
-                    as_data=True)
+                    os.path.join(pyqt_src_dir, '__init__.py'), freeze, opt)
 
             resource_contents.append(pyqt_subdir + '/__init__.pyo')
 
@@ -199,7 +198,7 @@ class Builder():
                 uic_src_dir = os.path.join(pyqt_src_dir, 'uic')
 
                 skip_dirs = ['__pycache__']
-                if self._py_major == 3:
+                if project.python_target_version[0] == 3:
                     skip_dirs.append('port_v2')
                 else:
                     skip_dirs.append('port_v3')
@@ -211,7 +210,7 @@ class Builder():
                     else:
                         if dst.endswith('.py'):
                             dst += 'o'
-                            self._freeze(dst, src, freeze, opt, as_data=True)
+                            self._freeze(dst, src, freeze, opt)
                             rel_dst = dst[len(resources_dir) + 1:]
                             resource_contents.append(rel_dst.replace('\\', '/'))
 
@@ -236,6 +235,36 @@ class Builder():
 
         f.close()
 
+    def _write_stdlib_py(self, resource_contents, resources_dir, required_py, freeze, opt):
+        """ Write the required parts of the Python standard library that are
+        implemented in Python.
+        """
+
+        project = self._project
+
+        stdlib_src_dir = project.absolute_path(
+                project.python_target_stdlib_dir)
+
+        # By sorting the names we ensure parents are handled before children.
+        for name in sorted(required_py.keys()):
+            name_path = os.path.join(*name.split('.'))
+            name_qrc = name.replace('.', '/')
+
+            if required_py[name].modules is None:
+                in_file = name_path + '.py'
+                out_file = name_path + '.pyo'
+                qrc_file = name_qrc + '.pyo'
+            else:
+                in_file = os.path.join(name_path, '__init__.py')
+                out_file = os.path.join(name_path, '__init__.pyo')
+                qrc_file = name_qrc + '/__init__.pyo'
+                self._create_directory(os.path.join(resources_dir, name_path))
+
+            self._freeze(os.path.join(resources_dir, out_file),
+                    os.path.join(stdlib_src_dir, in_file), freeze, opt)
+
+            resource_contents.append(qrc_file)
+
     def _package_details(self, package):
         """ Return the absolute source directory of a package and its name. """
 
@@ -244,7 +273,7 @@ class Builder():
 
         return package_src_dir, package_name
 
-    def _write_qmake(self, build_dir, console, freeze, opt):
+    def _write_qmake(self, build_dir, required_ext, required_libraries, console, freeze, opt):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -403,10 +432,9 @@ class Builder():
         f.write('\n')
 
         # Add any standard library modules to the inittab list.
-        extension_module_names = list(extensions.keys())
-        for module in project.stdlib_extension_modules:
-            if self._get_py_module_metadata(module.name) is not None:
-                extension_module_names.append(module.name)
+        extension_module_names = {name: None for name in extensions.keys()}
+        for name, module in required_ext.items():
+            extension_module_names[name] = module.windows
 
         f.write('SOURCES = main.c pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_main_c(build_dir, extension_module_names)
@@ -422,7 +450,7 @@ class Builder():
         f.write('\n')
 
         # Handle any standard library extension modules.
-        if project.stdlib_extension_modules:
+        if len(required_ext) != 0:
             source_dir = project.absolute_path(project.python_source_dir)
 
             f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
@@ -431,36 +459,69 @@ class Builder():
             # include them more than once.
             used_sources = []
 
-            for module in project.stdlib_extension_modules:
-                # We ignore any module in the project that we don't have
-                # meta-data for.  This can happen if the application has been
-                # configured for one Python version then switched to another.
-                module_metadata = self._get_py_module_metadata(module.name)
+            for name, module in required_ext.items():
+                f.write('\n')
 
-                if module_metadata is not None:
-                    f.write('\n')
+                if module.windows is not None:
+                    prefix = '    '
 
-                    if module.defines != '':
-                        f.write('DEFINES += {0}\n'.format(module.defines))
+                    if module.windows:
+                        f.write('win32 {\n')
+                    else:
+                        f.write('!win32 {\n')
+                else:
+                    prefix = ''
 
-                    if module.includepath != '':
-                        f.write('INCLUDEPATH += {0}\n'.format(module.includepath))
+                if module.defines != '':
+                    f.write(
+                            '{0}DEFINES += {1}\n'.format(
+                                    prefix, module.defines))
 
-                    if module_metadata.subdir != '':
-                        f.write('INCLUDEPATH += {0}/Modules/{1}\n'.format(source_dir, module_metadata.subdir))
+                if module.subdir != '':
+                    f.write(
+                            '{0}INCLUDEPATH += {1}/Modules/{2}\n'.format(
+                                    prefix, source_dir, module.subdir))
 
-                    if module.libs != '':
-                        f.write('LIBS += {0}\n'.format(module.libs))
+                module_sources = []
+                for src in module.sources:
+                    if src not in used_sources:
+                        module_sources.append(src)
+                        used_sources.append(src)
 
-                    module_sources = []
-                    for src in module_metadata.sources:
-                        if src not in used_sources:
-                            module_sources.append(src)
-                            used_sources.append(src)
+                if module_sources:
+                    f.write(
+                            '{0}SOURCES += {1}\n'.format(
+                                    prefix,
+                                    ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_sources])))
 
-                    if module_sources:
-                        f.write('SOURCES += {0}\n'.format(
-                            ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_sources])))
+                if module.windows is not None:
+                    f.write('}\n')
+
+        # Handle the required external libraries.
+        for required_lib in required_libraries:
+            required_lib = external_libraries_metadata[required_lib]
+
+            for xlib in project.external_libraries:
+                if xlib.name == required_lib:
+                    defines = xlib.defines
+                    includepath = xlib.includepath
+                    libs = xlib.libs
+                    break
+            else:
+                defines = ''
+                includepath = ''
+                libs = required_lib.libs
+
+            f.write('\n')
+
+            if defines != '':
+                f.write('DEFINES += {0}\n'.format(defines))
+
+            if includepath != '':
+                f.write('INCLUDEPATH += {0}\n'.format(includepath))
+
+            if libs != '':
+                f.write('LIBS += {0}\n'.format(libs))
 
         # All done.
         f.close()
@@ -468,11 +529,7 @@ class Builder():
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """
 
-        for module_metadata in self._py_metadata.modules:
-            if module_metadata.name == name:
-                return module_metadata
-
-        return None
+        return get_python_metadata(self._project.python_target_version).get(name)
 
     def _get_pyqt_module_metadata(self, module_name):
         """ Get the meta-data for a PyQt module. """
@@ -566,7 +623,7 @@ class Builder():
                 dst_path = os.path.join(dst_dir, dst_file)
 
                 if freeze_file:
-                    self._freeze(dst_path, src_path, freeze, opt, as_data=True)
+                    self._freeze(dst_path, src_path, freeze, opt)
                 else:
                     shutil.copyfile(src_path, dst_path)
 
@@ -669,26 +726,44 @@ int main(int argc, char **argv)
             init_type = 'void '
             init_prefix = 'init'
 
-        for ext in extension_names:
+        for ext, windows in extension_names.items():
             base_ext = ext.split('.')[-1]
+
+            if windows is not None:
+                if windows:
+                    f.write('#if defined(WIN32) || defined(WIN64)\n')
+                else:
+                    f.write('#if !defined(WIN32) && !defined(WIN64)\n')
 
             f.write('extern %s%s%s(void);\n' % (init_type, init_prefix,
                     base_ext))
+
+            if windows is not None:
+                f.write('#endif\n')
 
         f.write('''
 static struct _inittab %s[] = {
 ''' % inittab)
 
-        for ext in extension_names:
+        for ext, windows in extension_names.items():
             base_ext = ext.split('.')[-1]
 
+            if windows is not None:
+                if windows:
+                    f.write('#if defined(WIN32) || defined(WIN64)\n')
+                else:
+                    f.write('#if !defined(WIN32) && !defined(WIN64)\n')
+
             f.write('    {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
+
+            if windows is not None:
+                f.write('#endif\n')
 
         f.write('''    {NULL, NULL}
 };
 ''')
 
-    def _freeze(self, output, py_filename, freeze, opt, name=None, as_data=False):
+    def _freeze(self, out_file, in_file, freeze, opt, name=None):
         """ Freeze a Python source file to a C header file or a data file. """
 
         argv = [os.path.expandvars(self._project.python_host_interpreter)]
@@ -701,17 +776,18 @@ static struct _inittab %s[] = {
         argv.append(freeze)
         
         if name is not None:
+            argv.append('--as-c')
             argv.append('--name')
             argv.append(name)
+        else:
+            argv.append('--as-data')
 
-        argv.append('--as-data' if as_data else '--as-c')
-        argv.append(output)
-        argv.append(py_filename)
+        argv.append(out_file)
+        argv.append(in_file)
 
-        self._message_handler.progress_message(
-                "Freezing {0}".format(py_filename))
+        self._message_handler.progress_message("Freezing {0}".format(in_file))
 
-        self.run(argv, "Unable to freeze {0}".format(py_filename))
+        self.run(argv, "Unable to freeze {0}".format(in_file))
 
     def run(self, argv, error_message, in_build_dir=False):
         """ Execute a command and capture the output. """

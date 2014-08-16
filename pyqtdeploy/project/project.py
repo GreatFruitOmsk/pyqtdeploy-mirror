@@ -150,7 +150,7 @@ class Project(QObject):
 
         return basename
 
-    def get_stdlib_requirements(self):
+    def get_stdlib_requirements(self, include_hidden=False):
         """ Return a 2-tuple of the required Python standard library modules
         and the required external libraries.  The modules are a dict with the
         module name as the key and a bool as the value.  The bool is True if
@@ -179,6 +179,12 @@ class Project(QObject):
                 explicit = False
             else:
                 continue
+
+            # Handle any hidden dependencies if required.
+            if include_hidden:
+                for hidden_dep in dep_state.module.hidden_deps:
+                    if hidden_dep not in required_modules:
+                        required_modules[hidden_dep] = False
 
             required_modules[name] = explicit
 
