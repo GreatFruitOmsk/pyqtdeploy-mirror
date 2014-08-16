@@ -170,7 +170,7 @@ class Builder():
                     project.application_package, package_src_dir, freeze, opt)
 
         # Handle the Python standard library.
-        self._write_stdlib(resource_contents, resources_dir, required_py,
+        self._write_stdlib_py(resource_contents, resources_dir, required_py,
                 freeze, opt)
 
         # Handle any additional packages.
@@ -184,7 +184,9 @@ class Builder():
         if len(project.pyqt_modules) != 0:
             pyqt_subdir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
             pyqt_dst_dir = os.path.join(resources_dir, pyqt_subdir)
-            pyqt_src_dir = os.path.join(sitepackages_src_dir, pyqt_subdir)
+            pyqt_src_dir = os.path.join(
+                    project.absolute_path(project.python_target_stdlib_dir),
+                    'site-packages', pyqt_subdir)
 
             self._create_directory(pyqt_dst_dir)
 
@@ -776,9 +778,9 @@ static struct _inittab %s[] = {
         argv.append(freeze)
         
         if name is not None:
-            argv.append('--as-c')
             argv.append('--name')
             argv.append(name)
+            argv.append('--as-c')
         else:
             argv.append('--as-data')
 
