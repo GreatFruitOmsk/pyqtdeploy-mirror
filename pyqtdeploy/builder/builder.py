@@ -485,7 +485,7 @@ class Builder():
                                     prefix, source_dir, module.subdir))
 
                 module_sources = []
-                for src in module.sources:
+                for src in module.source:
                     if src not in used_sources:
                         module_sources.append(src)
                         used_sources.append(src)
@@ -501,8 +501,6 @@ class Builder():
 
         # Handle the required external libraries.
         for required_lib in required_libraries:
-            required_lib = external_libraries_metadata[required_lib]
-
             for xlib in project.external_libraries:
                 if xlib.name == required_lib:
                     defines = xlib.defines
@@ -512,7 +510,11 @@ class Builder():
             else:
                 defines = ''
                 includepath = ''
-                libs = required_lib.libs
+
+                for xlib in external_libraries_metadata:
+                    if xlib.name == required_lib:
+                        libs = xlib.libs
+                        break
 
             f.write('\n')
 
