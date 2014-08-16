@@ -196,6 +196,12 @@ class StandardLibraryPage(QSplitter):
             it += 1
             itm = it.value()
 
+        editor.blockSignals(blocked)
+
+        model = self._extlib_edit.model()
+
+        blocked = model.blockSignals(True)
+
         for extlib in external_libraries_metadata:
             if extlib.name in required_libraries:
                 for idx, itm in enumerate(extlib._items):
@@ -206,12 +212,15 @@ class StandardLibraryPage(QSplitter):
                 for itm in extlib._items:
                     itm.setFlags(Qt.NoItemFlags)
 
-        editor.blockSignals(blocked)
+        model.blockSignals(blocked)
 
     def _update_extlib_editor(self):
         """ Update the external library editor. """
 
         project = self.project
+        model = self._extlib_edit.model()
+
+        blocked = model.blockSignals(True)
 
         for extlib in external_libraries_metadata:
             _, defs, incp, libs = extlib._items
@@ -226,6 +235,8 @@ class StandardLibraryPage(QSplitter):
                 defs.setText('')
                 incp.setText('')
                 libs.setText(extlib.libs)
+
+        model.blockSignals(blocked)
 
     def _version_changed(self, idx):
         """ Invoked when the target Python version changes. """
