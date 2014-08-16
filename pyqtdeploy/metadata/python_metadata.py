@@ -1410,18 +1410,27 @@ _metadata = {
 }
 
 
-def get_python_metadata(major, minor):
+# Meta-data is read-only so we cache and re-use it if possible.
+_metadata_cache = {}
+
+
+def get_python_metadata(version):
     """ Return the dict of StdlibModule instances for a particular version of
     Python.  It is assumed that the version is valid.
     """
 
-    version_metadata = {}
+    # Use the cached value if there is one.
+    version_metadata = _metadata_cache.get(version)
+    if version_metadata is not None:
+        return version_metadata
+
+    _metadata_cache[version] = version_metadata = {}
+
+    nr = version[0] * 100 + version[1]
 
     for name, versions in _metadata.items():
         if not isinstance(versions, tuple):
             versions = (versions, )
-
-        nr = major * 100 + minor
 
         for versioned_module in versions:
             min_major, min_minor = versioned_module.min_version

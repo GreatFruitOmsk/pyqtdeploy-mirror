@@ -29,6 +29,7 @@ from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
+from ..metadata import get_python_metadata
 from ..user_exception import UserException
 
 
@@ -148,6 +149,66 @@ class Project(QObject):
                 os.path.basename(self.absolute_path(name)))
 
         return basename
+
+    def get_stdlib_requirements(self):
+        """ Return a 2-tuple of the required Python standard library modules
+        and the required external libraries.  The modules are a dict with the
+        module name as the key and a bool as the value.  The bool is True if
+        the module is explicitly required and False if it is implicitly
+        required.  The libraries are a set of well known library names.
+        """
+
+        # Work out the dependencies.
+        metadata = get_python_metadata(self.python_target_version)
+        all_modules = {name: _DepState(module)
+                for name, module in metadata.items()}
+
+        visit = 0
+        for name in all_modules.keys():
+            self._set_dependency_state(all_modules, name, visit)
+            visit += 1
+
+        # Extract the required modules and libraries.
+        required_modules = {}
+        required_libraries = set()
+
+        for name, dep_state in all_modules.items():
+            if dep_state.explicit:
+                explicit = True
+            elif dep_state.implicit:
+                explicit = False
+            else:
+                continue
+
+            required_modules[name] = explicit
+
+            if dep_state.module.xlib is not None:
+                required_libraries.add(dep_state.module.xlib)
+
+        return required_modules, required_libraries
+
+    def _set_dependency_state(self, all_modules, name, visit, is_dep=False):
+        """ Set a module's dependency state. """
+
+        dep_state = all_modules[name]
+
+        if dep_state.visit == visit:
+            return
+
+        dep_state.visit = visit
+
+        if dep_state.module.ssl is not None:
+            if dep_state.module.ssl != self.python_ssl:
+                return
+
+        dep_state.explicit = (name in self.standard_library)
+
+        if dep_state.module.core or is_dep:
+            dep_state.implicit = True
+
+        for dep in dep_state.module.deps:
+            self._set_dependency_state(all_modules, dep, visit,
+                    (dep_state.explicit or dep_state.implicit))
 
     @classmethod
     def load(cls, filename):
@@ -550,3 +611,17 @@ class ExtensionModule():
 
         self.name = name
         self.path = path
+
+
+class _DepState:
+    """ Encapsulate the state information required when working out module
+    dependencies.
+    """
+
+    def __init__(self, module):
+        """ Initialise the object. """
+
+        self.module = module
+        self.explicit = False
+        self.implicit = False
+        self.visit = -1

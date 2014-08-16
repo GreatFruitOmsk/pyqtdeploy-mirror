@@ -27,7 +27,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QSplitter,
-        QTreeView, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+        QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
+        QVBoxLayout, QWidget)
 
 from ..metadata import external_libraries_metadata, get_python_metadata
 from ..project import ExternalLibrary
@@ -63,7 +64,6 @@ class StandardLibraryPage(QSplitter):
         super().__init__()
 
         self._project = None
-        self._modules = None
 
         # Create the page's GUI.
         stdlib_pane = QWidget()
@@ -127,8 +127,6 @@ class StandardLibraryPage(QSplitter):
 
         project = self.project
 
-        self._modules = get_python_metadata(*project.python_target_version)
-
         blocked = self._version_edit.blockSignals(True)
         self._version_edit.setCurrentIndex(
                 SUPPORTED_PYTHON_VERSIONS.index(project.python_target_version))
@@ -148,6 +146,8 @@ class StandardLibraryPage(QSplitter):
         project = self.project
         editor = self._stdlib_edit
 
+        metadata = get_python_metadata(project.python_target_version)
+
         blocked = editor.blockSignals(True)
 
         editor.clear()
@@ -155,19 +155,15 @@ class StandardLibraryPage(QSplitter):
         def add_module(name, module, parent):
             itm = QTreeWidgetItem(parent, name.split('.')[-1:])
             itm.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
-
             itm._name = name
-            module._item = itm
 
             # Handle any sub-modules.
             if module.modules is not None:
                 for submodule in module.modules:
-                    add_module(submodule, self._modules[submodule], itm)
+                    add_module(submodule, metadata[submodule], itm)
 
-        for name, module in self._modules.items():
-            if module.internal:
-                module._item = None
-            elif '.' not in name:
+        for name, module in metadata.items():
+            if not module.internal and '.' not in name:
                 add_module(name, module, editor)
 
         editor.sortItems(0, Qt.AscendingOrder)
@@ -176,67 +172,32 @@ class StandardLibraryPage(QSplitter):
 
         self._set_dependencies()
 
-    def _set_dependency_state(self, name, module, visit, is_dep=False):
-        """ Set a module's dependency state. """
-
-        if module._visit == visit:
-            return
-
-        module._visit = visit
-
-        project = self._project
-
-        if module.ssl is not None:
-            if module.ssl != project.python_ssl:
-                return
-
-        module._explicit = (name in project.standard_library)
-
-        if module.core or is_dep:
-            module._implicit = True
-
-        for dep in module.deps:
-            self._set_dependency_state(dep, self._modules[dep], visit,
-                    (module._explicit or module._implicit))
-
     def _set_dependencies(self):
         """ Set the dependency information. """
 
-        blocked = self._stdlib_edit.blockSignals(True)
+        project = self.project
+        editor = self._stdlib_edit
 
-        # Initialise.
-        for module in self._modules.values():
-            module._explicit = False
-            module._implicit = False
-            module._visit = -1
+        required_modules, required_libraries = project.get_stdlib_requirements()
 
-        # Work out the dependencies.
-        visit = 0
-        for name, module in self._modules.items():
-            self._set_dependency_state(name, module, visit)
-            visit += 1
+        blocked = editor.blockSignals(True)
 
-        # Update the view.
-        xlibs = set()
+        it = QTreeWidgetItemIterator(editor)
+        itm = it.value()
+        while itm is not None:
+            external = required_modules.get(itm._name)
+            if external is None:
+                state = Qt.Unchecked
+            else:
+                state = Qt.Checked if external else Qt.PartiallyChecked
 
-        for module in self._modules.values():
-            itm = module._item
-            if itm is not None:
-                if module._explicit:
-                    state = Qt.Checked
-                elif module._implicit:
-                    state = Qt.PartiallyChecked
-                else:
-                    state = Qt.Unchecked
+            itm.setCheckState(0, state)
 
-                itm.setCheckState(0, state)
-
-            if module._explicit or module._implicit:
-                if module.xlib is not None:
-                    xlibs.add(module.xlib)
+            it += 1
+            itm = it.value()
 
         for extlib in external_libraries_metadata:
-            if extlib.name in xlibs:
+            if extlib.name in required_libraries:
                 for idx, itm in enumerate(extlib._items):
                     itm.setFlags(
                             Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
@@ -245,7 +206,7 @@ class StandardLibraryPage(QSplitter):
                 for itm in extlib._items:
                     itm.setFlags(Qt.NoItemFlags)
 
-        self._stdlib_edit.blockSignals(blocked)
+        editor.blockSignals(blocked)
 
     def _update_extlib_editor(self):
         """ Update the external library editor. """
