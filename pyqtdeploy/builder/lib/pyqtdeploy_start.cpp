@@ -148,6 +148,10 @@ extern "C" int pyqtdeploy_start(int argc, char **argv,
         goto py_error;
 #endif
 
+    // Set sys.frozen.
+    if (PySys_SetObject("frozen", Py_True) < 0)
+        goto py_error;
+
     // Configure sys.path.
     if (path_dirs != NULL)
     {
