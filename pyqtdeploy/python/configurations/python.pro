@@ -58,6 +58,18 @@ INCLUDEPATH += Include
     }
 }
 
+win32 {
+    DEFINES += PLATFORM=\\\"win32\\\"
+}
+
+macx {
+    DEFINES += PLATFORM=\\\"darwin\\\"
+}
+
+unix:!macx {
+    DEFINES += PLATFORM=\\\"linux\\\"
+}
+
 target.path = $$SYSROOT/lib
 
 headers.path = $$SYSROOT/include/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
