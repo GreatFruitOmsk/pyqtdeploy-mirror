@@ -326,27 +326,12 @@ class QrcPackageEditor(QGridLayout):
     def _visualise_contents(self, contents, parent):
         """ Visualise the contents for a parent. """
 
-        module_names = ['']
         p = parent
         while p is not None and isinstance(p, QTreeWidgetItem):
-            module_names.insert(0, p.text(0))
             p = p.parent()
 
         for content in contents:
-            module_names[-1] = content.name
-            required = self.required('/'.join(module_names))
-
             itm = QTreeWidgetItem(parent, [content.name])
-
-            itm.setDisabled(required)
-            if required:
-                content.included = True
-
-                p = parent
-                while p is not None and isinstance(p, QTreeWidgetItem):
-                    p.setCheckState(0, Qt.Checked)
-                    p.data(0, Qt.UserRole).included = True
-                    p = p.parent()
 
             itm.setCheckState(0,
                     Qt.Checked if content.included else Qt.Unchecked)
