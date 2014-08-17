@@ -499,6 +499,15 @@ class Builder():
                 if module.windows is not None:
                     f.write('}\n')
 
+                # Handle any additional Windows-specific sources.  We assume
+                # these won't be shared.
+                if module.windows_source is not None:
+                    f.write('''
+win32 {
+    SOURCES += {0}
+}
+'''.format(' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module.windows_source])))
+
         # Handle the required external libraries.
         for required_lib in required_libraries:
             for xlib in project.external_libraries:
