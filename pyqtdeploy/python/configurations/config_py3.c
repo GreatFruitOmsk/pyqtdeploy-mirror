@@ -52,7 +52,11 @@ extern "C" {
 
 extern PyObject* PyInit__thread(void);
 extern PyObject* PyInit_signal(void);
+#if defined(MS_WINDOWS)
+extern PyObject* PyInit_nt(void);
+#else
 extern PyObject* PyInit_posix(void);
+#endif
 extern PyObject* PyInit_errno(void);
 extern PyObject* PyInit_pwd(void);
 extern PyObject* PyInit__sre(void);
@@ -94,7 +98,11 @@ struct _inittab _PyImport_Inittab[] = {
 
 	{"_thread", PyInit__thread},
 	{"signal", PyInit_signal},
+#if defined(MS_WINDOWS)
+	{"nt", PyInit_nt},
+#else
 	{"posix", PyInit_posix},
+#endif
 	{"errno", PyInit_errno},
 	{"pwd", PyInit_pwd},
 	{"_sre", PyInit__sre},

@@ -436,7 +436,14 @@ class Builder():
         # Add any standard library modules to the inittab list.
         extension_module_names = {name: None for name in extensions.keys()}
         for name, module in required_ext.items():
-            extension_module_names[name] = module.windows
+            if module.scope == 'win32':
+                windows = True
+            elif module.scope == '!win32':
+                windows = False
+            else:
+                windows = None
+
+            extension_module_names[name] = windows
 
         f.write('SOURCES = main.c pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_main_c(build_dir, extension_module_names)
@@ -458,55 +465,61 @@ class Builder():
             f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
 
             # Modules can share sources so we need to make sure we don't
-            # include them more than once.
-            used_sources = []
+            # include them more than once.  We might as well handle the other
+            # things in the same way.
+            used_scoped_sources = {}
+            used_scoped_defines = {}
+            used_scoped_includepaths = {}
+            used_scoped_libs = {}
 
             for name, module in required_ext.items():
+                for source in module.source:
+                    self._add_scoped_value(used_scoped_sources, source,
+                            module.scope)
+
+                if module.defines != '':
+                    self._add_scoped_value(used_scoped_defines, module.defines,
+                            module.scope)
+
+                if module.includepath != '':
+                    self._add_scoped_value(used_scoped_includepaths,
+                            module.includepath, module.scope)
+
+                for lib in module.libs:
+                    self._add_scoped_value(used_scoped_libs, lib, module.scope)
+
+            # Get the set of all scopes used.
+            used_scopes = set(used_scoped_sources.keys())
+            used_scopes.update(used_scoped_defines.keys())
+            used_scopes.update(used_scoped_includepaths.keys())
+            used_scopes.update(used_scoped_libs.keys())
+
+            # Write out grouped by scope.
+            for scope in used_scopes:
                 f.write('\n')
 
-                if module.windows is not None:
+                if scope != '':
                     prefix = '    '
-
-                    if module.windows:
-                        f.write('win32 {\n')
-                    else:
-                        f.write('!win32 {\n')
+                    f.write('{0} {\n'.format(scope))
                 else:
                     prefix = ''
 
-                if module.defines != '':
-                    f.write(
-                            '{0}DEFINES += {1}\n'.format(
-                                    prefix, module.defines))
+                for defines in used_scope_defines.get(scope, ()):
+                    f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
 
-                if module.subdir != '':
-                    f.write(
-                            '{0}INCLUDEPATH += {1}/Modules/{2}\n'.format(
-                                    prefix, source_dir, module.subdir))
+                for includepath in used_scope_includepaths.get(scope, ()):
+                    f.write('{0}INCLUDEPATH += {1}/Modules/{2}\n'.format(
+                            prefix, source_dir, includepath))
 
-                module_sources = []
-                for src in module.source:
-                    if src not in used_sources:
-                        module_sources.append(src)
-                        used_sources.append(src)
+                for lib in used_scope_libs.get(scope, ()):
+                    f.write('{0}LIBS += {1}\n'.format(prefix, source))
 
-                if module_sources:
-                    f.write(
-                            '{0}SOURCES += {1}\n'.format(
-                                    prefix,
-                                    ' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module_sources])))
+                for source in used_scope_sources.get(scope, ()):
+                    f.write('{0}SOURCES += {1}/Modules/{2}\n'.format(
+                            prefix, source_dir, source))
 
-                if module.windows is not None:
+                if scope != '':
                     f.write('}\n')
-
-                # Handle any additional Windows-specific sources.  We assume
-                # these won't be shared.
-                if module.windows_source is not None:
-                    f.write('''
-win32 {
-    SOURCES += {0}
-}
-'''.format(' '.join(['{0}/Modules/{1}'.format(source_dir, src) for src in module.windows_source])))
 
         # Handle the required external libraries.
         for required_lib in required_libraries:
@@ -538,6 +551,22 @@ win32 {
 
         # All done.
         f.close()
+
+    @staticmethod
+    def _add_scoped_value(used_values, scoped_value, default_scope):
+        """ Add an optionally scoped value to a dict of used values indexed by
+        scope.
+        """
+
+        # Isolate the scope and value.
+        parts = scoped_value.split('#', maxsplit=1)
+        if len(parts) == 2:
+            scope, value = parts
+        else:
+            scope = default_scope
+            value = parts[0]
+
+        used_values.setdefault(scope, set()).add(value)
 
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """

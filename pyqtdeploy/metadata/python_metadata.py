@@ -27,7 +27,7 @@
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, ssl, windows, deps, hidden_deps, core, defines, xlib, modules, source, windows_source, subdir):
+    def __init__(self, internal, ssl, scope, deps, hidden_deps, core, defines, xlib, modules, source, libs, includepath):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -37,9 +37,9 @@ class StdlibModule:
         # required if SSL is disabled and None if SSL is not relevant.
         self.ssl = ssl
 
-        # True if the module is Windows-specific, False if non-Windows and None
-        # if present on all platforms.
-        self.windows = windows
+        # The qmake scope of the module.  If specified then it is automatically
+        # applied to any unscoped values.
+        self.scope = scope
 
         # The sequence of modules that this one is dependent on.
         self.deps = (deps, ) if isinstance(deps, str) else deps
@@ -57,7 +57,7 @@ class StdlibModule:
         # Python module).
         self.core = core
 
-        # The DEFINES to add to the .pro file.
+        # The (possibly scoped) DEFINES to add to the .pro file.
         self.defines = defines
 
         # The internal identifier of a required external library.
@@ -67,22 +67,22 @@ class StdlibModule:
         # otherwise None.
         self.modules = (modules, ) if isinstance(modules, str) else modules
 
-        # The sequence of source files relative to the Modules directory if
-        # this is an extension module, otherwise None.
+        # The sequence of (possibly scoped) source files relative to the
+        # Modules directory if this is an extension module, otherwise None.
         self.source = (source, ) if isinstance(source, str) else source
 
-        # The sequence of additional Windows-specific source files relative to
-        # the Modules directory if this is an extension module, otherwise None.
-        self.windows_source = (windows_source, ) if isinstance(windows_source, str) else windows_source
+        # The sequence of (possibly scoped) LIBS to add to the .pro file.
+        self.libs = (libs, ) if isinstance(libs, str) else libs
 
-        # A sub-directory of the Modules directory to add to INCLUDEPATH.
-        self.subdir = subdir
+        # A (possibly scoped) directory relative to the Modules directory to
+        # add to INCLUDEPATH.
+        self.includepath = includepath
 
 
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, windows_source=None, subdir=''):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, libs=None, includepath=''):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -106,21 +106,21 @@ class VersionedModule:
             else:
                 self.max_version = (3, 99)
 
-        self.module = StdlibModule(internal, ssl, windows, deps, hidden_deps,
-                core, defines, xlib, modules, source, windows_source, subdir)
+        self.module = StdlibModule(internal, ssl, scope, deps, hidden_deps,
+                core, defines, xlib, modules, source, libs, includepath)
 
 
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, windows_source=None, subdir='', min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, defines='', xlib=None):
+    def __init__(self, source, libs=None, includepath='', min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, hidden_deps=hidden_deps, core=core,
-                defines=defines, xlib=xlib, source=source,
-                windows_source=windows_source, subdir=subdir)
+                scope=scope, deps=deps, hidden_deps=hidden_deps, core=core,
+                defines=defines, xlib=xlib, source=source, libs=libs,
+                includepath=includepath)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -128,23 +128,23 @@ class CoreExtensionModule(ExtensionModule):
     compiled in to the interpreter library.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=()):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=()):
         """ Initialise the object. """
 
         super().__init__(source=(), min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, hidden_deps=hidden_deps, core=True)
+                scope=scope, deps=deps, hidden_deps=hidden_deps, core=True)
 
 
 class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, hidden_deps=hidden_deps, core=core,
+                scope=scope, deps=deps, hidden_deps=hidden_deps, core=core,
                 modules=modules)
 
 
@@ -153,12 +153,12 @@ class CorePythonModule(PythonModule):
     an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, windows=None, deps=(), hidden_deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
-                windows=windows, deps=deps, hidden_deps=hidden_deps, core=True,
+                scope=scope, deps=deps, hidden_deps=hidden_deps, core=True,
                 modules=modules)
 
 
@@ -239,13 +239,13 @@ _metadata = {
     'calendar':         PythonModule(deps=('datetime', 'locale')),
     'chunk':            PythonModule(deps='struct'),
     'cmath': (          ExtensionModule(version=(2, 6),
-                                source='cmathmodule.c', xlib='math'),
+                                source='cmathmodule.c', libs='linux-*#-lm'),
                         ExtensionModule(version=(2, 7),
                                 source=['cmathmodule.c', '_math.c'],
-                                xlib='math'),
+                                libs='linux-*#-lm'),
                         ExtensionModule(version=3,
                                 source=['cmathmodule.c', '_math.c'],
-                                xlib='math')),
+                                libs='linux-*#-lm')),
     'codecs':           PythonModule(deps='_codecs'),
     'collections': (    PythonModule(version=(2, 6),
                                 deps=('_abcoll', '_collections', 'keyword',
@@ -821,34 +821,31 @@ _metadata = {
                                             'email.utils', 'httplib', 'os',
                                             're', 'socket', 'smtplib', 'stat',
                                             'string', 'struct', 'time',
-                                            'types', 'urllib',
-                                            'win32evtlog', 'win32evtlogutil')),
+                                            'types', 'urllib')),
                             PythonModule(version=(2, 7),
                                     deps=('logging', 'codecs', 'cPickle',
                                             'email.utils', 'errno', 'httplib',
                                             'os', 're', 'socket', 'smtplib',
-                                            'stat', 'struct', 'time', 'urllib',
-                                            'win32evtlog', 'win32evtlogutil')),
+                                            'stat', 'struct', 'time',
+                                            'urllib')),
                             PythonModule(min_version=(3, 3),
                                     deps=('logging', 'base64', 'codecs',
                                             'email.utils', 'errno',
                                             'http.client', 'os', 'pickle',
                                             'queue', 're', 'socket', 'smtplib',
                                             'stat', 'struct', 'threading',
-                                            'time', 'urllib.parse',
-                                            'win32evtlog',
-                                            'win32evtlogutil'))),
+                                            'time', 'urllib.parse'))),
     'lzma':             PythonModule(version=3, deps=('io', '_lzma')),
 
     'marshal':          CoreExtensionModule(),
     'math': (           ExtensionModule(version=(2, 6),
-                                source='mathmodule.c', xlib='math'),
+                                source='mathmodule.c', libs='linux-*#-lm'),
                         ExtensionModule(version=(2, 7),
                                 source=('mathmodule.c', '_math.c'),
-                                xlib='math'),
+                                libs='linux-*#-lm'),
                         ExtensionModule(version=3,
                                 source=('mathmodule.c', '_math.c'),
-                                xlib='math')),
+                                libs='linux-*#-lm')),
     'mimetools':        PythonModule(version=2,
                                 deps=('base64', 'os', 'quopri', 'rfc822',
                                         'socket', 'tempfile', 'thread', 'time',
@@ -986,8 +983,8 @@ _metadata = {
                                                         'multiprocessing.context',
                                                         'multiprocessing.reduction',
                                                         'weakref'))),
-    # TODO - msvcrt on Windows
-    'msvcrt':           ExtensionModule(source='TODO', windows=True),
+    'msvcrt':           ExtensionModule(scope='win32',
+                                source='../PC/msvcrtmodule.c'),
 
     'nis':              ExtensionModule(source='nismodule.c', xlib='nsl'),
 
@@ -1208,7 +1205,8 @@ _metadata = {
                         PythonModule(version=3,
                                 deps='re')),
     'thread':           CoreExtensionModule(version=2),
-    'time':             ExtensionModule(source='timemodule.c', xlib='math'),
+    'time':             ExtensionModule(source='timemodule.c',
+                                libs='linux-*#-lm'),
     'threading': (      PythonModule(version=(2, 6),
                                 deps=('collections', 'functools', 'random',
                                         'thread', 'time', 'traceback',
@@ -1317,11 +1315,10 @@ _metadata = {
                                         'itertools', '_weakref',
                                         '_weakrefset'))),
     'whichdb':          PythonModule(version=2, deps=('dbm', 'os', 'struct')),
-    # TODO - _winreg/winreg on Windows
-    '_winreg':          ExtensionModule(version=2, source='TODO',
-                                windows=True),
-    'winreg':           ExtensionModule(version=3, source='TODO',
-                                windows=True),
+    '_winreg':          ExtensionModule(version=2, scope='win32',
+                                source='../PC/_winreg.c'),
+    'winreg':           ExtensionModule(version=3, scope='win32',
+                                source='../PC/winreg.c'),
 
     'xml':              PythonModule(
                                 modules=('xml.dom', 'xml.etree', 'xml.parsers',
@@ -1505,7 +1502,7 @@ _metadata = {
     'asyncio.transports':   PythonModule(min_version=(3, 4),
                                     internal=True, deps='asyncio'),
     'asyncio.unix_events':  PythonModule(min_version=(3, 4),
-                                    internal=True, windows=False,
+                                    internal=True, scope='!win32',
                                     deps=('asyncio', 'asyncio.base_events',
                                             'asyncio.base_subprocess',
                                             'asyncio.constants',
@@ -1517,7 +1514,7 @@ _metadata = {
                                             'stat', 'subprocess',
                                             'threading')),
     'asyncio.windows_events':   PythonModule(min_version=(3, 4),
-                                        internal=True, windows=True,
+                                        internal=True, scope='win32',
                                         deps=('asyncio', 'asyncio.events',
                                                 'asyncio.base_subprocess',
                                                 'asyncio.log',
@@ -1529,7 +1526,7 @@ _metadata = {
                                                 'struct', 'weakref',
                                                 '_winapi')),
     'asyncio.windows_utils':    PythonModule(min_version=(3, 4),
-                                        internal=True, windows=True,
+                                        internal=True, scope='win32',
                                         deps=('asyncio', 'itertools', 'msvcrt',
                                                 'os', 'socket', 'subprocess',
                                                 'tempfile', '_winapi')),
@@ -1693,7 +1690,7 @@ _metadata = {
                                         '_io/fileio.c', '_io/iobase.c',
                                         '_io/_iomodule.c', '_io/stringio.c',
                                         '_io/textio.c'),
-                                subdir='_io'),
+                                includepath='_io'),
                         CoreExtensionModule(version=3,
                                 internal=True)),
 
@@ -1749,17 +1746,17 @@ _metadata = {
     '_multiprocessing': (ExtensionModule(version=2,
                                 internal=True,
                                 source=('_multiprocessing/multiprocessing.c',
+                                        'win32#_multiprocessing/pipe_connection.c',
                                         '_multiprocessing/semaphore.c',
-                                        '_multiprocessing/socket_connection.c'),
-                                windows_source=(
-                                        '_multiprocessing/pipe_connection.c',
-                                        '_multiprocessing/win32_functions.c'),
-                                subdir='_multiprocessing'),
+                                        '_multiprocessing/socket_connection.c',
+                                        'win32#_multiprocessing/win32_functions.c'),
+                                libs=('win32#-lws2_32', 'linux-*#-lrt'),
+                                includepath='_multiprocessing'),
                          ExtensionModule(version=3,
                                 internal=True,
                                 source=('_multiprocessing/multiprocessing.c',
                                         '_multiprocessing/semaphore.c'),
-                                subdir='_multiprocessing')),
+                                includepath='_multiprocessing')),
     'multiprocessing.context':  PythonModule(min_version=(3, 4),
                                         internal=True,
                                         deps=('multiprocessing',
@@ -1958,15 +1955,16 @@ _metadata = {
                                                 'tempfile', 'threading',
                                                 'traceback', 'weakref'))),
 
-    # TODO - nt on Windows
-    'nt':               ExtensionModule(internal=True, source='TODO',
-                                windows=True),
-    'ntpath':           PythonModule(internal=True, windows=True,
+    'nt':               CoreExtensionModule(internal=True, scope='win32'),
+    'ntpath':           PythonModule(internal=True, scope='win32',
                                 deps=('genericpath', 'nt', 'os', 'stat',
                                         'string', 'warnings')),
-    # TODO - nturl2path on Windows
-    'nturl2path':       ExtensionModule(internal=True, source='TODO',
-                                windows=True),
+    'nturl2path': (     PythonModule(version=2,
+                                internal=True, scope='win32',
+                                deps=('string', 'urllib')),
+                        PythonModule(version=3,
+                                internal=True, scope='win32',
+                                deps=('string', 'urllib.parse'))),
 
     '_opcode':          ExtensionModule(min_version=(3, 4),
                                 internal=True, source='_opcode.c'),
@@ -1974,16 +1972,17 @@ _metadata = {
 
     '_pickle':          ExtensionModule(version=3, internal=True,
                                 source='_pickle.c'),
-    'posix':            CoreExtensionModule(internal=True, windows=False),
-    'posixpath':        PythonModule(internal=True, windows=False,
+    'posix':            CoreExtensionModule(internal=True, scope='!win32'),
+    'posixpath':        PythonModule(internal=True, scope='!win32',
                                 deps=('genericpath', 'os', 'pwd', 're', 'stat',
                                         'warnings')),
     '_posixsubprocess': ExtensionModule(version=3, internal=True,
-                                windows=False, source='_posixsubprocess.c'),
+                                scope='!win32', source='_posixsubprocess.c'),
     'pyexpat':          ExtensionModule(internal=True,
                                 source=('expat/xmlparse.c', 'expat/xmlrole.c',
                                         'expat/xmltok.c', 'pyexpat.c'),
-                                defines='HAVE_EXPAT_CONFIG_H', subdir='expat'),
+                                defines='HAVE_EXPAT_CONFIG_H',
+                                includepath='expat'),
 
     '_random':          ExtensionModule(internal=True,
                                 source='_randommodule.c'),
@@ -2014,7 +2013,7 @@ _metadata = {
                                         '_sqlite/row.c', '_sqlite/statement.c',
                                         '_sqlite/util.c'),
                                 defines='SQLITE_OMIT_LOAD_EXTENSION',
-                                subdir='_sqlite'),
+                                includepath='_sqlite'),
     '_sre':             CoreExtensionModule(internal=True),
     'sre_compile':      PythonModule(internal=True,
                                 deps=('array', '_sre', 'sre_constants',
@@ -2045,9 +2044,8 @@ _metadata = {
                                 deps=('calendar', 'datetime', 'locale', 're',
                                         '_thread', 'time'))),
     '_struct':          ExtensionModule(internal=True, source='_struct.c'),
-    # TODO - _subprocess on Windows
     '_subprocess':      ExtensionModule(version=2, internal=True,
-                                source='TODO', windows=True),
+                                scope='win32', source='../PC/_subprocess.c'),
     '_symtable':        CoreExtensionModule(internal=True),
 
     '_tracemalloc':     CoreExtensionModule(min_version=(3, 4), internal=True),
@@ -2063,15 +2061,8 @@ _metadata = {
                                 internal=True, deps='_weakref'),
                         PythonModule(version=3,
                                 internal=True, deps='_weakref')),
-    # TODO - _winapi on Windows
     '_winapi':          ExtensionModule(version=3, internal=True,
-                                source='TODO', windows=True),
-    # TODO - win32evtlog on Windows
-    'win32evtlog':      ExtensionModule(internal=True, source='TODO',
-                                windows=True),
-    # TODO - win32evtlogutil on Windows
-    'win32evtlogutil':  ExtensionModule(internal=True, source='TODO',
-                                windows=True),
+                                scope='win32', source='_winapi.c'),
 
     'xml.dom.domreg': ( PythonModule(version=2,
                                 internal=True,
@@ -2195,6 +2186,12 @@ if __name__ == '__main__':
 
         for name, versioned_module in version_metadata.items():
             module = versioned_module.module
+
+            # At the moment we only need to support scopes that determine it a
+            # module is Windows specific (and the builder depends on that).
+            if module.scope not in ('', 'win32', '!win32'):
+                print("Module '{0}' has unsupported scope '{1}'".format(
+                        name, module.scope))
 
             check_modules(module.deps, version_metadata, unused)
 

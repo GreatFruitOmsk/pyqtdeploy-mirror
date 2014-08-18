@@ -52,7 +52,11 @@ extern "C" {
 
 extern void initthread(void);
 extern void initsignal(void);
+#if defined(MS_WINDOWS)
+extern void initnt(void);
+#else
 extern void initposix(void);
+#endif
 extern void initerrno(void);
 extern void initpwd(void);
 extern void init_sre(void);
@@ -74,7 +78,11 @@ struct _inittab _PyImport_Inittab[] = {
 
 {"thread", initthread},
 {"signal", initsignal},
+#if defined(MS_WINDOWS)
+{"nt", initnt},
+#else
 {"posix", initposix},
+#endif
 {"errno", initerrno},
 {"pwd", initpwd},
 {"_sre", init_sre},
