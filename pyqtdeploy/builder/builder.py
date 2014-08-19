@@ -434,19 +434,12 @@ class Builder():
         f.write('\n')
 
         # Add any standard library modules to the inittab list.
-        extension_module_names = {name: None for name in extensions.keys()}
+        extension_module_scopes = {name: '' for name in extensions.keys()}
         for name, module in required_ext.items():
-            if module.scope == 'win32':
-                windows = True
-            elif module.scope == '!win32':
-                windows = False
-            else:
-                windows = None
+            extension_module_scopes[name] = module.scope
 
-            extension_module_names[name] = windows
-
-        f.write('SOURCES = main.c pyqtdeploy_start.cpp pdytools_module.cpp\n')
-        self._write_main_c(build_dir, extension_module_names)
+        f.write('SOURCES = main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
+        self._write_main(build_dir, extension_module_scopes)
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pdytools_module.cpp', build_dir)
 
@@ -469,7 +462,7 @@ class Builder():
             # things in the same way.
             used_scoped_sources = {}
             used_scoped_defines = {}
-            used_scoped_includepaths = {}
+            used_scoped_includepath = {}
             used_scoped_libs = {}
 
             for name, module in required_ext.items():
@@ -481,17 +474,20 @@ class Builder():
                     self._add_scoped_value(used_scoped_defines, module.defines,
                             module.scope)
 
-                if module.includepath != '':
-                    self._add_scoped_value(used_scoped_includepaths,
-                            module.includepath, module.scope)
+                if module.includepath is not None:
+                    for includepath in module.includepath:
+                        self._add_scoped_value(used_scoped_includepath,
+                                includepath, module.scope)
 
-                for lib in module.libs:
-                    self._add_scoped_value(used_scoped_libs, lib, module.scope)
+                if module.libs is not None:
+                    for lib in module.libs:
+                        self._add_scoped_value(used_scoped_libs, lib,
+                                module.scope)
 
             # Get the set of all scopes used.
             used_scopes = set(used_scoped_sources.keys())
             used_scopes.update(used_scoped_defines.keys())
-            used_scopes.update(used_scoped_includepaths.keys())
+            used_scopes.update(used_scoped_includepath.keys())
             used_scopes.update(used_scoped_libs.keys())
 
             # Write out grouped by scope.
@@ -500,21 +496,21 @@ class Builder():
 
                 if scope != '':
                     prefix = '    '
-                    f.write('{0} {\n'.format(scope))
+                    f.write('%s {\n' % scope)
                 else:
                     prefix = ''
 
-                for defines in used_scope_defines.get(scope, ()):
+                for defines in used_scoped_defines.get(scope, ()):
                     f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
 
-                for includepath in used_scope_includepaths.get(scope, ()):
+                for includepath in used_scoped_includepath.get(scope, ()):
                     f.write('{0}INCLUDEPATH += {1}/Modules/{2}\n'.format(
                             prefix, source_dir, includepath))
 
-                for lib in used_scope_libs.get(scope, ()):
-                    f.write('{0}LIBS += {1}\n'.format(prefix, source))
+                for lib in used_scoped_libs.get(scope, ()):
+                    f.write('{0}LIBS += {1}\n'.format(prefix, lib))
 
-                for source in used_scope_sources.get(scope, ()):
+                for source in used_scoped_sources.get(scope, ()):
                     f.write('{0}SOURCES += {1}/Modules/{2}\n'.format(
                             prefix, source_dir, source))
 
@@ -673,24 +669,25 @@ class Builder():
                 file_path.append(dst_file)
                 resource_contents.append('/'.join(file_path))
 
-    def _write_main_c(self, build_dir, extension_names):
-        """ Create the application specific main.c file. """
+    def _write_main(self, build_dir, extension_scopes):
+        """ Create the application specific main.cpp file. """
 
         project = self._project
 
-        f = self._create_file(build_dir, 'main.c')
+        f = self._create_file(build_dir, 'main.cpp')
 
         f.write('''#include <Python.h>
+#include <QtGlobal>
 
 ''')
 
-        if len(extension_names) > 0:
+        if len(extension_scopes) > 0:
             inittab = 'extension_modules'
 
             f.write('#if PY_MAJOR_VERSION >= 3\n')
-            self._write_inittab(f, extension_names, inittab, py3=True)
+            self._write_inittab(f, extension_scopes, inittab, py3=True)
             f.write('#else\n')
-            self._write_inittab(f, extension_names, inittab, py3=False)
+            self._write_inittab(f, extension_scopes, inittab, py3=False)
             f.write('#endif\n\n')
         else:
             inittab = 'NULL'
@@ -757,8 +754,8 @@ int main(int argc, char **argv)
 
         f.close()
 
-    @staticmethod
-    def _write_inittab(f, extension_names, inittab, py3):
+    @classmethod
+    def _write_inittab(cls, f, extension_scopes, inittab, py3):
         """ Write the Python version specific extension module inittab. """
 
         if py3:
@@ -768,42 +765,54 @@ int main(int argc, char **argv)
             init_type = 'void '
             init_prefix = 'init'
 
-        for ext, windows in extension_names.items():
+        for ext, scope in extension_scopes.items():
             base_ext = ext.split('.')[-1]
 
-            if windows is not None:
-                if windows:
-                    f.write('#if defined(WIN32) || defined(WIN64)\n')
-                else:
-                    f.write('#if !defined(WIN32) && !defined(WIN64)\n')
+            if scope != '':
+                cls._write_scope_guard(f, scope)
 
-            f.write('extern %s%s%s(void);\n' % (init_type, init_prefix,
+            f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
                     base_ext))
 
-            if windows is not None:
+            if scope != '':
                 f.write('#endif\n')
 
         f.write('''
 static struct _inittab %s[] = {
 ''' % inittab)
 
-        for ext, windows in extension_names.items():
+        for ext, scope in extension_scopes.items():
             base_ext = ext.split('.')[-1]
 
-            if windows is not None:
-                if windows:
-                    f.write('#if defined(WIN32) || defined(WIN64)\n')
-                else:
-                    f.write('#if !defined(WIN32) && !defined(WIN64)\n')
+            if scope != '':
+                cls._write_scope_guard(f, scope)
 
             f.write('    {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
 
-            if windows is not None:
+            if scope != '':
                 f.write('#endif\n')
 
         f.write('''    {NULL, NULL}
 };
 ''')
+
+    # The map of scopes to pre-processor symbols.
+    _guards = {
+        'macx':     'Q_OS_MAC',
+        'win32':    'Q_OS_WIN',
+    }
+
+    @classmethod
+    def _write_scope_guard(cls, f, scope):
+        """ Write the C pre-processor guard for a scope. """
+
+        if scope[0] == '!':
+            inv = '!'
+            scope = scope[1:]
+        else:
+            inv = ''
+
+        f.write('#if {0}defined({1})\n'.format(inv, cls._guards[scope]))
 
     def _freeze(self, out_file, in_file, freeze, opt, name=None):
         """ Freeze a Python source file to a C header file or a data file. """

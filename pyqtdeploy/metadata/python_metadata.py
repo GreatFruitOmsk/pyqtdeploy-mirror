@@ -74,15 +74,15 @@ class StdlibModule:
         # The sequence of (possibly scoped) LIBS to add to the .pro file.
         self.libs = (libs, ) if isinstance(libs, str) else libs
 
-        # A (possibly scoped) directory relative to the Modules directory to
-        # add to INCLUDEPATH.
-        self.includepath = includepath
+        # The sequence of (possibly scoped) directories relative to the Modules
+        # directory to add to INCLUDEPATH.
+        self.includepath = (includepath, ) if isinstance(includepath, str) else includepath
 
 
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, libs=None, includepath=''):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, libs=None, includepath=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -113,7 +113,7 @@ class VersionedModule:
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, libs=None, includepath='', min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None):
+    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
@@ -320,6 +320,10 @@ _metadata = {
                                 deps=('cStringIO', '_csv', 'functools', 're')),
                         PythonModule(version=3,
                                 deps=('_csv', 'io', 're'))),
+    'ctypes':           PythonModule(
+                                deps=('_ctypes', 'ctypes._endian', 'os',
+                                        'struct'),
+                                modules=()),
     'curses': (         PythonModule(version=(2, 6),
                                 deps=('curses.has_key', 'curses.wrapper',
                                         '_curses', 'os'),
@@ -841,6 +845,8 @@ _metadata = {
                                             'time', 'urllib.parse'))),
     'lzma':             PythonModule(version=3, deps=('io', '_lzma')),
 
+    'MacOS':            ExtensionModule(version=2, scope='macx',
+                                source='../Mac/Modules/MacOS.c'),
     'marshal':          CoreExtensionModule(),
     'math': (           ExtensionModule(version=(2, 6),
                                 source='mathmodule.c', libs='linux-*#-lm'),
@@ -1044,6 +1050,34 @@ _metadata = {
                                         'importlib.machinery',
                                         'importlib.util', 'inspect', 'marshal',
                                         'os', 'types', 'warnings'))),
+    'platform': (       PythonModule(version=(2, 6),
+                                deps=('gestalt', 'MacOS', 'os', 'plistlib',
+                                        're', 'socket', 'string', 'struct',
+                                        'tempfile', '_winreg')),
+                        PythonModule(version=(2, 7),
+                                deps=('gestalt', 'MacOS', 'os', 'plistlib',
+                                        're', 'socket', 'string', 'struct',
+                                        'subprocess', 'tempfile', '_winreg')),
+                        PythonModule(version=(3, 3),
+                                deps=('collections', '_gestalt', 'os',
+                                        'plistlib', 're', 'socket', 'struct',
+                                        'subprocess', 'warnings', 'winreg')),
+                        PythonModule(min_version=(3, 4),
+                                deps=('collections', 'os', 'plistlib', 're',
+                                        'socket', 'struct', 'subprocess',
+                                        'warnings', 'winreg'))),
+    'plistlib': (       PythonModule(version=2,
+                                deps=('binascii', 'cStringIO', 'datetime',
+                                        're', 'warnings',
+                                        'xml.parsers.expat')),
+                        PythonModule(version=(3, 3),
+                                deps=('binascii', 'datetime', 'io', 're',
+                                        'warnings', 'xml.parsers.expat')),
+                        PythonModule(min_version=(3, 4),
+                                deps=('binascii', 'codecs', 'contextlib',
+                                        'datetime', 'enum', 'io', 'itertools',
+                                        'os', 're', 'struct', 'warnings',
+                                        'xml.parsers.expat'))),
     'pickle': (         PythonModule(version=2,
                                 deps=('binascii', 'copy_reg', 'cStringIO',
                                         'marshal', 're', 'struct', 'types')),
@@ -1657,6 +1691,25 @@ _metadata = {
     '_crypt':           ExtensionModule(version=3, internal=True,
                                 source='_cryptmodule.c', xlib='crypt'),
     '_csv':             ExtensionModule(internal=True, source='_csv.c'),
+    # TODO: Windows and Linux
+    '_ctypes':          ExtensionModule(internal=True,
+                                source=('_ctypes/_ctypes.c',
+                                        '_ctypes/callbacks.c',
+                                        '_ctypes/callproc.c',
+                                        '_ctypes/stgdict.c',
+                                        '_ctypes/cfield.c',
+                                        '_ctypes/malloc_closure.c',
+                                        'macx#_ctypes/darwin/dlfcn_simple.c',
+                                        'macx#_ctypes/libffi_osx/ffi.c',
+                                        'macx#_ctypes/libffi_osx/x86/darwin64.S',
+                                        'macx#_ctypes/libffi_osx/x86/x86-darwin.S',
+                                        'macx#_ctypes/libffi_osx/x86/x86-ffi_darwin.c',
+                                        'macx#_ctypes/libffi_osx/x86/x86-ffi64.c'),
+                                defines='macx#MACOSX',
+                                includepath=('_ctypes',
+                                        'macx#_ctypes/darwin',
+                                        'macx#_ctypes/libffi_osx/include')),
+    'ctypes._endian':   PythonModule(internal=True, deps='ctypes'),
     'curses.has_key':   PythonModule(internal=True, deps=('curses', '_curses')),
     '_curses':          ExtensionModule(internal=True,
                                 source='_cursesmodule.c', xlib='curses'),
@@ -1732,9 +1785,13 @@ _metadata = {
                         CoreExtensionModule(version=3,
                                 internal=True)),
 
-    'genericpath':      PythonModule(internal=True, deps=('os', 'stat')),
     '_gdbm':            ExtensionModule(version=3, internal=True,
                                 source='_gdbmmodule.c', xlib='gdbm'),
+    'genericpath':      PythonModule(internal=True, deps=('os', 'stat')),
+    'gestalt':          ExtensionModule(version=2, scope='macx',
+                                source='../Mac/Modules/gestaltmodule.c'),
+    '_gestalt':         ExtensionModule(version=(3, 3), scope='macx',
+                                source='_gestalt.c'),
 
     '_hashlib':         ExtensionModule(internal=True, ssl=True,
                                 source='_hashopenssl.c', xlib='ssl'),
@@ -2384,12 +2441,6 @@ if __name__ == '__main__':
 
         for name, versioned_module in version_metadata.items():
             module = versioned_module.module
-
-            # At the moment we only need to support scopes that determine it a
-            # module is Windows specific (and the builder depends on that).
-            if module.scope not in ('', 'win32', '!win32'):
-                print("Module '{0}' has unsupported scope '{1}'".format(
-                        name, module.scope))
 
             check_modules(module.deps, version_metadata, unused)
 

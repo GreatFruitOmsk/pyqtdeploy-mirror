@@ -67,9 +67,9 @@ static PyObject *string_from_qstring(const QString &qs);
 #endif
 
 
-extern "C" int pyqtdeploy_start(int argc, char **argv,
-        struct _inittab *extension_modules, const char *main_module,
-        const char *entry_point, const char **path_dirs)
+int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
+        const char *main_module, const char *entry_point,
+        const char **path_dirs)
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
