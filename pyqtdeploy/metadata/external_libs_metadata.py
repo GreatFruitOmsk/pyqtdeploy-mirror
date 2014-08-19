@@ -45,7 +45,6 @@ class ExternalLibraryMetadata:
 # The meta-data for each external library that might be needed by the Python
 # standard library..
 external_libraries_metadata = (
-    ExternalLibraryMetadata('crypt', '-lcrypt', "DES encryption"),
     ExternalLibraryMetadata('ssl', '-lssl -lcrypto', "SSL encryption"),
     ExternalLibraryMetadata('bz2', '-lbz2', "bz2 compression"),
     ExternalLibraryMetadata('lzma', '-llzma', "LZMA compression"),
