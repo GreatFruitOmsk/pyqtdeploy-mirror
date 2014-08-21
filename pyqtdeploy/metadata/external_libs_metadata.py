@@ -56,5 +56,4 @@ external_libraries_metadata = (
     ExternalLibraryMetadata('curses', '-lcurses -ltermcap', "Curses"),
     ExternalLibraryMetadata('panel', '-lpanel -lcurses', "Curses panel"),
     ExternalLibraryMetadata('intl', '-lintl', "i18n"),
-    ExternalLibraryMetadata('nsl', '-lnsl', "Network services"),
 )
