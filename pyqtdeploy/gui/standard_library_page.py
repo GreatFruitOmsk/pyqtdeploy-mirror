@@ -34,7 +34,7 @@ from ..metadata import external_libraries_metadata, get_python_metadata
 from ..project import ExternalLibrary
 
 
-SUPPORTED_PYTHON_VERSIONS = ((2, 6), (2, 7), (3, 3), (3, 4))
+SUPPORTED_PYTHON_VERSIONS = ((2, 7), (3, 3), (3, 4))
 
 
 class StandardLibraryPage(QSplitter):

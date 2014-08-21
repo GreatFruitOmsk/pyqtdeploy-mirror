@@ -3,9 +3,8 @@ What is :program:`pyqtdeploy`?
 
 :program:`pyqtdeploy` is a tool that, in conjunction with other tools provided
 with Qt, enables the deployment of PyQt4 and PyQt5 applications written with
-Python v2.6 or later or Python v3.3 or later.  It supports deployment to
-desktop platforms (Linux, Windows and OS/X) and to mobile platforms (iOS and
-Android).
+Python v2.7 or Python v3.3 or later.  It supports deployment to desktop
+platforms (Linux, Windows and OS/X) and to mobile platforms (iOS and Android).
 
 :program:`pyqtdeploy` itself requires PyQt5 and Python v3.2 or later.
 
