@@ -122,6 +122,7 @@ class ApplicationPage(QWidget):
         package_edit_gb = QGroupBox(self._package_edit.title)
         package_edit_gb.setLayout(self._package_edit)
         layout.addWidget(package_edit_gb, 1, 0, 1, 2)
+        layout.setRowStretch(1, 1)
 
         self.setLayout(layout)
 
