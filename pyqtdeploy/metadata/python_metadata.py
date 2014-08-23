@@ -2072,7 +2072,7 @@ _metadata = {
 
     '_locale': (        ExtensionModule(version=2,
                                 internal=True, source='_localemodule.c',
-                                xlib='intl'),
+                                libs='linux-*#-lintl'),
                         CoreExtensionModule(version=3,
                                 internal=True)),
     '_lsprof':          ExtensionModule(internal=True,
