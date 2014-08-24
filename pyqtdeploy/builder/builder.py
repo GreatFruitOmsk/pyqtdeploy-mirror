@@ -389,10 +389,9 @@ class Builder():
             f.write('\n')
 
             # Get the list of unique module directories.
-            mod_dirs = []
+            mod_dirs = set()
             for mod_dir, _ in extensions.values():
-                if mod_dir not in mod_dirs:
-                    mod_dirs.append(mod_dir)
+                mod_dirs.add(os.path.expandvars(mod_dir))
 
             mod_dir_flags = ['-L' + self._quote(md) for md in mod_dirs]
             mod_flags = ['-l' + l for _, l in extensions.values()]
@@ -526,8 +525,8 @@ class Builder():
             for xlib in project.external_libraries:
                 if xlib.name == required_lib:
                     defines = xlib.defines
-                    includepath = os.path.expandvars(xlib.includepath)
-                    libs = os.path.expandvars(xlib.libs)
+                    includepath = xlib.includepath
+                    libs = xlib.libs
                     break
             else:
                 defines = ''
