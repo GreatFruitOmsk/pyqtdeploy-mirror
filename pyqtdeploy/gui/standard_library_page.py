@@ -70,7 +70,7 @@ class StandardLibraryPage(QSplitter):
         stdlib_layout = QVBoxLayout()
 
         self._stdlib_edit = QTreeWidget()
-        self._stdlib_edit.setHeaderLabels(["Module"])
+        self._stdlib_edit.setHeaderLabels(["Package"])
         self._stdlib_edit.itemChanged.connect(self._module_changed)
 
         stdlib_layout.addWidget(self._stdlib_edit)

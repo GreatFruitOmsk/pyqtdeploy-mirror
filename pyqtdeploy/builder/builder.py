@@ -663,7 +663,11 @@ class Builder():
                 if freeze_file:
                     self._freeze(dst_path, src_path, freeze, opt)
                 else:
-                    shutil.copyfile(src_path, dst_path)
+                    try:
+                        shutil.copyfile(src_path, dst_path)
+                    except FileNotFoundError:
+                        raise UserException(
+                                "{0} does not seem to exist".format(src_path))
 
                 file_path = list(dir_stack)
                 file_path.append(dst_file)
