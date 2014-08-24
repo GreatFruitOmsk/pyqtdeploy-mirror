@@ -476,11 +476,15 @@ class Builder():
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
+                        includepath = os.path.expandvars(includepath)
+
                         self._add_scoped_value(used_scoped_includepath,
                                 includepath, module.scope)
 
                 if module.libs is not None:
                     for lib in module.libs:
+                        lib = os.path.expandvars(lib)
+
                         self._add_scoped_value(used_scoped_libs, lib,
                                 module.scope)
 
