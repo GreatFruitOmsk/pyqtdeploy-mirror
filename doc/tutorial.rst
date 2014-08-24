@@ -191,16 +191,6 @@ internally are included so, for example, the above shows that the
 :mod:`_weakrefset` and :mod:`abc` modules will be included and cannot be
 changed.
 
-
-Defining the Standard Library Extension Modules
------------------------------------------------
-
-The sub-tab for defining the Python standard library C extension modules used
-by the application is shown below.
-
-.. image:: /images/stdlib_extension_modules_tab.png
-    :align: center
-
 This sub-tab is used to select which of the standard library C extension
 modules are needed by the application and, optionally, to configure how those
 modules are compiled.  These extension modules usually exist for one of two
