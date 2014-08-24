@@ -526,8 +526,8 @@ class Builder():
             for xlib in project.external_libraries:
                 if xlib.name == required_lib:
                     defines = xlib.defines
-                    includepath = xlib.includepath
-                    libs = xlib.libs
+                    includepath = os.path.expandvars(xlib.includepath)
+                    libs = os.path.expandvars(xlib.libs)
                     break
             else:
                 defines = ''
