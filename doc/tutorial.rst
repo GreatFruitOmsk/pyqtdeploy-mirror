@@ -1,6 +1,71 @@
 Tutorial
 ========
 
+:program:`pyqtdeploy` is itself deployable and the root of the source package
+contains an appropriate ``pyqtdeploy.pdy`` project file.  In this section we
+use this as the basis of explaining :program:`pyqtdeploy`'s graphical user
+interface.
+
+
+.. _ref-directory-structure:
+
+Choosing a Directory Structure
+------------------------------
+
+In order to deploy an application you have to assemble the various parts, e.g.
+target specific versions of Python, PyQt and sip.  In deciding how to organise
+this you might consider the following:
+
+- consistency so that you can easily find things
+
+- avoiding hardcoded paths in project files to make it easier to share them
+  with other developers
+
+- supporting multiple targets and easily switching between them.  For example
+  you may be developing a mobile application that will be deployed to iOS and
+  Android but are doing the main development and testing under Linux.
+
+We now describe a directory structure that addresses these issues.  It is only
+a recommendation and not a requirement.
+
+There is a top-level directory called ``pyqtdeploy``.  Everything else will be
+placed in this directory or one of its sub-directories.  It does not matter
+where this directory is in the filesystem.  You may create it in your home
+directory or you may place it in a location where it can be shared with other
+users.  Once it is set up there is no need for it to be updated as part of the
+process of deploying an application.  In other words, a shared ``pyqtdeploy``
+directory can be read-only for all users.
+
+Within the ``pyqtdeploy`` directory we create a system root directory for each
+target we are deploying to.  For example we might create directories called
+``sysroot-linux``, ``sysroot-ios`` and ``sysroot-android``.  We can use an
+environment variable to point to the particular target system root directory we
+wish to use.  If we then use that environment variable in the project file then
+we can switch between targets without having to update the project file and so
+makes it possible to share the project file with other users.
+
+:program:`pyqtdeploy` has the option to run :program:`qmake` which itself is
+target-specific and may be installed in different locations for different
+users.  We therefore create a symbolic link in each target-specific system root
+directory that points to the corresponding target-specific Qt installation.
+For example if you have installed the combined iOS and Android Qt binary
+installer in its default location then the iOS Qt directory will be
+``$HOME/QtX.Y.X/X.Y/ios`` and the Android Qt directory will be
+``$HOME/QtX.Y.X/X.Y/android_arm7`` (where ``X.Y.Z`` is the version number of
+Qt).
+
+This approach can be extended further by creating a symbolic link to the target
+specific system root directory and setting the environment variable to the
+location of the symbolic link.  To switch between targets you then just change
+the destination of the symbolic link.  If you develop with multiple terminal
+windows open then this has the advantage is that you only need to make the one
+change and it will take effect in all terminals - otherwise you need to
+remember to update the environment variable in each of your terminals.
+
+Throughout this documentation it is assumed that you have set an environment
+variable :envvar:`SYSROOT` which points to your target specific root directory.
+
+
 Creating a :program:`pyqtdeploy` Project
 ----------------------------------------
 
@@ -20,9 +85,8 @@ building.
 The ``File`` menu contains the usual set of options to create a new project,
 open an existing project, save a project and rename a project.
 
-In this tutorial we will use the ``wiggly.py`` example that is included with
-PyQt.  It consists of a single Python file, rather than a collection of
-packages and sub-packages that is typical of a larger application.
+For the remainder of this tutorial we will use the ``pyqtdeploy.pdy`` project
+file included in the root of the source package.
 
 
 Defining the Application Source
@@ -63,11 +127,11 @@ The tab for defining the application source is shown below.
     .. note::
         Whenever a file or directory is specified, :program:`pyqtdeploy` always
         saves its name relative to the directory containing the project file if
-        possible.  In this particular example the ``wiggly.py`` script is in
-        the same directory as the ``wiggly.pdy`` project file.  Also, whenever
-        a file or directory name is entered, :program:`pyqtdeploy` allows the
-        embedding of environment variables which will be expanded when
-        necessary.
+        possible.  In this particular example the ``pyqtdeploy`` package
+        directory is in the same directory as the ``pyqtdeploy.pdy`` project
+        file.  Also, whenever a file or directory name is entered,
+        :program:`pyqtdeploy` allows the embedding of environment variables
+        which will be expanded when necessary.
 
 **Entry Point**
     is used to specify the entry point of a :mod:`setuptools`-based
@@ -110,13 +174,13 @@ The tab for defining the application source is shown below.
 
 **Scan...**
     is clicked to specify the name of the directory containing the Python
-    package that (in more typical cases) implements the majority of the
-    application.  The hierachy will be scanned for all files and directories
-    that don't match any of the specified exclusions and will be displayed in
-    the main area of the tab.  Each file or directory can then be checked if it
-    is to be included in the package.  Note that if the main script file is a
-    part of the application package then it's entry must be explicitly
-    unchecked (i.e. excluded).
+    package that implements the application.  (If the application consists of a
+    single script then you would not use this.)  The hierachy will be scanned
+    for all files and directories that don't match any of the specified
+    exclusions and will be displayed in the main area of the tab.  Each file or
+    directory can then be checked if it is to be included in the package.  Note
+    that if the main script file is a part of the application package then it's
+    entry must be explicitly unchecked (i.e. excluded).
 
     .. note::
         Non-Python (i.e. data) files can also be included in the package.  An
@@ -156,66 +220,62 @@ instead.
 .. image:: /images/pyqt_modules_tab.png
     :align: center
 
-Simply check all the PyQt modules that are used.  :program:`pyqtdeploy`
-understands the dependencies between the different PyQt modules and will
-automatically check any additional modules that are required.
+Simply check all the PyQt modules that are used.
+
+:program:`pyqtdeploy` understands the dependencies between the different PyQt
+modules and will automatically check any additional modules that are required.
+Therefore the same effect could have been achieved by only specifying the
+:mod:`~PyQt5.QtWidgets` module.  However it is better to explicitly specify all
+the modules imported directly by the application.
 
 .. note::
     These modules must be compiled statically.  If you plan to use a separately
     deployed copy of PyQt that will be dynamically loaded by your application
     then do not specify any modules here.
 
-In this example only the :mod:`~PyQt5.QtWidgets` module has been explicitly
-specified and the :mod:`~PyQt5.QtCore` and :mod:`~PyQt5.QtGui` modules are
-automatically included as dependencies.
-
 
 Defining the Standard Library Packages
 --------------------------------------
 
-The sub-tab for defining the Python standard library packages used by the
+The tab for defining the Python standard library packages used by the
 application is shown below.
 
 .. image:: /images/stdlib_packages_tab.png
     :align: center
 
-This sub-tab is used to scan the directory containing the target Python
-interpreter's standard library.  You then specify which individual modules are
-needed, either implicitly or explicitly, by the application.
-:program:`pyqtdeploy` does not automatically handle inter-module dependencies.
+**Target Python version**
+    is used to specify version of Python that you are targetting.
 
-The ``wiggly.py`` script does not explicitly import any standard Python module
-(except for the :mod:`sys` module which is implemented as a builtin).  However,
-:program:`pyqtdeploy` will ensure that all modules that it depends on
-internally are included so, for example, the above shows that the
-:mod:`_weakrefset` and :mod:`abc` modules will be included and cannot be
-changed.
+**Use SSL support**
+    is used to specify if the application requires SSL support to be enabled.
+    Several packages in the Python standard library will enable SSL related
+    functionality if it is available - even if your application doesn't itself
+    import the :mod:`ssl` module.
 
-This sub-tab is used to select which of the standard library C extension
-modules are needed by the application and, optionally, to configure how those
-modules are compiled.  These extension modules usually exist for one of two
-reasons:
+The main part of the tab contains all of the packages contained in the target
+Python version's standard library.  Simply check those packages that the
+application explicitly imports.  :program:`pyqtdeploy` understands the
+inter-package dependencies and will automatically select any additional
+packages that are required.  It will also automatically select any packages
+that are needed internally by the Python interpreter.
 
-- they interface with external libraries to allow those libraries to be
-  accessed from Python.  For example if you require SSL support then you need
-  to specify the :mod:`_ssl` extension module.
+Here we have explicitly selected the :mod:`argparse` module and the
+:mod:`_thread`, :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar`
+modules have been selected automatically.
 
-- they provide an optional, faster implementation of a standard library package
-  implemented in Python.  For example the :mod:`_datetime` extension module, if
-  available, will provide a speedup to the :mod:`datetime` package.
+The remaining part of the tab relates to non-system libraries that may need to
+be linked with the application.  Typically they correspond to packages in the
+standard library that wrap them.  If a library is required, because a package
+that uses it is required, then the entry for the library will be enabled.  The
+corresponding ``DEFINES``, ``INCLUDEPATH`` and ``LIBS`` fields will also be
+editable allowing those values to be set appropriately.  For example, if you
+have built a static copy of the library then you may need to specify the
+location of the library's header files in the ``INCLUDEPATH`` field and add a
+``-L`` flag to the ``LIBS`` field if the library is not installed in locations
+that will be found automatically by the compiler and linker.
 
-To enable an extension module simply click on the corresponding check box.
-This will also make the ``DEFINES``, ``INCLUDEPATH`` and ``LIBS`` fields for
-the extension module editable allowing those values to be set appropriately.
-If the extension module is linked against an external library then you may need
-to specify the location of the library's header files in the ``INCLUDEPATH``
-field and add a ``-L`` flag to the ``LIBS`` field if the library is not
-installed in locations that will be found automatically by the compiler and
-linker.
-
-Note that some extension modules are shown as checked and are disabled (e.g.
-:mod:`atexit`).  These correspond to those extension modules that are always
-compiled in with the Python interpreter library.
+:program:`pyqtdeploy` does not import any package from the standard library
+that uses any of these libraries and so they are all disabled.
 
 
 Defining Additional Packages
@@ -240,7 +300,7 @@ Python interpreter, i.e. the interpreter being used to develop the application,
 where all the additional packages required by your application are already
 installed.
 
-The ``wiggly.py`` script does not use any additional Python packages.
+:program:`pyqtdeploy` does not use any additional Python packages.
 
 
 Defining Additional Extension Modules
@@ -262,7 +322,7 @@ other platforms.
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.
 
-The ``wiggly.py`` script does not use any additional C extension modules.
+:program:`pyqtdeploy` does not use any additional C extension modules.
 
 
 Defining File and Directory Locations
@@ -280,12 +340,11 @@ The tab for defining the locations of various files and directories needed by
     as the **target** Python installation to ensure that the compiled bytecode
     can be executed by the deployed application.  (Of course if you are not
     cross-compiling the application then the host and target Python
-    installations are the same.)
+    installations can be the same.)
 
 **Source directory**
     is used to specify the name of the directory containing the Python source
-    code.  It is only required if you are including one or more of the Python
-    standard library C extension modules in your application.
+    code.
 
 **Include directory**
     is used to specify the name of the directory containing the target Python
@@ -315,8 +374,7 @@ Normally building an application is done from the command line.  However during
 the debugging of the deployment it is convenient to be able to complete the
 whole build process (generating code, running :program:`qmake`, running
 :program:`make` and running the final application executable) from within the
-GUI.  In particular it is useful if you are using trial and error to work out
-which Python standard library modules need to be included.
+GUI.
 
 The tab for building the application is shown below.
 

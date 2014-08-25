@@ -4,16 +4,16 @@ Applications that use :program:`pyrcc`
 The :program:`pyrcc5` and :program:`pyrcc4` programs are the Python equivalents
 (for PyQt5 and PyQt4 respectively) of Qt's :program:`rcc` program.  They
 convert a collection of resource files into a Python source file that is then
-imported by the application.  The :program:`rcc` similarly converts the
-collection of resource files to C++ code.
+imported by the application.  :program:`rcc` similarly converts the collection
+of resource files to C++ code.
 
 Using :program:`rcc` makes it possible to create a C++ application as a single
-executable file.  Having a single file makes such an application easy to
+executable file.  Having a single file makes such an application easier to
 deploy.  However with :program:`pyrcc5` and :program:`pyrcc4`, while they
 reduce the number of files that need to be deployed, there will always be at
 least two.  Of course the standard Python distribution tools are designed to
 cope with multiple source files, so using :program:`pyrcc5` and
-:program:`pyrcc4` doesn't offer any benefits.
+:program:`pyrcc4` doesn't offer any significant benefits.
 
 :program:`pyqtdeploy` itself uses :program:`rcc` to embed all the files
 that make up the applications and does not support the use of the output of

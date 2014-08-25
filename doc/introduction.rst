@@ -42,12 +42,11 @@ application, but at the cost of increasing the complexity of the deployment.
 (e.g. Python itself and PyQt) both natively and cross-compiling by providing
 configuration files that can be used by those package's build systems.
 
-There are some things that :program:`pyqtdeploy` does not do (although this may
-change in future versions):
-
-- It does not perform auto-discovery of Python standard library modules or
-  third party modules to be included with the application.  You must explicitly
-  specify these yourself.
+:program:`pyqtdeploy` does not perform auto-discovery of Python standard
+library modules or third party modules to be included with the application.
+You must specify these yourself.  However it does understand the
+inter-dependencies within the standard library, so you only need to specify
+those packages that your application explicitly imports.
 
 
 Author

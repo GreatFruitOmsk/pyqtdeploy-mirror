@@ -22,7 +22,8 @@ The supported actions are:
 .. cmdoption:: build
 
     This will build all the source code, include the :program:`qmake` ``.pro``
-    files, needed to create the application.
+    files, needed to create the application.  The step in the full build
+    process would be to run :program:`qmake`.
 
 .. cmdoption:: configure
 
@@ -101,7 +102,7 @@ The full set of command line options is:
 
 .. cmdoption:: --verbose
 
-    This is used with the :option:`build` action to specify that verbose
+    This is used with the :option:`build` action to specify that additional
     progress messages should be enabled.
 
 

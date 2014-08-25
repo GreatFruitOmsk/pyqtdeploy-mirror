@@ -14,16 +14,17 @@ the host Python installation.  The notes refer to the host Python interpreter
 as ``python`` although the actual name you use will depend on your version of
 Python and the host platform.
 
-You must also have an appropriate host Qt installation.  This can be a regular
-native Qt installation, a static native Qt installation or a cross-compiling
-Qt installation.  For most target platforms it is not necessary to build a
-static version of Qt.  The main advantage of a static version is that it
-removes an external dependency and so eases deployment.  The main disadvantage
-is that it increases the size of the final executable.  The notes refer to the
-:program:`qmake` command of your Qt installation as ``qmake``.  You must make
-sure that you run the correct copy of :program:`qmake` if you have multiple
-versions of Qt installed.  When cross-compiling for mobile devices it is
-recommended that you use one of the binary installers provided by Digia.
+You must also have an appropriate target Qt installation.  This can be a
+regular native Qt installation, a static native Qt installation or a
+cross-compiling Qt installation.  For most target platforms it is not necessary
+to build a static version of Qt.  The main advantage of a static version is
+that it removes an external dependency and so eases deployment.  The main
+disadvantage is that it increases the size of the final executable.  The notes
+refer to the :program:`qmake` command of your Qt installation as ``qmake``.
+You must make sure that you run the correct copy of :program:`qmake` if you
+have multiple versions of Qt installed.  When cross-compiling for mobile
+devices it is recommended that you use one of the binary installers provided by
+Digia.
 
 You must also have a host SIP installation that is the same version as the
 target version you will be building.
@@ -31,9 +32,11 @@ target version you will be building.
 The notes refer to the make command as ``make``.  If you are using Microsoft
 Visual C++ then use ``nmake`` instead.
 
-All packages are built in a nominal ``$SYSROOT`` directory.  Only those command
-line options related to static and cross-compiled builds are specifed - you
-will probably want to specify other options to fully configure each package.
+All packages are built in a target-specific system root directory identified by
+the :envvar:`SYSROOT` environment variable (see
+:ref:`ref-directory-structure`).  Only those command line options related to
+static and cross-compiled builds are specifed - you will probably want to
+specify other options to fully configure each package.
 
 The package configuration files created by the :option:`configure` action of
 :program:`pyqtdeploy` assume a default Qt installation, i.e. with features that
@@ -71,11 +74,7 @@ run::
 
     pyqtdeploy --package python --target TARGET configure
 
-This will configure Python for a small sub-set of standard extension modules.
-Your application will probably require additional ones to be enabled.  To do
-this you will need to make changes to the ``python.pro`` file and the
-``config.c`` file (in the ``Modules`` directory).  See the comments in those
-files for more information.
+This will configure Python for a minimal sub-set of standard extension modules.
 
 To complete the build run::
 
