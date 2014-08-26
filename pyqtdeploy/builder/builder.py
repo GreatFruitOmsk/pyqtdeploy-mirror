@@ -422,11 +422,11 @@ class Builder():
             if '.' in lib:
                 f.write('''
 win32 {
-    LIBS += -L{0} -l{1}
+    LIBS += -L%s -l%s
 } else {
-    LIBS += -L{2} -l{3}
+    LIBS += -L%s -l%s
 }
-'''.format(lib_dir, lib.replace('.', ''), lib_dir, lib))
+''' % (lib_dir, lib.replace('.', ''), lib_dir, lib))
             else:
                 f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 

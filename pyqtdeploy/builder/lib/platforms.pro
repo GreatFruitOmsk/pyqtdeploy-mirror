@@ -2,6 +2,6 @@ linux-* {
     LIBS += -lutil -ldl
 }
 
-win32-msvc* {
+win32 {
     LIBS += -ladvapi32 -lshell32 -luser32
 }

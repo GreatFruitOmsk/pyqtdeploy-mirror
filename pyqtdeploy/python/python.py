@@ -60,7 +60,7 @@ def configure_python(target, output, dynamic_loading, message_handler):
     py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
 
     # Sanity check the version number.
-    if py_version < 0x020600 or (py_version >= 0x030000 and py_version < 0x030300) or py_version >= 0x040000:
+    if py_version < 0x020700 or (py_version >= 0x030000 and py_version < 0x030300) or py_version >= 0x040000:
         raise UserException(
                 "Python v{0} is not supported.".format(py_version_str))
 
@@ -106,6 +106,13 @@ def configure_python(target, output, dynamic_loading, message_handler):
         copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
                 macros={
                     '@PY_DYNAMIC_LOADING@': '#define' if dynamic_loading else '#undef'})
+
+        # Rename these otherwise MSVC confuses them with the ones we want to
+        # use.
+        pc_src_dir = os.path.join(py_src_dir, 'PC')
+        for name in ('config.c', 'pyconfig.h'):
+            os.rename(os.path.join(pc_src_dir, name),
+                    os.path.join(pc_src_dir, name + '.orig'))
     else:
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
