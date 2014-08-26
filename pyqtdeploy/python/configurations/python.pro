@@ -47,9 +47,11 @@ OBJECTS_DIR = .obj
 
 DEFINES += NDEBUG Py_BUILD_CORE
 
-INCLUDEPATH += Include
+INCLUDEPATH += . Include
 
-!win32 {
+win32 {
+    INCLUDEPATH += PC
+} else {
     QMAKE_CFLAGS_RELEASE = -O3
     QMAKE_CFLAGS += -fwrapv
 
@@ -98,6 +100,7 @@ OBJECT_SOURCES = \
     Objects/boolobject.c \
     Objects/bytes_methods.c \
     Objects/bytearrayobject.c \
+    Objects/capsule.c \
     Objects/cellobject.c \
     Objects/classobject.c \
     Objects/codeobject.c \
@@ -114,6 +117,7 @@ OBJECT_SOURCES = \
     Objects/listobject.c \
     Objects/longobject.c \
     Objects/dictobject.c \
+    Objects/memoryobject.c \
     Objects/methodobject.c \
     Objects/moduleobject.c \
     Objects/object.c \
@@ -132,21 +136,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     OBJECT_SOURCES += \
         Objects/accu.c \
         Objects/bytesobject.c \
-        Objects/memoryobject.c \
-        Objects/namespaceobject.c \
-        Objects/capsule.c
+        Objects/namespaceobject.c
 } else {
     OBJECT_SOURCES += \
         Objects/bufferobject.c \
         Objects/cobject.c \
         Objects/intobject.c \
         Objects/stringobject.c
-
-    greaterThan(PY_MINOR_VERSION, 6) {
-        OBJECT_SOURCES += \
-            Objects/memoryobject.c \
-            Objects/capsule.c
-    }
 }
 
 PYTHON_SOURCES = \
@@ -186,7 +182,8 @@ PYTHON_SOURCES = \
     Python/getopt.c \
     Python/pystrcmp.c \
     Python/pystrtod.c \
-    Python/formatter_unicode.c
+    Python/formatter_unicode.c \
+    Python/thread.c
 
 greaterThan(PY_MAJOR_VERSION, 2) {
     PYTHON_SOURCES += \
@@ -202,17 +199,10 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     }
 } else {
     PYTHON_SOURCES += \
-        Python/formatter_string.c
-
-    greaterThan(PY_MINOR_VERSION, 6) {
-        PYTHON_SOURCES += \
-            Python/pyctype.c \
-            Python/random.c \
-            Python/dtoa.c
-    } else {
-        PYTHON_SOURCES += \
-            Python/getmtime.c
-    }
+        Python/formatter_string.c \
+        Python/pyctype.c \
+        Python/random.c \
+        Python/dtoa.c
 }
 
 equals(PY_DYNAMIC_LOADING, "enabled") {
@@ -221,12 +211,6 @@ equals(PY_DYNAMIC_LOADING, "enabled") {
     } else {
         PYTHON_SOURCES += Python/dynload_shlib.c
     }
-}
-
-win32 {
-    PYTHON_SOURCES += Python/thread_nt.c
-} else {
-    PYTHON_SOURCES += Python/thread.c
 }
 
 MODULE_SOURCES = \
@@ -241,7 +225,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/signalmodule.c \
         Modules/posixmodule.c \
         Modules/errnomodule.c \
-        Modules/pwdmodule.c \
         Modules/_sre.c \
         Modules/_codecsmodule.c \
         Modules/_weakref.c \
@@ -279,10 +262,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_codecsmodule.c \
         Modules/zipimport.c \
         Modules/symtablemodule.c \
-
-    greaterThan(PY_MINOR_VERSION, 6) {
         Modules/_weakref.c
-    }
+}
+
+!win32 {
+    MOD_SOURCES += Modules/pwdmodule.c
 }
 
 SOURCES = Modules/getbuildinfo.c Python/frozen.c

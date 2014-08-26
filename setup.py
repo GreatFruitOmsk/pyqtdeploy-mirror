@@ -62,5 +62,8 @@ setup(
             'pyqtdeploy.python':    ['configurations/*.*',
                                      'configurations/*/*.*']
         },
-        entry_points={'gui_scripts': ['pyqtdeploy = pyqtdeploy.main:main']}
+        entry_points={
+            'console_scripts':  ['pyqtdeploycli = pyqtdeploy.main:main'],
+            'gui_scripts':      ['pyqtdeploy = pyqtdeploy.main:main']
+        }
      )

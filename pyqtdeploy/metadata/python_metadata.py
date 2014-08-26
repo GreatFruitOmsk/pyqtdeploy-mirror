@@ -1449,7 +1449,7 @@ _metadata = {
                                         'time')),
     'pty':              PythonModule(scope='!win32',
                                 deps=('fcntl', 'os', 'select', 'tty')),
-    'pwd':              CoreExtensionModule(),
+    'pwd':              CoreExtensionModule(scope='!win32'),
     'py_compile': (     PythonModule(version=2,
                                 deps=('imp', 'marshal', 'os', 'traceback')),
                         PythonModule(version=(3, 3),

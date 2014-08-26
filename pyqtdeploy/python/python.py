@@ -101,9 +101,9 @@ def configure_python(target, output, dynamic_loading, message_handler):
         message_handler.progress_message(
                 "Installing {0}".format(pyconfig_h_dst_file))
 
-        pyconfig_h_src_file = _get_file_for_version('pyconfig', py_version)
+        pyconfig_h_src_file = _get_file_for_version(py_version, 'pyconfig')
 
-        copy_embedded_file(pyconfig_h_src_file, python_pro_dst_file,
+        copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
                 macros={
                     '@PY_DYNAMIC_LOADING@': '#define' if dynamic_loading else '#undef'})
     else:

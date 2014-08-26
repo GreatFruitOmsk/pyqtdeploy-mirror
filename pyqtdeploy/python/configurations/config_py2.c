@@ -58,7 +58,9 @@ extern void initnt(void);
 extern void initposix(void);
 #endif
 extern void initerrno(void);
+#if !defined(MS_WINDOWS)
 extern void initpwd(void);
+#endif
 extern void init_sre(void);
 extern void init_codecs(void);
 #if PY_MINOR_VERSION >= 7
@@ -84,7 +86,9 @@ struct _inittab _PyImport_Inittab[] = {
 {"posix", initposix},
 #endif
 {"errno", initerrno},
+#if !defined(MS_WINDOWS)
 {"pwd", initpwd},
+#endif
 {"_sre", init_sre},
 {"_codecs", init_codecs},
 #if PY_MINOR_VERSION >= 7

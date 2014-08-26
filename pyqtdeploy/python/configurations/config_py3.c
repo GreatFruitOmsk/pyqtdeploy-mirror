@@ -58,7 +58,9 @@ extern PyObject* PyInit_nt(void);
 extern PyObject* PyInit_posix(void);
 #endif
 extern PyObject* PyInit_errno(void);
+#if !defined(MS_WINDOWS)
 extern PyObject* PyInit_pwd(void);
+#endif
 extern PyObject* PyInit__sre(void);
 extern PyObject* PyInit__codecs(void);
 extern PyObject* PyInit__weakref(void);
@@ -104,7 +106,9 @@ struct _inittab _PyImport_Inittab[] = {
 	{"posix", PyInit_posix},
 #endif
 	{"errno", PyInit_errno},
+#if !defined(MS_WINDOWS)
 	{"pwd", PyInit_pwd},
+#endif
 	{"_sre", PyInit__sre},
 	{"_codecs", PyInit__codecs},
 	{"_weakref", PyInit__weakref},

@@ -52,7 +52,7 @@ Qt
 To build a static, native version of Qt, change to the Qt source directory
 and run::
 
-    ./configure -prefix $SYSROOT/qt-X.Y.Z -static
+    ./configure -prefix $SYSROOT/qt-X.Y.Z -static -release -nomake examples
     make
     make install
 
