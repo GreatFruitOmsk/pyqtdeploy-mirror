@@ -35,7 +35,11 @@ PY_DYNAMIC_LOADING = @PY_DYNAMIC_LOADING@
 
 TEMPLATE = lib
 
-TARGET = python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
+win32 {
+    TARGET = python$${PY_MAJOR_VERSION}$${PY_MINOR_VERSION}
+} else {
+    TARGET = python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}
+}
 
 CONFIG -= qt
 CONFIG += warn_off staticlib release
@@ -215,7 +219,6 @@ equals(PY_DYNAMIC_LOADING, "enabled") {
 
 MODULE_SOURCES = \
     Modules/config.c \
-    Modules/getpath.c \
     Modules/main.c \
     Modules/gcmodule.c
 
@@ -265,8 +268,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_weakref.c
 }
 
-!win32 {
-    MOD_SOURCES += Modules/pwdmodule.c
+win32 {
+    MOD_SOURCES += \
+        PC/getpathp.c
+} else {
+    MOD_SOURCES += \
+        Modules/getpath.c \
+        Modules/pwdmodule.c
 }
 
 SOURCES = Modules/getbuildinfo.c Python/frozen.c

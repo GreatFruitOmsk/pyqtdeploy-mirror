@@ -411,12 +411,24 @@ class Builder():
         if project.python_target_library != '':
             lib_path = project.absolute_path(project.python_target_library)
             lib_dir = QDir.fromNativeSeparators(os.path.dirname(lib_path))
+            lib_dir = self._quote(lib_dir)
             lib, _ = os.path.splitext(os.path.basename(lib_path))
 
+            # This is smart enough to translate the Python library as a UNIX .a
+            # file to what Windows needs.
             if lib.startswith('lib'):
                 lib = lib[3:]
 
-            f.write('LIBS += -L{0} -l{1}\n'.format(self._quote(lib_dir), lib))
+            if '.' in lib:
+                f.write('''
+win32 {
+    LIBS += -L{0} -l{1}
+} else {
+    LIBS += -L{2} -l{3}
+}
+'''.format(lib_dir, lib.replace('.', ''), lib_dir, lib))
+            else:
+                f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
 
         # Add the platform specific stuff.
         platforms = read_embedded_file(

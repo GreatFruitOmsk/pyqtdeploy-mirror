@@ -351,7 +351,9 @@ The tab for defining the locations of various files and directories needed by
     installation's ``Python.h`` file.
 
 **Python library**
-    is used to specify the name of the target Python interpreter library.
+    is used to specify the name of the target Python interpreter library.  Note
+    that in this example the library is specified as a UNIX archive, however
+    :program:`pyqtdeploy` will interpret it correctly on Windows.
 
 **Standard library directory**
     is used to specify the name of the directory containing the target Python
