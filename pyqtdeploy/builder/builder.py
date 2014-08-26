@@ -469,9 +469,10 @@ class Builder():
                     self._add_scoped_value(used_scoped_sources, source,
                             module.scope)
 
-                if module.defines != '':
-                    self._add_scoped_value(used_scoped_defines, module.defines,
-                            module.scope)
+                if module.defines is not None:
+                    for define in module.defines:
+                        self._add_scoped_value(used_scoped_defines, define,
+                                module.scope)
 
                 if module.includepath is not None:
                     for includepath in module.includepath:

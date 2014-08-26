@@ -57,8 +57,8 @@ class StdlibModule:
         # Python module).
         self.core = core
 
-        # The (possibly scoped) DEFINES to add to the .pro file.
-        self.defines = defines
+        # The sequence of (possibly scoped) DEFINES to add to the .pro file.
+        self.defines = (defines, ) if isinstance(defines, str) else defines
 
         # The internal identifier of a required external library.
         self.xlib = xlib
@@ -82,7 +82,7 @@ class StdlibModule:
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None, modules=None, source=None, libs=None, includepath=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -113,7 +113,7 @@ class VersionedModule:
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines='', xlib=None):
+    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
@@ -2207,11 +2207,15 @@ _metadata = {
 
     '_elementtree': (   ExtensionModule(version=2,
                                 internal=True, source='_elementtree.c',
-                                defines='HAVE_EXPAT_CONFIG_H USE_PYEXPAT_CAPI',
+                                defines=('win32#COMPILED_FROM_DSP',
+                                        '!win32#HAVE_EXPAT_CONFIG_H',
+                                        'USE_PYEXPAT_CAPI'),
                                 deps='pyexpat'),
                         ExtensionModule(version=3,
                                 internal=True, source='_elementtree.c',
-                                defines='HAVE_EXPAT_CONFIG_H USE_PYEXPAT_CAPI',
+                                defines=('win32#COMPILED_FROM_DSP',
+                                        '!win32#HAVE_EXPAT_CONFIG_H',
+                                        'USE_PYEXPAT_CAPI'),
                                 deps=('copy', 'pyexpat',
                                         'xml.etree.ElementPath'))),
     'email.base64mime': (   PythonModule(version=2,
@@ -2674,7 +2678,8 @@ _metadata = {
     'pyexpat':          ExtensionModule(internal=True,
                                 source=('expat/xmlparse.c', 'expat/xmlrole.c',
                                         'expat/xmltok.c', 'pyexpat.c'),
-                                defines='HAVE_EXPAT_CONFIG_H',
+                                defines=('win32#COMPILED_FROM_DSP',
+                                        '!win32#HAVE_EXPAT_CONFIG_H'),
                                 includepath='expat'),
 
     '_random':          ExtensionModule(internal=True,

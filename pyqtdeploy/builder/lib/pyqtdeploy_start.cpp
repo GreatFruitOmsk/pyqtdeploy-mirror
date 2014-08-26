@@ -118,7 +118,7 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 
 #if PY_MAJOR_VERSION >= 3
     // Convert the argument list to wide characters using the locale codec.
-    wchar_t *w_argv[argc + 1];
+    wchar_t **w_argv = new wchar_t *[argc + 1];
 
     for (int i = 0; i < argc; i++)
     {
