@@ -3,16 +3,25 @@ The Command Line
 
 .. program:: pyqtdeploy
 
-Normally the command line is used to specify a :program:`pyqtdeploy` project
-and launch the GUI as follows::
+:program:`pyqtdeploy`
+---------------------
+
+:program:`pyqtdeploy` takes a single optional argument which is the name of a
+project file to edit as follows::
 
     pyqtdeploy myproject.pdy
 
-By convention :program:`pyqtdeploy` projects have a ``.pdy`` extension.
+By convention project files have a ``.pdy`` extension.
 
 This will open the ``myproject.pdy`` project creating it if necessary.
 
-:program:`pyqtdeploy` also implements additional modes of operation that are
+
+.. program:: pyqtdeploycli
+
+:program:`pyqtdeploycli`
+------------------------
+
+:program:`pyqtdeploycli` implements a number of modes of operation that are
 usually used in automated build scripts.  These modes are invoked by specifying
 an *action* as the only positional argument on the command line.  The behaviour
 of an action may be modified by additional command line options.
@@ -22,7 +31,7 @@ The supported actions are:
 .. cmdoption:: build
 
     This will build all the source code, include the :program:`qmake` ``.pro``
-    files, needed to create the application.  The step in the full build
+    files, needed to create the application.  The next step in the full build
     process would be to run :program:`qmake`.
 
 .. cmdoption:: configure
@@ -33,13 +42,13 @@ The supported actions are:
 
 .. cmdoption:: show-packages
 
-    This will display a list of packages that :program:`pyqtdeploy` can create
-    configuration files for.
+    This will display a list of packages that :program:`pyqtdeploycli` can
+    create configuration files for.
 
 .. cmdoption:: show-targets
 
-    This will display a list of targets that :program:`pyqtdeploy` can create
-    configuration files for.
+    This will display a list of targets that :program:`pyqtdeploycli` can
+    create configuration files for.
 
 The full set of command line options is:
 
@@ -111,7 +120,7 @@ Examples
 
 ::
 
-    pyqtdeploy --output /tmp/build --project myproject.pdy --quiet build
+    pyqtdeploycli --output /tmp/build --project myproject.pdy --quiet build
 
 The code for the application described by the ``myproject.pdy`` project file
 will be created in the ``/tmp/build`` directory.  All progress messages will be
@@ -119,7 +128,7 @@ disabled.
 
 ::
 
-    pyqtdeploy --package pyqt5 configure
+    pyqtdeploycli --package pyqt5 configure
 
 If this command was run on a Linux system then a configuration file for
 building PyQt5 for Linux, called ``pyqt5-linux.cfg``, would be created in the
@@ -127,14 +136,14 @@ current directory.
 
 ::
 
-    pyqtdeploy --package pyqt4 --target android configure
+    pyqtdeploycli --package pyqt4 --target android configure
 
 A configuration file for building PyQt4 for Android, called
 ``pyqt4-android.cfg`` will be created in the current directory.
 
 ::
 
-    pyqtdeploy --output /tmp/pyqt.config --package pyqt5 --target ios configure
+    pyqtdeploycli --output /tmp/pyqt.config --package pyqt5 --target ios configure
 
 A configuration file for building PyQt5 for iOS, called ``pyqt.config`` will be
 created in the ``/tmp`` directory.

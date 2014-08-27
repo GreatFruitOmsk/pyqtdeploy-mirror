@@ -39,8 +39,8 @@ static and cross-compiled builds are specifed - you will probably want to
 specify other options to fully configure each package.
 
 The package configuration files created by the :option:`configure` action of
-:program:`pyqtdeploy` assume a default Qt installation, i.e. with features that
-would only be enabled by default on the particular platform.  For example,
+:program:`pyqtdeploycli` assume a default Qt installation, i.e. with features
+that would only be enabled by default on the particular platform.  For example,
 SSL support is disabled for Windows and Android targets.  If you have
 configured your Qt installation differently then you may need to modify the
 configuration files appropriately.
@@ -72,7 +72,7 @@ Python
 To build a static version of Python, change to the Python source directory and
 run::
 
-    pyqtdeploy --package python --target TARGET configure
+    pyqtdeploycli --package python --target TARGET configure
 
 This will configure Python for a minimal sub-set of standard extension modules.
 
@@ -90,7 +90,7 @@ sip
 
 To build a static version of sip, change to the sip source directory and run::
 
-    pyqtdeploy --package sip --target TARGET configure
+    pyqtdeploycli --package sip --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-tools --use-qmake --configuration=sip-TARGET.cfg
     qmake
     make
@@ -105,7 +105,7 @@ PyQt5
 To build a static version of PyQt5, change to the PyQt5 source directory and
 run::
 
-    pyqtdeploy --package pyqt5 --target TARGET configure
+    pyqtdeploycli --package pyqt5 --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration=pyqt5-TARGET.cfg
     make
     make install
@@ -119,7 +119,7 @@ PyQt4
 To build a static version of PyQt4, change to the PyQt4 source directory and
 run::
 
-    pyqtdeploy --package pyqt4 --target TARGET configure
+    pyqtdeploycli --package pyqt4 --target TARGET configure
     python configure-ng.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --configuration=pyqt4-TARGET.cfg
     make
     make install
@@ -142,7 +142,7 @@ To build a static version of the Python bindings, change to the QScintilla
 source directory and run::
 
     cd Python
-    pyqtdeploy --package qscintilla --target TARGET configure
+    pyqtdeploycli --package qscintilla --target TARGET configure
     python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=qscintilla-TARGET.cfg
     make
     make install
@@ -166,7 +166,7 @@ source directory and run::
 To build a static version of the Python bindings, change to the PyQtChart
 source directory and run::
 
-    pyqtdeploy --package pyqtchart --target TARGET configure
+    pyqtdeploycli --package pyqtchart --target TARGET configure
     python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
     make
     make install
@@ -194,7 +194,7 @@ Qt Data Visualization source directory and run::
 To build a static version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
-    pyqtdeploy --package pyqtdatavisualization --target TARGET configure
+    pyqtdeploycli --package pyqtdatavisualization --target TARGET configure
     python configure.py --qtdatavisualization-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
@@ -219,7 +219,7 @@ Purchasing source directory and run::
 To build a static version of the Python bindings, change to the PyQtPurchasing
 source directory and run::
 
-    pyqtdeploy --package pyqtpurchasing --target TARGET configure
+    pyqtdeploycli --package pyqtpurchasing --target TARGET configure
     python configure.py --qtpurchasing-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
     make
     make install

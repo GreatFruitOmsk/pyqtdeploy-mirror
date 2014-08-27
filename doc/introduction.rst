@@ -6,6 +6,13 @@ with Qt, enables the deployment of PyQt4 and PyQt5 applications written with
 Python v2.7 or Python v3.3 or later.  It supports deployment to desktop
 platforms (Linux, Windows and OS/X) and to mobile platforms (iOS and Android).
 
+Normally you would create statically compiled versions of the Python
+interpreter library, any third party extension modules, PyQt and Qt.  This way
+your application has no external dependencies.  In fact this approach is
+required when deploying to iOS.  However there is nothing to stop you using
+shared versions of any of these components in order to reduce the size of the
+application, but at the cost of increasing the complexity of the deployment.
+
 :program:`pyqtdeploy` itself requires PyQt5 and Python v3.2 or later.
 
 :program:`pyqtdeploy` works by taking the individual modules of a PyQt
@@ -28,17 +35,11 @@ When run :program:`pyqtdeploy` presents a GUI that allows the modules that make
 up the application to be specified, along with the PyQt components that the
 application requires and the parts of the Python standard library that should
 also be included.  This information is stored in a :program:`pyqtdeploy`
-project file.  :program:`pyqtdeploy` can also be run as a command line tool to
-generate the C++ code from a project file.
+project file.
 
-Normally you would create statically compiled versions of the Python
-interpreter library, any third party extension modules, PyQt and Qt.  This way
-your application has no external dependencies.  In fact this approach is
-required when deploying to iOS.  However there is nothing to stop you using
-shared versions of any of these components in order to reduce the size of the
-application, but at the cost of increasing the complexity of the deployment.
-
-:program:`pyqtdeploy` also provides support for compiling certain packages
+A companion program :program:`pyqtdeploycli` can be run from the command line
+(or a shell script or batch file) to generate the C++ code from a project file.
+:program:`pyqtdeploycli` also provides support for compiling certain packages
 (e.g. Python itself and PyQt) both natively and cross-compiling by providing
 configuration files that can be used by those package's build systems.
 

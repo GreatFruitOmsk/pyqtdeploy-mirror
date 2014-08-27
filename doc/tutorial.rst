@@ -26,7 +26,8 @@ this you might consider the following:
   Android but are doing the main development and testing under Linux.
 
 We now describe a directory structure that addresses these issues.  It is only
-a recommendation and not a requirement.
+a recommendation and not a requirement.  Note that (with care) it is possble to
+create project files that are portable between all supported platforms.
 
 There is a top-level directory called ``pyqtdeploy``.  Everything else will be
 placed in this directory or one of its sub-directories.  It does not matter
@@ -86,7 +87,9 @@ The ``File`` menu contains the usual set of options to create a new project,
 open an existing project, save a project and rename a project.
 
 For the remainder of this tutorial we will use the ``pyqtdeploy.pdy`` project
-file included in the root of the source package.
+file included in the root of the source package.  (Also included is a
+corresponding ``pyqtdeploycli.pdy`` project file for :program:`pyqtdeploycli`.
+This demonstrates the deployment of a non-GUI application.)
 
 
 Defining the Application Source
