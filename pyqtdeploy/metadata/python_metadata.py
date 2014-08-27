@@ -2678,7 +2678,8 @@ _metadata = {
     'pyexpat':          ExtensionModule(internal=True,
                                 source=('expat/xmlparse.c', 'expat/xmlrole.c',
                                         'expat/xmltok.c', 'pyexpat.c'),
-                                defines=('win32#COMPILED_FROM_DSP',
+                                defines=('XML_STATIC',
+                                        'win32#COMPILED_FROM_DSP',
                                         '!win32#HAVE_EXPAT_CONFIG_H'),
                                 includepath='expat'),
 

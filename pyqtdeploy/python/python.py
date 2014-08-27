@@ -110,9 +110,13 @@ def configure_python(target, output, dynamic_loading, message_handler):
         # Rename these otherwise MSVC confuses them with the ones we want to
         # use.
         pc_src_dir = os.path.join(py_src_dir, 'PC')
+
         for name in ('config.c', 'pyconfig.h'):
-            os.rename(os.path.join(pc_src_dir, name),
-                    os.path.join(pc_src_dir, name + '.orig'))
+            try:
+                os.rename(os.path.join(pc_src_dir, name),
+                        os.path.join(pc_src_dir, name + '.orig'))
+            except FileNotFoundError:
+                pass
     else:
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
