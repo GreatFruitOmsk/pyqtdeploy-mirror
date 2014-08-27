@@ -449,7 +449,7 @@ win32 {
         for name, module in required_ext.items():
             extension_module_scopes[name] = module.scope
 
-        f.write('SOURCES = main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
+        f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_main(build_dir, extension_module_scopes)
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pdytools_module.cpp', build_dir)
@@ -690,11 +690,11 @@ win32 {
                 resource_contents.append('/'.join(file_path))
 
     def _write_main(self, build_dir, extension_scopes):
-        """ Create the application specific main.cpp file. """
+        """ Create the application specific pyqtdeploy_main.cpp file. """
 
         project = self._project
 
-        f = self._create_file(build_dir, 'main.cpp')
+        f = self._create_file(build_dir, 'pyqtdeploy_main.cpp')
 
         f.write('''#include <Python.h>
 #include <QtGlobal>
