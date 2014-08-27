@@ -837,7 +837,18 @@ static struct _inittab %s[] = {
     def _freeze(self, out_file, in_file, freeze, opt, name=None):
         """ Freeze a Python source file to a C header file or a data file. """
 
-        argv = [os.path.expandvars(self._project.python_host_interpreter)]
+        interp = os.path.expandvars(self._project.python_host_interpreter)
+
+        # On Windows the interpreter name is simply 'python'.  So in order to
+        # make the .pdy file more portable we strip any trailing version
+        # number.
+        if sys.platform == 'win32':
+            for i in range(len(interp) - 1, -1, -1):
+                if interp[i] not in '.0123456789':
+                    interp = interp[:i + 1]
+                    break
+
+        argv = [interp]
 
         if opt == 2:
             argv.append('-OO')
