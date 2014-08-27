@@ -24,9 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QButtonGroup, QFileDialog, QGridLayout, QGroupBox,
-        QLineEdit, QRadioButton, QVBoxLayout, QWidget)
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QFileDialog, QGridLayout,
+        QGroupBox, QLineEdit, QRadioButton, QVBoxLayout, QWidget)
 
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
@@ -102,20 +102,28 @@ class ApplicationPage(QWidget):
 
         layout.addLayout(form, 0, 0)
 
-        versions_layout = QVBoxLayout()
+        options_layout = QVBoxLayout()
         self._pyqt_versions_bg = QButtonGroup()
 
         for version in ('PyQt5', 'PyQt4'):
             rb = QRadioButton(version)
-            versions_layout.addWidget(rb)
+            options_layout.addWidget(rb)
             self._pyqt_versions_bg.addButton(rb)
 
         self._pyqt_versions_bg.buttonToggled.connect(
                 self._pyqt_version_changed)
 
-        versions_layout.addStretch()
+        self._console_edit = QCheckBox("Console application (Windows)",
+                stateChanged=self._console_changed)
+        options_layout.addWidget(self._console_edit)
 
-        layout.addLayout(versions_layout, 0, 1)
+        self._bundle_edit = QCheckBox("Application bundle (OS X)",
+                stateChanged=self._bundle_changed)
+        options_layout.addWidget(self._bundle_edit)
+
+        options_layout.addStretch()
+
+        layout.addLayout(options_layout, 0, 1)
 
         self._package_edit = _ApplicationPackageEditor()
         self._package_edit.package_changed.connect(self._package_changed)
@@ -137,7 +145,7 @@ class ApplicationPage(QWidget):
         self._sys_path_edit.setText(project.sys_path)
         self._package_edit.configure(project.application_package, project)
 
-        self._pyqt_versions_bg.blockSignals(True)
+        blocked = self._pyqt_versions_bg.blockSignals(True)
 
         for rb in self._pyqt_versions_bg.buttons():
             if rb.text() == 'PyQt5':
@@ -145,7 +153,17 @@ class ApplicationPage(QWidget):
             else:
                 rb.setChecked(not project.application_is_pyqt5)
 
-        self._pyqt_versions_bg.blockSignals(False)
+        self._pyqt_versions_bg.blockSignals(blocked)
+
+        blocked = self._console_edit.blockSignals(True)
+        self._console_edit.setCheckState(
+                Qt.Checked if project.application_is_console else Qt.Unchecked)
+        self._console_edit.blockSignals(blocked)
+
+        blocked = self._bundle_edit.blockSignals(True)
+        self._bundle_edit.setCheckState(
+                Qt.Checked if project.application_is_bundle else Qt.Unchecked)
+        self._bundle_edit.blockSignals(blocked)
 
     def _pyqt_version_changed(self, button, checked):
         """ Invoked when the user changes the PyQt version number. """
@@ -155,6 +173,18 @@ class ApplicationPage(QWidget):
             self.project.modified = True
 
             self.pyqt_version_changed.emit(checked)
+
+    def _console_changed(self, state):
+        """ Invoked when the user changes the console state. """
+
+        self.project.application_is_console = (state == Qt.Checked)
+        self.project.modified = True
+
+    def _bundle_changed(self, state):
+        """ Invoked when the user changes the bundle state. """
+
+        self.project.application_is_bundle = (state == Qt.Checked)
+        self.project.modified = True
 
     def _name_changed(self, value):
         """ Invoked when the user edits the application name. """
