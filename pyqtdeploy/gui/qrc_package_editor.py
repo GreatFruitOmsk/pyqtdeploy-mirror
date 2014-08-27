@@ -344,6 +344,20 @@ class QrcPackageEditor(QGridLayout):
     def _package_changed(self, itm, column):
         """ Invoked when part of the package changes. """
 
-        itm.data(0, Qt.UserRole).included = (itm.checkState(0) == Qt.Checked)
+        if itm.checkState(0) == Qt.Checked:
+            itm.data(0, Qt.UserRole).included = True
+            itm.setExpanded(True)
+        else:
+            self._exclude(itm)
+            itm.setExpanded(False)
 
         self.package_changed.emit()
+
+    def _exclude(self, itm):
+        """ Exclude an item and any children it may have. """
+
+        for idx in range(itm.childCount()):
+            self._exclude(itm.child(idx))
+
+        itm.data(0, Qt.UserRole).included = False
+        itm.setCheckState(0, Qt.Unchecked)
