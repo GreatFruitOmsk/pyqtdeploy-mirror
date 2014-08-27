@@ -85,6 +85,8 @@ class Project(QObject):
         # Initialise the project data.
         self.application_name = ''
         self.application_is_pyqt5 = True
+        self.application_is_console = False
+        self.application_is_bundle = True
         self.application_package = QrcPackage()
         self.application_script = ''
         self.application_entry_point = ''
@@ -280,6 +282,10 @@ class Project(QObject):
         project.application_entry_point = application.get('entrypoint', '')
         project.application_is_pyqt5 = cls._get_bool(application, 'ispyqt5',
                 'Application')
+        project.application_is_console = cls._get_bool(application,
+                'isconsole', 'Application')
+        project.application_is_bundle = cls._get_bool(application, 'isbundle',
+                'Application')
         project.application_name = application.get('name', '')
         project.application_script = application.get('script', '')
         project.sys_path = application.get('syspath', '')
@@ -461,6 +467,8 @@ class Project(QObject):
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,
             'ispyqt5': str(int(self.application_is_pyqt5)),
+            'isconsole': str(int(self.application_is_console)),
+            'isbundle': str(int(self.application_is_bundle)),
             'name': self.application_name,
             'script': self.application_script,
             'syspath': self.sys_path})
