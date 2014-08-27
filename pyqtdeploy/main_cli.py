@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright (c) 2014, Riverbank Computing Limited
 # All rights reserved.
 #
@@ -31,14 +29,15 @@ import os
 import sys
 
 
-# The entry point for the setuptools generated wrapper.
 def main():
+    """ The entry point for the setuptools generated CLI wrapper. """
+
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
     parser.add_argument('action',
-            help="the action to perform, otherwise the GUI is started",
-            nargs='?', metavar="build|configure|show-packages|show-targets")
+            help="the action to perform",
+            choices=('build', 'configure', 'show-packages', 'show-targets'))
     parser.add_argument('--enable-dynamic-loading',
             help="enable the dynamic loading of modules (configure)",
             action='store_true')
@@ -73,41 +72,10 @@ def main():
     elif args.action == 'show-targets':
         rc = show_targets(args)
     else:
-        rc = gui(args)
+        # This should never happen.
+        rc = 1
 
     return rc
-
-
-def gui(args):
-    """ Start the GUI. """
-
-    # Interpret any action as a project file.
-    if args.action is not None:
-        project_file = args.action
-    elif args.project is not None:
-        project_file = args.project
-    else:
-        project_file = None
-
-    from PyQt5.QtWidgets import QApplication
-
-    from . import Project, ProjectGUI
-
-    app = QApplication(sys.argv, applicationName='pyqtdeploy',
-                organizationDomain='riverbankcomputing.com',
-                organizationName='Riverbank Computing')
-
-    if project_file is None:
-        project = Project()
-    else:
-        project = ProjectGUI.load(project_file)
-        if project is None:
-            return 1
-
-    gui = ProjectGUI(project)
-    gui.show()
-
-    return app.exec()
 
 
 def build(args):

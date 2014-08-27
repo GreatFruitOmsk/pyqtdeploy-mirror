@@ -24,46 +24,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import argparse
 import sys
 
-# Check the version of Python as early as possible.
-if sys.hexversion < 0x03020000:
-    sys.stderr.write("pyqtdeploy requires Python v3.2 or later\n")
-    sys.exit(1)
 
+def main():
+    """ The entry point for the setuptools generated GUI wrapper. """
 
-from setuptools import find_packages, setup
+    # Parse the command line.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('project', help="the project to edit", nargs='?')
+    args = parser.parse_args()
 
+    from PyQt5.QtWidgets import QApplication
 
-# Get the version number.
-version_file = open('VERSION')
-version = version_file.read().strip()
-version_file.close()
+    from . import Project, ProjectGUI
 
-# Get the long description for PyPI.
-with open('README') as readme:
-    long_description = readme.read()
+    app = QApplication(sys.argv, applicationName='pyqtdeploy',
+                organizationDomain='riverbankcomputing.com',
+                organizationName='Riverbank Computing')
 
-# Do the setup.
-setup(
-        name='pyqtdeploy',
-        version=version,
-        description='PyQt Application Deployment Tool',
-        long_description=long_description,
-        author='Riverbank Computing Limited',
-        author_email='info@riverbankcomputing.com',
-        url='http://www.riverbankcomputing.com/software/pyqtdeploy/',
-        license='BSD',
-        platforms=['X11', 'OS/X', 'Windows'],
-        packages=find_packages(),
-        package_data={
-            'pyqtdeploy.builder':   ['lib/*.*', 'lib/*/*.*'],
-            'pyqtdeploy.packages':  ['configurations/*/*.*'],
-            'pyqtdeploy.python':    ['configurations/*.*',
-                                     'configurations/*/*.*']
-        },
-        entry_points={
-            'console_scripts':  ['pyqtdeploycli = pyqtdeploy.main_cli:main'],
-            'gui_scripts':      ['pyqtdeploy = pyqtdeploy.main_gui:main']
-        }
-     )
+    if args.project is None:
+        project = Project()
+    else:
+        project = ProjectGUI.load(args.project)
+        if project is None:
+            return 1
+
+    gui = ProjectGUI(project)
+    gui.show()
+
+    return app.exec()
