@@ -52,7 +52,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, opt, build_dir=None, clean=False, console=False):
+    def build(self, opt, build_dir=None, clean=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -119,8 +119,8 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 dst_file_name='freeze.py')
 
-        self._write_qmake(build_dir, required_ext, required_libraries, console,
-                freeze, opt)
+        self._write_qmake(build_dir, required_ext, required_libraries, freeze,
+                opt)
 
         # Freeze the bootstrap.
         py_major, py_minor = project.python_target_version
@@ -275,7 +275,7 @@ class Builder():
 
         return package_src_dir, package_name
 
-    def _write_qmake(self, build_dir, required_ext, required_libraries, console, freeze, opt):
+    def _write_qmake(self, build_dir, required_ext, required_libraries, freeze, opt):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -315,10 +315,13 @@ class Builder():
         both_config.add('release')
         both_config.add('warn_on')
 
-        if not needs_gui or console:
+        if not needs_gui or project.application_is_console:
             both_config.add('console')
 
         f.write('CONFIG += {0}\n'.format(' '.join(both_config)))
+
+        if not project.application_is_bundle:
+            f.write('CONFIG -= app_bundle\n')
 
         if not needs_gui:
             f.write('QT -= gui\n')

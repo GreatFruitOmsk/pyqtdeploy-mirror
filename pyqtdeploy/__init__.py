@@ -26,7 +26,6 @@
 
 # Publish the package's API.
 from .builder import Builder
-from .gui import ProjectGUI
 from .message_handler import MessageHandler
 from .packages import configure_package, get_supported_packages
 from .project import Project

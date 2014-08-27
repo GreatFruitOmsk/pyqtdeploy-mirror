@@ -175,15 +175,27 @@ The tab for defining the application source is shown below.
 **PyQt4**
     is used to specify that the application is a PyQt4 application.
 
-**Scan...**
-    is clicked to specify the name of the directory containing the Python
-    package that implements the application.  (If the application consists of a
-    single script then you would not use this.)  The hierachy will be scanned
-    for all files and directories that don't match any of the specified
-    exclusions and will be displayed in the main area of the tab.  Each file or
-    directory can then be checked if it is to be included in the package.  Note
-    that if the main script file is a part of the application package then it's
-    entry must be explicitly unchecked (i.e. excluded).
+**Use console (Windows)**
+    is checked if the application should use a console.  Specifically it adds
+    ``console`` to the value of ``CONFIG`` in the generated ``.pro`` file and
+    only affects Windows applications.  Normally this is handled automatically
+    and a console is used only if the application does not use any GUI related
+    PyQt module.  However it may be usefull during testing of deployed GUI
+    applications to ensure that tracebacks (e.g. about missing modules) are
+    captured and displayed.
+
+**Application bundle (OS/X)**
+    is checked if the application should be built as a bundle and only affects
+    OS/X applications.  It would normally be unchecked for command line (i.e.
+    non-GUI) applications.
+
+**Application Package Directory**
+    contains the hierachy of files and directories that implement the
+    application package and any associated data.  It is populated by clicking
+    the **Scan...** button.  Each file or directory can then be checked if it
+    is to be included in the package.  Note that if the main script file is a
+    part of the application package then it's entry must be explicitly
+    unchecked (i.e. excluded).
 
     .. note::
         Non-Python (i.e. data) files can also be included in the package.  An
@@ -193,6 +205,13 @@ The tab for defining the application source is shown below.
         the data file.  This approach will also work with deployed applications
         so long as the file is accessed using the :class:`~PyQt5.QtCore.QFile`
         class (rather than the standard Python file access functions).
+
+**Scan...**
+    is clicked to specify the name of the directory containing the Python
+    package that implements the application.  (If the application consists of a
+    single script then you would not use this.)  The hierachy will be scanned
+    for all files and directories that don't match any of the specified
+    exclusions and will be displayed in the **Application Package Directory**.
 
 **Remove all**
     is clicked to remove all the scanned files and directories.
@@ -405,17 +424,11 @@ The main area of the tab shows the output of the various stages of the build.
     Python code.
 
 **Clean before building**
-    is clicked to specify that the build directory is deleted and recreated
+    is checked to specify that the build directory is deleted and recreated
     before starting a new build.
 
-**Capture console output**
-    is clicked to specify that ``console`` is always added to the ``CONFIG``
-    variable in the generated ``.pro`` file.  This is only useful on Windows
-    and ensures that, even for a GUI application, tracebacks (e.g. about
-    missing modules) are captured and displayed.
-
 **Verbose output**
-    is clicked specify that additional information is displayed during the
+    is checked specify that additional information is displayed during the
     build process.
 
 **Run qmake**

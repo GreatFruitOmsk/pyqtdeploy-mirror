@@ -113,11 +113,11 @@ class ApplicationPage(QWidget):
         self._pyqt_versions_bg.buttonToggled.connect(
                 self._pyqt_version_changed)
 
-        self._console_edit = QCheckBox("Console application (Windows)",
+        self._console_edit = QCheckBox("Use console (Windows)",
                 stateChanged=self._console_changed)
         options_layout.addWidget(self._console_edit)
 
-        self._bundle_edit = QCheckBox("Application bundle (OS X)",
+        self._bundle_edit = QCheckBox("Application bundle (OS/X)",
                 stateChanged=self._bundle_changed)
         options_layout.addWidget(self._bundle_edit)
 

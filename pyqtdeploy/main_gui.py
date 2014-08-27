@@ -38,7 +38,8 @@ def main():
 
     from PyQt5.QtWidgets import QApplication
 
-    from . import Project, ProjectGUI
+    from . import Project
+    from .gui import ProjectGUI
 
     app = QApplication(sys.argv, applicationName='pyqtdeploy',
                 organizationDomain='riverbankcomputing.com',

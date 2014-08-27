@@ -80,8 +80,6 @@ class BuildPage(QWidget):
 
         self._clean_button = QCheckBox("Clean before building", checked=True)
         options_layout.addWidget(self._clean_button)
-        self._console_button = QCheckBox("Capture console output")
-        options_layout.addWidget(self._console_button)
         self._verbose_button = QCheckBox("Verbose output")
         options_layout.addWidget(self._verbose_button)
 
@@ -143,8 +141,7 @@ class BuildPage(QWidget):
             opt = 0
 
         try:
-            builder.build(opt, clean=bool(self._clean_button.checkState()),
-                    console=bool(self._console_button.checkState()))
+            builder.build(opt, clean=bool(self._clean_button.checkState()))
         except UserException as e:
             logger.user_exception(e)
             handle_user_exception(e, self.label, self)
@@ -192,7 +189,7 @@ class BuildPage(QWidget):
             if sys.platform == 'win32':
                 application = os.path.join(build_dir, 'Release',
                         exe_name + '.exe')
-            elif sys.platform == 'darwin':
+            elif sys.platform == 'darwin' and project.application_is_bundle:
                 application = os.path.join(build_dir, exe_name + '.app',
                         'Contents', 'MacOS', exe_name)
             else:
