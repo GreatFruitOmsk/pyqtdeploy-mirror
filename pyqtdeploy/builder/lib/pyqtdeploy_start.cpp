@@ -60,6 +60,7 @@ static QTextCodec *locale_codec;
 
 
 // Foward declarations.
+static int handle_exception();
 static int append_path_dirs(PyObject *list, const char **path_dirs,
         const QDir &exec_dir);
 #if PY_MAJOR_VERSION < 3
@@ -145,12 +146,12 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 
     // Initialise the path hooks.
     if (PyImport_ImportFrozenModule(CONST_CAST(BOOTSTRAP_MODULE)) < 0)
-        goto py_error;
+        return handle_exception();
 #endif
 
     // Set sys.frozen.
     if (PySys_SetObject("frozen", Py_True) < 0)
-        goto py_error;
+        return handle_exception();
 
     // Configure sys.path.
     if (path_dirs != NULL)
@@ -165,7 +166,7 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
             exec_dir.cdUp();
 
             if (append_path_dirs(py_path, path_dirs, exec_dir) < 0)
-                goto py_error;
+                return handle_exception();
         }
     }
 
@@ -176,7 +177,7 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
     PyObject *mod, *mod_dict, *py_filename;
 
     if ((mod = PyImport_AddModule(main_module)) == NULL)
-        goto py_error;
+        return handle_exception();
 
     mod_dict = PyModule_GetDict(mod);
 
@@ -187,19 +188,16 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 #endif
 
     if (py_filename == NULL)
-        goto py_error;
+        return handle_exception();
 
     if (PyDict_SetItemString(mod_dict, "__file__", py_filename) < 0)
-        goto py_error;
+        return handle_exception();
 
     Py_DECREF(py_filename);
 
     // Import the main module.
     if (PyImport_ImportFrozenModule(CONST_CAST(main_module)) < 0)
-    {
-        if (!PyErr_ExceptionMatches(PyExc_SystemExit))
-            goto py_error;
-    }
+        return handle_exception();
 #else
     // Import the main module.
     PyObject *mod, *main_module_obj;
@@ -211,34 +209,82 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 #endif
 
     if (main_module_obj == NULL)
-        goto py_error;
+        return handle_exception();
 
     mod = PyImport_Import(main_module_obj);
+    if (!mod)
+        return handle_exception();
 
-    if (mod)
-    {
-        // Call the entry point.
-        if (!PyObject_CallMethod(mod, entry_point, NULL))
-        {
-            if (!PyErr_ExceptionMatches(PyExc_SystemExit))
-                goto py_error;
-        }
-    }
-    else if (!PyErr_ExceptionMatches(PyExc_SystemExit))
-    {
-        goto py_error;
-    }
+    // Call the entry point.
+    if (!PyObject_CallMethod(mod, entry_point, NULL))
+        return handle_exception();
 #endif
 
     // Tidy up.
     Py_Finalize();
 
     return 0;
+}
 
-py_error:
-    fprintf(stderr, "%s: a Python exception occurred:\n", argv[0]);
-    PyErr_Print();
-    return 1;
+
+// Handle an exception and return the error code to immediately pass back to
+// the operating system.
+static int handle_exception()
+{
+    int exit_code;
+
+    if (PyErr_ExceptionMatches(PyExc_SystemExit))
+    {
+        PyObject *exc, *value, *tb;
+
+        PyErr_Fetch(&exc, &value, &tb);
+
+        if (!value || value == Py_None)
+        {
+            exit_code = 0;
+        }
+        else
+        {
+            PyObject *code = PyObject_GetAttrString(value, "code");
+
+            if (code)
+            {
+#if PY_MAJOR_VERSION >= 3
+                if (PyLong_Check(code))
+                {
+                    exit_code = (int)PyLong_AsLong(code);
+                    Py_DECREF(code);
+                }
+#else
+                if (PyInt_Check(code))
+                {
+                    exit_code = (int)PyInt_AsLong(code);
+                    Py_DECREF(code);
+                }
+#endif
+                else
+                {
+                    exit_code = 1;
+                }
+            }
+            else
+            {
+                exit_code = 1;
+            }
+        }
+
+        PyErr_Restore(exc, value, tb);
+        PyErr_Clear();
+    }
+    else
+    {
+        PyErr_Print();
+        exit_code = 1;
+    }
+
+    Py_Finalize();
+
+    return exit_code;
 }
 
 
