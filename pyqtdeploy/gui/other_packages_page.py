@@ -35,11 +35,11 @@ from .filename_editor_delegate import FilenameEditorDelegate
 from .qrc_package_editor import QrcPackageEditor
 
 
-class OtherPackagesSubpage(QWidget):
-    """ The GUI for the other packages sub-page of a project. """
+class OtherPackagesPage(QWidget):
+    """ The GUI for the other packages page of a project. """
 
     # The page's label.
-    label = "Packages"
+    label = "Other Packages"
 
     @property
     def project(self):

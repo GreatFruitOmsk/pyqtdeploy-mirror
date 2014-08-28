@@ -256,8 +256,8 @@ the modules imported directly by the application.
     then do not specify any modules here.
 
 
-Defining the Standard Library Packages
---------------------------------------
+Adding Standard Library Packages
+--------------------------------
 
 The tab for defining the Python standard library packages used by the
 application is shown below.
@@ -300,10 +300,10 @@ that will be found automatically by the compiler and linker.
 that uses any of these libraries and so they are all disabled.
 
 
-Defining Additional Packages
-----------------------------
+Adding Other Packages
+---------------------
 
-The sub-tab for defining additional packages used by the application is shown
+The tab for defining additional packages used by the application is shown
 below.
 
 .. image:: /images/other_packages_tab.png
@@ -325,11 +325,11 @@ installed.
 :program:`pyqtdeploy` does not use any additional Python packages.
 
 
-Defining Additional Extension Modules
--------------------------------------
+Adding Other Extension Modules
+------------------------------
 
-The sub-tab for defining additional C extension modules used by the application
-is shown below.
+The tab for defining additional C extension modules used by the application is
+shown below.
 
 .. image:: /images/other_extension_modules_tab.png
     :align: center

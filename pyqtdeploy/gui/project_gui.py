@@ -39,7 +39,8 @@ from .application_page import ApplicationPage
 from .build_page import BuildPage
 from .exception_handlers import handle_user_exception
 from .locations_page import LocationsPage
-from .other_libraries_page import OtherLibrariesPage
+from .other_extension_modules_page import OtherExtensionModulesPage
+from .other_packages_page import OtherPackagesPage
 from .pyqt_page import PyQtPage
 from .standard_library_page import StandardLibraryPage
 
@@ -137,8 +138,12 @@ class ProjectGUI(QMainWindow):
         standard_library_page = StandardLibraryPage()
         tabs.addTab(standard_library_page, standard_library_page.label)
 
-        other_libraries_page = OtherLibrariesPage()
-        tabs.addTab(other_libraries_page, other_libraries_page.label)
+        other_packages_page = OtherPackagesPage()
+        tabs.addTab(other_packages_page, other_packages_page.label)
+
+        other_extension_modules_page = OtherExtensionModulesPage()
+        tabs.addTab(other_extension_modules_page,
+                other_extension_modules_page.label)
 
         locations_page = LocationsPage()
         tabs.addTab(locations_page, locations_page.label)
