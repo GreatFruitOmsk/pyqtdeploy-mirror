@@ -4,7 +4,9 @@ Tutorial
 :program:`pyqtdeploy` is itself deployable and the root of the source package
 contains an appropriate ``pyqtdeploy.pdy`` project file.  In this section we
 use this as the basis of explaining :program:`pyqtdeploy`'s graphical user
-interface.
+interface.  (Also included is a corresponding ``pyqtdeploycli.pdy`` project
+file for :program:`pyqtdeploycli`.  This demonstrates the deployment of a
+non-GUI application.)
 
 
 .. _ref-directory-structure:
@@ -87,9 +89,7 @@ The ``File`` menu contains the usual set of options to create a new project,
 open an existing project, save a project and rename a project.
 
 For the remainder of this tutorial we will use the ``pyqtdeploy.pdy`` project
-file included in the root of the source package.  (Also included is a
-corresponding ``pyqtdeploycli.pdy`` project file for :program:`pyqtdeploycli`.
-This demonstrates the deployment of a non-GUI application.)
+file included in the root of the source package.
 
 
 Defining the Application Source
