@@ -69,6 +69,35 @@ Throughout this documentation it is assumed that you have set an environment
 variable :envvar:`SYSROOT` which points to your target specific root directory.
 
 
+Scoped :program:`qmake` Variables
+---------------------------------
+
+A :program:`pyqtdeploy` project has several places where it is possible to
+enter the values of certain :program:`qmake` variables (specifically
+``DEFINES``, ``INCLUDEPATH`` and ``LIBS``) which will then be included in the
+generated ``.pro`` file.  :program:`pyqtdeploy` goes to some trouble to make it
+possible to create project files that can be used without modification across
+all supported host platforms.
+
+To this end the values of these :program:`qmake` variables may be *scoped* with
+any supported :program:`qmake` scope.  The most common requirement is to
+distinguish between Windows and non-Windows targets, therefore the most common
+scopes used will be ``win32`` and ``!win32``.
+
+The scope is specified immediately before the value and separated by a ``#``.
+For example, lets say that your application is targeted at all supported
+desktop targets and requires SSL support.  On Windows you want to link against
+a copy of the OpenSSL libraries that you have statically compiled and installed
+the header files and libraries in the ``include`` and ``lib`` sub-directories
+of the :envvar:`SYSROOT` directory.  On Linux and OS/X you want to dynamically
+link against the system SSL libraries.  Setting the ``INCLUDEPATH`` and
+``LIBS`` variables to the following values will ensure that the generated code
+will compile as you require on all platforms::
+
+    INCLUDEPATH     win32#$SYSROOT/include
+    LIBS            win32#$SYSROOT/lib -lssl -lcrypto
+
+
 Creating a :program:`pyqtdeploy` Project
 ----------------------------------------
 
@@ -336,17 +365,14 @@ shown below.
 
 This tab is used to specify any additional C extension modules (i.e. other than
 those that are part of the Python standard library or PyQt) that will be
-statically linked into the Python interpreter library.  For each extension
-module its name and the directory containing it must be specified.  On Windows
-an extension module will have a ``.lib`` filename suffix.  The suffix will be
-``.a`` on most other platforms.
+statically linked into the application.
 
 **Name**
-    TODO
-    the full package path foo.bar.baz
+    is the full (dot separated) package name of the extension module.
 
 **LIBS**
-    TODO
+    is the value added to the :program:`qmake` ``LIBS`` variable in order to
+    link the compiled extension module.
 
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.
