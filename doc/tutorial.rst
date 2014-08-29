@@ -335,11 +335,18 @@ shown below.
     :align: center
 
 This tab is used to specify any additional C extension modules (i.e. other than
-those that are part of the Python standard library) that will be statically
-linked into the Python interpreter library.  For each extension module its name
-and the directory containing it must be specified.  On Windows an extension
-module will have a ``.lib`` filename suffix.  The suffix will be ``.a`` on most
-other platforms.
+those that are part of the Python standard library or PyQt) that will be
+statically linked into the Python interpreter library.  For each extension
+module its name and the directory containing it must be specified.  On Windows
+an extension module will have a ``.lib`` filename suffix.  The suffix will be
+``.a`` on most other platforms.
+
+**Name**
+    TODO
+    the full package path foo.bar.baz
+
+**LIBS**
+    TODO
 
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.

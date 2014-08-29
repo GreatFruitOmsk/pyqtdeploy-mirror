@@ -91,8 +91,9 @@ class Project(QObject):
         self.application_script = ''
         self.application_entry_point = ''
         self.build_dir = 'build'
-        self.extension_modules = []
         self.external_libraries = []
+        self.other_extension_modules = []
+        self.other_packages = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_source_dir = ''
@@ -102,7 +103,6 @@ class Project(QObject):
         self.python_target_stdlib_dir = ''
         self.python_target_version = (3, 4)
         self.qmake = ''
-        self.packages = []
         self.standard_library = []
         self.sys_path = ''
 
@@ -123,7 +123,7 @@ class Project(QObject):
 
     def absolute_path(self, filename):
         """ Convert a filename that might be relative to the project name to an
-        absolute filename.
+        absolute filename using native separators.
         """
 
         filename = os.path.expandvars(filename.strip())
@@ -326,7 +326,7 @@ class Project(QObject):
                     ExternalLibrary(name, defines, includepath, libs))
 
         # Any other Python packages.
-        project.packages = [cls._load_package(package)
+        project.other_packages = [cls._load_package(package)
                 for package in root.iterfind('Package')]
 
         # Any other extension module.
@@ -335,11 +335,11 @@ class Project(QObject):
             cls._assert(name is not None,
                     "Missing 'ExtensionModule.name' attribute.")
 
-            path = extension_module_element.get('path')
+            libs = extension_module_element.get('libs')
             cls._assert(path is not None,
-                    "Missing 'ExtensionModule.path' attribute.")
+                    "Missing 'ExtensionModule.libs' attribute.")
 
-            project.extension_modules.append(ExtensionModule(name, path))
+            project.other_extension_modules.append(ExtensionModule(name, libs))
 
         # The other configuration.
         others = root.find('Others')
@@ -490,13 +490,13 @@ class Project(QObject):
                 'includepath': external_lib.includepath,
                 'libs': external_lib.libs})
 
-        for package in self.packages:
+        for package in self.other_packages:
             self._save_package(root, package)
 
-        for extension_module in self.extension_modules:
+        for extension_module in self.other_extension_modules:
             SubElement(root, 'ExtensionModule', attrib={
                 'name': extension_module.name,
-                'path': extension_module.path})
+                'libs': extension_module.libs})
 
         SubElement(root, 'Others', attrib={
             'builddir': self.build_dir,
@@ -620,11 +620,11 @@ class ExternalLibrary():
 class ExtensionModule():
     """ The encapsulation of an extension module. """
 
-    def __init__(self, name, path):
+    def __init__(self, name, libs):
         """ Initialise the extension module. """
 
         self.name = name
-        self.path = path
+        self.libs = libs
 
 
 class _DepState:

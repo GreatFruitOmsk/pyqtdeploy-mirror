@@ -25,12 +25,12 @@
 
 
 import os
+import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
 
-from PyQt5.QtCore import QDir, QFile
+from PyQt5.QtCore import QFile, QFileInfo, QTemporaryDir
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
@@ -58,6 +58,13 @@ class Builder():
         """
 
         project = self._project
+
+        # Create a temporary directory which will be removed automatically when
+        # this function's objects are garbage collected.
+        temp_dir = QTemporaryDir()
+        if not temp_dir.isValid():
+            raise UserException(
+                    "There was an error creating a temporary directory")
 
         # Get the names of the required Python modules, extension modules and
         # libraries.
@@ -117,7 +124,7 @@ class Builder():
         # The odd naming of the Python source files is to prevent them from
         # being frozen if we deploy ourself.
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
-                dst_file_name='freeze.py')
+                temp_dir.path(), dst_file_name='freeze.py')
 
         self._write_qmake(build_dir, required_ext, required_libraries, freeze,
                 opt)
@@ -128,7 +135,7 @@ class Builder():
 
         bootstrap_src = get_embedded_file_for_version(py_version, __file__,
                 'lib', 'bootstrap')
-        bootstrap = self._copy_lib_file(bootstrap_src,
+        bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
                 dst_file_name='bootstrap.py')
         self._freeze(os.path.join(build_dir, 'frozen_bootstrap.h'), bootstrap,
                 freeze, opt, name='pyqtdeploy_bootstrap')
@@ -174,7 +181,7 @@ class Builder():
                 freeze, opt)
 
         # Handle any additional packages.
-        for package in project.packages:
+        for package in project.other_packages:
             package_src_dir, package_name = self._package_details(package)
 
             self._write_package(resource_contents, resources_dir, package_name,
@@ -353,27 +360,27 @@ class Builder():
 
             f.write('}\n')
 
-        # Determine the extension modules and link against them.
-        extensions = {}
+        # Modules can share sources so we need to make sure we don't include
+        # them more than once.  We might as well handle the other things in the
+        # same way.
+        used_sources = {}
+        used_defines = {}
+        used_includepath = {}
+        used_libs = {}
+        used_inittab = {}
 
-        for extension_module in project.extension_modules:
-            if extension_module.name != '':
-                extensions[extension_module.name] = (
-                        QDir.fromNativeSeparators(
-                                project.absolute_path(extension_module.path)),
-                        extension_module.name)
-
+        # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
-            sitepackages = QDir.fromNativeSeparators(
-                    os.path.join(
-                            project.absolute_path(
-                                    project.python_target_stdlib_dir),
-                            'site-packages'))
-
+            site_packages = project.absolute_path(
+                    project.python_target_stdlib_dir) + '/site-packages'
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
+            l_libs = []
             for pyqt in self._get_all_pyqt_modules():
                 if pyqt != 'uic':
+                    self._add_value_for_scope(used_inittab,
+                            pyqt_version + '.' + pyqt)
+
                     lib_name = pyqt
                     if self._get_pyqt_module_metadata(pyqt).needs_suffix:
                         # Qt4's qmake thinks -lQtCore etc. always refer to the
@@ -381,41 +388,37 @@ class Builder():
                         # suffix.
                         lib_name += '_s'
 
-                    extensions[pyqt_version + '.' + pyqt] = (
-                            sitepackages + '/' + pyqt_version,
-                            lib_name)
+                    l_libs.append('-l' + lib_name)
+
+            # Add the LIBS value for the PyQt modules to the global scope.
+            self._add_value_for_scope(used_libs,
+                    '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
+                            ' '.join(l_libs)))
 
             # Add the implicit sip module.
-            extensions['sip'] = (sitepackages, 'sip')
+            self._add_value_for_scope(used_inittab, 'sip')
+            self._add_value_for_scope(used_libs,
+                    '-L{0} -lsip'.format(site_packages))
 
-        if len(extensions) > 0:
-            f.write('\n')
+        # Handle any other extension modules.
+        for other_em in project.other_extension_modules:
+            scoped_values = self._parse_scoped_values(other_em.libs)
 
-            # Get the list of unique module directories.
-            mod_dirs = set()
-            for mod_dir, _ in extensions.values():
-                mod_dirs.add(os.path.expandvars(mod_dir))
-
-            mod_dir_flags = ['-L' + self._quote(md) for md in mod_dirs]
-            mod_flags = ['-l' + l for _, l in extensions.values()]
-
-            f.write(
-                    'LIBS += {0} {1}\n'.format(' '.join(mod_dir_flags),
-                            ' '.join(mod_flags)))
+            for scope, values in scoped_values.items():
+                self._add_value_for_scope(used_inittab, other_em.name, scope)
+                self._add_value_set_for_scope(used_libs, values, scope)
 
         # Configure the target Python interpreter.
-        f.write('\n')
-
         if project.python_target_include_dir != '':
-            inc_dir = QDir.fromNativeSeparators(
+            self._add_value_for_scope(used_includepath,
                     project.absolute_path(project.python_target_include_dir))
-            f.write('INCLUDEPATH += {0}\n'.format(self._quote(inc_dir)))
 
         if project.python_target_library != '':
-            lib_path = project.absolute_path(project.python_target_library)
-            lib_dir = QDir.fromNativeSeparators(os.path.dirname(lib_path))
-            lib_dir = self._quote(lib_dir)
-            lib, _ = os.path.splitext(os.path.basename(lib_path))
+            fi = QFileInfo(
+                    project.absolute_path(project.python_target_library))
+
+            lib_dir = fi.absolutePath()
+            lib = fi.completeBaseName()
 
             # This is smart enough to translate the Python library as a UNIX .a
             # file to what Windows needs.
@@ -423,22 +426,72 @@ class Builder():
                 lib = lib[3:]
 
             if '.' in lib:
-                f.write('''
-win32 {
-    LIBS += -L%s -l%s
-} else {
-    LIBS += -L%s -l%s
-}
-''' % (lib_dir, lib.replace('.', ''), lib_dir, lib))
+                self._add_value_for_scope(used_libs,
+                        '-L{0} -l{1}\n'.format(
+                                lib_dir, lib.replace('.', '')),
+                        'win32')
+                self._add_value_for_scope(used_libs,
+                        '-L{0} -l{1}\n'.format(lib_dir, lib), '!win32')
             else:
-                f.write('LIBS += -L{0} -l{1}\n'.format(lib_dir, lib))
+                self._add_value_for_scope(used_libs,
+                        '-L{0} -l{1}\n'.format(lib_dir, lib))
 
-        # Add the platform specific stuff.
-        platforms = read_embedded_file(
-                self._get_lib_file_name('platforms.pro'))
+        # Handle any standard library extension modules.
+        if len(required_ext) != 0:
+            source_dir = project.absolute_path(project.python_source_dir)
 
-        f.write('\n')
-        f.write(platforms.data().decode('latin1'))
+            self._add_value_for_scope(used_includepath,
+                    source_dir + '/Modules')
+
+            for name, module in required_ext.items():
+                self._add_value_for_scope(used_inittab, name, module.scope);
+
+                for source in module.source:
+                    source = self._python_source_file(source_dir, source)
+                    self._add_scoped_value(used_sources, source,
+                            default_scope=module.scope)
+
+                if module.defines is not None:
+                    for define in module.defines:
+                        self._add_scoped_value(used_defines, define,
+                                default_scope=module.scope)
+
+                if module.includepath is not None:
+                    for includepath in module.includepath:
+                        includepath = self._python_source_file(source_dir,
+                                includepath)
+                        self._add_scoped_value(used_includepath, includepath,
+                                default_scope=module.scope)
+
+                if module.libs is not None:
+                    for lib in module.libs:
+                        self._add_scoped_value(used_libs, lib,
+                                default_scope=module.scope)
+
+        # Handle any required external libraries.
+        for required_lib in required_libraries:
+            for xlib in project.external_libraries:
+                if xlib.name == required_lib:
+                    if xlib.defines != '':
+                        self._add_parsed_scoped_values(used_defines,
+                                xlib.defines, False)
+
+                    if xlib.includepath != '':
+                        self._add_parsed_scoped_values(used_includepath,
+                                xlib.includepath, True)
+
+                    if xlib.libs != '':
+                        self._add_parsed_scoped_values(used_libs, xlib.libs,
+                                False)
+
+                    break
+            else:
+                for xlib in external_libraries_metadata:
+                    if xlib.name == required_lib:
+                        for lib in xlib.libs.split():
+                            self._add_value_for_scope(used_libs, lib)
+
+                        break
 
         # Specify the resource file.
         f.write('\n')
@@ -447,13 +500,8 @@ win32 {
         # Specify the source and header files.
         f.write('\n')
 
-        # Add any standard library modules to the inittab list.
-        extension_module_scopes = {name: '' for name in extensions.keys()}
-        for name, module in required_ext.items():
-            extension_module_scopes[name] = module.scope
-
         f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
-        self._write_main(build_dir, extension_module_scopes)
+        self._write_main(build_dir, used_inittab)
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pdytools_module.cpp', build_dir)
 
@@ -465,110 +513,79 @@ win32 {
         f.write(headers)
         f.write('\n')
 
-        # Handle any standard library extension modules.
-        if len(required_ext) != 0:
-            source_dir = project.absolute_path(project.python_source_dir)
+        # Get the set of all scopes used.
+        used_scopes = set(used_sources.keys())
+        used_scopes.update(used_defines.keys())
+        used_scopes.update(used_includepath.keys())
+        used_scopes.update(used_libs.keys())
 
-            f.write('\nINCLUDEPATH += {0}/Modules\n'.format(source_dir))
-
-            # Modules can share sources so we need to make sure we don't
-            # include them more than once.  We might as well handle the other
-            # things in the same way.
-            used_scoped_sources = {}
-            used_scoped_defines = {}
-            used_scoped_includepath = {}
-            used_scoped_libs = {}
-
-            for name, module in required_ext.items():
-                for source in module.source:
-                    self._add_scoped_value(used_scoped_sources, source,
-                            module.scope)
-
-                if module.defines is not None:
-                    for define in module.defines:
-                        self._add_scoped_value(used_scoped_defines, define,
-                                module.scope)
-
-                if module.includepath is not None:
-                    for includepath in module.includepath:
-                        includepath = os.path.expandvars(includepath)
-
-                        self._add_scoped_value(used_scoped_includepath,
-                                includepath, module.scope)
-
-                if module.libs is not None:
-                    for lib in module.libs:
-                        lib = os.path.expandvars(lib)
-
-                        self._add_scoped_value(used_scoped_libs, lib,
-                                module.scope)
-
-            # Get the set of all scopes used.
-            used_scopes = set(used_scoped_sources.keys())
-            used_scopes.update(used_scoped_defines.keys())
-            used_scopes.update(used_scoped_includepath.keys())
-            used_scopes.update(used_scoped_libs.keys())
-
-            # Write out grouped by scope.
-            for scope in used_scopes:
-                f.write('\n')
-
-                if scope != '':
-                    prefix = '    '
-                    f.write('%s {\n' % scope)
-                else:
-                    prefix = ''
-
-                for defines in used_scoped_defines.get(scope, ()):
-                    f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
-
-                for includepath in used_scoped_includepath.get(scope, ()):
-                    f.write('{0}INCLUDEPATH += {1}/Modules/{2}\n'.format(
-                            prefix, source_dir, includepath))
-
-                for lib in used_scoped_libs.get(scope, ()):
-                    f.write('{0}LIBS += {1}\n'.format(prefix, lib))
-
-                for source in used_scoped_sources.get(scope, ()):
-                    f.write('{0}SOURCES += {1}/Modules/{2}\n'.format(
-                            prefix, source_dir, source))
-
-                if scope != '':
-                    f.write('}\n')
-
-        # Handle the required external libraries.
-        for required_lib in required_libraries:
-            for xlib in project.external_libraries:
-                if xlib.name == required_lib:
-                    defines = xlib.defines
-                    includepath = xlib.includepath
-                    libs = xlib.libs
-                    break
-            else:
-                defines = ''
-                includepath = ''
-
-                for xlib in external_libraries_metadata:
-                    if xlib.name == required_lib:
-                        libs = xlib.libs
-                        break
-
+        # Write out grouped by scope.
+        for scope in used_scopes:
             f.write('\n')
 
-            if defines != '':
-                f.write('DEFINES += {0}\n'.format(defines))
+            if scope != '':
+                prefix = '    '
+                f.write('%s {\n' % scope)
+            else:
+                prefix = ''
 
-            if includepath != '':
-                f.write('INCLUDEPATH += {0}\n'.format(includepath))
+            for defines in used_defines.get(scope, ()):
+                f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
 
-            if libs != '':
-                f.write('LIBS += {0}\n'.format(libs))
+            for includepath in used_includepath.get(scope, ()):
+                f.write('{0}INCLUDEPATH += {1}\n'.format(prefix, includepath))
+
+            for lib in used_libs.get(scope, ()):
+                f.write('{0}LIBS += {1}\n'.format(prefix, lib))
+
+            for source in used_sources.get(scope, ()):
+                f.write('{0}SOURCES += {1}\n'.format(prefix, source))
+
+            if scope != '':
+                f.write('}\n')
+
+        # Add the platform specific stuff.
+        platforms = read_embedded_file(
+                self._get_lib_file_name('platforms.pro'))
+
+        f.write('\n')
+        f.write(platforms.data().decode('latin1'))
 
         # All done.
         f.close()
 
     @staticmethod
-    def _add_scoped_value(used_values, scoped_value, default_scope):
+    def _python_source_file(py_source_dir, rel_path):
+        """ Return the canonical name of a file in the Python source tree
+        relative to the Modules directory.
+        """
+
+        return QFileInfo(py_source_dir + '/Modules/' + rel_path).canonicalFilePath()
+
+    def _add_parsed_scoped_values(self, used_values, raw, isfilename):
+        """ Parse a string of space separated possible scoped values and add
+        them to a dict of used values indexed by scope.  The values are
+        optionally treated as filenames where they are converted to absolute
+        filenames with UNIX separators and have environment variables expanded.
+        """
+
+        for scope, value_set in self._parse_scoped_values(raw, isfilename):
+            self._add_value_set_for_scope(used_values, value_set, scope)
+
+    def _parse_scoped_values(self, raw, isfilename):
+        """ Parse a string of space separated possible scoped values and return
+        a dict, keyed by scope, of the values for each scope.
+        """
+
+        scoped_value_sets = {}
+
+        for scoped_value in shlex.split(raw):
+            self._add_scoped_value(scoped_value_sets, scoped_value,
+                    isfilename=isfilename)
+
+        return scoped_value_sets
+
+    def _add_scoped_value(self, used_values, scoped_value, isfilename=False, default_scope=''):
         """ Add an optionally scoped value to a dict of used values indexed by
         scope.
         """
@@ -581,7 +598,25 @@ win32 {
             scope = default_scope
             value = parts[0]
 
+        # Convert potential filenames.
+        if isfilename:
+            value = self.project.absolute_path(value)
+        elif value.startswith('-L'):
+            value = '-L' + self.project.absolute_path(value[2:])
+
+        self._add_value_for_scope(used_values, value, scope)
+
+    @staticmethod
+    def _add_value_for_scope(used_values, value, scope=''):
+        """ Add a value to the set of used values for a scope. """
+
         used_values.setdefault(scope, set()).add(value)
+
+    @staticmethod
+    def _add_value_set_for_scope(used_values, values, scope=''):
+        """ Add a set of values to the set of used values for a scope. """
+
+        used_values.setdefault(scope, set()).update(values)
 
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """
@@ -620,15 +655,6 @@ win32 {
 
             # Handle sub-dependencies.
             self._get_pyqt_module_dependencies(dep, all_modules)
-
-    @staticmethod
-    def _quote(name):
-        """ Return the quoted version of a name if quoting is required. """
-
-        if ' ' in name:
-            name = '"' + name + '"'
-
-        return name
 
     def _write_package(self, resource_contents, resources_dir, resource, package, src_dir, freeze, opt):
         """ Write the contents of a single package and return the list of files
@@ -692,7 +718,7 @@ win32 {
                 file_path.append(dst_file)
                 resource_contents.append('/'.join(file_path))
 
-    def _write_main(self, build_dir, extension_scopes):
+    def _write_main(self, build_dir, inittab):
         """ Create the application specific pyqtdeploy_main.cpp file. """
 
         project = self._project
@@ -704,49 +730,24 @@ win32 {
 
 ''')
 
-        if len(extension_scopes) > 0:
-            inittab = 'extension_modules'
+        if len(inittab) > 0:
+            c_inittab = 'extension_modules'
 
             f.write('#if PY_MAJOR_VERSION >= 3\n')
-            self._write_inittab(f, extension_scopes, inittab, py3=True)
+            self._write_inittab(f, inittab, c_inittab, py3=True)
             f.write('#else\n')
-            self._write_inittab(f, extension_scopes, inittab, py3=False)
+            self._write_inittab(f, inittab, c_inittab, py3=False)
             f.write('#endif\n\n')
         else:
-            inittab = 'NULL'
+            c_inittab = 'NULL'
 
         sys_path = project.sys_path
 
         if sys_path != '':
             f.write('static const char *path_dirs[] = {\n')
 
-            # Extract the (possibly quoted) individual directories.
-            start = -1
-            quote = ''
-
-            for i, ch in enumerate(sys_path):
-                dir_name = None
-
-                if ch == quote:
-                    dir_name = sys_path[start:i]
-                    start = -1
-                    quote = ''
-                elif ch in ('"\''):
-                    start = i + 1
-                    quote = ch
-                elif quote == '' and ch == ' ':
-                    if start != -1:
-                        dir_name = sys_path[start:i]
-                        start = -1
-                else:
-                    if start == -1:
-                        start = i
-
-                if dir_name is not None:
-                    f.write('    "{0}",\n'.format(dir_name))
-
-            if start != -1:
-                f.write('    "{0}",\n'.format(sys_path[start:]))
+            for dir_name in shlex.split(sys_path):
+                f.write('    "{0}",\n'.format(dir_name.replace('"','\\"')))
 
             f.write('''    NULL
 };
@@ -773,12 +774,12 @@ int main(int argc, char **argv)
 {
     return pyqtdeploy_start(argc, argv, %s, "%s", %s, %s);
 }
-''' % (inittab, main_module, entry_point, path_dirs))
+''' % (c_inittab, main_module, entry_point, path_dirs))
 
         f.close()
 
     @classmethod
-    def _write_inittab(cls, f, extension_scopes, inittab, py3):
+    def _write_inittab(cls, f, inittab, c_inittab, py3):
         """ Write the Python version specific extension module inittab. """
 
         if py3:
@@ -788,29 +789,31 @@ int main(int argc, char **argv)
             init_type = 'void '
             init_prefix = 'init'
 
-        for ext, scope in extension_scopes.items():
-            base_ext = ext.split('.')[-1]
-
+        for scope, names in inittab.items():
             if scope != '':
                 cls._write_scope_guard(f, scope)
 
-            f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
-                    base_ext))
+            for name in names:
+                base_name = name.split('.')[-1]
+
+                f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
+                        base_name))
 
             if scope != '':
                 f.write('#endif\n')
 
         f.write('''
 static struct _inittab %s[] = {
-''' % inittab)
+''' % c_inittab)
 
-        for ext, scope in extension_scopes.items():
-            base_ext = ext.split('.')[-1]
-
+        for scope, names in inittab.items():
             if scope != '':
                 cls._write_scope_guard(f, scope)
 
-            f.write('    {"%s", %s%s},\n' % (ext, init_prefix, base_ext))
+            for name in names:
+                base_name = name.split('.')[-1]
+
+                f.write('    {"%s", %s%s},\n' % (name, init_prefix, base_name))
 
             if scope != '':
                 f.write('#endif\n')
@@ -909,17 +912,13 @@ static struct _inittab %s[] = {
         return get_embedded_dir(__file__, 'lib').absoluteFilePath(file_name)
 
     @classmethod
-    def _copy_lib_file(cls, file_name, dir_name=None, dst_file_name=None):
+    def _copy_lib_file(cls, file_name, dir_name, dst_file_name=None):
         """ Copy a library file to a directory and return the full pathname of
-        the copy.  If the directory wasn't specified then copy it to a
-        temporary directory.
+        the copy.
         """
 
         # Note that we use the Qt file operations to support the possibility
         # that pyqtdeploy itself has been deployed as a single executable.
-
-        if dir_name is None:
-            dir_name = tempfile.gettempdir()
 
         if dst_file_name is None:
             dst_file_name = file_name
@@ -927,12 +926,12 @@ static struct _inittab %s[] = {
         else:
             s_file_name = file_name
 
-        d_file_name = os.path.join(dir_name, dst_file_name)
+        d_file_name = dir_name + '/' +  dst_file_name
 
         # Make sure the destination doesn't exist.
         QFile.remove(d_file_name)
 
-        if not QFile.copy(s_file_name, QDir.fromNativeSeparators(d_file_name)):
+        if not QFile.copy(s_file_name, d_file_name):
             raise UserException("Unable to copy file {0}".format(file_name))
 
         return d_file_name

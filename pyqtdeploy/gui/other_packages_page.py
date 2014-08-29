@@ -100,7 +100,7 @@ class OtherPackagesPage(QWidget):
 
         self._package_selector.clear()
 
-        for package in project.packages:
+        for package in project.other_packages:
             self._add_package_dir(package)
 
         self._add_package_dir()
@@ -148,7 +148,7 @@ class OtherPackagesPage(QWidget):
             selector.takeTopLevelItem(itm_index)
 
         # Save the new packages.
-        project.packages = [
+        project.other_packages = [
                 selector.topLevelItem(i).data(0, Qt.UserRole)
                         for i in range(selector.topLevelItemCount() - 1)]
 

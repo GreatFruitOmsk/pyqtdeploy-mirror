@@ -63,7 +63,7 @@ class OtherExtensionModulesPage(QWidget):
         layout = QVBoxLayout()
 
         self._extension_modules_edit = QTreeWidget()
-        self._extension_modules_edit.setHeaderLabels(["Name", "Directory"])
+        self._extension_modules_edit.setHeaderLabels(["Name", "LIBS"])
         self._extension_modules_edit.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|
                 QTreeWidget.EditKeyPressed)
@@ -89,7 +89,7 @@ class OtherExtensionModulesPage(QWidget):
         # Set the extension modules.
         self._extension_modules_edit.clear()
 
-        for extension_module in project.extension_modules:
+        for extension_module in project.other_extension_modules:
             self._add_extension_module_item(extension_module)
 
         # Add one to be edited to create a new entry.
@@ -100,11 +100,11 @@ class OtherExtensionModulesPage(QWidget):
 
         if extension_module is not None:
             name = extension_module.name
-            path = extension_module.path
+            libs = extension_module.libs
         else:
-            name = path = ''
+            name = libs = ''
 
-        itm = QTreeWidgetItem([name, path])
+        itm = QTreeWidgetItem([name, libs])
 
         itm.setFlags(
                 Qt.ItemIsSelectable|Qt.ItemIsEditable|Qt.ItemIsEnabled|
@@ -119,10 +119,10 @@ class OtherExtensionModulesPage(QWidget):
         em_edit = self._extension_modules_edit
 
         new_name = itm.data(0, Qt.DisplayRole).strip()
-        new_path = itm.data(1, Qt.DisplayRole).strip()
+        new_libs = itm.data(1, Qt.DisplayRole).strip()
         itm_index = em_edit.indexOfTopLevelItem(itm)
 
-        if new_name != '' or new_path != '':
+        if new_name != '' or new_libs != '':
             # See if we have added a new one.
             if itm_index == em_edit.topLevelItemCount() - 1:
                 self._add_extension_module_item()
@@ -131,7 +131,7 @@ class OtherExtensionModulesPage(QWidget):
             em_edit.takeTopLevelItem(itm_index)
 
         # Save the new extension modules.
-        project.extension_modules = [
+        project.other_extension_modules = [
                 ExtensionModule(
                         em_edit.topLevelItem(i).data(0, Qt.DisplayRole).strip(),
                         project.relative_path(em_edit.topLevelItem(i).data(1, Qt.DisplayRole)))
