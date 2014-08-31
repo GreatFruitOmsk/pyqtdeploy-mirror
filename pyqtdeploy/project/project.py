@@ -63,13 +63,14 @@ class Project(QObject):
     def name(self):
         """ The name property getter. """
 
-        return self._name.canonicalFilePath() if self._name is not None else ''
+        # Use absoluteFilePath() because the file might not exist.
+        return self._name.absoluteFilePath() if self._name is not None else ''
 
     @name.setter
     def name(self, value):
         """ The name property setter. """
 
-        if self._name is None or self._name.canonicalFilePath() != value:
+        if self._name is None or self._name.absoluteFilePath() != value:
             self._name = QFileInfo(value)
             self.name_changed.emit(value)
 
@@ -125,11 +126,15 @@ class Project(QObject):
         environment variables.
         """
 
-        # The file may not exist but the parent directory should, so this will
-        # return a canonical name even if the file doesn't exist.
         fi = self._fileinfo_from_user(user_path)
 
-        return fi.canonicalPath() + '/' + fi.fileName()
+        # Use the canonical name if possible (ie. when the file exists) and
+        # fall back to the absolute name.
+        path = fi.canonicalFilePath()
+        if path == '':
+            path = fi.absoluteFilePath()
+
+        return path
 
     def get_executable_basename(self):
         """ Return the basename of the application executable (i.e. with no
