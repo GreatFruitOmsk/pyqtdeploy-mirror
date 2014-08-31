@@ -26,7 +26,7 @@
 
 import os
 
-from PyQt5.QtCore import QPoint, QSettings, QSize
+from PyQt5.QtCore import QFileInfo, QPoint, QSettings, QSize
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QTabWidget,
         QWhatsThis)
@@ -68,7 +68,7 @@ class ProjectGUI(QMainWindow):
         error.
         """
 
-        return cls._load_project(filename) if os.path.isfile(filename) else Project(filename)
+        return cls._load_project(filename) if QFileInfo(filename).exists() else Project(filename)
 
     def closeEvent(self, event):
         """ Handle a close event. """

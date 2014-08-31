@@ -134,7 +134,7 @@ class OtherExtensionModulesPage(QWidget):
         project.other_extension_modules = [
                 ExtensionModule(
                         em_edit.topLevelItem(i).data(0, Qt.DisplayRole).strip(),
-                        project.relative_path(em_edit.topLevelItem(i).data(1, Qt.DisplayRole)))
+                        em_edit.topLevelItem(i).data(1, Qt.DisplayRole).strip())
                         for i in range(em_edit.topLevelItemCount() - 1)]
 
         project.modified = True

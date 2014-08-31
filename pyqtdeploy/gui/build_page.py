@@ -183,17 +183,16 @@ class BuildPage(QWidget):
             logger.status_message("{0} succeeded.".format(make))
 
         if self._run_application_button.checkState() != Qt.Unchecked:
-            build_dir = project.absolute_path(project.build_dir)
+            build_dir = project.path_from_user(project.build_dir)
             exe_name = project.get_executable_basename()
 
             if sys.platform == 'win32':
-                application = os.path.join(build_dir, 'Release',
-                        exe_name + '.exe')
+                application = build_dir + '/Release/' + exe_name + '.exe'
             elif sys.platform == 'darwin' and project.application_is_bundle:
-                application = os.path.join(build_dir, exe_name + '.app',
-                        'Contents', 'MacOS', exe_name)
+                application = '/'.join([build_dir, exe_name + '.app',
+                        'Contents', 'MacOS', exe_name])
             else:
-                application = os.path.join(build_dir, exe_name)
+                application = build_dir + '/' + exe_name
 
             logger.status_message("Running {0}...".format(exe_name))
 

@@ -27,7 +27,7 @@
 import os
 from xml.etree.ElementTree import Element, ElementTree, SubElement
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
 
 from ..metadata import get_python_metadata
 from ..user_exception import UserException
@@ -63,14 +63,14 @@ class Project(QObject):
     def name(self):
         """ The name property getter. """
 
-        return self._name
+        return self._name.canonicalFilePath() if self._name is not None else ''
 
     @name.setter
     def name(self, value):
         """ The name property setter. """
 
-        if self._name != value:
-            self._name = value
+        if self._name is None or self._name.canonicalFilePath() != value:
+            self._name = QFileInfo(value)
             self.name_changed.emit(value)
 
     def __init__(self, name=''):
@@ -80,7 +80,7 @@ class Project(QObject):
 
         # Initialise the project meta-data.
         self._modified = False
-        self._name = os.path.abspath(name) if name != '' else ''
+        self._name = QFileInfo(name) if name != '' else None
 
         # Initialise the project data.
         self.application_name = ''
@@ -106,32 +106,30 @@ class Project(QObject):
         self.standard_library = []
         self.sys_path = ''
 
-    def relative_path(self, filename):
-        """ Convert a filename to one that is relative to the project
-        name if possible.
+    def path_to_user(self, path):
+        """ Convert a file name to one that is relative to the project name if
+        possible and uses native separators.
         """
 
-        filename = filename.strip()
+        if self._name is not None:
+            rel = self._name.dir().relativeFilePath(path)
+            if not rel.startswith('..'):
+                path = rel
 
-        if os.path.isabs(filename):
-            if self._name != '':
-                project_dir = os.path.dirname(self._name)
-                if filename.startswith(project_dir):
-                    filename = os.path.relpath(filename, project_dir)
+        return QDir.toNativeSeparators(path)
 
-        return filename
-
-    def absolute_path(self, filename):
-        """ Convert a filename that might be relative to the project name to an
-        absolute filename using native separators.
+    def path_from_user(self, user_path):
+        """ Convert the name of a file or directory specified by the user to
+        the standard Qt format (ie. an absolute path using UNIX separators).  A
+        user path may be relative to the name of the project and may contain
+        environment variables.
         """
 
-        filename = os.path.expandvars(filename.strip())
+        # The file may not exist but the parent directory should, so this will
+        # return a canonical name even if the file doesn't exist.
+        fi = self._fileinfo_from_user(user_path)
 
-        if not os.path.isabs(filename):
-            filename = os.path.join(os.path.dirname(self._name), filename)
-
-        return filename
+        return fi.canonicalPath() + '/' + fi.fileName()
 
     def get_executable_basename(self):
         """ Return the basename of the application executable (i.e. with no
@@ -147,10 +145,20 @@ class Project(QObject):
             if name == '':
                 return ''
 
-        basename, _ = os.path.splitext(
-                os.path.basename(self.absolute_path(name)))
+        return self._fileinfo_from_user(name).completeBaseName()
 
-        return basename
+    def _fileinfo_from_user(self, user_path):
+        """ Convert the name of a file or directory specified by the user to a
+        QFileInfo instance.  A user path may be relative to the name of the
+        project and may contain environment variables.
+        """
+
+        fi = QFileInfo(os.path.expandvars(user_path.strip()))
+
+        if fi.isRelative():
+            fi = QFileInfo(self._name.canonicalPath() + '/' + fi.filePath())
+
+        return fi
 
     def get_stdlib_requirements(self, include_hidden=False):
         """ Return a 2-tuple of the required Python standard library modules
@@ -219,17 +227,17 @@ class Project(QObject):
                     (dep_state.explicit or dep_state.implicit))
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, file_name):
         """ Return a new project loaded from the given file.  Raise a
         UserException if there was an error.
         """
 
-        abs_filename = os.path.abspath(filename)
+        fi = QFileInfo(file_name)
 
         tree = ElementTree()
 
         try:
-            root = tree.parse(abs_filename)
+            root = tree.parse(QDir.toNativeSeparators(fi.canonicalFilePath()))
         except Exception as e:
             raise UserException(
                 "There was an error reading the project file.", str(e))
@@ -258,7 +266,7 @@ class Project(QObject):
 
         # Create the project and populate it.
         project = cls()
-        project.name = abs_filename
+        project._name = fi
 
         # The Python specific configuration.
         python = root.find('Python')
@@ -354,18 +362,16 @@ class Project(QObject):
 
         self._save_project(self.name)
 
-    def save_as(self, filename):
+    def save_as(self, file_name):
         """ Save the project to the given file and make the file the
         destination of subsequent saves.  Raise a UserException if there was an
         error.
         """
 
-        abs_filename = os.path.abspath(filename)
-
-        self._save_project(abs_filename)
+        self._save_project(file_name)
 
         # Only do this after the project has been successfully saved.
-        self.name = abs_filename
+        self.name = file_name
 
     @classmethod
     def _load_package(cls, package_element):
@@ -446,7 +452,7 @@ class Project(QObject):
 
         return value
 
-    def _save_project(self, abs_filename):
+    def _save_project(self, file_name):
         """ Save the project to the given file.  Raise a UserException if there
         was an error.
         """
@@ -505,7 +511,8 @@ class Project(QObject):
         tree = ElementTree(root)
 
         try:
-            tree.write(abs_filename, encoding='unicode', xml_declaration=True)
+            tree.write(QDir.toNativeSeparators(file_name), encoding='unicode',
+                    xml_declaration=True)
         except Exception as e:
             raise UserException(
                     "There was an error writing the project file.", str(e))

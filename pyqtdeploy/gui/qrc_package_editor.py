@@ -25,9 +25,8 @@
 
 
 import fnmatch
-import os
 
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, QDir, Qt
 from PyQt5.QtWidgets import (QGridLayout, QMessageBox, QPushButton,
         QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator)
 
@@ -236,32 +235,38 @@ class QrcPackageEditor(QGridLayout):
             if self._show_root:
                 rel_path = rel_path[1:]
 
-            old_state[os.path.join(*rel_path)] = (itm.checkState(0) == Qt.Checked)
+            old_state['/'.join(rel_path)] = (itm.checkState(0) == Qt.Checked)
 
         # Walk the package.
-        if not os.path.exists(root):
+        root_dir = QDir(root)
+        if not root_dir.exists():
             QMessageBox.warning(self.parentWidget(), "Scan Directory",
-                    "{0} is not a valid directory.".format(root))
+                    "{0} is not a valid directory.".format(
+                            QDir.toNativeSeparators(root)))
             return
 
-        self._add_to_container(package, project.relative_path(root),
-                os.listdir(root), [], old_state)
+        self._add_to_container(package, root_dir, [], old_state)
         self._visualise()
 
         self.package_changed.emit()
 
-    def _add_to_container(self, container, path, path_contents, dir_stack, old_state):
+    def _add_to_container(self, container, content_dir, dir_stack, old_state):
         """ Add the files and directories of a package or sub-package to a
         container.
         """
 
-        # Make sure any filter is applied in a predictable order.
-        path_contents.sort(key=lambda p: p[1:].lower() if p.startswith('_') else p.lower())
+        dir_contents = content_dir.entryInfoList(
+                QDir.Files|QDir.Dirs|QDir.NoDotAndDotDot)
 
-        dir_stack.append(os.path.basename(path))
+        # Make sure any filter is applied in a predictable order.
+        dir_contents.sort(key=lambda fi: fi.fileName().lower()[1:] if fi.fileName().startswith('_') else fi.fileName().lower())
+
+        dir_stack.append(content_dir.dirName())
         contents = []
 
-        for name in path_contents:
+        for content in dir_contents:
+            name = content.fileName()
+
             # Apply any exclusions.
             for exc in self.package.exclusions:
                 if fnmatch.fnmatch(name, exc):
@@ -286,14 +291,12 @@ class QrcPackageEditor(QGridLayout):
             included = old_state.get(path_name, False)
 
             # Add the content.
-            full_name = os.path.join(path, name)
-
-            if os.path.isdir(full_name):
+            if content.isDir():
                 qrc = QrcDirectory(name, included)
 
-                self._add_to_container(qrc, full_name, os.listdir(full_name),
+                self._add_to_container(qrc, QDir(content.canonicalFilePath()),
                         dir_stack, old_state)
-            elif os.path.isfile(full_name):
+            elif content.isFile():
                 qrc = QrcFile(name, included)
             else:
                 continue

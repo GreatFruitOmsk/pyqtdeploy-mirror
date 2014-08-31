@@ -138,7 +138,7 @@ class OtherPackagesPage(QWidget):
         itm_index = selector.indexOfTopLevelItem(itm)
 
         if new_dir != '':
-            itm.data(0, Qt.UserRole).name = project.relative_path(new_dir)
+            itm.data(0, Qt.UserRole).name = project.path_to_user(new_dir)
 
             # See if we have added a new one.
             if itm_index == selector.topLevelItemCount() - 1:
@@ -177,7 +177,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
                         "The name of the package directory has not been set.")
             return ''
 
-        return project.absolute_path(package.name)
+        return project.path_from_user(package.name)
 
     def filter(self, name):
         """ Reimplemented to filter out any PyQt related stuff. """
