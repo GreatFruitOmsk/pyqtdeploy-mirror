@@ -1853,8 +1853,7 @@ _metadata = {
     'whichdb':          PythonModule(version=2, deps=('dbm', 'os', 'struct')),
     '_winreg':          ExtensionModule(version=2, scope='win32',
                                 source='../PC/_winreg.c'),
-    'winreg':           ExtensionModule(version=3, scope='win32',
-                                source='../PC/winreg.c'),
+    'winreg':           CoreExtensionModule(version=3, scope='win32'),
     'winsound':         ExtensionModule(scope='win32',
                                 source='../PC/winsound.c', libs='-lwinmm'),
     'wsgiref':          PythonModule(

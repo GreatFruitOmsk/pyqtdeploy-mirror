@@ -54,6 +54,7 @@ extern PyObject* PyInit__thread(void);
 extern PyObject* PyInit_signal(void);
 #if defined(MS_WINDOWS)
 extern PyObject* PyInit_nt(void);
+extern PyObject* PyInit_winreg(void);
 #else
 extern PyObject* PyInit_posix(void);
 #endif
@@ -102,6 +103,7 @@ struct _inittab _PyImport_Inittab[] = {
 	{"signal", PyInit_signal},
 #if defined(MS_WINDOWS)
 	{"nt", PyInit_nt},
+	{"winreg", PyInit_winreg},
 #else
 	{"posix", PyInit_posix},
 #endif

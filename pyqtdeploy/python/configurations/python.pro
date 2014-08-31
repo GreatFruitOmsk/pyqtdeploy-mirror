@@ -271,6 +271,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
 win32 {
     MOD_SOURCES += \
         PC/getpathp.c
+
+    greaterThan(PY_MAJOR_VERSION, 2) {
+        MOD_SOURCES += \
+            PC/winreg.c
+    }
 } else {
     MOD_SOURCES += \
         Modules/getpath.c \
