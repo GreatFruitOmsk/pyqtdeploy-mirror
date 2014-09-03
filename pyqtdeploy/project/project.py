@@ -305,10 +305,11 @@ class Project(QObject):
 
         # Any application package.
         app_package = application.find('Package')
-        cls._assert(app_package is not None,
-                "Missing 'Application.Python' tag.")
 
-        project.application_package = cls._load_package(app_package)
+        if app_package is not None:
+            project.application_package = cls._load_package(app_package)
+        else:
+            project.application_package = QrcPackage()
 
         # Any PyQt modules.
         for pyqt_m in root.iterfind('PyQtModule'):
@@ -484,7 +485,8 @@ class Project(QObject):
             'script': self.application_script,
             'syspath': self.sys_path})
 
-        self._save_package(application, self.application_package)
+        if self.application_package.name != '':
+            self._save_package(application, self.application_package)
 
         for pyqt_module in self.pyqt_modules:
             SubElement(root, 'PyQtModule', attrib={

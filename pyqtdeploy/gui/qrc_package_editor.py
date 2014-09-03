@@ -195,6 +195,11 @@ class QrcPackageEditor(QGridLayout):
 
         self._enable_buttons()
 
+        # This is a bit of a hack but is currently the only way to completely
+        # remove the application package.
+        if self._show_root:
+            self.package.name = ''
+
         del self.package.contents[:]
         self.package_changed.emit()
 
