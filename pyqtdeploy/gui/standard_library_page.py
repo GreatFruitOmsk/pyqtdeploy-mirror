@@ -186,12 +186,23 @@ class StandardLibraryPage(QSplitter):
         itm = it.value()
         while itm is not None:
             external = required_modules.get(itm._name)
+            expanded = False
             if external is None:
                 state = Qt.Unchecked
+            elif external:
+                state = Qt.Checked
+                expanded = True
             else:
-                state = Qt.Checked if external else Qt.PartiallyChecked
+                state = Qt.PartiallyChecked
 
             itm.setCheckState(0, state)
+
+            # Make sure every explicitly checked item is visible.
+            if expanded:
+                parent = itm.parent()
+                while parent is not None:
+                    parent.setExpanded(True)
+                    parent = parent.parent()
 
             it += 1
             itm = it.value()
