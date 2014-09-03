@@ -96,8 +96,17 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
     Py_IgnoreEnvironmentFlag = 1;
 
 #if PY_MAJOR_VERSION >= 3
-    QByteArray locale_codec_name = locale_codec->name();
-    Py_FileSystemDefaultEncoding = locale_codec_name.data();
+    if (!Py_FileSystemDefaultEncoding)
+    {
+        // Python doesn't have a platform default so get it from Qt.  However
+        // if Qt isn't specific then let Python have a go later.
+
+        static QByteArray locale_codec_name;
+
+        locale_codec_name = locale_codec->name();
+        if (locale_codec_name != "System")
+            Py_FileSystemDefaultEncoding = locale_codec_name.data();
+    }
 #endif
 
     PyImport_FrozenModules = modules;
