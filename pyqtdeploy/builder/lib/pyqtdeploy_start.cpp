@@ -146,12 +146,12 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
     // Initialise the Python v3 interpreter.
     Py_SetProgramName(w_argv[0]);
     Py_Initialize();
-    PySys_SetArgv(argc, w_argv);
+    PySys_SetArgvEx(argc, w_argv, 0);
 #else
     // Initialise the Python v2 interpreter.
     Py_SetProgramName(argv[0]);
     Py_Initialize();
-    PySys_SetArgv(argc, argv);
+    PySys_SetArgvEx(argc, argv, 0);
 
     // Initialise the path hooks.
     if (PyImport_ImportFrozenModule(CONST_CAST(BOOTSTRAP_MODULE)) < 0)
