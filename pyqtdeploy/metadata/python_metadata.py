@@ -2273,10 +2273,10 @@ _metadata = {
     '_gdbm':            ExtensionModule(version=3, internal=True,
                                 source='_gdbmmodule.c', xlib='gdbm'),
     'genericpath':      PythonModule(internal=True, deps=('os', 'stat')),
-    'gestalt':          ExtensionModule(version=2, scope='macx',
+    'gestalt':          ExtensionModule(version=2, internal=True, scope='macx',
                                 source='../Mac/Modules/gestaltmodule.c'),
-    '_gestalt':         ExtensionModule(version=(3, 3), scope='macx',
-                                source='_gestalt.c'),
+    '_gestalt':         ExtensionModule(version=(3, 3), internal=True,
+                                scope='macx', source='_gestalt.c'),
 
     '_hashlib':         ExtensionModule(internal=True, ssl=True,
                                 source='_hashopenssl.c', xlib='ssl'),
