@@ -260,7 +260,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/signalmodule.c \
         Modules/posixmodule.c \
         Modules/errnomodule.c \
-        Modules/pwdmodule.c \
         Modules/_sre.c \
         Modules/_codecsmodule.c \
         Modules/zipimport.c \
