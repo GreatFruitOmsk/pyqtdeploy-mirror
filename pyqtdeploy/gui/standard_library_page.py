@@ -159,8 +159,12 @@ class StandardLibraryPage(QSplitter):
 
             # Handle any sub-modules.
             if module.modules is not None:
-                for submodule in module.modules:
-                    add_module(submodule, metadata[submodule], itm)
+                for submodule_name in module.modules:
+                    # We assume that a missing sub-module is because it is not
+                    # in the current version rather than bad meta-data.
+                    submodule = metadata.get(submodule_name)
+                    if submodule is not None:
+                        add_module(submodule_name, submodule, itm)
 
         for name, module in metadata.items():
             if not module.internal and '.' not in name:
