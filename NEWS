@@ -1,3 +1,25 @@
+v0.6 ??? September 2014
+  - Support for Python v2.6 has been removed.
+  - Split into two separate applications: the GUI pyqtdeploy and the command
+    line pyqtdeploycli.
+  - The project file format has been changed and is not backwards compatible.
+    There will not be any more incompatible changes.
+  - The pyqtdeploy module has now been renamed pdytools.
+  - Applications now set the sys.frozen attribute.
+  - Applications that use setuptools entry points are now supported.
+  - Reimplemented the GUI for specifying the standard library modules needed by
+    an application.  pyqtdeploy now understands the inter-dependencies within
+    the standard library so it is only necessary to specify the modules
+    explicitly imported by the application.
+  - It is now possible to build console applications on Windows.
+  - It is now possible to build non-bundle applications on OS/X.
+  - Values for DEFINES, INCLUDEPATH and LIBS can now be scoped with qmake
+    scopes in order to specify platform-specific values.
+  - Applications can now be built with or without support for SSL.
+  - Added support for modules introduced in PyQt v5.3.2.
+  - Added support for PyQtPurchasing.
+  - pyqtdeploy and pyqtdeploycli are themselves deployable.
+
 v0.5 24th July 2014
   - Added support for configuring Python, SIP, PyQt etc. for native and
     cross-compilation for all target platforms (Linux, OS/X, Windows, iOS and
