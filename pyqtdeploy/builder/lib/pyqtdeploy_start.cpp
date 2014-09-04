@@ -105,7 +105,10 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 
         locale_codec_name = locale_codec->name();
         if (locale_codec_name != "System")
+        {
             Py_FileSystemDefaultEncoding = locale_codec_name.data();
+            Py_HasFileSystemDefaultEncoding = 1;
+        }
     }
 #endif
 
