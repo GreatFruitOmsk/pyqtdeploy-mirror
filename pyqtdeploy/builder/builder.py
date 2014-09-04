@@ -321,7 +321,7 @@ class Builder():
         qmake_config5 -= both_config
 
         both_config.add('release')
-        both_config.add('warn_on')
+        both_config.add('warn_off')
 
         if not needs_gui or project.application_is_console:
             both_config.add('console')
