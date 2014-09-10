@@ -65,6 +65,10 @@ option.
 When cross-compiling for mobile devices it is recommended that you use one of
 the binary installers provided by Digia.
 
+If your Qt installation is affected by `QTBUG-41204
+<https://bugreports.qt-project.org/browse/QTBUG-41204>`_ then you should not
+remove your Qt source directory after installing.
+
 
 Python
 ------
