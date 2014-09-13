@@ -1,4 +1,4 @@
-v0.6 ??? September 2014
+v0.6 13th September 2014
   - Support for Python v2.6 has been removed.
   - Split into two separate applications: the GUI pyqtdeploy and the command
     line pyqtdeploycli.
