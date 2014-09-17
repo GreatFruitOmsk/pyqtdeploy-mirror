@@ -171,8 +171,11 @@ class Builder():
 
         # Handle any application package.
         if project.application_package.name != '':
-            package_src_dir, package_name = self._get_package_details(
-                    project.application_package.name)
+            fi = QFileInfo(project.path_from_user(
+                    project.application_package.name))
+
+            package_src_dir = fi.canonicalFilePath()
+            package_name = fi.completeBaseName()
 
             self._write_package(resource_contents, resources_dir, package_name,
                     project.application_package, package_src_dir, freeze, opt)
@@ -183,11 +186,8 @@ class Builder():
 
         # Handle any additional packages.
         for package in project.other_packages:
-            package_src_dir, package_name = self._get_package_details(
-                    package.name)
-
-            self._write_package(resource_contents, resources_dir, package_name,
-                    package, package_src_dir, freeze, opt)
+            self._write_package(resource_contents, resources_dir, '', package,
+                    project.path_from_user(package.name), freeze, opt)
 
         # Handle the PyQt package.
         if len(project.pyqt_modules) != 0:
@@ -273,15 +273,6 @@ class Builder():
                     stdlib_src_dir + '/' + in_file, freeze, opt)
 
             resource_contents.append(out_file)
-
-    def _get_package_details(self, package_name):
-        """ Split a user package name into its absolute path name and base
-        name.
-        """
-
-        fi = QFileInfo(self._project.path_from_user(package_name))
-
-        return fi.canonicalFilePath(), fi.completeBaseName()
 
     def _write_qmake(self, build_dir, required_ext, required_libraries, freeze, opt):
         """ Create the .pro file for qmake. """
