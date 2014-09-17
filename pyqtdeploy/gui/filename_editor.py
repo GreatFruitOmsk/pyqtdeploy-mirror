@@ -34,8 +34,8 @@ class FilenameEditor(QWidget):
     are relative to the project if possbile.
     """
 
-    # Emitted when editing has finished.
-    editingFinished = pyqtSignal()
+    # Emitted when the value should be auto-commited.
+    autoCommit = pyqtSignal()
 
     def __init__(self, caption, directory=False, parent=None, **kwds):
         """ Initialise the editor. """
@@ -50,7 +50,6 @@ class FilenameEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         self._line_edit = QLineEdit(**kwds)
-        self._line_edit.editingFinished.connect(self.editingFinished)
         layout.addWidget(self._line_edit)
         self.setFocusProxy(self._line_edit)
 
@@ -97,4 +96,4 @@ class FilenameEditor(QWidget):
             if name != orig:
                 self._line_edit.setText(name)
                 self._line_edit.textEdited.emit(name)
-                self.editingFinished.emit()
+                self.autoCommit.emit()
