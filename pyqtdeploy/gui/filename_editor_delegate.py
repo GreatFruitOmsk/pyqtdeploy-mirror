@@ -56,6 +56,12 @@ class FilenameEditorDelegate(QStyledItemDelegate):
                 parent=parent, **self._kwds)
         editor.set_project(self._project)
 
+        def commit_and_close():
+            self.commitData.emit(editor)
+            self.closeEditor.emit(editor)
+
+        editor.editingFinished.connect(commit_and_close)
+
         # Prevent the selected value showing through.
         editor.setAutoFillBackground(True)
 

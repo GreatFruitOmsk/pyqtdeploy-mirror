@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtCore import QDir
+from PyQt5.QtCore import pyqtSignal, QDir
 from PyQt5.QtWidgets import (QFileDialog, QHBoxLayout, QLineEdit, QStyle,
         QToolButton, QWidget)
 
@@ -33,6 +33,9 @@ class FilenameEditor(QWidget):
     """ A simple file name editor suitable to be added to a layout. Filenames
     are relative to the project if possbile.
     """
+
+    # Emitted when editing has finished.
+    editingFinished = pyqtSignal()
 
     def __init__(self, caption, directory=False, parent=None, **kwds):
         """ Initialise the editor. """
@@ -47,6 +50,7 @@ class FilenameEditor(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         
         self._line_edit = QLineEdit(**kwds)
+        self._line_edit.editingFinished.connect(self.editingFinished)
         layout.addWidget(self._line_edit)
         self.setFocusProxy(self._line_edit)
 
@@ -92,3 +96,4 @@ class FilenameEditor(QWidget):
             if name != orig:
                 self._line_edit.setText(name)
                 self._line_edit.textEdited.emit(name)
+                self.editingFinished.emit()
