@@ -91,7 +91,8 @@ class FilenameEditor(QWidget):
                     self._caption, default)
 
         if name != '':
-            name = self._project.path_to_user(name)
+            if self._project is not None:
+                name = self._project.path_to_user(name)
 
             if name != orig:
                 self._line_edit.setText(name)
