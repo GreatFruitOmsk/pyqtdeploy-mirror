@@ -37,6 +37,12 @@ class Project(QObject):
     """ The encapsulation of a project. """
 
     # The current project version.  Versions 0 to 3 are no longer supported.
+    # Note that we added the 'patch' attribute to the 'Project/Python' element
+    # to Version 4 without bumping the version number to 5.  This is because we
+    # haven't got round to implementing a proper mechanism to update the
+    # format.  It will only be a problem if a project targets Python v3.4.2 or
+    # later (using pyqtdeploy v0.7 or later) and is then edited with pyqtdeploy
+    # v0.6.
     version = 4
 
     # Emitted when the modification state of the project changes.
@@ -286,7 +292,8 @@ class Project(QObject):
 
         major = cls._get_int(python, 'major', 'Python')
         minor = cls._get_int(python, 'minor', 'Python')
-        project.python_target_version = (major, minor)
+        patch = cls._get_int(python, 'patch', 'Python', default=0)
+        project.python_target_version = (major, minor, patch)
 
         # The application specific configuration.
         application = root.find('Application')
@@ -443,14 +450,14 @@ class Project(QObject):
         return bool(value)
 
     @classmethod
-    def _get_int(cls, element, name, context):
+    def _get_int(cls, element, name, context, default=None):
         """ Get an integer attribute from an element. """
 
         value = element.get(name)
         try:
             value = int(value)
         except:
-            value = None
+            value = default
 
         cls._assert(value is not None,
                 "Missing or invalid integer value of '{0}.{1}'.".format(
@@ -474,7 +481,8 @@ class Project(QObject):
             'targetlibrary': self.python_target_library,
             'targetstdlibdir': self.python_target_stdlib_dir,
             'major': str(self.python_target_version[0]),
-            'minor': str(self.python_target_version[1])})
+            'minor': str(self.python_target_version[1]),
+            'patch': str(self.python_target_version[2])})
 
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,

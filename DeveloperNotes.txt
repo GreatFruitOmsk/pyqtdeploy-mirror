@@ -34,6 +34,13 @@ code that applies the patches to cope.
 Otherwise generate a new set of patches in the patches directory.
 
 
+Modules
+.......
+
+``diff`` the ``Lib`` directory, look for any new or removed ``import``
+statements and update the Python standard library meta-data accordingly.
+
+
 pyconfig.h
 ..........
 

@@ -86,28 +86,36 @@ class VersionedModule:
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
-        # version number is a 2-tuple of major and minor version number.  It is
+        # version number is a 3-tuple of major, minor and patch number.  It is
         # an error if version numbers for a particular module overlaps.
-        if version is not None:
-            if isinstance(version, tuple):
-                self.min_version = self.max_version = version
-            else:
-                # A single digit is interpreted as a range.
-                self.min_version = (version, 0)
-                self.max_version = (version, 99)
-        else:
-            if min_version is not None:
-                self.min_version = min_version
-            else:
-                self.min_version = (2, 0)
+        if version is None:
+            if min_version is None:
+                min_version = 2
 
-            if max_version is not None:
-                self.max_version = max_version
-            else:
-                self.max_version = (3, 99)
+            if max_version is None:
+                max_version = 3
+        else:
+            min_version = max_version = version
+
+        self.min_version = self._expand_version(min_version, 0)
+        self.max_version = self._expand_version(max_version, 255)
 
         self.module = StdlibModule(internal, ssl, scope, deps, hidden_deps,
                 core, defines, xlib, modules, source, libs, includepath)
+
+    @staticmethod
+    def _expand_version(version, default):
+        """ Ensure a version number is a 3-tuple. """
+
+        if not isinstance(version, tuple):
+            version = (version, )
+
+        default = (default, )
+
+        while len(version) < 3:
+            version += default
+
+        return version
 
 
 class ExtensionModule(VersionedModule):
@@ -217,7 +225,8 @@ _metadata = {
     'asyncore':         PythonModule(
                                 deps=('errno', 'fcntl', 'os', 'select',
                                         'socket', 'time', 'warnings')),
-    'asyncio':          PythonModule(min_version=(3, 4),
+    'asyncio': (        PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 deps=('asyncio.events', 'asyncio.futures',
                                         'asyncio.locks', 'asyncio.protocols',
                                         'asyncio.queues', 'asyncio.streams',
@@ -226,6 +235,16 @@ _metadata = {
                                         'asyncio.unix_events',
                                         'asyncio.windows_events',
                                         'selectors')),
+                        PythonModule(min_version=(3, 4, 2),
+                                deps=('asyncio.coroutines', 'asyncio.events',
+                                        'asyncio.futures', 'asyncio.locks',
+                                        'asyncio.protocols', 'asyncio.queues',
+                                        'asyncio.streams',
+                                        'asyncio.subprocess', 'asyncio.tasks',
+                                        'asyncio.transports',
+                                        'asyncio.unix_events',
+                                        'asyncio.windows_events',
+                                        'selectors'))),
     'atexit': (         CorePythonModule(version=2),
                         ExtensionModule(version=(3, 3),
                                 source='atexitmodule.c'),
@@ -504,13 +523,21 @@ _metadata = {
                                         'email.generator', 'email.iterators',
                                         'email._policybase', 'email.utils',
                                         'io', 're', 'uu')),
-                        PythonModule(min_version=(3, 4),
+                        PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 deps=('email', 'email.charset',
                                         'email._encoded_words', 'email.errors',
                                         'email.generator', 'email.iterators',
                                         'email.policy', 'email._policybase',
                                         'email.utils', 'io', 'quopri', 're',
-                                        'uu'))),
+                                        'uu')),
+                        PythonModule(min_version=(3, 4, 2),
+                                deps=('email', 'email.charset',
+                                        'email._encoded_words', 'email.errors',
+                                        'email.generator', 'email.iterators',
+                                        'email.policy', 'email._policybase',
+                                        'email.utils', 'io', 'quopri', 're',
+                                        'uu', 'warnings'))),
     'email.mime':       PythonModule(
                                 deps='email',
                                 modules=('email.mime.application',
@@ -1484,7 +1511,8 @@ _metadata = {
                                         'tempfile', 'threading', 'time',
                                         'tokenize', 'traceback', 'tty',
                                         'warnings')),
-                        PythonModule(min_version=(3, 4),
+                        PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 deps=('collections', 'email.message',
                                         'http.server', 'importlib._bootstrap',
                                         'importlib.machinery',
@@ -1493,7 +1521,17 @@ _metadata = {
                                         'platform', 're', 'reprlib', 'select',
                                         'tempfile', 'textwrap', 'threading',
                                         'time', 'tokenize', 'traceback', 'tty',
-                                        'warnings'))),
+                                        'warnings')),
+                        PythonModule(min_version=(3, 4, 2),
+                                deps=('collections', 'email.message',
+                                        'http.server', 'importlib._bootstrap',
+                                        'importlib.machinery',
+                                        'importlib.util', 'inspect', 'io',
+                                        'os', 'pkgutil', 'platform', 're',
+                                        'reprlib', 'select', 'tempfile',
+                                        'textwrap', 'threading', 'time',
+                                        'tokenize', 'traceback', 'tty',
+                                        'urllib.parse', 'warnings'))),
 
     'Queue':            PythonModule(version=2,
                                 deps=('collections', 'heapq', 'threading',
@@ -1628,9 +1666,13 @@ _metadata = {
     'sqlite3.dbapi2': ( PythonModule(version=2,
                                 deps=('sqlite3', 'collections', 'datetime',
                                         '_sqlite3', 'time')),
-                        PythonModule(version=3,
+                        PythonModule(min_version=(3, 0, 0),
+                                max_version=(3, 4, 1),
                                 deps=('sqlite3', 'datetime', '_sqlite3',
-                                        'time'))),
+                                        'time')),
+                        PythonModule(min_version=(3, 4, 2),
+                                deps=('sqlite3', 'collections.abc', 'datetime',
+                                        '_sqlite3', 'time'))),
     'ssl': (            PythonModule(version=2,
                                 ssl=True,
                                 deps=('base64', 'errno', 'socket', '_ssl',
@@ -2000,7 +2042,8 @@ _metadata = {
     # These are internal modules.
     '_abcoll':          PythonModule(version=2, internal=True, deps='abc'),
     '_ast':             CoreExtensionModule(internal=True),
-    'asyncio.base_events':  PythonModule(min_version=(3, 4),
+    'asyncio.base_events': (PythonModule(min_version=(3, 4, 0),
+                                    max_version=(3, 4, 1),
                                     internal=True,
                                     deps=('asyncio', 'asyncio.events',
                                             'asyncio.futures', 'asyncio.log',
@@ -2008,28 +2051,70 @@ _metadata = {
                                             'concurrent.futures', 'heapq',
                                             'logging', 'os', 'socket',
                                             'subprocess', 'time')),
-    'asyncio.base_subprocess':  PythonModule(min_version=(3, 4),
+                            PythonModule(min_version=(3, 4, 2),
+                                    internal=True,
+                                    deps=('asyncio', 'asyncio.coroutines',
+                                            'asyncio.events',
+                                            'asyncio.futures', 'asyncio.log',
+                                            'asyncio.tasks', 'collections',
+                                            'concurrent.futures', 'heapq',
+                                            'inspect', 'logging', 'os',
+                                            'socket', 'subprocess', 'time',
+                                            'traceback'))),
+    'asyncio.base_subprocess': (PythonModule(min_version=(3, 4, 0),
+                                        max_version=(3, 4, 1),
                                         internal=True,
                                         deps=('asyncio', 'asyncio.protocols',
                                                 'asyncio.tasks',
                                                 'asyncio.transports',
                                                 'collections', 'subprocess')),
+                                PythonModule(min_version=(3, 4, 2),
+                                        internal=True,
+                                        deps=('asyncio', 'asyncio.coroutines',
+                                                'asyncio.log',
+                                                'asyncio.protocols',
+                                                'asyncio.transports',
+                                                'collections', 'subprocess'))),
     'asyncio.constants':    PythonModule(min_version=(3, 4),
                                     internal=True, deps='asyncio'),
-    'asyncio.events':   PythonModule(min_version=(3, 4),
+    'asyncio.coroutines':   PythonModule(min_version=(3, 4, 2),
+                                    internal=True,
+                                    deps=('asyncio', 'asyncio.events',
+                                            'asyncio.futures', 'asyncio.log',
+                                            'functools', 'inspect', 'opcode',
+                                            'os', 'traceback', 'types')),
+    'asyncio.events': ( PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 internal=True,
                                 deps=('asyncio', 'socket', 'subprocess',
                                         'threading')),
-    'asyncio.futures':  PythonModule(min_version=(3, 4),
+                        PythonModule(min_version=(3, 4, 2),
+                                internal=True,
+                                deps=('asyncio', 'functools', 'inspect',
+                                        'reprlib', 'socket', 'subprocess',
+                                        'threading', 'traceback'))),
+    'asyncio.futures': (PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 internal=True,
                                 deps=('asyncio', 'asyncio.events',
                                         'concurrent.futures._base', 'logging',
                                         'traceback')),
-    'asyncio.locks':    PythonModule(min_version=(3, 4),
+                        PythonModule(min_version=(3, 4, 2),
+                                internal=True,
+                                deps=('asyncio', 'asyncio.events',
+                                        'concurrent.futures._base', 'logging',
+                                        'reprlib', 'traceback'))),
+    'asyncio.locks': (  PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 internal=True,
                                 deps=('asyncio', 'asyncio.events',
                                         'asyncio.futures', 'asyncio.tasks',
                                         'collections')),
+                        PythonModule(min_version=(3, 4, 2),
+                                internal=True,
+                                deps=('asyncio', 'asyncio.coroutines',
+                                        'asyncio.events', 'asyncio.futures',
+                                        'collections'))),
     'asyncio.log':      PythonModule(min_version=(3, 4),
                                 internal=True, deps=('asyncio', 'logging')),
     'asyncio.proactor_events':  PythonModule(min_version=(3, 4),
@@ -2048,7 +2133,8 @@ _metadata = {
                                         'asyncio.futures', 'asyncio.locks',
                                         'asyncio.tasks', 'collections',
                                         'heapq')),
-    'asyncio.selector_events':  PythonModule(min_version=(3, 4),
+    'asyncio.selector_events': (PythonModule(min_version=(3, 4, 0),
+                                        max_version=(3, 4, 1),
                                         internal=True,
                                         deps=('asyncio', 'asyncio.base_events',
                                                 'asyncio.constants',
@@ -2058,19 +2144,47 @@ _metadata = {
                                                 'asyncio.transports',
                                                 'collections', 'errno',
                                                 'selectors', 'socket', 'ssl')),
-    'asyncio.streams':  PythonModule(min_version=(3, 4),
+                                PythonModule(min_version=(3, 4, 2),
+                                        internal=True,
+                                        deps=('asyncio', 'asyncio.base_events',
+                                                'asyncio.constants',
+                                                'asyncio.events',
+                                                'asyncio.futures',
+                                                'asyncio.log',
+                                                'asyncio.transports',
+                                                'collections', 'errno',
+                                                'functools', 'selectors',
+                                                'socket', 'ssl'))),
+    'asyncio.streams': (PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 internal=True,
                                 deps=('asyncio', 'asyncio.events',
                                         'asyncio.futures', 'asyncio.protocols',
                                         'asyncio.tasks', 'socket')),
-    'asyncio.subprocess':   PythonModule(min_version=(3, 4),
+                        PythonModule(min_version=(3, 4, 2),
+                                internal=True,
+                                deps=('asyncio', 'asyncio.coroutines',
+                                        'asyncio.events', 'asyncio.futures',
+                                        'asyncio.log', 'asyncio.protocols',
+                                        'socket'))),
+    'asyncio.subprocess': ( PythonModule(min_version=(3, 4, 0),
+                                    max_version=(3, 4, 1),
                                     internal=True,
                                     deps=('asyncio', 'asyncio.events',
                                             'asyncio.futures',
                                             'asyncio.protocols',
                                             'asyncio.streams', 'asyncio.tasks',
                                             'collections', 'subprocess')),
-    'asyncio.tasks':    PythonModule(min_version=(3, 4),
+                            PythonModule(min_version=(3, 4, 2),
+                                    internal=True,
+                                    deps=('asyncio', 'asyncio.coroutines',
+                                            'asyncio.events',
+                                            'asyncio.futures', 'asyncio.log',
+                                            'asyncio.protocols',
+                                            'asyncio.streams', 'asyncio.tasks',
+                                            'collections', 'subprocess'))),
+    'asyncio.tasks': (  PythonModule(min_version=(3, 4, 0),
+                                max_version=(3, 4, 1),
                                 internal=True,
                                 deps=('asyncio', 'asyncio.events',
                                         'asyncio.futures', 'asyncio.log',
@@ -2078,9 +2192,18 @@ _metadata = {
                                         'concurrent.futures', 'functools',
                                         'inspect', 'linecache', 'os',
                                         'traceback', 'weakref')),
+                        PythonModule(min_version=(3, 4, 2),
+                                internal=True,
+                                deps=('asyncio', 'asyncio.coroutines',
+                                        'asyncio.events', 'asyncio.futures',
+                                        'asyncio.queues', 'asyncio.tasks',
+                                        'concurrent.futures', 'functools',
+                                        'inspect', 'linecache', 'traceback',
+                                        'weakref'))),
     'asyncio.transports':   PythonModule(min_version=(3, 4),
                                     internal=True, deps='asyncio'),
-    'asyncio.unix_events':  PythonModule(min_version=(3, 4),
+    'asyncio.unix_events': (PythonModule(min_version=(3, 4, 0),
+                                    max_version=(3, 4, 1),
                                     internal=True, scope='!win32',
                                     deps=('asyncio', 'asyncio.base_events',
                                             'asyncio.base_subprocess',
@@ -2092,7 +2215,20 @@ _metadata = {
                                             'fcntl', 'os', 'signal', 'socket',
                                             'stat', 'subprocess',
                                             'threading')),
-    'asyncio.windows_events':   PythonModule(min_version=(3, 4),
+                            PythonModule(min_version=(3, 4, 2),
+                                    internal=True, scope='!win32',
+                                    deps=('asyncio', 'asyncio.base_events',
+                                            'asyncio.base_subprocess',
+                                            'asyncio.coroutines',
+                                            'asyncio.constants',
+                                            'asyncio.events', 'asyncio.log',
+                                            'asyncio.selector_events',
+                                            'asyncio.transports', 'errno',
+                                            'fcntl', 'os', 'signal', 'socket',
+                                            'stat', 'subprocess',
+                                            'threading'))),
+    'asyncio.windows_events': ( PythonModule(min_version=(3, 4, 0),
+                                        max_version=(3, 4, 1),
                                         internal=True, scope='win32',
                                         deps=('asyncio', 'asyncio.events',
                                                 'asyncio.base_subprocess',
@@ -2104,6 +2240,19 @@ _metadata = {
                                                 'errno', 'math', 'socket',
                                                 'struct', 'weakref',
                                                 '_winapi')),
+                                PythonModule(min_version=(3, 4, 2),
+                                        internal=True, scope='win32',
+                                        deps=('asyncio', 'asyncio.events',
+                                                'asyncio.base_subprocess',
+                                                'asyncio.coroutines',
+                                                'asyncio.log',
+                                                'asyncio.proactor_events',
+                                                'asyncio.selector_events',
+                                                'asyncio.tasks',
+                                                'asyncio.windows_utils',
+                                                'errno', 'math', 'socket',
+                                                'struct', 'weakref',
+                                                '_winapi'))),
     'asyncio.windows_utils':    PythonModule(min_version=(3, 4),
                                         internal=True, scope='win32',
                                         deps=('asyncio', 'itertools', 'msvcrt',
@@ -2782,32 +2931,36 @@ def get_python_metadata(version):
     Python.  It is assumed that the version is valid.
     """
 
+    nr = _version_from_tuple(version)
+
     # Use the cached value if there is one.
-    version_metadata = _metadata_cache.get(version)
+    version_metadata = _metadata_cache.get(nr)
     if version_metadata is not None:
         return version_metadata
 
-    _metadata_cache[version] = version_metadata = {}
-
-    nr = version[0] * 100 + version[1]
+    _metadata_cache[nr] = version_metadata = {}
 
     for name, versions in _metadata.items():
         if not isinstance(versions, tuple):
             versions = (versions, )
 
         for versioned_module in versions:
-            min_major, min_minor = versioned_module.min_version
-            min_nr = min_major * 100 + min_minor
+            min_nr = _version_from_tuple(versioned_module.min_version)
 
             if nr >= min_nr:
-                max_major, max_minor = versioned_module.max_version
-                max_nr = max_major * 100 + max_minor
+                max_nr = _version_from_tuple(versioned_module.max_version)
 
                 if nr <= max_nr:
                     version_metadata[name] = versioned_module.module
                     break
 
     return version_metadata
+
+
+def _version_from_tuple(version):
+    """ Convert a 3-tuple version to an integer. """
+
+    return (version[0] << 16) + (version[1] << 8) + version[2]
 
 
 if __name__ == '__main__':
@@ -2826,10 +2979,10 @@ if __name__ == '__main__':
             except KeyError:
                 pass
 
-    def check_version(major, minor):
+    def check_version(major, minor, patch=0):
         """ Carry out sanity checks for a particular version of Python. """
 
-        print("Checking Python v{0}.{1}...".format(major, minor))
+        print("Checking Python v{0}.{1}.{2}...".format(major, minor, patch))
 
         # Get the meta-data for this version.
         version_metadata = {}
@@ -2839,14 +2992,11 @@ if __name__ == '__main__':
                 versions = (versions, )
 
             # Check the version numbers.
-            nr = major * 100 + minor
+            nr = _version_from_tuple((major, minor, patch))
             matches = []
             for module in versions:
-                min_major, min_minor = module.min_version
-                max_major, max_minor = module.max_version
-
-                min_nr = min_major * 100 + min_minor
-                max_nr = max_major * 100 + max_minor
+                min_nr = _version_from_tuple(module.min_version)
+                max_nr = _version_from_tuple(module.max_version)
 
                 if min_nr > max_nr:
                     print("Module '{0}' version numbers are swapped".format(name))
@@ -2885,4 +3035,5 @@ if __name__ == '__main__':
     # Check each supported version.
     check_version(2, 7)
     check_version(3, 3)
-    check_version(3, 4)
+    check_version(3, 4, 0)
+    check_version(3, 4, 2)
