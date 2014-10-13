@@ -24,7 +24,7 @@ Patches
 
 Change to the source directory of the new Python version and run::
 
-    pyqtdeploy --package python --target android-32 configure
+    pyqtdeploycli --package python --target android-32 configure
 
 If the patches apply without error then there is nothing to do.
 
