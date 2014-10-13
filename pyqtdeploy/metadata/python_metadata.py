@@ -190,1174 +190,1426 @@ class CodecModule(PythonModule):
 # The meta-data for each module.
 _metadata = {
     # These are the public modules.
-    '__future__':       PythonModule(),
-    '_thread':          CoreExtensionModule(version=3),
+    '__future__':
+        PythonModule(),
 
-    'abc': (            PythonModule(version=2,
-                                deps=('types', '_weakrefset')),
-                        PythonModule(version=3,
-                                deps='_weakrefset')),
-    'aifc': (           PythonModule(version=2,
-                                deps=('audioop', 'chunk', 'cl', 'math',
-                                        'struct')),
-                        PythonModule(version=(3, 3),
-                                deps=('audioop', 'chunk', 'math', 'struct',
-                                        'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('audioop', 'chunk', 'collections',
-                                        'math', 'struct', 'warnings'))),
-    'anydbm':           PythonModule(version=2, deps='whichdb'),
-    'argparse': (       PythonModule(version=2,
-                                deps=('collections', 'copy', 'gettext', 'os',
-                                        're', 'textwrap', 'warnings')),
-                        PythonModule(min_version=(3, 3),
-                                deps=('collections', 'copy', 'gettext', 'os',
-                                        're', 'textwrap'))),
-    'array':            ExtensionModule(source='arraymodule.c'),
-    'ast':              PythonModule(deps=('_ast', 'collections', 'inspect')),
-    'asynchat': (       PythonModule(version=2,
-                                deps=('asyncore', 'collections', 'socket',
-                                        'warnings')),
-                        PythonModule(version=(3, 3),
-                                deps=('asyncore', 'collections', 'socket')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('asyncore', 'collections'))),
-    'asyncore':         PythonModule(
-                                deps=('errno', 'fcntl', 'os', 'select',
-                                        'socket', 'time', 'warnings')),
-    'asyncio': (        PythonModule(min_version=(3, 4, 0),
-                                max_version=(3, 4, 1),
-                                deps=('asyncio.events', 'asyncio.futures',
-                                        'asyncio.locks', 'asyncio.protocols',
-                                        'asyncio.queues', 'asyncio.streams',
-                                        'asyncio.subprocess', 'asyncio.tasks',
-                                        'asyncio.transports',
-                                        'asyncio.unix_events',
-                                        'asyncio.windows_events',
-                                        'selectors')),
-                        PythonModule(min_version=(3, 4, 2),
-                                deps=('asyncio.coroutines', 'asyncio.events',
-                                        'asyncio.futures', 'asyncio.locks',
-                                        'asyncio.protocols', 'asyncio.queues',
-                                        'asyncio.streams',
-                                        'asyncio.subprocess', 'asyncio.tasks',
-                                        'asyncio.transports',
-                                        'asyncio.unix_events',
-                                        'asyncio.windows_events',
-                                        'selectors'))),
-    'atexit': (         CorePythonModule(version=2),
-                        ExtensionModule(version=(3, 3),
-                                source='atexitmodule.c'),
-                        CoreExtensionModule(min_version=(3, 4))),
-    'audioop':          ExtensionModule(source='audioop.c'),
+    '_thread':
+        CoreExtensionModule(version=3),
 
-    'base64': (         PythonModule(version=2,
-                                deps=('binascii', 're', 'struct')),
-                        PythonModule(version=3,
-                                deps=('binascii', 're', 'struct',
-                                        'warnings'))),
-    'BaseHTTPServer':   PythonModule(version=2,
-                                deps=('mimetools', 'socket', 'SocketServer',
-                                        'time', 'warnings')),
-    'binascii':         ExtensionModule(source='binascii.c'),
-    'binhex': (         PythonModule(version=2,
-                                deps=('binascii', 'os', 'struct')),
-                        PythonModule(version=3,
-                                deps=('binascii', 'io', 'os', 'struct'))),
-    'bisect':           PythonModule(deps='_bisect'),
-    'bsddb':            PythonModule(version=2,
-                                deps=('bsddb.dbutils', '_bsddb', 'collections',
-                                        'os', 'thread', 'warnings',
-                                        'weakref')),
-    'bz2': (            ExtensionModule(version=2,
-                                source='bz2module.c', xlib='bz2'),
-                        PythonModule(version=3,
-                                deps=('_thread', '_bz2', 'io', 'warnings'))),
+    'abc': (
+        PythonModule(version=2, deps=('types', '_weakrefset')),
+        PythonModule(version=3, deps='_weakrefset')),
 
-    'calendar':         PythonModule(deps=('datetime', 'locale')),
-    'cgi': (            PythonModule(version=2,
-                                deps=('cStringIO', 'mimetools', 'operator',
-                                        'os', 're', 'rfc822', 'tempfile',
-                                        'traceback', 'urlparse', 'UserDict',
-                                        'warnings')),
-                        PythonModule(version=3,
-                                deps=('collections', 'email.message',
-                                        'email.parser', 'html', 'http.client',
-                                        'io', 'locale', 'os', 're', 'tempfile',
-                                        'traceback', 'urllib.parse',
-                                        'warnings'))),
-    'CGIHTTPServer':    PythonModule(version=2,
-                                deps=('base64', 'BaseHTTPServer', 'binascii',
-                                        'copy', 'os', 'pwd', 'select',
-                                        'SimpleHTTPServer', 'subprocess',
-                                        'urllib')),
-    'cgitb': (          PythonModule(version=2,
-                                deps=('inspect', 'keyword', 'linecache', 'os',
-                                        'pydoc', 'tempfile', 'time',
-                                        'tokenize', 'traceback', 'types')),
-                        PythonModule(version=3,
-                                deps=('inspect', 'keyword', 'linecache', 'os',
-                                        'pydoc', 'tempfile', 'time',
-                                        'tokenize', 'traceback'))),
-    'chunk':            PythonModule(deps='struct'),
-    'cmath':            ExtensionModule(source=('cmathmodule.c', '_math.c'),
-                                libs='linux-*#-lm'),
-    'cmd':              PythonModule(deps='string'),
-    'code':             PythonModule(deps=('codeop', 'traceback')),
-    'codecs':           PythonModule(deps='_codecs'),
-    'codeop':           PythonModule(deps='__future__'),
-    'collections': (    PythonModule(version=2,
-                                deps=('_abcoll', '_collections', 'heapq',
-                                        'itertools', 'keyword', 'operator',
-                                        'thread')),
-                        PythonModule(version=(3, 3),
-                                deps=('collections.abc', '_collections',
-                                        'copy', 'heapq', 'itertools',
-                                        'keyword', 'operator', 'reprlib',
-                                        'weakref'),
-                                modules='collections.abc'),
-                        PythonModule(min_version=(3, 4),
-                                deps=('_collections', '_collections_abc',
-                                        'copy', 'heapq', 'itertools',
-                                        'keyword', 'operator', 'reprlib',
-                                        '_weakref'),
-                                modules='collections.abc')),
-    'collections.abc': (PythonModule(version=(3, 3),
-                                deps='abc'),
-                        PythonModule(min_version=(3, 4),
-                                deps='_collections_abc')),
-    'colorsys':         PythonModule(),
-    'commands':         PythonModule(version=2, scope='!win32',
-                                deps=('os', 'warnings')),
-    'compileall': (     PythonModule(version=2,
-                                deps=('imp', 'os', 'py_compile', 'struct')),
-                        PythonModule(version=(3, 3),
-                                deps=('errno', 'imp', 'os', 'py_compile',
-                                        'struct')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('importlib.util', 'os', 'py_compile',
-                                        'struct'))),
-    'concurrent':       PythonModule(version=3,
-                                modules='concurrent.futures'),
-    'concurrent.futures':   PythonModule(version=3,
-                                    deps=('concurrent',
-                                            'concurrent.futures._base',
-                                            'concurrent.futures.process',
-                                            'concurrent.futures.thread')),
-    'ConfigParser':     PythonModule(version=2,
-                                deps=('collections', 're', 'UserDict')),
-    'configparser':     PythonModule(version=3,
-                                deps=('collections', 'collections.abc',
-                                        'functools', 'io', 'itertools', 're',
-                                        'warnings')),
-    'contextlib': (     PythonModule(version=2,
-                                deps=('functools', 'warnings')),
-                        PythonModule(version=3,
-                                deps=('collections', 'functools'))),
-    'Cookie':           PythonModule(version=2,
-                                deps=('cPickle', 're', 'string', 'time',
-                                        'warnings')),
-    'cookielib':        PythonModule(version=2,
-                                deps=('calendar', 'copy', 'httplib',
-                                        '_LWPCookieJar', '_MozillaCookieJar',
-                                        're', 'threading', 'time', 'urllib',
-                                        'urlparse')),
-    'copy': (           PythonModule(version=2,
-                                deps=('copy_reg', 'types', 'weakref')),
-                        PythonModule(version=3,
-                                deps=('copyreg', 'types', 'weakref'))),
-    'copy_reg':         PythonModule(version=2, deps='types'),
-    'copyreg':          PythonModule(version=3),
-    'cPickle':          ExtensionModule(version=2, source='cPickle.c'),
-    'cProfile': (       PythonModule(max_version=(3, 3),
-                                deps=('_lsprof', 'marshal', 'pstats')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('_lsprof', 'marshal', 'profile',
-                                        'pstats'))),
-    'crypt': (          ExtensionModule(version=2,
-                                scope='!win32', source='cryptmodule.c'),
-                        PythonModule(version=3,
-                                scope='!win32',
-                                deps=('collections', '_crypt', 'random',
-                                        'string'))),
-    'cStringIO':        ExtensionModule(version=2, source='cStringIO.c'),
-    'csv': (            PythonModule(version=2,
-                                deps=('cStringIO', '_csv', 'functools', 're')),
-                        PythonModule(version=3,
-                                deps=('_csv', 'io', 're'))),
-    'ctypes':           PythonModule(
-                                deps=('_ctypes', 'ctypes._endian', 'os',
-                                        'struct'),
-                                modules=()),
-    'curses': (         PythonModule(version=2,
-                                scope='!win32',
-                                deps=('curses.has_key', 'curses.wrapper',
-                                        '_curses', 'os'),
-                                modules=('curses.ascii', 'curses.panel',
-                                        'curses.textpad')),
-                        PythonModule(version=3,
-                                scope='!win32',
-                                deps=('curses.has_key', '_curses', 'os'),
-                                modules=('curses.ascii', 'curses.panel',
-                                        'curses.textpad'))),
-    'curses.ascii':     PythonModule(scope='!win32', deps='curses'),
-    'curses.panel':     PythonModule(scope='!win32',
-                                deps=('curses', '_curses_panel')),
-    'curses.textpad':   PythonModule(scope='!win32',
-                                deps=('curses', 'curses.ascii')),
+    'aifc': (
+        PythonModule(version=2,
+                deps=('audioop', 'chunk', 'cl', 'math', 'struct')),
+        PythonModule(version=(3, 3),
+                deps=('audioop', 'chunk', 'math', 'struct', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('audioop', 'chunk', 'collections', 'math', 'struct',
+                        'warnings'))),
 
-    'datetime': (       ExtensionModule(version=2,
-                                source=('datetimemodule.c', 'timemodule.c'),
-                                deps='_strptime'),
-                        PythonModule(version=3,
-                                deps=('_datetime', 'math', '_strptime',
-                                        'time'))),
-    'dbhash':           PythonModule(version=2, deps=('bsddb', 'warnings')),
-    'dbm': (            ExtensionModule(version=2,
-                                scope='!win32',
-                                source='dbmmodule.c',
-                                defines='HAVE_NDBM_H', xlib='ndbm'),
-                        PythonModule(version=3,
-                                deps=('io', 'os', 'struct'),
-                                modules=('dbm.dumb', 'dbm.gnu', 'dbm.ndbm'))),
-    'dbm.dumb':         PythonModule(version=3,
-                                deps=('dbm', 'collections', 'io', 'os')),
-    'dbm.gnu':          PythonModule(version=3, scope='!win32',
-                                deps=('dbm', '_gdbm')),
-    'dbm.ndbm':         PythonModule(version=3, scope='!win32',
-                                deps=('dbm', '_dbm')),
-    'decimal':          PythonModule(
-                                deps=('collections', 'copy', 'itertools',
-                                        'locale', 'math', 'numbers', 're',
-                                        'threading')),
-    'difflib': (        PythonModule(version=2,
-                                deps=('collections', 'functools', 'heapq',
-                                        're')),
-                        PythonModule(version=(3, 3),
-                                deps=('collections', 'heapq', 're',
-                                        'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('collections', 'heapq', 're'))),
-    'dis': (            PythonModule(max_version=(3, 3),
-                                deps=('opcode', 'types')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('collections', 'io', 'opcode',
-                                        'types'))),
-    'DocXMLRPCServer':  PythonModule(version=2,
-                                deps=('inspect', 'pydoc', 're',
-                                        'SimpleXMLRPCServer')),
-    'dumbdbm':          PythonModule(version=2, deps=('os', 'UserDict')),
+    'anydbm':
+        PythonModule(version=2, deps='whichdb'),
 
-    'email': (          PythonModule(version=2,
-                                deps=('email.mime', 'email.parser'),
-                                modules=('email.charset', 'email.encoders',
-                                        'email.errors', 'email.generator',
-                                        'email.header', 'email.iterators',
-                                        'email.message', 'email.mime',
-                                        'email.parser', 'email.utils')),
-                        PythonModule(version=(3, 3),
-                                deps='email.parser',
-                                modules=('email.charset', 'email.encoders',
-                                        'email.errors', 'email.generator',
-                                        'email.header', 'email.headerregistry',
-                                        'email.iterators', 'email.message',
-                                        'email.mime', 'email.parser',
-                                        'email.policy', 'email.utils')),
-                        PythonModule(min_version=(3, 4),
-                                deps='email.parser',
-                                modules=('email.charset',
-                                        'email.contentmanager',
-                                        'email.encoders', 'email.errors',
-                                        'email.generator', 'email.header',
-                                        'email.headerregistry',
-                                        'email.iterators', 'email.message',
-                                        'email.mime', 'email.parser',
-                                        'email.policy', 'email.utils'))),
-    'email.charset': (  PythonModule(version=2,
-                                deps=('email', 'codecs', 'email.base64mime',
-                                        'email.encoders', 'email.errors',
-                                        'email.quoprimime')),
-                        PythonModule(version=3,
-                                deps=('email', 'email.base64mime',
-                                        'email.encoders', 'email.errors',
-                                        'email.quoprimime', 'functools'))),
-    'email.contentmanager': PythonModule(min_version=(3, 4),
-                                    deps=('email', 'binascii', 'email.charset',
-                                            'email.errors', 'email.message',
-                                            'email.quoprimime')),
-    'email.encoders':   PythonModule(deps=('email', 'base64', 'quopri')),
-    'email.errors':     PythonModule(deps='email'),
-    'email.generator': (PythonModule(version=2,
-                                deps=('email', 'cStringIO', 'email.header',
-                                        'random', 're', 'time', 'warnings')),
-                        PythonModule(version=(3, 3),
-                                deps=('email', 'copy', 'email.charset',
-                                        'email.header', 'email._policybase',
-                                        'email.utils', 'io', 'random', 're',
-                                        'time', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('email', 'copy', 'email.utils', 'io',
-                                        'random', 're', 'time'))),
-    'email.header':     PythonModule(
-                                deps=('email', 'binascii', 'email.base64mime',
-                                        'email.charset', 'email.errors',
-                                        'email.quoprimime', 're')),
-    'email.headerregistry': PythonModule(version=3,
-                                    deps=('email', 'email.errors',
-                                            'email._header_value_parser',
-                                            'email.utils')),
-    'email.iterators': (PythonModule(version=2,
-                                deps=('email', 'cStringIO')),
-                        PythonModule(version=3,
-                                deps=('email', 'io'))),
-    'email.message': (  PythonModule(version=2,
-                                deps=('email', 'binascii', 'cStringIO',
-                                        'email.charset', 'email.errors',
-                                        'email.generator', 'email.iterators',
-                                        'email.utils', 're', 'uu',
-                                        'warnings')),
-                        PythonModule(version=(3, 3),
-                                deps=('email', 'base64', 'binascii',
-                                        'email.charset',
-                                        'email._encoded_words', 'email.errors',
-                                        'email.generator', 'email.iterators',
-                                        'email._policybase', 'email.utils',
-                                        'io', 're', 'uu')),
-                        PythonModule(min_version=(3, 4, 0),
-                                max_version=(3, 4, 1),
-                                deps=('email', 'email.charset',
-                                        'email._encoded_words', 'email.errors',
-                                        'email.generator', 'email.iterators',
-                                        'email.policy', 'email._policybase',
-                                        'email.utils', 'io', 'quopri', 're',
-                                        'uu')),
-                        PythonModule(min_version=(3, 4, 2),
-                                deps=('email', 'email.charset',
-                                        'email._encoded_words', 'email.errors',
-                                        'email.generator', 'email.iterators',
-                                        'email.policy', 'email._policybase',
-                                        'email.utils', 'io', 'quopri', 're',
-                                        'uu', 'warnings'))),
-    'email.mime':       PythonModule(
-                                deps='email',
-                                modules=('email.mime.application',
-                                        'email.mime.audio', 'email.mime.base',
-                                        'email.mime.image',
-                                        'email.mime.message',
-                                        'email.mime.multipart',
-                                        'email.mime.nonmultipart',
-                                        'email.mime.text')),
-    'email.mime.application':   PythonModule(
-                                        deps=('email.mime', 'email.encoders',
-                                                'email.mime.nonmultipart')),
-    'email.mime.audio': (   PythonModule(version=2,
-                                    deps=('email.mime', 'cStringIO',
-                                            'email.encoders',
-                                            'email.mime.nonmultipart',
-                                            'sndhdr')),
-                            PythonModule(version=3,
-                                    deps=('email.mime', 'email.encoders',
-                                            'email.mime.nonmultipart', 'io',
-                                            'sndhdr'))),
-    'email.mime.base':  PythonModule(deps=('email.mime', 'email.message')),
-    'email.mime.image': PythonModule(
-                                deps=('email.mime', 'email.encoders',
-                                        'email.mime.nonmultipart', 'imghdr')),
-    'email.mime.message':   PythonModule(
-                                    deps=('email.mime', 'email.message',
-                                            'email.mime.nonmultipart')),
-    'email.mime.multipart': PythonModule(deps=('email.mime',
-                                    'email.mime.base')),
-    'email.mime.nonmultipart':  PythonModule(
-                                        deps=('email.mime', 'email.errors',
-                                                'email.mime.base')),
-    'email.mime.text': (PythonModule(max_version=(3, 3),
-                                deps=('email.mime', 'email.encoders',
-                                        'email.mime.nonmultipart')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('email.mime',
-                                        'email.mime.nonmultipart'))),
-    'email.parser': (   PythonModule(version=2,
-                                deps=('email', 'cStringIO', 'email.feedparser',
-                                        'email.message', 'warnings')),
-                        PythonModule(version=(3, 3),
-                                deps=('email', 'email.feedparser', 'email.message',
-                                        'email._policybase', 'io',
-                                        'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('email', 'email.feedparser', 'email._policybase',
-                                        'io'))),
-    'email.policy': (   PythonModule(version=(3, 3),
-                                deps=('email', 'email.headerregistry',
-                                        'email._policybase', 'email.utils')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('email', 'email.contentmanager',
-                                        'email.headerregistry',
-                                        'email._policybase', 'email.utils'))),
-    'email.utils': (    PythonModule(version=2,
-                                deps=('email', 'base64', 'email.encoders',
-                                        'email._parseaddr', 'os', 'quopri',
-                                        'random', 're', 'socket', 'time',
-                                        'urllib', 'warnings')),
-                        PythonModule(version=(3, 3),
-                                deps=('email', 'base64', 'datetime',
-                                        'email.charset', 'email.encoders',
-                                        'email._parseaddr', 'io', 'os',
-                                        'quopri', 'random', 're', 'socket',
-                                        'time', 'urllib.parse', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('email', 'datetime', 'email.charset',
-                                        'email._parseaddr', 'os', 'random',
-                                        're', 'socket', 'time',
-                                        'urllib.parse'))),
-    'encodings':        PythonModule(deps=('codecs', 'encodings.aliases'),
-                                modules=('encodings.ascii',
-                                        'encodings.base64_codec',
-                                        'encodings.big5',
-                                        'encodings.big5hkscs',
-                                        'encodings.bz2_codec',
-                                        'encodings.charmap', 'encodings.cp037',
-                                        'encodings.cp1006', 'encodings.cp1026',
-                                        'encodings.cp1125', 'encodings.cp1140',
-                                        'encodings.cp1250', 'encodings.cp1251',
-                                        'encodings.cp1252', 'encodings.cp1253',
-                                        'encodings.cp1254', 'encodings.cp1255',
-                                        'encodings.cp1256', 'encodings.cp1257',
-                                        'encodings.cp1258', 'encodings.cp273',
-                                        'encodings.cp424', 'encodings.cp437',
-                                        'encodings.cp500', 'encodings.cp65001',
-                                        'encodings.cp720', 'encodings.cp737',
-                                        'encodings.cp775', 'encodings.cp850',
-                                        'encodings.cp852', 'encodings.cp855',
-                                        'encodings.cp856', 'encodings.cp857',
-                                        'encodings.cp858', 'encodings.cp860',
-                                        'encodings.cp861', 'encodings.cp862',
-                                        'encodings.cp863', 'encodings.cp864',
-                                        'encodings.cp865', 'encodings.cp866',
-                                        'encodings.cp869', 'encodings.cp874',
-                                        'encodings.cp875', 'encodings.cp932',
-                                        'encodings.cp949', 'encodings.cp950',
-                                        'encodings.euc_jis_2004',
-                                        'encodings.euc_jisx0213',
-                                        'encodings.euc_jp', 'encodings.euc_kr',
-                                        'encodings.gb18030',
-                                        'encodings.gb2312', 'encodings.gbk',
-                                        'encodings.hex_codec',
-                                        'encodings.hp_roman8', 'encodings.hz',
-                                        'encodings.idna',
-                                        'encodings.iso2022_jp',
-                                        'encodings.iso2022_jp_1',
-                                        'encodings.iso2022_jp_2',
-                                        'encodings.iso2022_jp_2004',
-                                        'encodings.iso2022_jp_3',
-                                        'encodings.iso2022_jp_ext',
-                                        'encodings.iso2022_jp_kr',
-                                        'encodings.iso8859_1',
-                                        'encodings.iso8859_10',
-                                        'encodings.iso8859_11',
-                                        'encodings.iso8859_13',
-                                        'encodings.iso8859_14',
-                                        'encodings.iso8859_15',
-                                        'encodings.iso8859_16',
-                                        'encodings.iso8859_2',
-                                        'encodings.iso8859_3',
-                                        'encodings.iso8859_4',
-                                        'encodings.iso8859_5',
-                                        'encodings.iso8859_6',
-                                        'encodings.iso8859_7',
-                                        'encodings.iso8859_8',
-                                        'encodings.iso8859_9',
-                                        'encodings.johab', 'encodings.koi8_r',
-                                        'encodings.koi8_u',
-                                        'encodings.latin_1',
-                                        'encodings.mac_arabic',
-                                        'encodings.mac_centeuro',
-                                        'encodings.mac_croatian',
-                                        'encodings.mac_cyrillic',
-                                        'encodings.mac_farsi',
-                                        'encodings.mac_greek',
-                                        'encodings.mac_iceland',
-                                        'encodings.mac_latin2',
-                                        'encodings.mac_roman',
-                                        'encodings.mac_romanian',
-                                        'encodings.mac_turkish',
-                                        'encodings.mbcs', 'encodings.palmos',
-                                        'encodings.ptcp154',
-                                        'encodings.punycode',
-                                        'encodings.quopri_codec',
-                                        'encodings.raw_unicode_escape',
-                                        'encodings.rot_13',
-                                        'encodings.shift_jis',
-                                        'encodings.shift_jis_2004',
-                                        'encodings.shift_jisx0213',
-                                        'encodings.tis_620',
-                                        'encodings.undefined',
-                                        'encodings.unicode_escape',
-                                        'encodings.unicode_internal',
-                                        'encodings.utf_16',
-                                        'encodings.utf_16_be',
-                                        'encodings.utf_16_le',
-                                        'encodings.utf_32',
-                                        'encodings.utf_32_be',
-                                        'encodings.utf_32_le',
-                                        'encodings.utf_7',
-                                        'encodings.utf_8',
-                                        'encodings.utf_8_sig',
-                                        'encodings.uu_codec',
-                                        'encodings.zlib_codec')),
-    'encodings.ascii': (CodecModule(version=2),
-                        CodecModule(version=3,
-                                core=True)),
-    'encodings.base64_codec':   CodecModule(deps='base64'),
-    'encodings.big5':   CodecModule(deps=('_codecs_tw', '_multibytecodec')),
-    'encodings.big5hkscs':  CodecModule(
-                                    deps=('_codecs_hk', '_multibytecodec')),
-    'encodings.bz2_codec':  CodecModule(deps='bz2'),
-    'encodings.charmap':    CodecModule(),
-    'encodings.cp037':  CodecModule(),
-    'encodings.cp1006': CodecModule(),
-    'encodings.cp1026': CodecModule(),
-    'encodings.cp1125': CodecModule(min_version=(3, 4)),
-    'encodings.cp1140': CodecModule(),
-    'encodings.cp1250': CodecModule(),
-    'encodings.cp1251': CodecModule(),
-    'encodings.cp1252': CodecModule(),
-    'encodings.cp1253': CodecModule(),
-    'encodings.cp1254': CodecModule(),
-    'encodings.cp1255': CodecModule(),
-    'encodings.cp1256': CodecModule(),
-    'encodings.cp1257': CodecModule(),
-    'encodings.cp1258': CodecModule(),
-    'encodings.cp273':  CodecModule(min_version=(3, 4)),
-    'encodings.cp424':  CodecModule(),
-    'encodings.cp437': (CodecModule(version=2),
-                        CodecModule(version=3,
-                                core=True)),
-    'encodings.cp500':  CodecModule(),
-    'encodings.cp65001':    CodecModule(version=3),
-    'encodings.cp720':  CodecModule(),
-    'encodings.cp737':  CodecModule(),
-    'encodings.cp775':  CodecModule(),
-    'encodings.cp850':  CodecModule(),
-    'encodings.cp852':  CodecModule(),
-    'encodings.cp855':  CodecModule(),
-    'encodings.cp856':  CodecModule(),
-    'encodings.cp857':  CodecModule(),
-    'encodings.cp858':  CodecModule(),
-    'encodings.cp860':  CodecModule(),
-    'encodings.cp861':  CodecModule(),
-    'encodings.cp862':  CodecModule(),
-    'encodings.cp863':  CodecModule(),
-    'encodings.cp864':  CodecModule(),
-    'encodings.cp865':  CodecModule(),
-    'encodings.cp866':  CodecModule(),
-    'encodings.cp869':  CodecModule(),
-    'encodings.cp874':  CodecModule(),
-    'encodings.cp875':  CodecModule(),
-    'encodings.cp932':  CodecModule(deps=('_codecs_jp', '_multibytecodec')),
-    'encodings.cp949':  CodecModule(deps=('_codecs_kr', '_multibytecodec')),
-    'encodings.cp950':  CodecModule(deps=('_codecs_tw', '_multibytecodec')),
-    'encodings.euc_jis_2004':   CodecModule(
-                                        deps=('_codecs_jp',
-                                                '_multibytecodec')),
-    'encodings.euc_jisx0213':   CodecModule(
-                                        deps=('_codecs_jp',
-                                                '_multibytecodec')),
-    'encodings.euc_jp': CodecModule(deps=('_codecs_jp', '_multibytecodec')),
-    'encodings.euc_kr': CodecModule(deps=('_codecs_kr', '_multibytecodec')),
-    'encodings.gb18030':    CodecModule(
-                                    deps=('_codecs_cn', '_multibytecodec')),
-    'encodings.gb2312': CodecModule(deps=('_codecs_cn', '_multibytecodec')),
-    'encodings.gbk':    CodecModule(deps=('_codecs_cn', '_multibytecodec')),
-    'encodings.hex_codec':  CodecModule(deps='binascii'),
-    'encodings.hp_roman8':  CodecModule(),
-    'encodings.hz':     CodecModule(deps=('_codecs_cn', '_multibytecodec')),
-    'encodings.idna':   PythonModule(
-                                deps=('encodings', 'codecs', 're',
-                                        'stringprep', 'unicodedata')),
-    'encodings.iso2022_jp': CodecModule(
-                                    deps=('_codecs_iso2022',
-                                            '_multibytecodec')),
-    'encodings.iso2022_jp_1':   CodecModule(
-                                        deps=('_codecs_iso2022',
-                                                '_multibytecodec')),
-    'encodings.iso2022_jp_2':   CodecModule(
-                                        deps=('_codecs_iso2022',
-                                                '_multibytecodec')),
-    'encodings.iso2022_jp_2004':    CodecModule(
-                                            deps=('_codecs_iso2022',
-                                                    '_multibytecodec')),
-    'encodings.iso2022_jp_3':   CodecModule(
-                                        deps=('_codecs_iso2022',
-                                                '_multibytecodec')),
-    'encodings.iso2022_jp_ext': CodecModule(
-                                        deps=('_codecs_iso2022',
-                                                '_multibytecodec')),
-    'encodings.iso2022_jp_kr':  CodecModule(
-                                        deps=('_codecs_iso2022',
-                                                '_multibytecodec')),
-    'encodings.iso8859_1':  CodecModule(),
-    'encodings.iso8859_10': CodecModule(),
-    'encodings.iso8859_11': CodecModule(),
-    'encodings.iso8859_13': CodecModule(),
-    'encodings.iso8859_14': CodecModule(),
-    'encodings.iso8859_15': CodecModule(),
-    'encodings.iso8859_16': CodecModule(),
-    'encodings.iso8859_2':  CodecModule(),
-    'encodings.iso8859_3':  CodecModule(),
-    'encodings.iso8859_4':  CodecModule(),
-    'encodings.iso8859_5':  CodecModule(),
-    'encodings.iso8859_6':  CodecModule(),
-    'encodings.iso8859_7':  CodecModule(),
-    'encodings.iso8859_8':  CodecModule(),
-    'encodings.iso8859_9':  CodecModule(),
-    'encodings.johab':  CodecModule(deps=('_codecs_kr', '_multibytecodec')),
-    'encodings.koi8_r': CodecModule(),
-    'encodings.koi8_u': CodecModule(),
-    'encodings.latin_1': (  CodecModule(version=2),
-                            CodecModule(version=3,
-                                    core=True)),
-    'encodings.mac_arabic': CodecModule(),
-    'encodings.mac_centeuro':   CodecModule(),
-    'encodings.mac_croatian':   CodecModule(),
-    'encodings.mac_cyrillic':   CodecModule(),
-    'encodings.mac_farsi':  CodecModule(),
-    'encodings.mac_greek':  CodecModule(),
-    'encodings.mac_iceland':    CodecModule(),
-    'encodings.mac_latin2': CodecModule(),
-    'encodings.mac_roman':  CodecModule(),
-    'encodings.mac_romanian':   CodecModule(),
-    'encodings.mac_turkish':    CodecModule(),
-    'encodings.mbcs': ( CodecModule(version=2,
-                                scope='win32'),
-                        CodecModule(version=3,
-                                scope='win32', core=True)),
-    'encodings.palmos': CodecModule(),
-    'encodings.ptcp154':    CodecModule(),
-    'encodings.punycode':   CodecModule(),
-    'encodings.quopri_codec': ( CodecModule(version=2,
-                                        deps=('cStringIO', 'quopri')),
-                                CodecModule(version=3,
-                                        deps=('io', 'quopri'))),
-    'encodings.raw_unicode_escape': CodecModule(),
-    'encodings.rot_13': CodecModule(),
-    'encodings.shift_jis':  CodecModule(
-                                    deps=('_codecs_jp', '_multibytecodec')),
-    'encodings.shift_jis_2004': CodecModule(
-                                        deps=('_codecs_jp',
-                                                '_multibytecodec')),
-    'encodings.shift_jisx0213': CodecModule(
-                                        deps=('_codecs_jp',
-                                                '_multibytecodec')),
-    'encodings.tis_620':    CodecModule(),
-    'encodings.undefined':  CodecModule(),
-    'encodings.unicode_escape': CodecModule(),
-    'encodings.unicode_internal':   CodecModule(),
-    'encodings.utf_16': CodecModule(),
-    'encodings.utf_16_be':  CodecModule(),
-    'encodings.utf_16_le':  CodecModule(),
-    'encodings.utf_32': CodecModule(),
-    'encodings.utf_32_be':  CodecModule(),
-    'encodings.utf_32_le':  CodecModule(),
-    'encodings.utf_7':  CodecModule(),
-    'encodings.utf_8': (CodecModule(version=2),
-                        CodecModule(version=3,
-                                core=True)),
-    'encodings.utf_8_sig':  CodecModule(),
-    'encodings.uu_codec': ( CodecModule(version=2,
-                                    deps=('binascii', 'cStringIO')),
-                            CodecModule(version=3,
-                                    deps=('binascii', 'io'))),
-    'encodings.zlib_codec': CodecModule(deps='zlib'),
-    'enum':             PythonModule(version=3, deps=('collections', 'types')),
-    'errno':            CoreExtensionModule(),
-    'exceptions':       CoreExtensionModule(version=2),
+    'argparse': (
+        PythonModule(version=2,
+                deps=('collections', 'copy', 'gettext', 'os', 're', 'textwrap',
+                        'warnings')),
+        PythonModule(min_version=(3, 3),
+                deps=('collections', 'copy', 'gettext', 'os', 're',
+                        'textwrap'))),
 
-    'faulthandler':     CoreExtensionModule(version=3),
-    'fcntl':            ExtensionModule(scope='!win32',
-                                source='fcntlmodule.c'),
-    'filecmp':          PythonModule(deps=('itertools', 'os', 'stat')),
-    'fileinput': (      PythonModule(max_version=(3, 3),
-                                deps='os'),
-                        PythonModule(min_version=(3, 4),
-                                deps=('os', 'warnings'))),
-    'fnmatch': (        PythonModule(version=2,
-                                deps=('os', 'posixpath', 're')),
-                        PythonModule(version=3,
-                                deps=('functools', 'os', 'posixpath', 're'))),
-    'formatter': (      PythonModule(max_version=(3, 3)),
-                        PythonModule(min_version=(3, 4),
-                                deps='warnings')),
-    'fpformat':         PythonModule(version=2, deps=('re', 'warnings')),
-    'fractions': (      PythonModule(version=2,
-                                deps=('__future__', 'decimal', 'math',
-                                        'numbers', 'operator', 're')),
-                        PythonModule(version=3,
-                                deps=('decimal', 'math', 'numbers', 'operator',
-                                        're'))),
-    'ftplib': (         PythonModule(max_version=(3, 3),
-                                ssl=True, deps=('os', 're', 'socket')),
-                        PythonModule(min_version=(3, 4),
-                                ssl=True,
-                                deps=('os', 're', 'socket', 'warnings'))),
-    'functools': (      PythonModule(version=2,
-                                deps='_functools'),
-                        PythonModule(version=(3, 3),
-                                deps=('collections', '_functools', '_thread')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('abc', 'collections', '_functools',
-                                        '_thread', 'types', 'weakref'))),
-    'future_builtins':  ExtensionModule(version=2, source='future_builtins.c'),
+    'array':
+        ExtensionModule(source='arraymodule.c'),
 
-    'gc':               CoreExtensionModule(),
-    'gdbm':             ExtensionModule(version=2, source='gdbmmodule.c',
-                                xlib='gdbm'),
-    'getopt': (         PythonModule(version=2,
-                                deps='os'),
-                        PythonModule(version=3,
-                                deps=('gettext', 'os'))),
-    'getpass': (        PythonModule(version=2,
-                                deps=('msvcrt', 'os', 'pwd', 'termios',
-                                        'warnings')),
-                        PythonModule(version=3,
-                                deps=('contextlib', 'io', 'msvcrt', 'os',
-                                        'pwd', 'termios', 'warnings'))),
-    'gettext': (        PythonModule(version=2,
-                                deps=('copy', 'cStringIO', 'errno', 'locale',
-                                        'os', 're', 'struct', 'token',
-                                        'tokenize')),
-                        PythonModule(version=3,
-                                deps=('copy', 'errno', 'io', 'locale', 'os',
-                                        're', 'struct', 'token', 'tokenize'))),
-    'glob':             PythonModule(deps=('fnmatch', 'os', 're')),
-    'grp':              ExtensionModule(scope='!win32', source='grpmodule.c'),
-    'gzip':             PythonModule(
-                                deps=('errno', 'io', 'os', 'struct', 'time',
-                                        'warnings', 'zlib')),
+    'ast':
+        PythonModule(deps=('_ast', 'collections', 'inspect')),
 
-    'hashlib': (        PythonModule(version=2,
-                                deps=('binascii', '_hashlib', '_md5', '_sha',
-                                        '_sha256', '_sha512', 'struct')),
-                        PythonModule(version=3,
-                                deps=('_hashlib', '_md5', '_sha1', '_sha256',
-                                        '_sha512'))),
-    'heapq': (          PythonModule(version=2,
-                                deps=('_heapq', 'itertools', 'operator')),
-                        PythonModule(version=3,
-                                deps=('_heapq', 'itertools'))),
-    'hmac': (           PythonModule(max_version=(3, 3),
-                                deps=('hashlib', 'operator', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('hashlib', '_operator', 'warnings'))),
-    'hotshot':          PythonModule(version=2,
-                                deps=('_hotshot', 'warnings'),
-                                modules='hotshot.stats'),
-    'hotshot.stats':    PythonModule(version=2,
-                                deps=('hotshot', 'hotshot.log', 'profile',
-                                        'pstats')),
-    'html': (           PythonModule(version=(3, 3),
-                                modules=('html.entities', 'html.parser')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('html.entities', 're'),
-                                modules=('html.entities', 'html.parser'))),
-    'html.entities':    PythonModule(version=3, deps='html'),
-    'html.parser': (    PythonModule(version=(3, 3),
-                                deps=('html', 'html.entities', '_markupbase',
-                                        're', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('html', '_markupbase', 're',
-                                        'warnings'))),
-    'htmlentitydefs':   PythonModule(version=2),
-    'htmllib':          PythonModule(version=2,
-                                deps=('formatter', 'htmlentitydefs', 'sgmllib',
-                                        'warnings')),
-    'HTMLParser':       PythonModule(version=2,
-                                deps=('htmlentitydefs', 'markupbase', 're')),
-    'http':             PythonModule(version=3,
-                                modules=('http.client', 'http.cookiejar',
-                                        'http.cookies', 'http.server')),
-    'http.client': (    PythonModule(version=(3, 3),
-                                deps=('http', 'collections', 'email.message',
-                                        'email.parser', 'io', 'os', 'socket',
-                                        'ssl', 'urllib.parse', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('http', 'collections', 'email.message',
-                                        'email.parser', 'io', 'os', 'socket',
-                                        'ssl', 'urllib.parse'))),
-    'http.cookiejar':   PythonModule(version=3,
-                                deps=('http', 'calendar', 'copy', 'datetime',
-                                        'http.client', 're', 'threading',
-                                        'time', 'urllib.parse',
-                                        'urllib.request')),
-    'http.cookies':     PythonModule(version=3,
-                                deps=('http', 're', 'string', 'time')),
-    'http.server': (    PythonModule(version=(3, 3),
-                                deps=('http', 'argparse', 'base64', 'binascii',
-                                        'copy', 'email.message',
-                                        'email.parser', 'html', 'http.client',
-                                        'io', 'mimetypes', 'os', 'posixpath',
-                                        'pwd', 'select', 'shutil', 'socket',
-                                        'socketserver', 'subprocess', 'time',
-                                        'urllib.parse')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('http', 'argparse', 'base64', 'binascii',
-                                        'copy', 'html', 'http.client', 'io',
-                                        'mimetypes', 'os', 'posixpath', 'pwd',
-                                        'select', 'shutil', 'socket',
-                                        'socketserver', 'subprocess', 'time',
-                                        'urllib.parse'))),
-    'httplib':          PythonModule(version=2,
-                                deps=('array', 'cStringIO', 'mimetools', 'os',
-                                        'socket', 'ssl', 'urlparse',
-                                        'warnings')),
+    'asynchat': (
+        PythonModule(version=2,
+                deps=('asyncore', 'collections', 'socket', 'warnings')),
+        PythonModule(version=(3, 3),
+                deps=('asyncore', 'collections', 'socket')),
+        PythonModule(min_version=(3, 4), deps=('asyncore', 'collections'))),
 
-    'imageop':          ExtensionModule(version=2, source='imageop.c'),
-    'imaplib': (        PythonModule(version=2,
-                                ssl=True,
-                                deps=('binascii', 'errno', 'hmac', 'random',
-                                        're', 'socket', 'subprocess', 'time')),
-                        PythonModule(version=3,
-                                ssl=True,
-                                deps=('binascii', 'calendar', 'datetime',
-                                        'errno', 'hmac', 'io', 'random', 're',
-                                        'socket', 'subprocess', 'time'))),
-    'imghdr':           PythonModule(),
-    'imp': (            CoreExtensionModule(version=2),
-                        PythonModule(version=(3, 3),
-                                deps=('_imp', 'importlib', 'os', 'tokenize',
-                                        'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('_imp', 'importlib', 'os', 'tokenize',
-                                        'types', 'warnings'))),
-    'importlib': (      PythonModule(version=2,
-                                modules=()),
-                        CorePythonModule(version=(3, 3),
-                                deps=('importlib._bootstrap', '_imp'),
-                                modules=('importlib.abc',
-                                        'importlib.machinery',
-                                        'importlib.util')),
-                        CorePythonModule(min_version=(3, 4),
-                                deps=('importlib._bootstrap', '_imp', 'types'),
-                                hidden_deps='warnings',
-                                modules=('importlib.abc',
-                                        'importlib.machinery',
-                                        'importlib.util'))),
-    'importlib.abc': (  PythonModule(version=(3, 3),
-                                deps=('importlib', 'abc', 'imp',
-                                        'importlib._bootstrap',
-                                        'importlib.machinery', 'marshal',
-                                        'tokenize', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('importlib', 'abc',
-                                        'importlib._bootstrap',
-                                        'importlib.machinery'))),
-    'importlib.machinery':  PythonModule(version=3,
-                                    deps=('importlib', '_imp',
-                                            'importlib._bootstrap')),
-    'importlib.util': ( PythonModule(version=(3, 3),
-                                    deps=('importlib',
-                                            'importlib._bootstrap')),
-                        PythonModule(min_version=(3, 4),
-                                    deps=('importlib', 'contextlib',
-                                            'functools',
-                                            'importlib._bootstrap',
-                                            'warnings'))),
-    'imputil':          PythonModule(version=2,
-                                deps=('imp', 'marshal', 'struct', 'warnings')),
-    'inspect': (        PythonModule(version=2,
-                                deps=('collections', 'dis', 'imp', 'linecache',
-                                        'operator', 'os', 're', 'string',
-                                        'tokenize', 'types')),
-                        PythonModule(version=(3, 3),
-                                deps=('collections', 'functools', 'imp',
-                                        'importlib.machinery', 'itertools',
-                                        'linecache', 'operator', 'os', 're',
-                                        'tokenize', 'types', 'warnings')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('ast', 'collections', 'functools', 'imp',
-                                        'importlib.machinery', 'itertools',
-                                        'linecache', 'operator', 'os', 're',
-                                        'token', 'tokenize', 'types',
-                                        'warnings'))),
-    'io': (             PythonModule(version=2,
-                                deps=('abc', '_io')),
-                        CorePythonModule(version=3,
-                                deps=('abc', '_io'))),
-    'ipaddress':        PythonModule(version=3, deps='functools'),
-    'itertools': (      ExtensionModule(version=2, source='itertoolsmodule.c'),
-                        CoreExtensionModule(version=3)),
+    'asyncore':
+        PythonModule(deps=('errno', 'fcntl', 'os', 'select', 'socket', 'time',
+                'warnings')),
 
-    'json':             PythonModule(deps=('json.decoder', 'json.encoder'),
-                                modules=()),
+    'asyncio': (
+        PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
+                deps=('asyncio.events', 'asyncio.futures', 'asyncio.locks',
+                        'asyncio.protocols', 'asyncio.queues',
+                        'asyncio.streams', 'asyncio.subprocess',
+                        'asyncio.tasks', 'asyncio.transports',
+                        'asyncio.unix_events', 'asyncio.windows_events',
+                        'selectors')),
+        PythonModule(min_version=(3, 4, 2),
+                deps=('asyncio.coroutines', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.locks',
+                        'asyncio.protocols', 'asyncio.queues',
+                        'asyncio.streams', 'asyncio.subprocess',
+                        'asyncio.tasks', 'asyncio.transports',
+                        'asyncio.unix_events', 'asyncio.windows_events',
+                        'selectors'))),
 
-    'keyword':          PythonModule(),
+    'atexit': (
+        CorePythonModule(version=2),
+        ExtensionModule(version=(3, 3), source='atexitmodule.c'),
+        CoreExtensionModule(min_version=(3, 4))),
 
-    'linecache': (      PythonModule(version=2,
-                                deps='os'),
-                        PythonModule(version=3,
-                                deps=('os', 'tokenize'))),
-    'linuxaudiodev':    ExtensionModule(version=2, source='linuxaudiodev.c'),
-    'locale': (         PythonModule(version=2,
-                                deps=('encodings', 'encodings.aliases',
-                                        'functools', '_locale', 'os',
-                                        'operator', 're')),
-                        PythonModule(version=3,
-                                deps=('collections', 'encodings',
-                                        'encodings.aliases', 'functools',
-                                        '_locale', 'os', 're'))),
-    'logging': (        PythonModule(version=2,
-                                deps=('atexit', 'codecs', 'collections',
-                                        'cStringIO', 'os', 'thread',
-                                        'threading', 'time', 'traceback',
-                                        'warnings', 'weakref'),
-                                modules=('logging.config',
-                                        'logging.handlers')),
-                        PythonModule(version=(3, 3),
-                                deps=('atexit', 'io', 'os', 'string',
-                                        'threading', 'time', 'traceback',
-                                        'warnings', 'weakref'),
-                                modules=('logging.config',
-                                        'logging.handlers')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('atexit', 'collections', 'io', 'os',
-                                        'string', 'threading', 'time',
-                                        'traceback', 'warnings', 'weakref'),
-                                modules=('logging.config',
-                                        'logging.handlers'))),
-    'logging.config': ( PythonModule(version=2,
-                                deps=('logging', 'ConfigParser', 'cStringIO',
-                                        'errno', 'io', 'json',
-                                        'logging.handlers', 'os', 're',
-                                        'select', 'socket', 'SocketServer',
-                                        'struct', 'tempfile', 'thread',
-                                        'threading', 'traceback', 'types')),
-                        PythonModule(version=(3, 3),
-                                deps=('logging', 'configparser', 'io', 'json',
-                                        'logging.handlers', 're', 'select',
-                                        'socket', 'socketserver', 'struct',
-                                        '_thread', 'threading', 'traceback')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('logging', 'errno', 'configparser', 'io',
-                                        'json', 'logging.handlers', 're',
-                                        'select', 'socketserver', 'struct',
-                                        '_thread', 'threading', 'traceback'))),
-    'logging.handlers': (   PythonModule(version=2,
-                                    deps=('logging', 'codecs', 'cPickle',
-                                            'email.utils', 'errno', 'httplib',
-                                            'os', 're', 'socket', 'smtplib',
-                                            'stat', 'struct', 'time',
-                                            'urllib')),
-                            PythonModule(min_version=(3, 3),
-                                    deps=('logging', 'base64', 'codecs',
-                                            'email.utils', 'errno',
-                                            'http.client', 'os', 'pickle',
-                                            'queue', 're', 'socket', 'smtplib',
-                                            'stat', 'struct', 'threading',
-                                            'time', 'urllib.parse'))),
-    'lzma':             PythonModule(version=3, deps=('io', '_lzma')),
+    'audioop':
+        ExtensionModule(source='audioop.c'),
 
-    'MacOS':            ExtensionModule(version=2, scope='macx',
-                                source='../Mac/Modules/MacOS.c'),
-    'macpath': (        PythonModule(version=2,
-                                deps=('genericpath', 'os', 'stat',
-                                        'warnings')),
-                        PythonModule(version=3,
-                                deps=('genericpath', 'os', 'stat'))),
-    'mailbox': (        PythonModule(version=2,
-                                deps=('calendar', 'copy', 'email',
-                                        'email.generator', 'email.message',
-                                        'errno', 'fcntl', 'os', 're', 'rfc822',
-                                        'socket', 'StringIO', 'time',
-                                        'warnings')),
-                        PythonModule(version=3,
-                                deps=('calendar', 'contextlib', 'copy', 'email',
-                                        'email.generator', 'email.message',
-                                        'errno', 'fcntl', 'io', 'os', 'socket',
-                                        'time', 'warnings'))),
-    'mailcap':          PythonModule(deps='os'),
-    'marshal':          CoreExtensionModule(),
-    'math':             ExtensionModule(source=('mathmodule.c', '_math.c'),
-                                libs='linux-*#-lm'),
-    'md5':              PythonModule(version=2, deps=('hashlib', 'warnings')),
-    'mhlib':            PythonModule(version=2,
-                                deps=('bisect', 'cStringIO', 'mimetools',
-                                        'multifile', 'os', 're', 'shutil',
-                                        'warnings')),
-    'mimetools':        PythonModule(version=2,
-                                deps=('base64', 'os', 'quopri', 'rfc822',
-                                        'socket', 'tempfile', 'thread', 'time',
-                                        'uu', 'warnings')),
-    'mimetypes': (      PythonModule(version=2,
-                                deps=('os', 'posixpath', 'urllib', '_winreg')),
-                        PythonModule(version=3,
-                                deps=('os', 'posixpath', 'urllib.parse',
-                                        'winreg'))),
-    'MimeWriter':       PythonModule(version=2,
-                                deps=('mimetools', 'warnings')),
-    'mimify':           PythonModule(version=2,
-                                deps=('base64', 'os', 're', 'warnings')),
-    'mmap':             ExtensionModule(source='mmapmodule.c'),
-    'modulefinder': (   PythonModule(version=2,
-                                deps=('__future__', 'dis', 'imp', 'marshal',
-                                        'os', 'types', 'struct')),
-                        PythonModule(version=(3, 3),
-                                deps=('dis', 'imp', 'importlib.machinery',
-                                        'marshal', 'os', 'types', 'struct')),
-                        PythonModule(min_version=(3, 4),
-                                deps=('dis', 'importlib._bootstrap',
-                                        'importlib.machinery', 'marshal', 'os',
-                                        'types', 'struct', 'warnings'))),
-    'msilib':           PythonModule(scope='win32',
-                                deps=('_msi', 'os', 're', 'string',
-                                        'tempfile')),
-    'msvcrt':           ExtensionModule(scope='win32',
-                                source='../PC/msvcrtmodule.c'),
-    'multifile':        PythonModule(version=2, deps='warnings'),
-    'multiprocessing': (PythonModule(version=2,
-                                deps=('_multiprocessing',
-                                        'multiprocessing.connection',
-                                        'multiprocessing.forking',
-                                        'multiprocessing.managers',
-                                        'multiprocessing.pool',
-                                        'multiprocessing.process',
-                                        'multiprocessing.queues',
-                                        'multiprocessing.reduction',
-                                        'multiprocessing.sharedctypes',
-                                        'multiprocessing.synchronize',
-                                        'multiprocessing.util', 'os'),
-                                modules=('multiprocessing.connection',
-                                        'multiprocessing.managers',
-                                        'multiprocessing.pool',
-                                        'multiprocessing.sharedctypes')),
-                        PythonModule(version=(3, 3),
-                                deps=('_multiprocessing',
-                                        'multiprocessing.connection',
-                                        'multiprocessing.forking',
-                                        'multiprocessing.managers',
-                                        'multiprocessing.pool',
-                                        'multiprocessing.process',
-                                        'multiprocessing.queues',
-                                        'multiprocessing.sharedctypes',
-                                        'multiprocessing.synchronize',
-                                        'multiprocessing.util', 'os'),
-                                modules=('multiprocessing.connection',
-                                        'multiprocessing.managers',
-                                        'multiprocessing.pool',
-                                        'multiprocessing.sharedctypes')),
-                        PythonModule(min_version=(3, 4),
-                                deps='multiprocessing.context',
-                                modules=('multiprocessing.connection',
-                                        'multiprocessing.managers',
-                                        'multiprocessing.pool',
-                                        'multiprocessing.sharedctypes'))),
-    'multiprocessing.connection': ( PythonModule(version=2,
-                                            deps=('multiprocessing', 'errno',
-                                                    'hmac', 'itertools',
-                                                    '_multiprocessing',
-                                                    'multiprocessing.forking',
-                                                    'multiprocessing.util',
-                                                    'os', 'socket', 'tempfile',
-                                                    'time', 'xmlrpclib')),
-                                    PythonModule(version=(3, 3),
-                                            deps=('multiprocessing', 'errno',
-                                                    'hmac', 'io', 'itertools',
-                                                    '_multiprocessing',
-                                                    'multiprocessing.forking',
-                                                    'multiprocessing.reduction',
-                                                    'multiprocessing.util',
-                                                    'os', 'pickle', 'select',
-                                                    'socket', 'struct',
-                                                    'tempfile', 'time',
-                                                    '_winapi',
-                                                    'xmlrpc.client')),
-                                    PythonModule(min_version=(3, 4),
-                                            deps=('multiprocessing', 'hmac',
-                                                    'io', 'itertools',
-                                                    '_multiprocessing',
-                                                    'multiprocessing.reduction',
-                                                    'multiprocessing.resource_sharer',
-                                                    'multiprocessing.util',
-                                                    'os', 'selectors',
-                                                    'socket', 'struct',
-                                                    'tempfile', 'time',
-                                                    '_winapi',
-                                                    'xmlrpc.client'))),
-    'multiprocessing.dummy': (  PythonModule(version=2,
-                                        deps=('multiprocessing', 'array',
-                                                'itertools',
-                                                'multiprocessing.dummy.connection',
-                                                'multiprocessing.pool',
-                                                'Queue', 'threading', 'weakref'),
-                                        modules=()),
-                                PythonModule(version=3,
-                                        deps=('multiprocessing', 'array',
-                                                'multiprocessing.dummy.connection',
-                                                'multiprocessing.pool',
-                                                'queue', 'threading', 'weakref'),
-                                        modules=())),
-    'multiprocessing.managers': (   PythonModule(version=2,
-                                            deps=('multiprocessing',
-                                                    'array',
-                                                    'multiprocessing.forking',
-                                                    'multiprocessing.process',
-                                                    'multiprocessing.util',
-                                                    'cPickle', 'os', 'Queue',
-                                                    'threading', 'traceback',
-                                                    'weakref')),
-                                    PythonModule(version=(3, 3),
-                                            deps=('multiprocessing',
-                                                    'array', 'copyreg',
-                                                    'multiprocessing.forking',
-                                                    'multiprocessing.process',
-                                                    'queue', 'threading',
-                                                    'time', 'traceback')),
-                                    PythonModule(min_version=(3, 4),
-                                            deps=('multiprocessing',
-                                                    'array',
-                                                    'multiprocessing.connection',
-                                                    'multiprocessing.context',
-                                                    'multiprocessing.pool',
-                                                    'multiprocessing.process',
-                                                    'multiprocessing.reduction',
-                                                    'multiprocessing.util',
-                                                    'queue', 'threading',
-                                                    'time', 'traceback'))),
-    'multiprocessing.pool': (   PythonModule(version=2,
-                                        deps=('multiprocessing',
-                                                'collections', 'itertools',
-                                                'multiprocessing.dummy',
-                                                'multiprocessing.queues',
-                                                'multiprocessing.util',
-                                                'Queue', 'threading', 'time')),
-                                PythonModule(version=(3, 3),
-                                        deps=('multiprocessing',
-                                                'collections', 'itertools',
-                                                'multiprocessing.dummy',
-                                                'multiprocessing.queues',
-                                                'multiprocessing.util',
-                                                'queue', 'threading', 'time')),
-                                PythonModule(min_version=(3, 4),
-                                        deps=('multiprocessing',
-                                                'collections', 'itertools',
-                                                'multiprocessing.dummy',
-                                                'multiprocessing.util',
-                                                'queue', 'threading', 'time',
-                                                'traceback'))),
-    'multiprocessing.sharedctypes': (   PythonModule(max_version=(3, 3),
-                                                deps=('multiprocessing',
-                                                        'ctypes',
-                                                        'multiprocessing.forking',
-                                                        'multiprocessing.heap',
-                                                        'weakref')),
-                                        PythonModule(min_version=(3, 4),
-                                                deps=('multiprocessing',
-                                                        'ctypes',
-                                                        'multiprocessing.context',
-                                                        'multiprocessing.heap',
-                                                        'multiprocessing.reduction',
-                                                        'weakref'))),
-    'mutex':            PythonModule(version=2,
-                                deps=('collections', 'warnings')),
+    'base64': (
+        PythonModule(version=2, deps=('binascii', 're', 'struct')),
+        PythonModule(version=3,
+                deps=('binascii', 're', 'struct', 'warnings'))),
+
+    'BaseHTTPServer':
+        PythonModule(version=2,
+                deps=('mimetools', 'socket', 'SocketServer', 'time',
+                        'warnings')),
+
+    'binascii':
+        ExtensionModule(source='binascii.c'),
+
+    'binhex': (
+        PythonModule(version=2, deps=('binascii', 'os', 'struct')),
+        PythonModule(version=3, deps=('binascii', 'io', 'os', 'struct'))),
+
+    'bisect':
+        PythonModule(deps='_bisect'),
+
+    'bsddb':
+        PythonModule(version=2,
+                deps=('bsddb.dbutils', '_bsddb', 'collections', 'os', 'thread',
+                        'warnings', 'weakref')),
+
+    'bz2': (
+        ExtensionModule(version=2, source='bz2module.c', xlib='bz2'),
+        PythonModule(version=3, deps=('_thread', '_bz2', 'io', 'warnings'))),
+
+    'calendar':
+        PythonModule(deps=('datetime', 'locale')),
+
+    'cgi': (
+        PythonModule(version=2,
+                deps=('cStringIO', 'mimetools', 'operator', 'os', 're',
+                        'rfc822', 'tempfile', 'traceback', 'urlparse',
+                        'UserDict', 'warnings')),
+        PythonModule(version=3,
+                deps=('collections', 'email.message', 'email.parser', 'html',
+                        'http.client', 'io', 'locale', 'os', 're', 'tempfile',
+                        'traceback', 'urllib.parse', 'warnings'))),
+
+    'CGIHTTPServer':
+        PythonModule(version=2,
+                deps=('base64', 'BaseHTTPServer', 'binascii', 'copy', 'os',
+                        'pwd', 'select', 'SimpleHTTPServer', 'subprocess',
+                        'urllib')),
+
+    'cgitb': (
+        PythonModule(version=2,
+                deps=('inspect', 'keyword', 'linecache', 'os', 'pydoc',
+                        'tempfile', 'time', 'tokenize', 'traceback', 'types')),
+        PythonModule(version=3,
+                deps=('inspect', 'keyword', 'linecache', 'os', 'pydoc',
+                        'tempfile', 'time', 'tokenize', 'traceback'))),
+
+    'chunk':
+        PythonModule(deps='struct'),
+
+    'cmath':
+        ExtensionModule(source=('cmathmodule.c', '_math.c'),
+                libs='linux-*#-lm'),
+
+    'cmd':
+        PythonModule(deps='string'),
+
+    'code':
+        PythonModule(deps=('codeop', 'traceback')),
+
+    'codecs':
+        PythonModule(deps='_codecs'),
+
+    'codeop':
+        PythonModule(deps='__future__'),
+
+    'collections': (
+        PythonModule(version=2,
+                deps=('_abcoll', '_collections', 'heapq', 'itertools',
+                        'keyword', 'operator', 'thread')),
+        PythonModule(version=(3, 3),
+                deps=('collections.abc', '_collections', 'copy', 'heapq',
+                        'itertools', 'keyword', 'operator', 'reprlib',
+                        'weakref'),
+                modules='collections.abc'),
+        PythonModule(min_version=(3, 4),
+                deps=('_collections', '_collections_abc', 'copy', 'heapq',
+                        'itertools', 'keyword', 'operator', 'reprlib',
+                        '_weakref'),
+                modules='collections.abc')),
+
+    'collections.abc': (
+        PythonModule(version=(3, 3), deps='abc'),
+        PythonModule(min_version=(3, 4), deps='_collections_abc')),
+
+    'colorsys':
+        PythonModule(),
+
+    'commands':
+        PythonModule(version=2, scope='!win32', deps=('os', 'warnings')),
+
+    'compileall': (
+        PythonModule(version=2, deps=('imp', 'os', 'py_compile', 'struct')),
+        PythonModule(version=(3, 3),
+                deps=('errno', 'imp', 'os', 'py_compile', 'struct')),
+        PythonModule(min_version=(3, 4),
+                deps=('importlib.util', 'os', 'py_compile', 'struct'))),
+
+    'concurrent':
+        PythonModule(version=3, modules='concurrent.futures'),
+
+    'concurrent.futures':
+        PythonModule(version=3,
+                deps=('concurrent', 'concurrent.futures._base',
+                        'concurrent.futures.process',
+                        'concurrent.futures.thread')),
+
+    'ConfigParser':
+        PythonModule(version=2, deps=('collections', 're', 'UserDict')),
+
+    'configparser':
+        PythonModule(version=3,
+                deps=('collections', 'collections.abc', 'functools', 'io',
+                        'itertools', 're', 'warnings')),
+
+    'contextlib': (
+        PythonModule(version=2, deps=('functools', 'warnings')),
+        PythonModule(version=3, deps=('collections', 'functools'))),
+
+    'Cookie':
+        PythonModule(version=2,
+                deps=('cPickle', 're', 'string', 'time', 'warnings')),
+
+    'cookielib':
+        PythonModule(version=2,
+                deps=('calendar', 'copy', 'httplib', '_LWPCookieJar',
+                        '_MozillaCookieJar', 're', 'threading', 'time',
+                        'urllib', 'urlparse')),
+
+    'copy': (
+        PythonModule(version=2, deps=('copy_reg', 'types', 'weakref')),
+        PythonModule(version=3, deps=('copyreg', 'types', 'weakref'))),
+
+    'copy_reg':
+        PythonModule(version=2, deps='types'),
+
+    'copyreg':
+        PythonModule(version=3),
+
+    'cPickle':
+        ExtensionModule(version=2, source='cPickle.c'),
+
+    'cProfile': (
+        PythonModule(max_version=(3, 3),
+                deps=('_lsprof', 'marshal', 'pstats')),
+        PythonModule(min_version=(3, 4),
+                deps=('_lsprof', 'marshal', 'profile', 'pstats'))),
+
+    'crypt': (
+        ExtensionModule(version=2, scope='!win32', source='cryptmodule.c'),
+        PythonModule(version=3, scope='!win32',
+                deps=('collections', '_crypt', 'random', 'string'))),
+
+    'cStringIO':
+        ExtensionModule(version=2, source='cStringIO.c'),
+
+    'csv': (
+        PythonModule(version=2, deps=('cStringIO', '_csv', 'functools', 're')),
+        PythonModule(version=3, deps=('_csv', 'io', 're'))),
+
+    'ctypes':
+        PythonModule(deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
+                modules=()),
+
+    'curses': (
+        PythonModule(version=2, scope='!win32',
+                deps=('curses.has_key', 'curses.wrapper', '_curses', 'os'),
+                modules=('curses.ascii', 'curses.panel', 'curses.textpad')),
+        PythonModule(version=3, scope='!win32',
+                deps=('curses.has_key', '_curses', 'os'),
+                modules=('curses.ascii', 'curses.panel', 'curses.textpad'))),
+
+    'curses.ascii':
+        PythonModule(scope='!win32', deps='curses'),
+
+    'curses.panel':
+        PythonModule(scope='!win32', deps=('curses', '_curses_panel')),
+
+    'curses.textpad':
+        PythonModule(scope='!win32', deps=('curses', 'curses.ascii')),
+
+    'datetime': (
+        ExtensionModule(version=2, source=('datetimemodule.c', 'timemodule.c'),
+                deps='_strptime'),
+        PythonModule(version=3,
+                deps=('_datetime', 'math', '_strptime', 'time'))),
+
+    'dbhash':
+        PythonModule(version=2, deps=('bsddb', 'warnings')),
+
+    'dbm': (
+        ExtensionModule(version=2, scope='!win32', source='dbmmodule.c',
+                defines='HAVE_NDBM_H', xlib='ndbm'),
+        PythonModule(version=3, deps=('io', 'os', 'struct'),
+                modules=('dbm.dumb', 'dbm.gnu', 'dbm.ndbm'))),
+
+    'dbm.dumb':
+        PythonModule(version=3, deps=('dbm', 'collections', 'io', 'os')),
+
+    'dbm.gnu':
+        PythonModule(version=3, scope='!win32', deps=('dbm', '_gdbm')),
+
+    'dbm.ndbm':
+        PythonModule(version=3, scope='!win32', deps=('dbm', '_dbm')),
+
+    'decimal':
+        PythonModule(
+                deps=('collections', 'copy', 'itertools', 'locale', 'math',
+                        'numbers', 're', 'threading')),
+
+    'difflib': (
+        PythonModule(version=2,
+                deps=('collections', 'functools', 'heapq', 're')),
+        PythonModule(version=(3, 3),
+                deps=('collections', 'heapq', 're', 'warnings')),
+        PythonModule(min_version=(3, 4), deps=('collections', 'heapq', 're'))),
+
+    'dis': (
+        PythonModule(max_version=(3, 3), deps=('opcode', 'types')),
+        PythonModule(min_version=(3, 4),
+                deps=('collections', 'io', 'opcode', 'types'))),
+
+    'DocXMLRPCServer':
+        PythonModule(version=2,
+                deps=('inspect', 'pydoc', 're', 'SimpleXMLRPCServer')),
+
+    'dumbdbm':
+        PythonModule(version=2, deps=('os', 'UserDict')),
+
+    'email': (
+        PythonModule(version=2, deps=('email.mime', 'email.parser'),
+                modules=('email.charset', 'email.encoders', 'email.errors',
+                        'email.generator', 'email.header', 'email.iterators',
+                        'email.message', 'email.mime', 'email.parser',
+                        'email.utils')),
+        PythonModule(version=(3, 3), deps='email.parser',
+                modules=('email.charset', 'email.encoders', 'email.errors',
+                        'email.generator', 'email.header',
+                        'email.headerregistry', 'email.iterators',
+                        'email.message', 'email.mime', 'email.parser',
+                        'email.policy', 'email.utils')),
+        PythonModule(min_version=(3, 4), deps='email.parser',
+                modules=('email.charset', 'email.contentmanager',
+                        'email.encoders', 'email.errors', 'email.generator',
+                        'email.header', 'email.headerregistry',
+                        'email.iterators', 'email.message', 'email.mime',
+                        'email.parser', 'email.policy', 'email.utils'))),
+
+    'email.charset': (
+        PythonModule(version=2,
+                deps=('email', 'codecs', 'email.base64mime', 'email.encoders',
+                        'email.errors', 'email.quoprimime')),
+        PythonModule(version=3,
+                deps=('email', 'email.base64mime', 'email.encoders',
+                        'email.errors', 'email.quoprimime', 'functools'))),
+
+    'email.contentmanager':
+        PythonModule(min_version=(3, 4),
+                deps=('email', 'binascii', 'email.charset', 'email.errors',
+                        'email.message', 'email.quoprimime')),
+
+    'email.encoders':
+        PythonModule(deps=('email', 'base64', 'quopri')),
+
+    'email.errors':
+        PythonModule(deps='email'),
+
+    'email.generator': (
+        PythonModule(version=2,
+                deps=('email', 'cStringIO', 'email.header', 'random', 're',
+                        'time', 'warnings')),
+        PythonModule(version=(3, 3),
+                deps=('email', 'copy', 'email.charset', 'email.header',
+                        'email._policybase', 'email.utils', 'io', 'random',
+                        're', 'time', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('email', 'copy', 'email.utils', 'io', 'random', 're',
+                        'time'))),
+
+    'email.header':
+        PythonModule(
+                deps=('email', 'binascii', 'email.base64mime', 'email.charset',
+                        'email.errors', 'email.quoprimime', 're')),
+
+    'email.headerregistry':
+        PythonModule(version=3,
+                deps=('email', 'email.errors', 'email._header_value_parser',
+                        'email.utils')),
+
+    'email.iterators': (
+        PythonModule(version=2, deps=('email', 'cStringIO')),
+        PythonModule(version=3, deps=('email', 'io'))),
+
+    'email.message': (
+        PythonModule(version=2,
+                deps=('email', 'binascii', 'cStringIO', 'email.charset',
+                        'email.errors', 'email.generator', 'email.iterators',
+                        'email.utils', 're', 'uu', 'warnings')),
+        PythonModule(version=(3, 3),
+                deps=('email', 'base64', 'binascii', 'email.charset',
+                        'email._encoded_words', 'email.errors',
+                        'email.generator', 'email.iterators',
+                        'email._policybase', 'email.utils', 'io', 're', 'uu')),
+        PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
+                deps=('email', 'email.charset', 'email._encoded_words',
+                        'email.errors', 'email.generator', 'email.iterators',
+                        'email.policy', 'email._policybase', 'email.utils',
+                        'io', 'quopri', 're', 'uu')),
+        PythonModule(min_version=(3, 4, 2),
+                deps=('email', 'email.charset', 'email._encoded_words',
+                        'email.errors', 'email.generator', 'email.iterators',
+                        'email.policy', 'email._policybase', 'email.utils',
+                        'io', 'quopri', 're', 'uu', 'warnings'))),
+
+    'email.mime':
+        PythonModule(deps='email',
+                modules=('email.mime.application', 'email.mime.audio',
+                        'email.mime.base', 'email.mime.image',
+                        'email.mime.message', 'email.mime.multipart',
+                        'email.mime.nonmultipart', 'email.mime.text')),
+
+    'email.mime.application':
+        PythonModule(
+                deps=('email.mime', 'email.encoders',
+                        'email.mime.nonmultipart')),
+
+    'email.mime.audio': (
+        PythonModule(version=2,
+                deps=('email.mime', 'cStringIO', 'email.encoders',
+                        'email.mime.nonmultipart', 'sndhdr')),
+        PythonModule(version=3,
+                deps=('email.mime', 'email.encoders',
+                        'email.mime.nonmultipart', 'io', 'sndhdr'))),
+
+    'email.mime.base':
+        PythonModule(deps=('email.mime', 'email.message')),
+
+    'email.mime.image':
+        PythonModule(
+                deps=('email.mime', 'email.encoders',
+                        'email.mime.nonmultipart', 'imghdr')),
+
+    'email.mime.message':
+        PythonModule(
+                deps=('email.mime', 'email.message',
+                        'email.mime.nonmultipart')),
+
+    'email.mime.multipart':
+        PythonModule(deps=('email.mime', 'email.mime.base')),
+
+    'email.mime.nonmultipart':
+        PythonModule(deps=('email.mime', 'email.errors', 'email.mime.base')),
+
+    'email.mime.text': (
+        PythonModule(max_version=(3, 3),
+                deps=('email.mime', 'email.encoders',
+                        'email.mime.nonmultipart')),
+        PythonModule(min_version=(3, 4),
+                deps=('email.mime', 'email.mime.nonmultipart'))),
+
+    'email.parser': (
+        PythonModule(version=2,
+                deps=('email', 'cStringIO', 'email.feedparser',
+                        'email.message', 'warnings')),
+        PythonModule(version=(3, 3),
+                deps=('email', 'email.feedparser', 'email.message',
+                        'email._policybase', 'io', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('email', 'email.feedparser', 'email._policybase',
+                        'io'))),
+
+    'email.policy': (
+        PythonModule(version=(3, 3),
+                deps=('email', 'email.headerregistry', 'email._policybase',
+                        'email.utils')),
+        PythonModule(min_version=(3, 4),
+                deps=('email', 'email.contentmanager', 'email.headerregistry',
+                        'email._policybase', 'email.utils'))),
+    'email.utils': (
+        PythonModule(version=2,
+                deps=('email', 'base64', 'email.encoders', 'email._parseaddr',
+                        'os', 'quopri', 'random', 're', 'socket', 'time',
+                        'urllib', 'warnings')),
+        PythonModule(version=(3, 3),
+                deps=('email', 'base64', 'datetime', 'email.charset',
+                        'email.encoders', 'email._parseaddr', 'io', 'os',
+                        'quopri', 'random', 're', 'socket', 'time',
+                        'urllib.parse', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('email', 'datetime', 'email.charset', 'email._parseaddr',
+                        'os', 'random', 're', 'socket', 'time',
+                        'urllib.parse'))),
+
+    'encodings':
+        PythonModule(deps=('codecs', 'encodings.aliases'),
+                modules=('encodings.ascii', 'encodings.base64_codec',
+                        'encodings.big5', 'encodings.big5hkscs',
+                        'encodings.bz2_codec', 'encodings.charmap',
+                        'encodings.cp037', 'encodings.cp1006',
+                        'encodings.cp1026', 'encodings.cp1125',
+                        'encodings.cp1140', 'encodings.cp1250',
+                        'encodings.cp1251', 'encodings.cp1252',
+                        'encodings.cp1253', 'encodings.cp1254',
+                        'encodings.cp1255', 'encodings.cp1256',
+                        'encodings.cp1257', 'encodings.cp1258',
+                        'encodings.cp273', 'encodings.cp424',
+                        'encodings.cp437', 'encodings.cp500',
+                        'encodings.cp65001', 'encodings.cp720',
+                        'encodings.cp737', 'encodings.cp775',
+                        'encodings.cp850', 'encodings.cp852',
+                        'encodings.cp855', 'encodings.cp856',
+                        'encodings.cp857', 'encodings.cp858',
+                        'encodings.cp860', 'encodings.cp861',
+                        'encodings.cp862', 'encodings.cp863',
+                        'encodings.cp864', 'encodings.cp865',
+                        'encodings.cp866', 'encodings.cp869',
+                        'encodings.cp874', 'encodings.cp875',
+                        'encodings.cp932', 'encodings.cp949',
+                        'encodings.cp950', 'encodings.euc_jis_2004',
+                        'encodings.euc_jisx0213', 'encodings.euc_jp',
+                        'encodings.euc_kr', 'encodings.gb18030',
+                        'encodings.gb2312', 'encodings.gbk',
+                        'encodings.hex_codec', 'encodings.hp_roman8',
+                        'encodings.hz', 'encodings.idna',
+                        'encodings.iso2022_jp', 'encodings.iso2022_jp_1',
+                        'encodings.iso2022_jp_2', 'encodings.iso2022_jp_2004',
+                        'encodings.iso2022_jp_3', 'encodings.iso2022_jp_ext',
+                        'encodings.iso2022_jp_kr', 'encodings.iso8859_1',
+                        'encodings.iso8859_10', 'encodings.iso8859_11',
+                        'encodings.iso8859_13', 'encodings.iso8859_14',
+                        'encodings.iso8859_15', 'encodings.iso8859_16',
+                        'encodings.iso8859_2', 'encodings.iso8859_3',
+                        'encodings.iso8859_4', 'encodings.iso8859_5',
+                        'encodings.iso8859_6', 'encodings.iso8859_7',
+                        'encodings.iso8859_8', 'encodings.iso8859_9',
+                        'encodings.johab', 'encodings.koi8_r',
+                        'encodings.koi8_u', 'encodings.latin_1',
+                        'encodings.mac_arabic', 'encodings.mac_centeuro',
+                        'encodings.mac_croatian', 'encodings.mac_cyrillic',
+                        'encodings.mac_farsi', 'encodings.mac_greek',
+                        'encodings.mac_iceland', 'encodings.mac_latin2',
+                        'encodings.mac_roman', 'encodings.mac_romanian',
+                        'encodings.mac_turkish', 'encodings.mbcs',
+                        'encodings.palmos', 'encodings.ptcp154',
+                        'encodings.punycode', 'encodings.quopri_codec',
+                        'encodings.raw_unicode_escape', 'encodings.rot_13',
+                        'encodings.shift_jis', 'encodings.shift_jis_2004',
+                        'encodings.shift_jisx0213', 'encodings.tis_620',
+                        'encodings.undefined', 'encodings.unicode_escape',
+                        'encodings.unicode_internal', 'encodings.utf_16',
+                        'encodings.utf_16_be', 'encodings.utf_16_le',
+                        'encodings.utf_32', 'encodings.utf_32_be',
+                        'encodings.utf_32_le', 'encodings.utf_7',
+                        'encodings.utf_8', 'encodings.utf_8_sig',
+                        'encodings.uu_codec', 'encodings.zlib_codec')),
+
+    'encodings.ascii': (
+        CodecModule(version=2),
+        CodecModule(version=3, core=True)),
+
+    'encodings.base64_codec':
+        CodecModule(deps='base64'),
+
+    'encodings.big5':
+        CodecModule(deps=('_codecs_tw', '_multibytecodec')),
+
+    'encodings.big5hkscs':
+        CodecModule(deps=('_codecs_hk', '_multibytecodec')),
+
+    'encodings.bz2_codec':
+        CodecModule(deps='bz2'),
+
+    'encodings.charmap':
+        CodecModule(),
+
+    'encodings.cp037':
+        CodecModule(),
+
+    'encodings.cp1006':
+        CodecModule(),
+
+    'encodings.cp1026':
+        CodecModule(),
+
+    'encodings.cp1125':
+        CodecModule(min_version=(3, 4)),
+
+    'encodings.cp1140':
+        CodecModule(),
+
+    'encodings.cp1250':
+        CodecModule(),
+
+    'encodings.cp1251':
+        CodecModule(),
+
+    'encodings.cp1252':
+        CodecModule(),
+
+    'encodings.cp1253':
+        CodecModule(),
+
+    'encodings.cp1254':
+        CodecModule(),
+
+    'encodings.cp1255':
+        CodecModule(),
+
+    'encodings.cp1256':
+        CodecModule(),
+
+    'encodings.cp1257':
+        CodecModule(),
+
+    'encodings.cp1258':
+        CodecModule(),
+
+    'encodings.cp273':
+        CodecModule(min_version=(3, 4)),
+
+    'encodings.cp424':
+        CodecModule(),
+
+    'encodings.cp437': (
+        CodecModule(version=2),
+        CodecModule(version=3, core=True)),
+
+    'encodings.cp500':
+        CodecModule(),
+
+    'encodings.cp65001':
+        CodecModule(version=3),
+
+    'encodings.cp720':
+        CodecModule(),
+
+    'encodings.cp737':
+        CodecModule(),
+
+    'encodings.cp775':
+        CodecModule(),
+
+    'encodings.cp850':
+        CodecModule(),
+
+    'encodings.cp852':
+        CodecModule(),
+
+    'encodings.cp855':
+        CodecModule(),
+
+    'encodings.cp856':
+        CodecModule(),
+
+    'encodings.cp857':
+        CodecModule(),
+
+    'encodings.cp858':
+        CodecModule(),
+
+    'encodings.cp860':
+        CodecModule(),
+
+    'encodings.cp861':
+        CodecModule(),
+
+    'encodings.cp862':
+        CodecModule(),
+
+    'encodings.cp863':
+        CodecModule(),
+
+    'encodings.cp864':
+        CodecModule(),
+
+    'encodings.cp865':
+        CodecModule(),
+
+    'encodings.cp866':
+        CodecModule(),
+
+    'encodings.cp869':
+        CodecModule(),
+
+    'encodings.cp874':
+        CodecModule(),
+
+    'encodings.cp875':
+        CodecModule(),
+
+    'encodings.cp932':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.cp949':
+        CodecModule(deps=('_codecs_kr', '_multibytecodec')),
+
+    'encodings.cp950':
+        CodecModule(deps=('_codecs_tw', '_multibytecodec')),
+
+    'encodings.euc_jis_2004':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.euc_jisx0213':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.euc_jp':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.euc_kr':
+        CodecModule(deps=('_codecs_kr', '_multibytecodec')),
+
+    'encodings.gb18030':
+        CodecModule(deps=('_codecs_cn', '_multibytecodec')),
+
+    'encodings.gb2312':
+        CodecModule(deps=('_codecs_cn', '_multibytecodec')),
+
+    'encodings.gbk':
+        CodecModule(deps=('_codecs_cn', '_multibytecodec')),
+
+    'encodings.hex_codec':
+        CodecModule(deps='binascii'),
+
+    'encodings.hp_roman8':
+        CodecModule(),
+
+    'encodings.hz':
+        CodecModule(deps=('_codecs_cn', '_multibytecodec')),
+
+    'encodings.idna':
+        PythonModule(
+                deps=('encodings', 'codecs', 're', 'stringprep',
+                        'unicodedata')),
+
+    'encodings.iso2022_jp':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_1':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_2':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_2004':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_3':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_ext':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso2022_jp_kr':
+        CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
+
+    'encodings.iso8859_1':
+        CodecModule(),
+
+    'encodings.iso8859_10':
+        CodecModule(),
+
+    'encodings.iso8859_11':
+        CodecModule(),
+
+    'encodings.iso8859_13':
+        CodecModule(),
+
+    'encodings.iso8859_14':
+        CodecModule(),
+
+    'encodings.iso8859_15':
+        CodecModule(),
+
+    'encodings.iso8859_16':
+        CodecModule(),
+
+    'encodings.iso8859_2':
+        CodecModule(),
+
+    'encodings.iso8859_3':
+        CodecModule(),
+
+    'encodings.iso8859_4':
+        CodecModule(),
+
+    'encodings.iso8859_5':
+        CodecModule(),
+
+    'encodings.iso8859_6':
+        CodecModule(),
+
+    'encodings.iso8859_7':
+        CodecModule(),
+
+    'encodings.iso8859_8':
+        CodecModule(),
+
+    'encodings.iso8859_9':
+        CodecModule(),
+
+    'encodings.johab':
+        CodecModule(deps=('_codecs_kr', '_multibytecodec')),
+
+    'encodings.koi8_r':
+        CodecModule(),
+
+    'encodings.koi8_u':
+        CodecModule(),
+
+    'encodings.latin_1': (
+        CodecModule(version=2),
+        CodecModule(version=3, core=True)),
+
+    'encodings.mac_arabic':
+        CodecModule(),
+
+    'encodings.mac_centeuro':
+        CodecModule(),
+
+    'encodings.mac_croatian':
+        CodecModule(),
+
+    'encodings.mac_cyrillic':
+        CodecModule(),
+
+    'encodings.mac_farsi':
+        CodecModule(),
+
+    'encodings.mac_greek':
+        CodecModule(),
+
+    'encodings.mac_iceland':
+        CodecModule(),
+
+    'encodings.mac_latin2':
+        CodecModule(),
+
+    'encodings.mac_roman':
+        CodecModule(),
+
+    'encodings.mac_romanian':
+        CodecModule(),
+
+    'encodings.mac_turkish':
+        CodecModule(),
+
+    'encodings.mbcs': (
+        CodecModule(version=2, scope='win32'),
+        CodecModule(version=3, scope='win32', core=True)),
+
+    'encodings.palmos':
+        CodecModule(),
+
+    'encodings.ptcp154':
+        CodecModule(),
+
+    'encodings.punycode':
+        CodecModule(),
+
+    'encodings.quopri_codec': (
+        CodecModule(version=2, deps=('cStringIO', 'quopri')),
+        CodecModule(version=3, deps=('io', 'quopri'))),
+
+    'encodings.raw_unicode_escape':
+        CodecModule(),
+
+    'encodings.rot_13':
+        CodecModule(),
+
+    'encodings.shift_jis':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.shift_jis_2004':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.shift_jisx0213':
+        CodecModule(deps=('_codecs_jp', '_multibytecodec')),
+
+    'encodings.tis_620':
+        CodecModule(),
+
+    'encodings.undefined':
+        CodecModule(),
+
+    'encodings.unicode_escape':
+        CodecModule(),
+
+    'encodings.unicode_internal':
+        CodecModule(),
+
+    'encodings.utf_16':
+        CodecModule(),
+
+    'encodings.utf_16_be':
+        CodecModule(),
+
+    'encodings.utf_16_le':
+        CodecModule(),
+
+    'encodings.utf_32':
+        CodecModule(),
+
+    'encodings.utf_32_be':
+        CodecModule(),
+
+    'encodings.utf_32_le':
+        CodecModule(),
+
+    'encodings.utf_7':
+        CodecModule(),
+
+    'encodings.utf_8': (
+        CodecModule(version=2),
+        CodecModule(version=3, core=True)),
+
+    'encodings.utf_8_sig':
+        CodecModule(),
+
+    'encodings.uu_codec': (
+        CodecModule(version=2, deps=('binascii', 'cStringIO')),
+        CodecModule(version=3, deps=('binascii', 'io'))),
+
+    'encodings.zlib_codec':
+        CodecModule(deps='zlib'),
+
+    'enum':
+        PythonModule(version=3, deps=('collections', 'types')),
+
+    'errno':
+        CoreExtensionModule(),
+
+    'exceptions':
+        CoreExtensionModule(version=2),
+
+    'faulthandler':
+        CoreExtensionModule(version=3),
+
+    'fcntl':
+        ExtensionModule(scope='!win32', source='fcntlmodule.c'),
+
+    'filecmp':
+        PythonModule(deps=('itertools', 'os', 'stat')),
+
+    'fileinput': (
+        PythonModule(max_version=(3, 3), deps='os'),
+        PythonModule(min_version=(3, 4), deps=('os', 'warnings'))),
+
+    'fnmatch': (
+        PythonModule(version=2, deps=('os', 'posixpath', 're')),
+        PythonModule(version=3, deps=('functools', 'os', 'posixpath', 're'))),
+
+    'formatter': (
+        PythonModule(max_version=(3, 3)),
+        PythonModule(min_version=(3, 4), deps='warnings')),
+
+    'fpformat':
+        PythonModule(version=2, deps=('re', 'warnings')),
+
+    'fractions': (
+        PythonModule(version=2,
+                deps=('__future__', 'decimal', 'math', 'numbers', 'operator',
+                        're')),
+        PythonModule(version=3,
+                deps=('decimal', 'math', 'numbers', 'operator', 're'))),
+
+    'ftplib': (
+        PythonModule(max_version=(3, 3), ssl=True,
+                deps=('os', 're', 'socket')),
+        PythonModule(min_version=(3, 4), ssl=True,
+                deps=('os', 're', 'socket', 'warnings'))),
+
+    'functools': (
+        PythonModule(version=2, deps='_functools'),
+        PythonModule(version=(3, 3),
+                deps=('collections', '_functools', '_thread')),
+        PythonModule(min_version=(3, 4),
+                deps=('abc', 'collections', '_functools', '_thread', 'types',
+                        'weakref'))),
+
+    'future_builtins':
+        ExtensionModule(version=2, source='future_builtins.c'),
+
+    'gc':
+        CoreExtensionModule(),
+
+    'gdbm':
+        ExtensionModule(version=2, source='gdbmmodule.c', xlib='gdbm'),
+
+    'getopt': (
+        PythonModule(version=2, deps='os'),
+        PythonModule(version=3, deps=('gettext', 'os'))),
+
+    'getpass': (
+        PythonModule(version=2,
+                deps=('msvcrt', 'os', 'pwd', 'termios', 'warnings')),
+        PythonModule(version=3,
+                deps=('contextlib', 'io', 'msvcrt', 'os', 'pwd', 'termios',
+                        'warnings'))),
+
+    'gettext': (
+        PythonModule(version=2,
+                deps=('copy', 'cStringIO', 'errno', 'locale', 'os', 're',
+                        'struct', 'token', 'tokenize')),
+        PythonModule(version=3,
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
+                        'token', 'tokenize'))),
+
+    'glob':
+        PythonModule(deps=('fnmatch', 'os', 're')),
+
+    'grp':
+        ExtensionModule(scope='!win32', source='grpmodule.c'),
+
+    'gzip':
+        PythonModule(
+                deps=('errno', 'io', 'os', 'struct', 'time', 'warnings',
+                        'zlib')),
+
+    'hashlib': (
+        PythonModule(version=2,
+                deps=('binascii', '_hashlib', '_md5', '_sha', '_sha256',
+                        '_sha512', 'struct')),
+        PythonModule(version=3,
+                deps=('_hashlib', '_md5', '_sha1', '_sha256', '_sha512'))),
+
+    'heapq': (
+        PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),
+        PythonModule(version=3, deps=('_heapq', 'itertools'))),
+
+    'hmac': (
+        PythonModule(max_version=(3, 3),
+                deps=('hashlib', 'operator', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('hashlib', '_operator', 'warnings'))),
+
+    'hotshot':
+        PythonModule(version=2, deps=('_hotshot', 'warnings'),
+                modules='hotshot.stats'),
+
+    'hotshot.stats':
+        PythonModule(version=2,
+                deps=('hotshot', 'hotshot.log', 'profile', 'pstats')),
+
+    'html': (
+        PythonModule(version=(3, 3), modules=('html.entities', 'html.parser')),
+        PythonModule(min_version=(3, 4), deps=('html.entities', 're'),
+                modules=('html.entities', 'html.parser'))),
+
+    'html.entities':
+        PythonModule(version=3, deps='html'),
+
+    'html.parser': (
+        PythonModule(version=(3, 3),
+                deps=('html', 'html.entities', '_markupbase', 're',
+                        'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('html', '_markupbase', 're', 'warnings'))),
+
+    'htmlentitydefs':
+        PythonModule(version=2),
+
+    'htmllib':
+        PythonModule(version=2,
+                deps=('formatter', 'htmlentitydefs', 'sgmllib', 'warnings')),
+
+    'HTMLParser':
+        PythonModule(version=2, deps=('htmlentitydefs', 'markupbase', 're')),
+
+    'http':
+        PythonModule(version=3,
+                modules=('http.client', 'http.cookiejar', 'http.cookies',
+                        'http.server')),
+
+    'http.client': (
+        PythonModule(version=(3, 3),
+                deps=('http', 'collections', 'email.message', 'email.parser',
+                        'io', 'os', 'socket', 'ssl', 'urllib.parse',
+                        'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('http', 'collections', 'email.message', 'email.parser',
+                        'io', 'os', 'socket', 'ssl', 'urllib.parse'))),
+
+    'http.cookiejar':
+        PythonModule(version=3,
+                deps=('http', 'calendar', 'copy', 'datetime', 'http.client',
+                        're', 'threading', 'time', 'urllib.parse',
+                        'urllib.request')),
+
+    'http.cookies':
+        PythonModule(version=3, deps=('http', 're', 'string', 'time')),
+
+    'http.server': (
+        PythonModule(version=(3, 3),
+                deps=('http', 'argparse', 'base64', 'binascii', 'copy',
+                        'email.message', 'email.parser', 'html', 'http.client',
+                        'io', 'mimetypes', 'os', 'posixpath', 'pwd', 'select',
+                        'shutil', 'socket', 'socketserver', 'subprocess',
+                        'time', 'urllib.parse')),
+        PythonModule(min_version=(3, 4),
+                deps=('http', 'argparse', 'base64', 'binascii', 'copy', 'html',
+                        'http.client', 'io', 'mimetypes', 'os', 'posixpath',
+                        'pwd', 'select', 'shutil', 'socket', 'socketserver',
+                        'subprocess', 'time', 'urllib.parse'))),
+
+    'httplib':
+        PythonModule(version=2,
+                deps=('array', 'cStringIO', 'mimetools', 'os', 'socket', 'ssl',
+                        'urlparse', 'warnings')),
+
+    'imageop':
+        ExtensionModule(version=2, source='imageop.c'),
+
+    'imaplib': (
+        PythonModule(version=2, ssl=True,
+                deps=('binascii', 'errno', 'hmac', 'random', 're', 'socket',
+                        'subprocess', 'time')),
+        PythonModule(version=3, ssl=True,
+                deps=('binascii', 'calendar', 'datetime', 'errno', 'hmac',
+                        'io', 'random', 're', 'socket', 'subprocess',
+                        'time'))),
+    'imghdr':
+        PythonModule(),
+
+    'imp': (
+        CoreExtensionModule(version=2),
+        PythonModule(version=(3, 3),
+                deps=('_imp', 'importlib', 'os', 'tokenize', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('_imp', 'importlib', 'os', 'tokenize', 'types',
+                        'warnings'))),
+
+    'importlib': (
+        PythonModule(version=2, modules=()),
+        CorePythonModule(version=(3, 3), deps=('importlib._bootstrap', '_imp'),
+                modules=('importlib.abc', 'importlib.machinery',
+                        'importlib.util')),
+        CorePythonModule(min_version=(3, 4),
+                deps=('importlib._bootstrap', '_imp', 'types'),
+                hidden_deps='warnings',
+                modules=('importlib.abc', 'importlib.machinery',
+                        'importlib.util'))),
+
+    'importlib.abc': (
+        PythonModule(version=(3, 3),
+                deps=('importlib', 'abc', 'imp', 'importlib._bootstrap',
+                        'importlib.machinery', 'marshal', 'tokenize',
+                        'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('importlib', 'abc', 'importlib._bootstrap',
+                        'importlib.machinery'))),
+
+    'importlib.machinery':
+        PythonModule(version=3,
+                deps=('importlib', '_imp', 'importlib._bootstrap')),
+
+    'importlib.util': (
+        PythonModule(version=(3, 3),
+                deps=('importlib', 'importlib._bootstrap')),
+        PythonModule(min_version=(3, 4),
+                deps=('importlib', 'contextlib', 'functools',
+                        'importlib._bootstrap', 'warnings'))),
+
+    'imputil':
+        PythonModule(version=2, deps=('imp', 'marshal', 'struct', 'warnings')),
+
+    'inspect': (
+        PythonModule(version=2,
+                deps=('collections', 'dis', 'imp', 'linecache', 'operator',
+                        'os', 're', 'string', 'tokenize', 'types')),
+        PythonModule(version=(3, 3),
+                deps=('collections', 'functools', 'imp', 'importlib.machinery',
+                        'itertools', 'linecache', 'operator', 'os', 're',
+                        'tokenize', 'types', 'warnings')),
+        PythonModule(min_version=(3, 4),
+                deps=('ast', 'collections', 'functools', 'imp',
+                        'importlib.machinery', 'itertools', 'linecache',
+                        'operator', 'os', 're', 'token', 'tokenize', 'types',
+                        'warnings'))),
+
+    'io': (
+        PythonModule(version=2, deps=('abc', '_io')),
+        CorePythonModule(version=3, deps=('abc', '_io'))),
+
+    'ipaddress':
+        PythonModule(version=3, deps='functools'),
+
+    'itertools': (
+        ExtensionModule(version=2, source='itertoolsmodule.c'),
+        CoreExtensionModule(version=3)),
+
+    'json':
+        PythonModule(deps=('json.decoder', 'json.encoder'), modules=()),
+
+    'keyword':
+        PythonModule(),
+
+    'linecache': (
+        PythonModule(version=2, deps='os'),
+        PythonModule(version=3, deps=('os', 'tokenize'))),
+
+    'linuxaudiodev':
+        ExtensionModule(version=2, source='linuxaudiodev.c'),
+
+    'locale': (
+        PythonModule(version=2,
+                deps=('encodings', 'encodings.aliases', 'functools', '_locale',
+                        'os', 'operator', 're')),
+        PythonModule(version=3,
+                deps=('collections', 'encodings', 'encodings.aliases',
+                        'functools', '_locale', 'os', 're'))),
+
+    'logging': (
+        PythonModule(version=2,
+                deps=('atexit', 'codecs', 'collections', 'cStringIO', 'os',
+                        'thread', 'threading', 'time', 'traceback', 'warnings',
+                        'weakref'),
+                modules=('logging.config', 'logging.handlers')),
+        PythonModule(version=(3, 3),
+                deps=('atexit', 'io', 'os', 'string', 'threading', 'time',
+                        'traceback', 'warnings', 'weakref'),
+                modules=('logging.config', 'logging.handlers')),
+        PythonModule(min_version=(3, 4),
+                deps=('atexit', 'collections', 'io', 'os', 'string',
+                        'threading', 'time', 'traceback', 'warnings',
+                        'weakref'),
+                modules=('logging.config', 'logging.handlers'))),
+
+    'logging.config': (
+        PythonModule(version=2,
+                deps=('logging', 'ConfigParser', 'cStringIO', 'errno', 'io',
+                        'json', 'logging.handlers', 'os', 're', 'select',
+                        'socket', 'SocketServer', 'struct', 'tempfile',
+                        'thread', 'threading', 'traceback', 'types')),
+        PythonModule(version=(3, 3),
+                deps=('logging', 'configparser', 'io', 'json',
+                        'logging.handlers', 're', 'select', 'socket',
+                        'socketserver', 'struct', '_thread', 'threading',
+                        'traceback')),
+        PythonModule(min_version=(3, 4),
+                deps=('logging', 'errno', 'configparser', 'io', 'json',
+                        'logging.handlers', 're', 'select', 'socketserver',
+                        'struct', '_thread', 'threading', 'traceback'))),
+
+    'logging.handlers': (
+        PythonModule(version=2,
+                deps=('logging', 'codecs', 'cPickle', 'email.utils', 'errno',
+                        'httplib', 'os', 're', 'socket', 'smtplib', 'stat',
+                        'struct', 'time', 'urllib')),
+        PythonModule(min_version=(3, 3),
+                deps=('logging', 'base64', 'codecs', 'email.utils', 'errno',
+                        'http.client', 'os', 'pickle', 'queue', 're', 'socket',
+                        'smtplib', 'stat', 'struct', 'threading', 'time',
+                        'urllib.parse'))),
+
+    'lzma':
+        PythonModule(version=3, deps=('io', '_lzma')),
+
+    'MacOS':
+        ExtensionModule(version=2, scope='macx',
+                source='../Mac/Modules/MacOS.c'),
+
+    'macpath': (
+        PythonModule(version=2,
+                deps=('genericpath', 'os', 'stat', 'warnings')),
+        PythonModule(version=3, deps=('genericpath', 'os', 'stat'))),
+
+    'mailbox': (
+        PythonModule(version=2,
+                deps=('calendar', 'copy', 'email', 'email.generator',
+                        'email.message', 'errno', 'fcntl', 'os', 're',
+                        'rfc822', 'socket', 'StringIO', 'time', 'warnings')),
+        PythonModule(version=3,
+                deps=('calendar', 'contextlib', 'copy', 'email',
+                        'email.generator', 'email.message', 'errno', 'fcntl',
+                        'io', 'os', 'socket', 'time', 'warnings'))),
+
+    'mailcap':
+        PythonModule(deps='os'),
+
+    'marshal':
+        CoreExtensionModule(),
+
+    'math':
+        ExtensionModule(source=('mathmodule.c', '_math.c'),
+                libs='linux-*#-lm'),
+
+    'md5':
+        PythonModule(version=2, deps=('hashlib', 'warnings')),
+
+    'mhlib':
+        PythonModule(version=2,
+                deps=('bisect', 'cStringIO', 'mimetools', 'multifile', 'os',
+                        're', 'shutil', 'warnings')),
+
+    'mimetools':
+        PythonModule(version=2,
+                deps=('base64', 'os', 'quopri', 'rfc822', 'socket', 'tempfile',
+                        'thread', 'time', 'uu', 'warnings')),
+
+    'mimetypes': (
+        PythonModule(version=2, deps=('os', 'posixpath', 'urllib', '_winreg')),
+        PythonModule(version=3,
+                deps=('os', 'posixpath', 'urllib.parse', 'winreg'))),
+
+    'MimeWriter':
+        PythonModule(version=2, deps=('mimetools', 'warnings')),
+
+    'mimify':
+        PythonModule(version=2, deps=('base64', 'os', 're', 'warnings')),
+
+    'mmap':
+        ExtensionModule(source='mmapmodule.c'),
+
+    'modulefinder': (
+        PythonModule(version=2,
+                deps=('__future__', 'dis', 'imp', 'marshal', 'os', 'types',
+                        'struct')),
+        PythonModule(version=(3, 3),
+                deps=('dis', 'imp', 'importlib.machinery', 'marshal', 'os',
+                        'types', 'struct')),
+        PythonModule(min_version=(3, 4),
+                deps=('dis', 'importlib._bootstrap', 'importlib.machinery',
+                        'marshal', 'os', 'types', 'struct', 'warnings'))),
+
+    'msilib':
+        PythonModule(scope='win32',
+                deps=('_msi', 'os', 're', 'string', 'tempfile')),
+
+    'msvcrt':
+        ExtensionModule(scope='win32', source='../PC/msvcrtmodule.c'),
+
+    'multifile':
+        PythonModule(version=2, deps='warnings'),
+
+    'multiprocessing': (
+        PythonModule(version=2,
+                deps=('_multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.forking', 'multiprocessing.managers',
+                        'multiprocessing.pool', 'multiprocessing.process',
+                        'multiprocessing.queues', 'multiprocessing.reduction',
+                        'multiprocessing.sharedctypes',
+                        'multiprocessing.synchronize', 'multiprocessing.util',
+                        'os'),
+                modules=('multiprocessing.connection',
+                        'multiprocessing.managers', 'multiprocessing.pool',
+                        'multiprocessing.sharedctypes')),
+        PythonModule(version=(3, 3),
+                deps=('_multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.forking', 'multiprocessing.managers',
+                        'multiprocessing.pool', 'multiprocessing.process',
+                        'multiprocessing.queues',
+                        'multiprocessing.sharedctypes',
+                        'multiprocessing.synchronize', 'multiprocessing.util',
+                        'os'),
+                modules=('multiprocessing.connection',
+                        'multiprocessing.managers', 'multiprocessing.pool',
+                        'multiprocessing.sharedctypes')),
+        PythonModule(min_version=(3, 4),
+                deps='multiprocessing.context',
+                modules=('multiprocessing.connection',
+                        'multiprocessing.managers', 'multiprocessing.pool',
+                        'multiprocessing.sharedctypes'))),
+
+    'multiprocessing.connection': (
+        PythonModule(version=2,
+                deps=('multiprocessing', 'errno', 'hmac', 'itertools',
+                        '_multiprocessing', 'multiprocessing.forking',
+                        'multiprocessing.util', 'os', 'socket', 'tempfile',
+                        'time', 'xmlrpclib')),
+        PythonModule(version=(3, 3),
+                deps=('multiprocessing', 'errno', 'hmac', 'io', 'itertools',
+                        '_multiprocessing', 'multiprocessing.forking',
+                        'multiprocessing.reduction', 'multiprocessing.util',
+                        'os', 'pickle', 'select', 'socket', 'struct',
+                        'tempfile', 'time', '_winapi', 'xmlrpc.client')),
+        PythonModule(min_version=(3, 4),
+                deps=('multiprocessing', 'hmac', 'io', 'itertools',
+                        '_multiprocessing', 'multiprocessing.reduction',
+                        'multiprocessing.resource_sharer',
+                        'multiprocessing.util', 'os', 'selectors', 'socket',
+                        'struct', 'tempfile', 'time', '_winapi',
+                        'xmlrpc.client'))),
+
+    'multiprocessing.dummy': (
+        PythonModule(version=2,
+                deps=('multiprocessing', 'array', 'itertools',
+                        'multiprocessing.dummy.connection',
+                        'multiprocessing.pool', 'Queue', 'threading',
+                        'weakref'),
+                modules=()),
+        PythonModule(version=3,
+                deps=('multiprocessing', 'array',
+                        'multiprocessing.dummy.connection',
+                        'multiprocessing.pool', 'queue', 'threading',
+                        'weakref'),
+                modules=())),
+
+    'multiprocessing.managers': (
+        PythonModule(version=2,
+                deps=('multiprocessing', 'array', 'multiprocessing.forking',
+                        'multiprocessing.process', 'multiprocessing.util',
+                        'cPickle', 'os', 'Queue', 'threading', 'traceback',
+                        'weakref')),
+        PythonModule(version=(3, 3),
+                deps=('multiprocessing', 'array', 'copyreg',
+                        'multiprocessing.forking', 'multiprocessing.process',
+                        'queue', 'threading', 'time', 'traceback')),
+        PythonModule(min_version=(3, 4),
+                deps=('multiprocessing', 'array', 'multiprocessing.connection',
+                        'multiprocessing.context', 'multiprocessing.pool',
+                        'multiprocessing.process', 'multiprocessing.reduction',
+                        'multiprocessing.util', 'queue', 'threading', 'time',
+                        'traceback'))),
+
+    'multiprocessing.pool': (
+        PythonModule(version=2,
+                deps=('multiprocessing', 'collections', 'itertools',
+                        'multiprocessing.dummy', 'multiprocessing.queues',
+                        'multiprocessing.util', 'Queue', 'threading', 'time')),
+        PythonModule(version=(3, 3),
+                deps=('multiprocessing', 'collections', 'itertools',
+                        'multiprocessing.dummy', 'multiprocessing.queues',
+                        'multiprocessing.util', 'queue', 'threading', 'time')),
+        PythonModule(min_version=(3, 4),
+                deps=('multiprocessing', 'collections', 'itertools',
+                        'multiprocessing.dummy', 'multiprocessing.util',
+                        'queue', 'threading', 'time', 'traceback'))),
+
+    'multiprocessing.sharedctypes': (
+        PythonModule(max_version=(3, 3),
+                deps=('multiprocessing', 'ctypes', 'multiprocessing.forking',
+                        'multiprocessing.heap', 'weakref')),
+        PythonModule(min_version=(3, 4),
+                deps=('multiprocessing', 'ctypes', 'multiprocessing.context',
+                        'multiprocessing.heap', 'multiprocessing.reduction',
+                        'weakref'))),
+
+    'mutex':
+        PythonModule(version=2, deps=('collections', 'warnings')),
 
     'netrc':            PythonModule(deps=('os', 'pwd', 'shlex', 'stat')),
     'new':              PythonModule(version=2, deps=('types', 'warnings')),
