@@ -108,7 +108,7 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
-        self.python_target_version = (3, 4)
+        self.python_target_version = (3, 4, 2)
         self.qmake = ''
         self.standard_library = []
         self.sys_path = ''
