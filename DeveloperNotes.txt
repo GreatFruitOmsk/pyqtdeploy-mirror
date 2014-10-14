@@ -44,10 +44,10 @@ statements and update the Python standard library meta-data accordingly.
 pyconfig.h
 ..........
 
-For Windows copy the ``PC/pyconfig.h`` file to the ``configurations/pyconfig``
-directory replacing any existing copy for the same major.minor version.  Edit
-the file and replace the ``#define`` for ``HAVE_DYNAMIC_LOADING`` with
-``@PY_DYNAMIC_LOADING@``.
+For Windows see if there are any changes to ``PC/pyconfig.h``.  If so then copy
+it to the ``configurations/pyconfig`` directory with an appropriate version
+number.  Edit the file and replace the ``#define`` for ``HAVE_DYNAMIC_LOADING``
+with ``@PY_DYNAMIC_LOADING@``.
 
 For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
 new configuration items.  Add any new ones to ``pyconfig.py``.
