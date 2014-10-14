@@ -1,3 +1,8 @@
+v0.7 14th October 2014
+  - Added support for Python v3.4.2 and v3.3.6
+  - Updated the documentation for building a static version of Qt on Windows to
+    include statically linking the C library.
+
 v0.6 13th September 2014
   - Support for Python v2.6 has been removed.
   - Split into two separate applications: the GUI pyqtdeploy and the command
