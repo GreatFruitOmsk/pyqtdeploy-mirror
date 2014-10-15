@@ -1,3 +1,6 @@
+v0.8 15th October 2014
+  - A bug fix only release.
+
 v0.7 14th October 2014
   - Added support for Python v3.4.2 and v3.3.6
   - Updated the documentation for building a static version of Qt on Windows to
