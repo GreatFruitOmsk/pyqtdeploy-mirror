@@ -131,8 +131,8 @@ class Builder():
                 opt)
 
         # Freeze the bootstrap.
-        py_major, py_minor = project.python_target_version
-        py_version = (py_major << 16) + (py_minor << 8)
+        py_major, py_minor, py_patch = project.python_target_version
+        py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
         bootstrap_src = get_embedded_file_for_version(py_version, __file__,
                 'lib', 'bootstrap')
