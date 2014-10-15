@@ -25,7 +25,8 @@
 
 
 # Publish the sub-package's API.
-from .external_libs_metadata import external_libraries_metadata
-from .pyqt4 import pyqt4_metadata
-from .pyqt5 import pyqt5_metadata
-from .python_metadata import ExtensionModule, get_python_metadata
+from .external_libs_metadata import *
+from .pyqt4 import *
+from .pyqt5 import *
+from .python_metadata import *
+from .supported_python_versions import *

@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+__all__ = ['external_libraries_metadata']
+
+
 class ExternalLibraryMetadata:
     """ Encapsulate the meta-data for an external C library used by the Python
     standard library.

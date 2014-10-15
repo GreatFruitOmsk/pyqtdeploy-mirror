@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+__all__ = ['pyqt5_metadata']
+
+
 from .pyqt_metadata import PyQtMetadata
 
 

@@ -29,7 +29,7 @@ from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
 
-from ..metadata import get_python_metadata
+from ..metadata import get_latest_supported_python_version, get_python_metadata
 from ..user_exception import UserException
 
 
@@ -108,7 +108,7 @@ class Project(QObject):
         self.python_target_include_dir = ''
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
-        self.python_target_version = (3, 4, 2)
+        self.python_target_version = get_latest_supported_python_version()
         self.qmake = ''
         self.standard_library = []
         self.sys_path = ''

@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+__all__ = ['ExtensionModule', 'get_python_metadata']
+
+
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 

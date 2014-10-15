@@ -30,42 +30,10 @@ from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QSplitter,
         QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
         QVBoxLayout, QWidget)
 
-from ..metadata import external_libraries_metadata, get_python_metadata
+from ..metadata import (external_libraries_metadata, get_python_metadata,
+        get_supported_python_version, get_supported_python_version_index,
+        get_supported_python_versions)
 from ..project import ExternalLibrary
-
-
-class SupportedPythonVersions:
-
-    # The supported versions.
-    _versions = (
-        ((2, 7, 0), "2.7"),
-        ((3, 3, 0), "3.3"),
-        ((3, 4, 0), "3.4.0 and 3.4.1"),
-        ((3, 4, 2), "3.4.2 and later"))
-
-    @classmethod
-    def get_items(cls):
-        """ Return the sequence of strings describing each supported version.
-        """
-
-        return [text for _, text in cls._versions]
-
-    @classmethod
-    def index(cls, version):
-        """ Return the index of a particular version. """
-
-        for idx, (v, _) in enumerate(cls._versions):
-            if v == version:
-                return idx
-
-        # This should never happen.
-        raise ValueError('invalid version {0}'.format(version))
-
-    @classmethod
-    def version(cls, idx):
-        """ Return the version corresponding to a particular index. """
-
-        return cls._versions[idx][0]
 
 
 class StandardLibraryPage(QSplitter):
@@ -114,7 +82,7 @@ class StandardLibraryPage(QSplitter):
         extlib_sublayout = QFormLayout()
 
         self._version_edit = QComboBox()
-        self._version_edit.addItems(SupportedPythonVersions.get_items())
+        self._version_edit.addItems(get_supported_python_versions())
         self._version_edit.currentIndexChanged.connect(self._version_changed)
         extlib_sublayout.addRow("Target Python version", self._version_edit)
 
@@ -158,7 +126,8 @@ class StandardLibraryPage(QSplitter):
 
         blocked = self._version_edit.blockSignals(True)
         self._version_edit.setCurrentIndex(
-                SupportedPythonVersions.index(project.python_target_version))
+                get_supported_python_version_index(
+                        project.python_target_version))
         self._version_edit.blockSignals(blocked)
 
         blocked = self._ssl_edit.blockSignals(True)
@@ -287,7 +256,7 @@ class StandardLibraryPage(QSplitter):
 
         project = self.project
 
-        project.python_target_version = SupportedPythonVersions.version(idx)
+        project.python_target_version = get_supported_python_version(idx)
         self._update_page()
 
         project.modified = True
