@@ -394,7 +394,7 @@ class Builder():
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
-            scoped_values = self._parse_scoped_values(other_em.libs)
+            scoped_values = self._parse_scoped_values(other_em.libs, False)
 
             for scope, values in scoped_values.items():
                 self._add_value_for_scope(used_inittab, other_em.name, scope)
