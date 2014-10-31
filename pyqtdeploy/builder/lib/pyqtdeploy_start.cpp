@@ -228,7 +228,7 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
         return handle_exception();
 
     // Call the entry point.
-    if (!PyObject_CallMethod(mod, entry_point, NULL))
+    if (!PyObject_CallMethod(mod, CONST_CAST(entry_point), NULL))
         return handle_exception();
 #endif
 
