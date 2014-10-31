@@ -436,7 +436,7 @@ class Builder():
                     source_dir + '/Modules')
 
             for name, module in required_ext.items():
-                self._add_value_for_scope(used_inittab, name, module.scope);
+                self._add_value_for_scope(used_inittab, name, module.scope)
 
                 for source in module.source:
                     source = self._python_source_file(source_dir, source)
