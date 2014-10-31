@@ -2792,7 +2792,7 @@ _metadata = {
         CoreExtensionModule(version=3, internal=True)),
 
     '_json':
-        ExtensionModule(internal=True, source='_jsonmodule.c'),
+        ExtensionModule(internal=True, source='_json.c'),
 
     'json.decoder': (
         PythonModule(version=2, internal=True,
