@@ -439,9 +439,11 @@ class Builder():
                 self._add_value_for_scope(used_inittab, name, module.scope)
 
                 for source in module.source:
+                    scope, source = self._get_scope_and_value(source,
+                            module.scope)
                     source = self._python_source_file(source_dir, source)
                     self._add_scoped_value(used_sources, source,
-                            default_scope=module.scope)
+                            default_scope=scope)
 
                 if module.defines is not None:
                     for define in module.defines:
@@ -450,10 +452,12 @@ class Builder():
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
+                        scope, includepath = self._get_scope_and_value(
+                                includepath, module.scope)
                         includepath = self._python_source_file(source_dir,
                                 includepath)
                         self._add_scoped_value(used_includepath, includepath,
-                                default_scope=module.scope)
+                                default_scope=scope)
 
                 if module.libs is not None:
                     for lib in module.libs:
@@ -577,18 +581,28 @@ class Builder():
 
         return scoped_value_sets
 
-    def _add_scoped_value(self, used_values, scoped_value, isfilename=False, default_scope=''):
-        """ Add an optionally scoped value to a dict of used values indexed by
-        scope.
+    @staticmethod
+    def _get_scope_and_value(scoped_value, default_scope):
+        """ Return the 2-tuple of scope and value from a (possibly) scoped
+        value.
         """
 
-        # Isolate the scope and value.
         parts = scoped_value.split('#', maxsplit=1)
         if len(parts) == 2:
             scope, value = parts
         else:
             scope = default_scope
             value = parts[0]
+
+        return scope, value
+
+    def _add_scoped_value(self, used_values, scoped_value, isfilename=False, default_scope=''):
+        """ Add an optionally scoped value to a dict of used values indexed by
+        scope.
+        """
+
+        # Isolate the scope and value.
+        scope, value = self._get_scope_and_value(scoped_value, default_scope)
 
         # Convert potential filenames.
         if isfilename:
