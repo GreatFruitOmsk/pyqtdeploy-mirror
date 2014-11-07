@@ -2135,8 +2135,8 @@ _metadata = {
         PythonModule(version=2,
                 deps=('base64', 'cStringIO', 'email.utils', 'ftplib',
                         'getpass', 'httplib', 'mimetools', 'mimetypes',
-                        'nturl2path', 'os', 're', 'socket', 'ssl', 'string',
-                        'tempfile', 'time', 'urlparse', 'warnings',
+                        'nturl2path', 'os', 're', '_scproxy', 'socket', 'ssl',
+                        'string', 'tempfile', 'time', 'urlparse', 'warnings',
                         '_winreg')),
         PythonModule(version=3,
                 modules=('urllib.error', 'urllib.parse', 'urllib.request',
@@ -2154,8 +2154,8 @@ _metadata = {
                         'contextlib', 'email', 'email.utils', 'fnmatch',
                         'ftplib', 'getpass', 'hashlib', 'http.client',
                         'http.cookiejar', 'io', 'mimetypes', 'nturl2path',
-                        'os', 'posixpath', 're', 'socket', 'ssl', 'tempfile',
-                        'time', 'urllib.error', 'urllib.parse',
+                        'os', 'posixpath', 're', '_scproxy', 'socket', 'ssl',
+                        'tempfile', 'time', 'urllib.error', 'urllib.parse',
                         'urllib.response', 'warnings', 'winreg')),
 
     'urllib.response': (
@@ -3103,6 +3103,12 @@ _metadata = {
 
     '_random':
         ExtensionModule(internal=True, source='_randommodule.c'),
+
+    '_scproxy': (
+        ExtensionModule(version=2, internal=True, scope='macx',
+                source='../Mac/Modules/_scproxy.c'),
+        ExtensionModule(version=3, internal=True, scope='macx',
+                source='_scproxy.c')),
 
     '_sha':
         ExtensionModule(version=2, internal=True, ssl=False,
