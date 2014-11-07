@@ -2006,6 +2006,16 @@ _metadata = {
     'struct':
         PythonModule(deps='_struct'),
 
+    'sysconfig': (
+        PythonModule(version=2,
+                deps=('imp', 'os', '_osx_support', 'pprint', 're',
+                        '_sysconfigdata')),
+        PythonModule(version=(3, 3),
+                deps=('os', '_osx_support', 'pprint', '_sysconfigdata')),
+        PythonModule(min_version=(3, 4),
+                deps=('os', '_osx_support', 'pprint', 're', '_sysconfigdata',
+                        'types', 'warnings'))),
+
     'subprocess': (
         PythonModule(version=2,
                 deps=('errno', 'fcntl', 'gc', 'msvcrt', 'os', 'pickle',
@@ -3082,6 +3092,10 @@ _metadata = {
     '_operator':
         CoreExtensionModule(min_version=(3, 4), internal=True),
 
+    '_osx_support':
+        PythonModule(internal=True, deps=('contextlib', 'os', 're'),
+                scope='macx'),
+
     '_pickle':
         ExtensionModule(version=3, internal=True, source='_pickle.c'),
 
@@ -3182,6 +3196,9 @@ _metadata = {
 
     '_symtable':
         CoreExtensionModule(internal=True),
+
+    '_sysconfigdata':
+        PythonModule(internal=True),
 
     '_tracemalloc':
         CoreExtensionModule(min_version=(3, 4), internal=True),
