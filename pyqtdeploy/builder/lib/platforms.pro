@@ -7,5 +7,5 @@ win32 {
 }
 
 macx {
-    LIBS += -framework SystemConfigration -framework CoreFoundation
+    LIBS += -framework SystemConfiguration -framework CoreFoundation
 }
