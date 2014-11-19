@@ -192,6 +192,28 @@ The tab for defining the application source is shown below.
     separators should be used - the application will automatically do the
     appropriate conversions when running on Windows.
 
+    :program:`pyqtdeploy` also supports the dynamic loading of extension
+    modules that are installed adjacent to the application executable (i.e. in
+    the same directory as the application executable).  This is useful for
+    packages that are implemented as a combination of pure Python modules and
+    extension modules where the extension modules do not support being
+    statically compiled.  The pure Python modules would be added just like any
+    other Python package (see :ref:`ref-other-packages`).  The extension module
+    must be named according to its normal position in the package structure.
+
+    For example, suppose we have a package called ``foo`` which contains pure
+    Python modules ``__init__.py`` and ``bar.py`` and a dynamically loaded
+    extension module ``baz.so``.  (The extension module would be called
+    ``baz.pyd`` on Windows.)  When used with the deployed application the
+    module must be installed as ``foo.baz.so`` (or ``foo.baz.pyd``) in the same
+    directory as the application executable.
+
+    On OS/X an extension module will also be searched for in the ``PlugIns``
+    and ``Frameworks`` sub-directories of the directory containing the
+    application executable.
+
+    Adjacent extension modules do not require :data:`sys.path` to be set.
+
     .. note::
         If you wish to allow the importing of external extension modules then
         you will also need to ensure that Python has been built with this
@@ -328,6 +350,8 @@ that will be found automatically by the compiler and linker.
 :program:`pyqtdeploy` does not import any package from the standard library
 that uses any of these libraries and so they are all disabled.
 
+
+.. _ref-other-packages:
 
 Adding Other Packages
 ---------------------
