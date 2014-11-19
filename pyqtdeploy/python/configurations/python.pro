@@ -210,6 +210,8 @@ greaterThan(PY_MAJOR_VERSION, 2) {
 }
 
 equals(PY_DYNAMIC_LOADING, "enabled") {
+    DEFINES += SOABI=\\\"cpython-$${PY_MAJOR_VERSION}$${PY_MINOR_VERSION}\\\"
+
     win32 {
         PYTHON_SOURCES += Python/dynload_win.c
     } else {
