@@ -42,14 +42,18 @@ class PyQt4Metadata(PyQtMetadata):
 
 # The dictionary of meta-data for the PyQt4 modules.
 pyqt4_metadata = {
+    'sip':              PyQt4Metadata(gui=False),
+
     'QAxContainer':     PyQt4Metadata(
                             deps=['QtGui'],
                             config4=['qaxcontainer'],
                             qt5=['axcontainer']),
 
-    'Qt':               PyQt4Metadata(),
+    'Qt':               PyQt4Metadata(
+                            deps=['sip']),
 
     'QtCore':           PyQt4Metadata(
+                            deps=['sip'],
                             gui=False),
 
     'QtDBus':           PyQt4Metadata(

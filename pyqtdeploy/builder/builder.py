@@ -369,25 +369,35 @@ class Builder():
 
             l_libs = []
             for pyqt in self._get_all_pyqt_modules():
-                if pyqt != 'uic':
-                    self._add_value_for_scope(used_inittab,
-                            pyqt_version + '.' + pyqt)
+                # The sip module is always needed (implicitly or explicitly) if
+                # we have got this far.  We handle it separately as it is in a
+                # different directory.
+                if pyqt == 'sip':
+                    continue
 
-                    lib_name = pyqt
-                    if self._get_pyqt_module_metadata(pyqt).needs_suffix:
-                        # Qt4's qmake thinks -lQtCore etc. always refer to the
-                        # Qt libraries so PyQt4 creates static libraries with a
-                        # suffix.
-                        lib_name += '_s'
+                # The uic module is pure Python.
+                if pyqt == 'uic':
+                    continue
 
-                    l_libs.append('-l' + lib_name)
+                self._add_value_for_scope(used_inittab,
+                        pyqt_version + '.' + pyqt)
 
-            # Add the LIBS value for the PyQt modules to the global scope.
-            self._add_value_for_scope(used_libs,
-                    '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
-                            ' '.join(l_libs)))
+                lib_name = pyqt
+                if self._get_pyqt_module_metadata(pyqt).needs_suffix:
+                    # Qt4's qmake thinks -lQtCore etc. always refer to the Qt
+                    # libraries so PyQt4 creates static libraries with a
+                    # suffix.
+                    lib_name += '_s'
 
-            # Add the implicit sip module.
+                l_libs.append('-l' + lib_name)
+
+            # Add the LIBS value for any PyQt modules to the global scope.
+            if len(l_libs) > 0:
+                self._add_value_for_scope(used_libs,
+                        '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
+                                ' '.join(l_libs)))
+
+            # Add the sip module.
             self._add_value_for_scope(used_inittab, 'sip')
             self._add_value_for_scope(used_libs,
                     '-L{0} -lsip'.format(site_packages))

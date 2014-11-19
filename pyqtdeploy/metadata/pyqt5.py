@@ -42,17 +42,21 @@ class PyQt5Metadata(PyQtMetadata):
 
 # The dictionary of meta-data for the PyQt5 modules.
 pyqt5_metadata = {
+    'sip':                      PyQt5Metadata(gui=False),
+
     'QAxContainer':             PyQt5Metadata(
                                     deps=['QtWidgets'],
                                     qt5=['axcontainer']),
 
-    'Qt':                       PyQt5Metadata(),
+    'Qt':                       PyQt5Metadata(
+                                    deps=['sip']),
 
     'QtBluetooth':              PyQt5Metadata(
                                     deps=['QtCore'],
                                     qt5=['bluetooth']),
 
     'QtCore':                   PyQt5Metadata(
+                                    deps=['sip'],
                                     gui=False),
 
     'QtDBus':                   PyQt5Metadata(
