@@ -54,6 +54,11 @@ extern "C" void initpdytools(void);
 #endif
 
 
+// The internal API.
+void pdytools_init_executable_dir(const QString &argv0);
+const QDir &pdytools_get_executable_dir();
+
+
 // We use Qt as the source of the locale information, partly because it
 // officially supports Android.
 static QTextCodec *locale_codec;
@@ -61,8 +66,7 @@ static QTextCodec *locale_codec;
 
 // Foward declarations.
 static int handle_exception();
-static int append_path_dirs(PyObject *list, const char **path_dirs,
-        const QDir &exec_dir);
+static int append_path_dirs(PyObject *list, const char **path_dirs);
 #if PY_MAJOR_VERSION < 3
 static PyObject *string_from_qstring(const QString &qs);
 #endif
@@ -165,6 +169,9 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
     if (PySys_SetObject("frozen", Py_True) < 0)
         return handle_exception();
 
+    // Initialise the directory containing the executable.
+    pdytools_init_executable_dir(locale_codec->toUnicode(argv[0]));
+
     // Configure sys.path.
     if (path_dirs != NULL)
     {
@@ -172,12 +179,7 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
 
         if (py_path)
         {
-            // Get the directory containing the executable.
-            QDir exec_dir(locale_codec->toUnicode(argv[0]));
-            exec_dir.makeAbsolute();
-            exec_dir.cdUp();
-
-            if (append_path_dirs(py_path, path_dirs, exec_dir) < 0)
+            if (append_path_dirs(py_path, path_dirs) < 0)
                 return handle_exception();
         }
     }
@@ -302,8 +304,7 @@ static int handle_exception()
 
 // Extend a list with an array of UTF-8 encoded path directory names.  Return
 // -1 if there was an error.
-static int append_path_dirs(PyObject *list, const char **path_dirs,
-        const QDir &exec_dir)
+static int append_path_dirs(PyObject *list, const char **path_dirs)
 {
     const char *path_dir_utf8;
 
@@ -328,10 +329,13 @@ static int append_path_dirs(PyObject *list, const char **path_dirs,
 
         // Make sure the path is absolute.
         if (QDir::isRelativePath(path_dir))
+        {
+            const QDir &exec_dir = pdytools_get_executable_dir();
             path_dir = exec_dir.filePath(path_dir);
+        }
 
         // Convert to the native format.  (Note that we don't resolve symbolic
-        // links.
+        // links.)
         path_dir = QDir::toNativeSeparators(QDir::cleanPath(path_dir));
 
         // Convert to a Python string.

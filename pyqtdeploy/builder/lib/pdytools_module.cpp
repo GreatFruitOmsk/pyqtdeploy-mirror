@@ -3,14 +3,14 @@
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice,
 //    this list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,6 +30,7 @@
 
 #include <QByteArray>
 #include <QChar>
+#include <QDir>
 #include <QFileInfo>
 #include <QString>
 #include <QStringList>
@@ -80,6 +81,13 @@ static struct PyModuleDef pdytoolsmodule = {
 #define PYQTDEPLOY_FATAL(s)             Py_FatalError(s)
 #define PYQTDEPLOY_RETURN(m)
 #define PYQTDEPLOY_PARSE_STR            "S"
+#endif
+
+
+#if defined(Q_OS_WIN)
+static const char extension_module_extension[] = ".pyd";
+#else
+static const char extension_module_extension[] = ".so";
 #endif
 
 
@@ -179,8 +187,14 @@ enum ModuleType {
     ModuleNotFound,
     ModuleIsModule,
     ModuleIsPackage,
-    ModuleIsNamespace
+    ModuleIsNamespace,
+    ModuleIsAdjacentExtensionModule
 };
+
+
+// The internal API.
+void pdytools_init_executable_dir(const QString &argv0);
+const QDir &pdytools_get_executable_dir();
 
 
 // Other forward declarations.
@@ -188,6 +202,10 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename);
 static QString str_to_qstring(PyObject *str);
 static PyObject *qstring_to_str(const QString &qstring);
+
+
+// The directory containing the application executable.
+static QDir *executable_dir = 0;
 
 
 // The importer initialisation function.
@@ -256,6 +274,7 @@ static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args)
     {
     case ModuleIsModule:
     case ModuleIsPackage:
+    case ModuleIsAdjacentExtensionModule:
         result = Py_BuildValue("O[]", self);
         break;
 
@@ -394,6 +413,54 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
     }
 #endif
 
+    if (mt == ModuleIsAdjacentExtensionModule)
+    {
+        // We use the imp module to load sub-packages that are dynamically
+        // linked extension modules installed in the same directory as the
+        // executable.
+        // TODO - Reimplement without using the imp module for Python v3.4 and
+        // later.  Change the meta-data for the imp module for Python v3.4 to
+        // be PythonModule rather than CorePythonModule.
+        static PyObject *load_module = NULL;
+        static PyObject *open_file = NULL;
+
+        if (!load_module)
+        {
+            PyObject *imp_module = PyImport_ImportModule("imp");
+            if (!imp_module)
+                return NULL;
+
+            load_module = PyObject_GetAttrString(imp_module, "load_module");
+            Py_DECREF(imp_module);
+
+            if (!load_module)
+                return NULL;
+        }
+
+        if (!open_file)
+        {
+            PyObject *builtins = PyEval_GetBuiltins();
+            if (!builtins)
+                return NULL;
+
+            open_file = PyDict_GetItemString(builtins, "open");
+            if (!open_file)
+                return NULL;
+        }
+
+        PyObject *module_file = PyObject_CallFunction(open_file, "Os", qstring_to_str(filename), "rb");
+        if (!module_file)
+            return NULL;
+
+        PyObject *module = PyObject_CallFunction(load_module, "OOO(ssi)",
+                py_fqmn, module_file, qstring_to_str(filename),
+                extension_module_extension, "rb", 3);
+
+        Py_DECREF(module_file);
+
+        return module;
+    }
+
     if (mt != ModuleIsModule && mt != ModuleIsPackage)
     {
         PyErr_Format(PyExc_ImportError, "qrcimporter: can't find module %s",
@@ -495,6 +562,30 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
     if (QFileInfo(filename).isFile())
         return ModuleIsPackage;
 
+    // See if it is an adjacent extension module.
+    const QDir &exec_dir = pdytools_get_executable_dir();
+
+    QString em_name(fqmn);
+    em_name.append(extension_module_extension);
+
+#if defined(Q_OS_DARWIN)
+    // The PlugIns directory is the prefered location for dynamic modules.
+    filename = exec_dir.filePath(QString("PlugIns/%1").arg(em_name));
+
+    if (QFileInfo(filename).isFile())
+        return ModuleIsAdjacentExtensionModule;
+
+    filename = exec_dir.filePath(QString("Frameworks/%1").arg(em_name));
+
+    if (QFileInfo(filename).isFile())
+        return ModuleIsAdjacentExtensionModule;
+#endif
+
+    filename = exec_dir.filePath(em_name);
+
+    if (QFileInfo(filename).isFile())
+        return ModuleIsAdjacentExtensionModule;
+
     // See if it is a namespace.
     filename = pathname;
 
@@ -543,6 +634,30 @@ static PyObject *qstring_to_str(const QString &qstring)
 #else
     return PyString_FromString(qstring.toLatin1().constData());
 #endif
+}
+
+
+// Initialise the directory containing the executable.
+void pdytools_init_executable_dir(const QString &argv0)
+{
+    QString name;
+    PyObject *executable = PySys_GetObject("executable");
+
+    if (executable && executable != Py_None)
+        name = str_to_qstring(executable);
+    else
+        name = argv0;
+
+    executable_dir = new QDir(name);
+    executable_dir->makeAbsolute();
+    executable_dir->cdUp();
+}
+
+
+// Return the directory containing the executable.
+const QDir &pdytools_get_executable_dir()
+{
+    return *executable_dir;
 }
 
 

@@ -1300,11 +1300,13 @@ _metadata = {
 
     'imp': (
         CoreExtensionModule(version=2),
-        PythonModule(version=(3, 3),
-                deps=('_imp', 'importlib', 'os', 'tokenize', 'warnings')),
-        PythonModule(min_version=(3, 4),
-                deps=('_imp', 'importlib', 'os', 'tokenize', 'types',
-                        'warnings'))),
+        CorePythonModule(version=(3, 3),
+                deps=('_imp', 'importlib', 'importlib._bootstrap',
+                        'importlib.machinery', 'os', 'tokenize', 'warnings')),
+        CorePythonModule(min_version=(3, 4),
+                deps=('_imp', 'importlib', 'importlib._bootstrap',
+                        'importlib.machinery', 'importlib.util', 'os',
+                        'tokenize', 'types', 'warnings'))),
 
     'importlib': (
         PythonModule(version=2, modules=()),
