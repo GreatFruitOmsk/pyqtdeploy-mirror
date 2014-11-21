@@ -224,26 +224,14 @@ def changelog(output_dir):
     return True
 
 
-def version():
-    """ Get the full version name of the package.  If it is a release then it
-    will be of the form x.y[.z].  If it is a snapshot then it will be of the
-    form x.y[.z]-preview-changeset where x.y[.z] is the version number of the
-    next release (not the previous one).  If this is a Mercurial archive
-    (rather than a repository) then it does the best it can (based on the name
-    of the directory) with the limited information available.
-
-    :return:
-        The full version name.
-    """
-
-    release, _, _, _ = _get_release()
-
-    return release
-
-
 def pyversion(py_file):
     """ Write the version of the package as a string and a hexversion to a
-    file.
+    file.  If it is a release then it will be of the form x.y[.z].  If it is a
+    snapshot then it will be of the form x.y[.z]-preview-changeset where
+    x.y[.z] is the version number of the next release (not the previous one).
+    If this is a Mercurial archive (rather than a repository) then it does the
+    best it can (based on the name of the directory) with the limited
+    information available.
 
     :param py_file:
         The file that the Python code is written to.

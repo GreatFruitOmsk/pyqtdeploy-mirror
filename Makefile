@@ -32,18 +32,18 @@ PYTHON2=python
 default:
 	@echo "Specify develop, develop-uninstall, upload, wheel, sdist, doc or clean"
 
-develop: VERSION pyqtdeploy/version.py
+develop: pyqtdeploy/version.py
 	$(PYTHON) setup.py develop
 
 develop-uninstall:
 	$(PYTHON) setup.py develop --uninstall
 
-upload: clean VERSION pyqtdeploy/version.py
+upload: clean pyqtdeploy/version.py
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel sdist
 	twine upload -r pypi dist/*
 
-wheel: clean VERSION pyqtdeploy/version.py
+wheel: clean pyqtdeploy/version.py
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py bdist_wheel
 
@@ -51,18 +51,15 @@ sdist: clean doc pyqtdeploy/version.py
 	$(PYTHON2) build.py changelog
 	$(PYTHON) setup.py sdist
 
-doc: VERSION
+doc: pyqtdeploy/version.py
 	mkdir -p doc/_build
 	$(MAKE) -C doc html
 
 clean:
-	rm -f ChangeLog* VERSION MANIFEST pyqtdeploy/version.py
+	rm -f ChangeLog* MANIFEST pyqtdeploy/version.py
 	rm -rf build dist pyqtdeploy.egg-info
 	rm -rf doc/_build doc/html doc/doctrees
 	find . -depth -name __pycache__ -exec rm -rf {} \;
-
-VERSION:
-	$(PYTHON2) build.py -o VERSION version
 
 pyqtdeploy/version.py:
 	$(PYTHON2) build.py -o pyqtdeploy/version.py pyversion

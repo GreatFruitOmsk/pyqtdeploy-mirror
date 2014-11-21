@@ -52,8 +52,8 @@ copyright = '2014, Riverbank Computing Limited'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-version_file = open(os.path.join('..', 'VERSION'))
-release = version_file.read().strip()
+version_file = open(os.path.join('..', 'pyqtdeploy', 'version.py'))
+release = version_file.read().strip().split('\n')[0].split()[-1][1:-1]
 version_file.close()
 # The short X.Y version.
 version = release.split('-')[0]

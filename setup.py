@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
 import sys
 
 # Check the version of Python as early as possible.
@@ -36,9 +37,19 @@ from setuptools import find_packages, setup
 
 
 # Get the version number.
-version_file = open('VERSION')
-version = version_file.read().strip()
-version_file.close()
+version_file_name = os.path.join('pyqtdeploy', 'version.py')
+try:
+    version_file = open(version_file_name)
+    version = version_file.read().strip().split('\n')[0].split()[-1][1:-1]
+    version_file.close()
+except FileNotFoundError:
+    # Provide a minimal version file.
+    version = 'unknown'
+    version_file = open(version_file_name, 'w')
+    version_file.write(
+            'PYQTDEPLOY_RELEASE = \'%s\'\nPYQTDEPLOY_HEXVERSION = 0\n' %
+                    version)
+    version_file.close()
 
 # Get the long description for PyPI.
 with open('README') as readme:
