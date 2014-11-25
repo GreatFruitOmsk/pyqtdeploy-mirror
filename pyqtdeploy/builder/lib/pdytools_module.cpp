@@ -106,9 +106,8 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
 static void qrcimporter_dealloc(PyObject *self);
 #if PY_MAJOR_VERSION >= 3
 static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
-#else
-static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
 #endif
+static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
 static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
 PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
 
@@ -117,9 +116,8 @@ PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
 static PyMethodDef qrcimporter_methods[] = {
 #if PY_MAJOR_VERSION >= 3
     {"find_loader", qrcimporter_find_loader, METH_VARARGS, NULL},
-#else
-    {"find_module", qrcimporter_find_module, METH_VARARGS, NULL},
 #endif
+    {"find_module", qrcimporter_find_module, METH_VARARGS, NULL},
     {"load_module", qrcimporter_load_module, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
@@ -338,8 +336,9 @@ static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args)
 #endif
 
 
-#if PY_MAJOR_VERSION < 3
-// Implement the standard find_module() method for the importer.
+// Implement the standard find_module() method for the importer.  Note that we
+// implement this for Python v3 as well as v2 to support things (like
+// pkg_resources) that are still using the old API.
 static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args)
 {
     PyObject *py_fqmn, *path;
@@ -373,7 +372,6 @@ static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args)
     Py_INCREF(result);
     return result;
 }
-#endif
 
 
 // Implement the standard load_module() method for the importer.
