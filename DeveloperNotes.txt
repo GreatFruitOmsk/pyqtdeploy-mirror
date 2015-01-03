@@ -84,8 +84,8 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 _bootstrap.py
 .............
 
-Check if ``Lib/importlib/_bootstrap.py`` has any changes and update the
-builder's version if necessary.
+For Python v3, check if ``Lib/importlib/_bootstrap.py`` has any changes and
+update the builder's version if necessary.
 
 
 Qt

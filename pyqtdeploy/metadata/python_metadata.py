@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -231,8 +231,11 @@ _metadata = {
         PythonModule(deps=('_ast', 'collections', 'inspect')),
 
     'asynchat': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 8),
                 deps=('asyncore', 'collections', 'socket', 'warnings')),
+        PythonModule(min_version=(2, 7, 9), max_version=2,
+                deps=('asyncore', 'collections', 'errno', 'socket',
+                        'warnings')),
         PythonModule(version=(3, 3),
                 deps=('asyncore', 'collections', 'socket')),
         PythonModule(min_version=(3, 4), deps=('asyncore', 'collections'))),
@@ -480,10 +483,16 @@ _metadata = {
     'dbm.ndbm':
         PythonModule(version=3, scope='!win32', deps=('dbm', '_dbm')),
 
-    'decimal':
-        PythonModule(
+    'decimal': (
+        PythonModule(max_version=(2, 7, 8),
                 deps=('collections', 'copy', 'itertools', 'locale', 'math',
                         'numbers', 're', 'threading')),
+        PythonModule(min_version=(2, 7, 9), max_version=2,
+                deps=('collections', 'itertools', 'locale', 'math', 'numbers',
+                        're', 'threading')),
+        PythonModule(version=3,
+                deps=('collections', 'copy', 'itertools', 'locale', 'math',
+                        'numbers', 're', 'threading'))),
 
     'difflib': (
         PythonModule(version=2,
@@ -1825,8 +1834,11 @@ _metadata = {
                         'time', 'types', 'warnings'))),
 
     're': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 8),
                 deps=('copy_reg', 'sre_compile', 'sre_constants',
+                        'sre_parse')),
+        PythonModule(min_version=(2, 7, 9), max_version=2,
+                deps=('copy_reg', '_locale', 'sre_compile', 'sre_constants',
                         'sre_parse')),
         PythonModule(version=(3, 3),
                 deps=('copyreg', 'functools', 'sre_compile', 'sre_constants',
@@ -1973,8 +1985,12 @@ _metadata = {
                         'time'))),
 
     'ssl': (
-        PythonModule(version=2, ssl=True,
+        PythonModule(max_version=(2, 7, 8), ssl=True,
                 deps=('base64', 'errno', 'socket', '_ssl', 'textwrap',
+                        'time')),
+        PythonModule(min_version=(2, 7, 9), max_version=2, ssl=True,
+                deps=('base64', 'calendar', 'collections', 'contextlib',
+                        'errno', 'os', 're', 'socket', '_ssl', 'textwrap',
                         'time')),
         PythonModule(version=(3, 3), ssl=True,
                 deps=('base64', 'errno', 're', 'socket', '_ssl', 'textwrap',
@@ -2090,9 +2106,12 @@ _metadata = {
         CoreExtensionModule(version=2),
 
     'threading': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 8),
                 deps=('collections', 'random', 'thread', 'time', 'traceback',
                         'warnings')),
+        PythonModule(min_version=(2, 7, 9), max_version=2,
+                deps=('collections', 'itertools', 'random', 'thread', 'time',
+                        'traceback', 'warnings')),
         PythonModule(version=(3, 3),
                 deps=('_thread', 'time', 'traceback', '_weakrefset')),
         PythonModule(min_version=(3, 4),
@@ -2178,13 +2197,19 @@ _metadata = {
         PythonModule(version=3,
                 deps=('urllib', 'time', 'urllib.parse', 'urllib.request')),
 
-    'urllib2':
-        PythonModule(version=2,
+    'urllib2': (
+        PythonModule(max_version=(2, 7, 8),
                 deps=('base64', 'bisect', 'cStringIO', 'cookielib',
                         'email.utils', 'ftplib', 'hashlib', 'httplib',
                         'mimetools', 'mimetypes', 'os', 'posixpath', 'random',
                         're', 'socket', 'time', 'types', 'urllib', 'urlparse',
                         'warnings')),
+        PythonModule(min_version=(2, 7, 9), max_version=2, ssl=True,
+                deps=('base64', 'bisect', 'cStringIO', 'cookielib',
+                        'email.utils', 'ftplib', 'hashlib', 'httplib',
+                        'mimetools', 'mimetypes', 'os', 'posixpath', 'random',
+                        're', 'socket', 'time', 'types', 'urllib', 'urlparse',
+                        'warnings'))),
 
     'urlparse':
         PythonModule(version=2, deps=('collections', 're')),
@@ -2291,7 +2316,9 @@ _metadata = {
         PythonModule(version=3, deps=('wsgiref', 're', 'warnings'))),
 
     'xdrlib': (
-        PythonModule(version=2, deps=('cStringIO', 'struct')),
+        PythonModule(max_version=(2, 7, 8), deps=('cStringIO', 'struct')),
+        PythonModule(min_version=(2, 7, 9), max_version=2,
+                deps=('cStringIO', 'functools', 'struct')),
         PythonModule(version=3, deps=('io', 'struct'))),
 
     'xml':
@@ -3358,7 +3385,8 @@ if __name__ == '__main__':
                 print("Unused module '{0}'".format(name))
 
     # Check each supported version.
-    check_version(2, 7)
+    check_version(2, 7, 0)
+    check_version(2, 7, 9)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 2)
