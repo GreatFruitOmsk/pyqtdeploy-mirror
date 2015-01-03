@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -286,6 +286,7 @@ class Builder():
         f.write('\n')
 
         # Configure the CONFIG and QT values.
+        needs_cpp11 = False
         needs_gui = False
         qmake_qt4 = set()
         qmake_config4 = set()
@@ -294,6 +295,9 @@ class Builder():
 
         for pyqt_m in project.pyqt_modules:
             metadata = self._get_pyqt_module_metadata(pyqt_m)
+
+            if metadata.cpp11:
+                needs_cpp11 = True
 
             if metadata.gui:
                 needs_gui = True
@@ -314,8 +318,8 @@ class Builder():
         both_config.add('release')
         both_config.add('warn_off')
 
-        if not needs_gui or project.application_is_console:
-            both_config.add('console')
+        if needs_cpp11:
+            both_config.add('c++11')
 
         f.write('CONFIG += {0}\n'.format(' '.join(both_config)))
 

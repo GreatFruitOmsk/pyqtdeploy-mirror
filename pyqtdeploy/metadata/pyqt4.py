@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,9 @@ class PyQt4Metadata(PyQtMetadata):
     def __init__(self, group='base', deps=(), gui=True, qt4=(), qt5=(), config4=(), config5=(), needs_suffix=True):
         """ Initialise the object. """
 
-        super().__init__(group=group, deps=deps, gui=gui, qt4=qt4, qt5=qt5,
-                config4=config4, config5=config5, needs_suffix=needs_suffix)
+        super().__init__(group=group, deps=deps, cpp11=False, gui=gui, qt4=qt4,
+                qt5=qt5, config4=config4, config5=config5,
+                needs_suffix=needs_suffix)
 
 
 # The dictionary of meta-data for the PyQt4 modules.

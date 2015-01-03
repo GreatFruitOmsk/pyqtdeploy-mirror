@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
 class PyQtMetadata:
     """ Encapsulate the meta-data for a single PyQt module. """
 
-    def __init__(self, group, deps, gui, qt4, qt5, config4, config5, needs_suffix):
+    def __init__(self, group, deps, cpp11, gui, qt4, qt5, config4, config5, needs_suffix):
         """ Initialise the object. """
 
         # The group (either 'base', 'opengl', or 'addon') that the module
@@ -38,6 +38,9 @@ class PyQtMetadata:
         # dependent on.  These should be applied recursively to determine the
         # complete set of dependencies for a module.
         self.deps = deps
+
+        # Set if C++11 compiler support is needed.
+        self.cpp11 = cpp11
 
         # Set if the QtGui module is needed.
         self.gui = gui

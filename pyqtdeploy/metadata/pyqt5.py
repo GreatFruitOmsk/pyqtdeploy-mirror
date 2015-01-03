@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,11 @@ from .pyqt_metadata import PyQtMetadata
 class PyQt5Metadata(PyQtMetadata):
     """ Encapsulate the meta-data for a single PyQt5 module. """
 
-    def __init__(self, group='base', deps=(), gui=True, qt5=(), config5=()):
+    def __init__(self, group='base', deps=(), cpp11=False, gui=True, qt5=(), config5=()):
         """ Initialise the object. """
 
-        super().__init__(group=group, deps=deps, gui=gui, qt4=qt5, qt5=qt5,
-                config4=config5, config5=config5, needs_suffix=False)
+        super().__init__(group=group, deps=deps, cpp11=cpp11, gui=gui, qt4=qt5,
+                qt5=qt5, config4=config5, config5=config5, needs_suffix=False)
 
 
 # The dictionary of meta-data for the PyQt5 modules.
@@ -136,6 +136,16 @@ pyqt5_metadata = {
                                     deps=['QtWidgets'],
                                     qt5=['testlib', 'widgets']),
 
+    'QtWebChannel':             PyQt5Metadata(
+                                    deps=['QtNetwork'],
+                                    gui=False,
+                                    qt5=['webchannel']),
+
+    'QtWebEngineWidgets':       PyQt5Metadata(
+                                    deps=['QtNetwork', 'QtWidgets'],
+                                    cpp11=True,
+                                    qt5=['webenginewidgets']),
+
     'QtWebKit':                 PyQt5Metadata(
                                     deps=['QtGui', 'QtNetwork'],
                                     qt5=['webkit', 'network']),
@@ -146,6 +156,7 @@ pyqt5_metadata = {
 
     'QtWebSockets':             PyQt5Metadata(
                                     deps=['QtNetwork'],
+                                    gui=False,
                                     qt5=['websockets']),
 
     'QtWidgets':                PyQt5Metadata(
@@ -159,6 +170,11 @@ pyqt5_metadata = {
     'QtX11Extras':              PyQt5Metadata(
                                     deps=['QtCore'],
                                     qt5=['x11extras']),
+
+    'QtXml':                    PyQt5Metadata(
+                                    deps=['QtCore'],
+                                    gui=False,
+                                    qt5=['xml']),
 
     'QtXmlPatterns':            PyQt5Metadata(
                                     deps=['QtNetwork'],
