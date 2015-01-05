@@ -1393,9 +1393,13 @@ _metadata = {
         PythonModule(version=2,
                 deps=('encodings', 'encodings.aliases', 'functools', '_locale',
                         'os', 'operator', 're')),
-        PythonModule(version=3,
+        PythonModule(version=(3, 3),
                 deps=('collections', 'encodings', 'encodings.aliases',
-                        'functools', '_locale', 'os', 're'))),
+                        'functools', '_locale', 'os', 're')),
+        PythonModule(min_version=(3, 4),
+                deps=('_bootlocale', 'collections', 'encodings',
+                        'encodings.aliases', 'functools', '_locale', 'os',
+                        're'))),
 
     'logging': (
         PythonModule(version=2,
@@ -2611,6 +2615,9 @@ _metadata = {
     '_bisect':
         ExtensionModule(internal=True, source='_bisectmodule.c'),
 
+    '_bootlocale':
+        PythonModule(min_version=(3, 4), internal=True, deps='_locale'),
+
     'bsddb.db':
         PythonModule(version=2, internal=True, deps=('bsddb', '_bsddb')),
 
@@ -2828,7 +2835,9 @@ _metadata = {
                         '_io/iobase.c', '_io/_iomodule.c', '_io/stringio.c',
                         '_io/textio.c'),
                 includepath='_io'),
-        CoreExtensionModule(version=3, internal=True)),
+        CoreExtensionModule(version=(3, 3), internal=True),
+        CoreExtensionModule(min_version=(3, 4), internal=True,
+                deps='_bootlocale')),
 
     '_json':
         ExtensionModule(internal=True, source='_json.c'),
