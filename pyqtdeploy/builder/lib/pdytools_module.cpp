@@ -568,12 +568,12 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
 
 #if defined(Q_OS_DARWIN)
     // The PlugIns directory is the prefered location for dynamic modules.
-    filename = exec_dir.filePath(QString("PlugIns/%1").arg(em_name));
+    filename = exec_dir.filePath(QString("../PlugIns/%1").arg(em_name));
 
     if (QFileInfo(filename).isFile())
         return ModuleIsAdjacentExtensionModule;
 
-    filename = exec_dir.filePath(QString("Frameworks/%1").arg(em_name));
+    filename = exec_dir.filePath(QString("../Frameworks/%1").arg(em_name));
 
     if (QFileInfo(filename).isFile())
         return ModuleIsAdjacentExtensionModule;
