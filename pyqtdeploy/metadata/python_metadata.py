@@ -440,7 +440,23 @@ _metadata = {
 
     'ctypes':
         PythonModule(deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
-                modules=()),
+                modules=('ctypes.util', 'ctypes.wintypes')),
+
+    'ctypes.util': (
+        PythonModule(version=2,
+                deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
+                        're', 'struct', 'tempfile')),
+        PythonModule(version=(3, 3),
+                deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld', 'errno',
+                        'importlib.machinery', 'os', 're', 'struct',
+                        'subprocess', 'tempfile')),
+        PythonModule(min_version=(3, 4),
+                deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld',
+                        'importlib.machinery', 'os', 're', 'struct',
+                        'subprocess', 'tempfile'))),
+
+    'ctypes.wintypes':
+        PythonModule(deps='ctypes', scope='win32'),
 
     'curses': (
         PythonModule(version=2, scope='!win32',
@@ -2704,15 +2720,39 @@ _metadata = {
                         'macx#_ctypes/libffi_osx/x86/darwin64.S',
                         'macx#_ctypes/libffi_osx/x86/x86-darwin.S',
                         'macx#_ctypes/libffi_osx/x86/x86-ffi_darwin.c',
-                        'macx#_ctypes/libffi_osx/x86/x86-ffi64.c'),
+                        'macx#_ctypes/libffi_osx/x86/x86-ffi64.c',
+                        'win32#_ctypes/malloc_closure.c',
+                        'win32#_ctypes/libffi_msvc/prep_cif.c',
+                        'win32#_ctypes/libffi_msvc/ffi.c',
+                        'win32_x86#_ctypes/libffi_msvc/win32.c',
+                        'win32_x64#_ctypes/libffi_msvc/win64.asm'),
                 defines='macx#MACOSX',
                 includepath=('_ctypes',
                         'macx#_ctypes/darwin',
-                        'macx#_ctypes/libffi_osx/include'),
+                        'macx#_ctypes/libffi_osx/include',
+                        'win32#_ctypes/libffi_msvc'),
                 libs='linux-*#-lffi'),
 
     'ctypes._endian':
         PythonModule(internal=True, deps='ctypes'),
+
+    'ctypes.macholib':
+        PythonModule(internal=True, scope='macx', deps='ctypes',
+                modules=('ctypes.macholib.dyld', 'ctypes.macholib.dylib',
+                        'ctypes.macholib.framework')),
+
+    'ctypes.macholib.dyld':
+        PythonModule(internal=True, scope='macx',
+                deps=('ctypes.macholib', 'ctypes.macholib.dylib',
+                        'ctypes.macholib.framework', 'itertools', 'os')),
+
+    'ctypes.macholib.dylib':
+        PythonModule(internal=True, scope='macx',
+                deps=('ctypes.macholib', 're')),
+
+    'ctypes.macholib.framework':
+        PythonModule(internal=True, scope='macx',
+                deps=('ctypes.macholib', 're')),
 
     'curses.has_key':
         PythonModule(internal=True, scope='!win32',
