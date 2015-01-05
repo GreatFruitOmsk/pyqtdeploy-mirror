@@ -58,10 +58,6 @@ and run::
 
 ``X.Y.Z`` is the version number of Qt you are building.
 
-Note that (for current versions of Qt) QtWebkit is not supported in a static
-version on all platforms.  Therefore you may wish to add the ``-skip qtwebkit``
-option.
-
 When cross-compiling for mobile devices it is recommended that you use one of
 the binary installers provided by Digia.
 

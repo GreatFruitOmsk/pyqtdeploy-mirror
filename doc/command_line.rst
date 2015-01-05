@@ -40,6 +40,10 @@ The supported actions are:
     for a particular target platform.  The configuration file is used by the
     package's build system to create the package's Python bindings.
 
+    Configuration files are intended as a basis which will be fine for most
+    cases.  However you should check that they are appropriate for your
+    particular case and modify them if necessary.
+
 .. cmdoption:: show-packages
 
     This will display a list of packages that :program:`pyqtdeploycli` can
