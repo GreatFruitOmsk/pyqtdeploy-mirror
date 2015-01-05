@@ -285,7 +285,10 @@ class Builder():
         f.write('TEMPLATE = app\n')
         f.write('\n')
 
-        # Configure the CONFIG and QT values.
+        # Add the project independent pre-configuration stuff.
+        self._write_embedded_lib_file('pre_configuration.pro')
+
+        # Configure the CONFIG and QT values that are project dependent.
         needs_cpp11 = False
         needs_gui = False
         qmake_qt4 = set()
@@ -554,15 +557,19 @@ class Builder():
             if scope != '':
                 f.write('}\n')
 
-        # Add the platform specific stuff.
-        platforms = read_embedded_file(
-                self._get_lib_file_name('platforms.pro'))
-
-        f.write('\n')
-        f.write(platforms.data().decode('latin1'))
+        # Add the project independent post-configuration stuff.
+        self._write_embedded_lib_file('post_configuration.pro')
 
         # All done.
         f.close()
+
+    def _write_embedded_lib_file(self, file_name, f):
+        """ Write an embedded file from the lib directory. """
+
+        contents = read_embedded_file(self._get_lib_file_name(file_name))
+
+        f.write('\n')
+        f.write(contents.data().decode('latin1'))
 
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
