@@ -523,6 +523,9 @@ class Builder():
             f.write('DEFINES += PYQTDEPLOY_FROZEN_MAIN\n')
             headers += ' frozen_main.h'
 
+        if opt:
+            f.write('DEFINES += PYQTDEPLOY_OPTIMIZED\n')
+
         f.write(headers)
         f.write('\n')
 

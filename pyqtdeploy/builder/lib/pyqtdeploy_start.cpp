@@ -98,6 +98,9 @@ int pyqtdeploy_start(int argc, char **argv, struct _inittab *extension_modules,
     Py_FrozenFlag = 1;
     Py_NoSiteFlag = 1;
     Py_IgnoreEnvironmentFlag = 1;
+#if defined(PYQTDEPLOY_OPTIMIZED)
+    Py_OptimizeFlag = 1;
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     if (!Py_FileSystemDefaultEncoding)
