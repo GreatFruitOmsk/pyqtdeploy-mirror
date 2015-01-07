@@ -79,7 +79,7 @@ class AbstractHost:
 
     @property
     def pyqt_package(self):
-        """ The 2-tuple of the absolute path of the PyQt package file and the
+        """ The 2-tuple of the absolute path of the PyQt source file and the
         base name of the package (without an extension).
         """
 
@@ -87,23 +87,44 @@ class AbstractHost:
 
     @property
     def python_package(self):
-        """ The 2-tuple of the absolute path of the Python package file and the
+        """ The 2-tuple of the absolute path of the Python source file and the
         base name of the package (without an extension).
+        """
+
+        base_name = 'Python-' + PY_VERSION
+
+        return (os.path.join(self.python_src_dir, base_name + '.tar.xz'),
+                base_name)
+
+    @property
+    def python_src_dir(self):
+        """ The absolute path of the directory containing the Python source
+        file.
         """
 
         raise NotImplementedError
 
     @property
     def qt_package(self):
-        """ The 2-tuple of the absolute path of the Qt package file and the
-        base name of the package (without an extension).
+        """ The 2-tuple of the absolute path of the Qt source file and the base
+        name of the package (without an extension).
+        """
+
+        base_name = 'qt-everywhere-enterprise-src-' + QT_VERSION
+
+        return (os.path.join(self.qt_src_dir, base_name + '.tar.gz'),
+                base_name)
+
+    @property
+    def qt_src_dir(self):
+        """ The absolute path of the directory containing the Qt source file.
         """
 
         raise NotImplementedError
 
     @property
     def sip_package(self):
-        """ The 2-tuple of the absolute path of the SIP package file and the
+        """ The 2-tuple of the absolute path of the SIP source file and the
         base name of the package (without an extension).
         """
 
@@ -131,8 +152,8 @@ class AbstractHost:
 
     @staticmethod
     def find_package(package_dir, pattern, extension):
-        """ Return a 2-tuple of the absolute path of a package file and the
-        base name of the package (without an extension).
+        """ Return a 2-tuple of the absolute path of a source file and the base
+        name of the package (without an extension).
         """
 
         full_pattern = os.path.join(package_dir, pattern + extension)
@@ -169,7 +190,7 @@ class PosixHost(AbstractHost):
 
     @property
     def pyqt_package(self):
-        """ The 2-tuple of the absolute path of the PyQt package file and the
+        """ The 2-tuple of the absolute path of the PyQt source file and the
         base name of the package (without an extension).
         """
 
@@ -182,30 +203,8 @@ class PosixHost(AbstractHost):
         return self.find_package(pyqt_dir, 'PyQt-internal-*', '.tar.gz')
 
     @property
-    def python_package(self):
-        """ The 2-tuple of the absolute path of the Python package file and the
-        base name of the package (without an extension).
-        """
-
-        base_name = 'Python-' + PY_VERSION
-
-        return (os.path.expandvars('$HOME/Source/Python/' + base_name + '.tar.xz'),
-                base_name)
-
-    @property
-    def qt_package(self):
-        """ The 2-tuple of the absolute path of the Qt package file and the
-        base name of the package (without an extension).
-        """
-
-        base_name = 'qt-everywhere-enterprise-src-' + QT_VERSION
-
-        return (os.path.expandvars('$HOME/Source/Qt/' + base_name + '.tar.gz'),
-                base_name)
-
-    @property
     def sip_package(self):
-        """ The 2-tuple of the absolute path of the SIP package file and the
+        """ The 2-tuple of the absolute path of the SIP source file and the
         base name of the package (without an extension).
         """
 
@@ -240,6 +239,54 @@ class OSXHost(PosixHost):
         """ The name of the python executable including any required path. """
 
         return 'python3'
+
+    @property
+    def python_src_dir(self):
+        """ The absolute path of the directory containing the Python source
+        file.
+        """
+
+        return os.path.expandvars('$HOME/Source/Python')
+
+    @property
+    def qt_src_dir(self):
+        """ The absolute path of the directory containing the Qt source file.
+        """
+
+        return os.path.expandvars('$HOME/Source/Qt')
+
+
+class LinuxHost(PosixHost):
+    """ The class that encapsulates a Linux host. """
+
+    @property
+    def pyqtdeploycli(self):
+        """ The name of the pyqtdeploycli executable including any required
+        path.
+        """
+
+        return os.path.expandvars('$HOME/usr/bin/pyqtdeploycli')
+
+    @property
+    def python(self):
+        """ The name of the python executable including any required path. """
+
+        return os.path.expandvars('$HOME/usr/bin/python3')
+
+    @property
+    def python_src_dir(self):
+        """ The absolute path of the directory containing the Python source
+        file.
+        """
+
+        return os.path.expandvars('$HOME/usr/src')
+
+    @property
+    def qt_src_dir(self):
+        """ The absolute path of the directory containing the Qt source file.
+        """
+
+        return os.path.expandvars('$HOME/usr/src')
 
 
 def rmtree(dir_name):
