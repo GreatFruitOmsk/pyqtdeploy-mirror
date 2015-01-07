@@ -78,6 +78,14 @@ class AbstractHost:
         return os.path.join(self.sysroot, 'qt-' + QT_VERSION, 'bin', 'qmake')
 
     @property
+    def pyqt_package(self):
+        """ The 2-tuple of the absolute path of the PyQt package file and the
+        base name of the package (without an extension).
+        """
+
+        raise NotImplementedError
+
+    @property
     def python_package(self):
         """ The 2-tuple of the absolute path of the Python package file and the
         base name of the package (without an extension).
@@ -158,6 +166,20 @@ class PosixHost(AbstractHost):
         """ The name of the make executable including any required path. """
 
         return 'make'
+
+    @property
+    def pyqt_package(self):
+        """ The 2-tuple of the absolute path of the PyQt package file and the
+        base name of the package (without an extension).
+        """
+
+        pyqt_dir = os.path.expandvars('$HOME/hg/PyQt5')
+
+        os.chdir(pyqt_dir)
+        self.run('./build.py', 'clean')
+        self.run('./build.py', 'release')
+
+        return self.find_package(pyqt_dir, 'PyQt-internal-*', '.tar.gz')
 
     @property
     def python_package(self):
@@ -331,14 +353,19 @@ def build_sip(host):
 def build_pyqt(host):
     """ Build a static PyQt5. """
 
-#    cd $SYSROOT_SRC_DIR
-#    rm -rf $PYQT5_SOURCE_BASE
-#    tar xvf $PYQT5_HG_DIR/$PYQT5_SOURCE_BASE.tar.gz
-#    cd $PYQT5_SOURCE_BASE
-#    pyqtdeploycli --package pyqt5 configure
-#    python3 configure.py --static --sysroot=$SYSROOT --no-tools --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration=pyqt5-osx.cfg --qmake=$QT_BIN_DIR/qmake --confirm-license -c -j1
-#    make
-#    make install
+    get_package_source(host, host.pyqt_package)
+
+    configuration = 'pyqt-' + host.target + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqt5', '--output',
+            configuration, '--target', host.target, 'configure')
+    host.run(host.python, 'configure.py', '--static', '--sysroot',
+            host.sysroot, '--no-tools', '--no-qsci-api',
+            '--no-designer-plugin', '--no-qml-plugin', '--configuration',
+            configuration, '--qmake', host.qmake, '--confirm-license', '-c',
+            '-j1')
+    host.run(host.make)
+    host.run(host.make, 'install')
 
 
 # The different packages in the order that they should be built.
