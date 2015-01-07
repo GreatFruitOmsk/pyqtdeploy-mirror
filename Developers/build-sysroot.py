@@ -72,12 +72,6 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
-    def qmake(self):
-        """ The name of the qmake executable including any required path. """
-
-        return os.path.join(self.sysroot, 'qt-' + QT_VERSION, 'bin', 'qmake')
-
-    @property
     def pyqt_package(self):
         """ The 2-tuple of the absolute path of the PyQt source file and the
         base name of the package (without an extension).
@@ -105,6 +99,12 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
+    def qmake(self):
+        """ The name of the qmake executable including any required path. """
+
+        return os.path.join(self.sysroot, 'qt-' + QT_VERSION, 'bin', 'qmake')
+
+    @property
     def qt_package(self):
         """ The 2-tuple of the absolute path of the Qt source file and the base
         name of the package (without an extension).
@@ -119,6 +119,12 @@ class AbstractHost:
     def qt_src_dir(self):
         """ The absolute path of the directory containing the Qt source file.
         """
+
+        raise NotImplementedError
+
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
 
         raise NotImplementedError
 
@@ -255,6 +261,12 @@ class OSXHost(PosixHost):
 
         return os.path.expandvars('$HOME/Source/Qt')
 
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
+
+        return 'sip'
+
 
 class LinuxHost(PosixHost):
     """ The class that encapsulates a Linux host. """
@@ -287,6 +299,12 @@ class LinuxHost(PosixHost):
         """
 
         return os.path.expandvars('$HOME/usr/src')
+
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
+
+        return os.path.expandvars('$HOME/usr/bin/sip')
 
 
 def rmtree(dir_name):
@@ -343,6 +361,14 @@ def get_package_source(host, package):
     os.chdir(base_dir)
 
 
+def remove_current_dir():
+    """ Remove the current directory. """
+
+    cwd = os.getcwd()
+    os.chdir('..')
+    rmtree(cwd)
+
+
 def clean_sysroot(host):
     """ Create a clean sysroot. """
 
@@ -360,6 +386,8 @@ def build_qt(host):
             '-confirm-license', '-static', '-release', '-nomake', 'examples')
     host.run(host.make)
     host.run(host.make, 'install')
+
+    remove_current_dir()
 
 
 def build_python(host, enable_dynamic_loading):
@@ -379,6 +407,8 @@ def build_python(host, enable_dynamic_loading):
     host.run(host.make)
     host.run(host.make, 'install')
 
+    remove_current_dir()
+
 
 def build_sip(host):
     """ Build a static SIP. """
@@ -396,6 +426,8 @@ def build_sip(host):
     host.run(host.make)
     host.run(host.make, 'install')
 
+    remove_current_dir()
+
 
 def build_pyqt(host):
     """ Build a static PyQt5. """
@@ -409,10 +441,12 @@ def build_pyqt(host):
     host.run(host.python, 'configure.py', '--static', '--sysroot',
             host.sysroot, '--no-tools', '--no-qsci-api',
             '--no-designer-plugin', '--no-qml-plugin', '--configuration',
-            configuration, '--qmake', host.qmake, '--confirm-license', '-c',
-            '-j1')
+            configuration, '--sip', host.sip, '--qmake', host.qmake,
+            '--confirm-license', '-c', '-j1')
     host.run(host.make)
     host.run(host.make, 'install')
+
+    remove_current_dir()
 
 
 # The different packages in the order that they should be built.
