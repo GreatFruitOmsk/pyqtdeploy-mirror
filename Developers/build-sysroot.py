@@ -3,6 +3,31 @@
 # Build a sysroot containing Qt v5, Python v3 and the current SIP and PyQt5
 # previews.
 
+# Copyright (c) 2015, Riverbank Computing Limited
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 
 import argparse
 import glob
@@ -51,6 +76,14 @@ class AbstractHost:
         """ The name of the qmake executable including any required path. """
 
         return os.path.join(self.sysroot, 'qt-' + QT_VERSION, 'bin', 'qmake')
+
+    @property
+    def python_package(self):
+        """ The 2-tuple of the absolute path of the Python package file and the
+        base name of the package (without an extension).
+        """
+
+        raise NotImplementedError
 
     @property
     def qt_package(self):
@@ -125,6 +158,17 @@ class PosixHost(AbstractHost):
         """ The name of the make executable including any required path. """
 
         return 'make'
+
+    @property
+    def python_package(self):
+        """ The 2-tuple of the absolute path of the Python package file and the
+        base name of the package (without an extension).
+        """
+
+        base_name = 'Python-' + PY_VERSION
+
+        return (os.path.expandvars('$HOME/Source/Python/' + base_name + '.tar.xz'),
+                base_name)
 
     @property
     def qt_package(self):
@@ -249,16 +293,22 @@ def build_qt(host):
     host.run(host.make, 'install')
 
 
-def build_python(host):
-    """ Build a static Python that supports dynamic loading. """
+def build_python(host, enable_dynamic_loading):
+    """ Build a static Python that optionally supports dynamic loading. """
 
-#    cd $SYSROOT_SRC_DIR
-#    tar xvf $PY_SOURCE
-#    cd $PY_SOURCE_BASE-$PY_VERSION
-#    pyqtdeploycli --package python --enable-dynamic-loading configure
-#    $QT_BIN_DIR/qmake SYSROOT=$SYSROOT
-#    make
-#    make install
+    get_package_source(host, host.python_package)
+
+    args = [host.pyqtdeploycli]
+
+    if enable_dynamic_loading:
+        args.append('--enable-dynamic-loading')
+
+    args.extend(['--package', 'python', '--target', host.target, 'configure'])
+
+    host.run(*args)
+    host.run(host.qmake, 'SYSROOT=' + host.sysroot)
+    host.run(host.make)
+    host.run(host.make, 'install')
 
 
 def build_sip(host):
@@ -306,6 +356,8 @@ group.add_argument('--build', help="the packages to build", nargs='+',
 parser.add_argument('--clean',
         help="clean the sysroot directory before building",
         action='store_true')
+parser.add_argument('--enable-dynamic-loading',
+        help="build Python with dynamic loading enabled", action='store_true')
 parser.add_argument('--target',
         help="the target platform [default: {0}]".format(default_target),
         choices=TARGETS, default=default_target)
@@ -326,7 +378,7 @@ if 'qt' in packages:
     build_qt(host)
 
 if 'python' in packages:
-    build_python(host)
+    build_python(host, args.enable_dynamic_loading)
 
 if 'sip' in packages:
     build_sip(host)
