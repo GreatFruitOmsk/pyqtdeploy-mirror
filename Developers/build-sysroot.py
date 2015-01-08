@@ -184,6 +184,83 @@ class AbstractHost:
         subprocess.check_call(args)
 
 
+class WindowsHost(AbstractHost):
+    """ The class that encapsulates a Windows host platform. """
+
+    # Where the sources are kept on Windows.
+    SRC_DIR = 'C:\\src'
+
+    @property
+    def make(self):
+        """ The name of the make executable including any required path. """
+
+        return 'nmake'
+
+    @property
+    def pyqtdeploycli(self):
+        """ The name of the pyqtdeploycli executable including any required
+        path.
+        """
+
+        raise self._py_root_dir() + '\\Scripts\\pyqtdeploycli'
+
+    @property
+    def python(self):
+        """ The name of the python executable including any required path. """
+
+        raise self._py_root_dir() + '\\python'
+
+    @property
+    def pyqt_package(self):
+        """ The 2-tuple of the absolute path of the PyQt source file and the
+        base name of the package (without an extension).
+        """
+
+        return self.find_package(self.SRC_DIR, 'PyQt-internal-*', '.tar.gz')
+
+    @property
+    def python_src_dir(self):
+        """ The absolute path of the directory containing the Python source
+        file.
+        """
+
+        return self.SRC_DIR
+
+    @property
+    def qt_src_dir(self):
+        """ The absolute path of the directory containing the Qt source file.
+        """
+
+        return self.SRC_DIR
+
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
+
+        return 'sip'
+
+    @property
+    def sip_package(self):
+        """ The 2-tuple of the absolute path of the SIP source file and the
+        base name of the package (without an extension).
+        """
+
+        return self.find_package(self.SRC_DIR, 'sip-*', '.tar.gz')
+
+    def __init__(self, target):
+        """ Initialise the object. """
+
+        super().__init__(target=target, sysroot_base='C:\\sysroot')
+
+    @staticmethod
+    def _py_root_dir():
+        """ Return the Python root directory. """
+
+        py_version = PY_VERSION.split('.')
+
+        return 'C:\\Python' + py_version[0] + py_version[1]
+
+
 class PosixHost(AbstractHost):
     """ The abstract base class that encapsulates a POSIX based host platform.
     """
