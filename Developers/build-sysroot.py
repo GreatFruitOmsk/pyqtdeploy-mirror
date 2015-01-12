@@ -99,10 +99,11 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
-    def qmake(self):
-        """ The name of the qmake executable including any required path. """
+    def qt_configure(self):
+        """ The name of Qt's configure executable including any required path.
+        """
 
-        return os.path.join(self.sysroot, 'qt-' + QT_VERSION, 'bin', 'qmake')
+        raise NotImplementedError
 
     @property
     def qt_package(self):
@@ -110,10 +111,19 @@ class AbstractHost:
         name of the package (without an extension).
         """
 
-        base_name = 'qt-everywhere-enterprise-src-' + QT_VERSION
+        license, ext = self.qt_package_detail
+        if license == 'commercial':
+            license = 'enterprise'
 
-        return (os.path.join(self.qt_src_dir, base_name + '.tar.gz'),
-                base_name)
+        base_name = 'qt-everywhere-' + license + '-src-' + QT_VERSION
+
+        return (os.path.join(self.qt_src_dir, base_name + ext), base_name)
+
+    @property
+    def qt_package_detail(self):
+        """ The 2-tuple of the Qt license and file extension. """
+
+        raise NotImplementedError
 
     @property
     def qt_src_dir(self):
@@ -143,6 +153,14 @@ class AbstractHost:
         return self._sysroot
 
     @property
+    def sysroot_bin_dir(self):
+        """ The absolute path of the bin sub-directory of the sysroot
+        directory.
+        """
+
+        return os.path.join(self.sysroot, 'bin')
+
+    @property
     def sysroot_src_dir(self):
         """ The absolute path of the src sub-directory of the sysroot
         directory.
@@ -155,6 +173,22 @@ class AbstractHost:
 
         self.target = target
         self._sysroot = sysroot_base + '-' + self.target
+
+    def build_configure(self):
+        """ Perform any host-specific pre-build checks and configuration.
+        Return a closure to be passed to build_deconfigure().
+        """
+
+        old_path = os.environ['PATH']
+        os.environ['PATH'] = os.path.join(
+                self.sysroot, 'qt-' + QT_VERSION, 'bin') + os.pathsep + old_path
+
+        return old_path
+
+    def build_deconfigure(self, closure):
+        """ Undo any host-specific post-build configuration. """
+
+        os.environ['PATH'] = closure
 
     @staticmethod
     def find_package(package_dir, pattern, extension):
@@ -202,13 +236,13 @@ class WindowsHost(AbstractHost):
         path.
         """
 
-        raise self._py_root_dir() + '\\Scripts\\pyqtdeploycli'
+        return self._py_root_dir() + '\\Scripts\\pyqtdeploycli'
 
     @property
     def python(self):
         """ The name of the python executable including any required path. """
 
-        raise self._py_root_dir() + '\\python'
+        return self._py_root_dir() + '\\python'
 
     @property
     def pyqt_package(self):
@@ -227,6 +261,19 @@ class WindowsHost(AbstractHost):
         return self.SRC_DIR
 
     @property
+    def qt_configure(self):
+        """ The name of Qt's configure executable including any required path.
+        """
+
+        return 'configure.bat'
+
+    @property
+    def qt_package_detail(self):
+        """ The 2-tuple of the Qt license and file extension. """
+
+        return ('opensource', '.zip')
+
+    @property
     def qt_src_dir(self):
         """ The absolute path of the directory containing the Qt source file.
         """
@@ -237,7 +284,7 @@ class WindowsHost(AbstractHost):
     def sip(self):
         """ The name of the sip executable including any required path. """
 
-        return 'sip'
+        return self.sysroot_bin_dir + '\\sip.exe'
 
     @property
     def sip_package(self):
@@ -251,6 +298,31 @@ class WindowsHost(AbstractHost):
         """ Initialise the object. """
 
         super().__init__(target=target, sysroot_base='C:\\sysroot')
+
+    def build_configure(self):
+        """ Perform any host-specific pre-build checks and configuration.
+        Return a closure to be passed to qt_build_deconfigure().
+        """
+
+        super_closure = super().build_configure()
+
+        self.run(
+                os.path.expandvars(
+                        '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd'))
+
+        old_path = os.environ['PATH']
+        os.environ['PATH'] = 'C:\\Python27;' + old_path
+
+        return (old_path, super_closure)
+
+    def build_deconfigure(self, closure):
+        """ Undo any host-specific post-build configuration. """
+
+        old_path, super_closure = closure
+
+        os.environ['PATH'] = old_path
+
+        super().build_deconfigure(super_closure)
 
     @staticmethod
     def _py_root_dir():
@@ -284,6 +356,25 @@ class PosixHost(AbstractHost):
         self.run('./build.py', 'release')
 
         return self.find_package(pyqt_dir, 'PyQt-internal-*', '.tar.gz')
+
+    @property
+    def qt_configure(self):
+        """ The name of Qt's configure executable including any required path.
+        """
+
+        return './configure'
+
+    @property
+    def qt_package_detail(self):
+        """ The 2-tuple of the Qt license and file extension. """
+
+        return ('commercial', '.tar.gz')
+
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
+
+        return self.sysroot_bin_dir + '/sip'
 
     @property
     def sip_package(self):
@@ -338,12 +429,6 @@ class OSXHost(PosixHost):
 
         return os.path.expandvars('$HOME/Source/Qt')
 
-    @property
-    def sip(self):
-        """ The name of the sip executable including any required path. """
-
-        return 'sip'
-
 
 class LinuxHost(PosixHost):
     """ The class that encapsulates a Linux host. """
@@ -376,12 +461,6 @@ class LinuxHost(PosixHost):
         """
 
         return os.path.expandvars('$HOME/usr/src')
-
-    @property
-    def sip(self):
-        """ The name of the sip executable including any required path. """
-
-        return os.path.expandvars('$HOME/usr/bin/sip')
 
 
 def rmtree(dir_name):
@@ -456,10 +535,12 @@ def clean_sysroot(host):
 def build_qt(host):
     """ Build a static Qt. """
 
+    license, _ = host.qt_package_detail
+
     get_package_source(host, host.qt_package)
 
-    host.run('./configure', '-prefix',
-            os.path.join(host.sysroot, 'qt-' + QT_VERSION), '-commercial',
+    host.run(host.qt_configure, '-prefix',
+            os.path.join(host.sysroot, 'qt-' + QT_VERSION), '-' + license,
             '-confirm-license', '-static', '-release', '-nomake', 'examples')
     host.run(host.make)
     host.run(host.make, 'install')
@@ -480,7 +561,7 @@ def build_python(host, enable_dynamic_loading):
     args.extend(['--package', 'python', '--target', host.target, 'configure'])
 
     host.run(*args)
-    host.run(host.qmake, 'SYSROOT=' + host.sysroot)
+    host.run('qmake', 'SYSROOT=' + host.sysroot)
     host.run(host.make)
     host.run(host.make, 'install')
 
@@ -492,6 +573,15 @@ def build_sip(host):
 
     get_package_source(host, host.sip_package)
 
+    # Build the host-specific code generator.
+    host.run(host.python, 'configure.py', '--bindir', host.sysroot_bin_dir)
+    os.chdir('sipgen')
+    host.run(host.make)
+    host.run(host.make, 'install')
+    os.chdir('..')
+    host.run(host.make, 'clean')
+
+    # Build the target-specific module.
     configuration = 'sip-' + host.target + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'sip', '--output', configuration,
@@ -499,7 +589,7 @@ def build_sip(host):
     host.run(host.python, 'configure.py', '--static', '--sysroot',
             host.sysroot, '--no-tools', '--use-qmake', '--configuration',
             configuration)
-    host.run(host.qmake)
+    host.run('qmake')
     host.run(host.make)
     host.run(host.make, 'install')
 
@@ -518,8 +608,7 @@ def build_pyqt(host):
     host.run(host.python, 'configure.py', '--static', '--sysroot',
             host.sysroot, '--no-tools', '--no-qsci-api',
             '--no-designer-plugin', '--no-qml-plugin', '--configuration',
-            configuration, '--sip', host.sip, '--qmake', host.qmake,
-            '--confirm-license', '-c', '-j1')
+            configuration, '--sip', host.sip, '--confirm-license', '-c', '-j2')
     host.run(host.make)
     host.run(host.make, 'install')
 
@@ -559,6 +648,8 @@ packages = all_packages if args.all else args.build
 if args.clean:
     clean_sysroot(host)
 
+closure = host.build_configure()
+
 if 'qt' in packages:
     build_qt(host)
 
@@ -570,3 +661,5 @@ if 'sip' in packages:
 
 if 'pyqt' in packages:
     build_pyqt(host)
+
+host.build_deconfigure(closure)
