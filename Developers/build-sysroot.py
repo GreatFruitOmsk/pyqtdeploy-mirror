@@ -571,17 +571,20 @@ def build_python(host, enable_dynamic_loading):
 def build_sip(host):
     """ Build a static SIP. """
 
+    # Build the host-specific code generator.
     get_package_source(host, host.sip_package)
 
-    # Build the host-specific code generator.
     host.run(host.python, 'configure.py', '--bindir', host.sysroot_bin_dir)
     os.chdir('sipgen')
     host.run(host.make)
     host.run(host.make, 'install')
     os.chdir('..')
-    host.run(host.make, 'clean')
+
+    remove_current_dir()
 
     # Build the target-specific module.
+    get_package_source(host, host.sip_package)
+
     configuration = 'sip-' + host.target + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'sip', '--output', configuration,
