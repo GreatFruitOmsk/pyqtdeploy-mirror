@@ -944,8 +944,7 @@ static struct _inittab %s[] = {
                 "Running '{0}'".format(' '.join(argv)))
 
         try:
-            subprocess.check_output(argv, stderr=subprocess.STDOUT,
-                    universal_newlines=True)
+            subprocess.check_output(argv, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             raise UserException(error_message, e.output)
         except FileNotFoundError:
