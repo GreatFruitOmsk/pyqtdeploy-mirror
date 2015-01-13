@@ -253,6 +253,7 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         MOD_SOURCES += \
             Modules/_operator.c \
             Modules/_stat.c \
+            Modules/_struct.c \
             Modules/_tracemalloc.c \
             Modules/hashtable.c
     }

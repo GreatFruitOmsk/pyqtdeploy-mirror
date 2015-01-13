@@ -3265,8 +3265,13 @@ _metadata = {
                 deps=('calendar', 'datetime', 'locale', 're', '_thread',
                         'time'))),
 
-    '_struct':
-        ExtensionModule(internal=True, source='_struct.c'),
+    # We treat _struct as a core module (ie. built in with the interpreter
+    # library) for Python v3.4 and later because it cannot be linked separately
+    # on Windows (because of the PyVarObject_HEAD_INIT() problem).  This is
+    # probably a Python bug.
+    '_struct': (
+        ExtensionModule(max_version=(3, 3), internal=True, source='_struct.c'),
+        CoreExtensionModule(min_version=(3, 4), internal=True)),
 
     '_subprocess':
         ExtensionModule(version=2, internal=True, scope='win32',
