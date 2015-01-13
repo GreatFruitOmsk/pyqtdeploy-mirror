@@ -560,12 +560,12 @@ def build_python(host, enable_dynamic_loading):
 
     args.extend(['--package', 'python', '--target', host.target, 'configure'])
 
+    # Note that we do not remove the source directory as it may be needed by
+    # the generated code.
     host.run(*args)
     host.run('qmake', 'SYSROOT=' + host.sysroot)
     host.run(host.make)
     host.run(host.make, 'install')
-
-    remove_current_dir()
 
 
 def build_sip(host):
