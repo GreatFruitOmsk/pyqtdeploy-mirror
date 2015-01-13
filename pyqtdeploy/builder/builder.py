@@ -320,6 +320,9 @@ class Builder():
         both_config.add('release')
         both_config.add('warn_off')
 
+        if project.application_is_console or not needs_gui:
+            both_config.add('console')
+
         if needs_cpp11:
             both_config.add('c++11')
 
