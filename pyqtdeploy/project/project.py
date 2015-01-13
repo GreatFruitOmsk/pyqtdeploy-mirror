@@ -526,7 +526,7 @@ class Project(QObject):
         tree = ElementTree(root)
 
         try:
-            tree.write(QDir.toNativeSeparators(file_name), encoding='unicode',
+            tree.write(QDir.toNativeSeparators(file_name), encoding='utf-8',
                     xml_declaration=True)
         except Exception as e:
             raise UserException(
