@@ -286,7 +286,7 @@ class Builder():
         f.write('\n')
 
         # Add the project independent pre-configuration stuff.
-        self._write_embedded_lib_file('pre_configuration.pro')
+        self._write_embedded_lib_file('pre_configuration.pro', f)
 
         # Configure the CONFIG and QT values that are project dependent.
         needs_cpp11 = False
@@ -561,7 +561,7 @@ class Builder():
                 f.write('}\n')
 
         # Add the project independent post-configuration stuff.
-        self._write_embedded_lib_file('post_configuration.pro')
+        self._write_embedded_lib_file('post_configuration.pro', f)
 
         # All done.
         f.close()
