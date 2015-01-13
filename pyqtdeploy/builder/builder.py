@@ -283,7 +283,6 @@ class Builder():
                 project.get_executable_basename() + '.pro')
 
         f.write('TEMPLATE = app\n')
-        f.write('\n')
 
         # Add the project independent pre-configuration stuff.
         self._write_embedded_lib_file('pre_configuration.pro', f)
@@ -324,6 +323,7 @@ class Builder():
         if needs_cpp11:
             both_config.add('c++11')
 
+        f.write('\n')
         f.write('CONFIG += {0}\n'.format(' '.join(both_config)))
 
         if not project.application_is_bundle:
@@ -577,10 +577,17 @@ class Builder():
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
         """ Return the canonical name of a file in the Python source tree
-        relative to the Modules directory.
+        relative to the Modules directory.  An exception is raised if the file
+        does not exist.
         """
 
-        return QFileInfo(py_source_dir + '/Modules/' + rel_path).canonicalFilePath()
+        file_path = py_source_dir + '/Modules/' + rel_path
+
+        canonical = QFileInfo(file_path).canonicalFilePath()
+        if canonical == '':
+            raise UserException("{0} could not be found".format(file_path))
+
+        return canonical
 
     def _add_parsed_scoped_values(self, used_values, raw, isfilename):
         """ Parse a string of space separated possible scoped values and add
