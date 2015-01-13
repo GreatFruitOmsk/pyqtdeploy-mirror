@@ -46,8 +46,8 @@ pyconfig.h
 
 For Windows see if there are any changes to ``PC/pyconfig.h``.  If so then copy
 it to the ``configurations/pyconfig`` directory with an appropriate version
-number.  Edit the file and replace the ``#define`` for ``HAVE_DYNAMIC_LOADING``
-with ``@PY_DYNAMIC_LOADING@``.
+number.  Edit the file, add ``#define Py_NO_ENABLE_SHARED`` and replace the
+``#define`` for ``HAVE_DYNAMIC_LOADING`` with ``@PY_DYNAMIC_LOADING@``.
 
 For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
 new configuration items.  Add any new ones to ``pyconfig.py``.
