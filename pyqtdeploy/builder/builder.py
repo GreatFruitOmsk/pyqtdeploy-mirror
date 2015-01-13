@@ -30,7 +30,7 @@ import shutil
 import subprocess
 import sys
 
-from PyQt5.QtCore import QDir, QFile, QFileInfo, QTemporaryDir
+from PyQt5.QtCore import QDir, QFile, QFileDevice, QFileInfo, QTemporaryDir
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
@@ -983,6 +983,10 @@ static struct _inittab %s[] = {
 
         if not QFile.copy(s_file_name, d_file_name):
             raise UserException("Unable to copy file {0}".format(file_name))
+
+        # The file will be read-only if it was embedded.
+        QFile.setPermissions(d_file_name,
+                QFileDevice.ReadOwner|QFileDevice.WriteOwner)
 
         return d_file_name
 
