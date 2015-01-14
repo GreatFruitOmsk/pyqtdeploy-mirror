@@ -27,10 +27,10 @@
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 
-from PyQt5.QtCore import QDir, QFile, QFileDevice, QFileInfo, QTemporaryDir
+from PyQt5.QtCore import (QCoreApplication, QDir, QFile, QFileDevice,
+        QFileInfo, QProcess, QTemporaryDir, QTextCodec)
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
@@ -943,17 +943,25 @@ static struct _inittab %s[] = {
         self._message_handler.verbose_message(
                 "Running '{0}'".format(' '.join(argv)))
 
-        try:
-            subprocess.check_output(argv, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            raise UserException(error_message, e.output)
-        except FileNotFoundError:
-            raise UserException("{0} does not seem to exist".format(argv[0]))
-        finally:
-            if saved_cwd is not None:
-                os.chdir(saved_cwd)
-                self._message_handler.verbose_message(
-                        "{0} is now the current directory".format(saved_cwd))
+        QCoreApplication.processEvents()
+
+        process = QProcess()
+        process.setProcessChannelMode(QProcess.MergedChannels)
+
+        process.start(argv[0], argv[1:])
+
+        if not process.waitForFinished():
+            raise UserException(error_message, process.errorString())
+
+        output = process.readAll()
+        if process.exitStatus() != QProcess.NormalExit or process.exitCode() != 0:
+            raise UserException(error_message,
+                    QTextCodec.codecForLocale().toUnicode(output))
+
+        if saved_cwd is not None:
+            os.chdir(saved_cwd)
+            self._message_handler.verbose_message(
+                    "{0} is now the current directory".format(saved_cwd))
 
     @staticmethod
     def _get_lib_file_name(file_name):
