@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ or a Mercurial archive.  It is not part of a packaged release.
 
 import os
 import sys
+import time
 
 
 # The root directory, i.e. the one containing this script.
@@ -116,7 +117,7 @@ def _get_release():
         if version is not None:
             ctx = before
         else:
-            release_suffix = '-preview-' + str(ctx)
+            release_suffix = time.strftime('-preview-%y%m%d%H%M')
 
         changelog = [_format_changelog(ctx)]
 
@@ -139,8 +140,8 @@ def _get_release():
             parents = parent_ctx.parents()
 
         if version is None and parent_version is not None:
-            # This is a snapshot so work out what the next version will be
-            # based on the previous version.
+            # This is a preview so work out what the next version will be based
+            # on the previous version.
             major, minor, micro = parent_version
 
             if ctx.branch() == 'default':
@@ -227,7 +228,7 @@ def changelog(output_dir):
 def pyversion(py_file):
     """ Write the version of the package as a string and a hexversion to a
     file.  If it is a release then it will be of the form x.y[.z].  If it is a
-    snapshot then it will be of the form x.y[.z]-preview-changeset where
+    preview then it will be of the form x.y[.z]-preview-timestamp where
     x.y[.z] is the version number of the next release (not the previous one).
     If this is a Mercurial archive (rather than a repository) then it does the
     best it can (based on the name of the directory) with the limited
