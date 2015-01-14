@@ -79,6 +79,9 @@ extern PyObject* PyInit_atexit(void);
 #if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__stat(void);
 #endif
+#if PY_MINOR_VERSION >= 4
+extern PyObject* PyInit__struct(void);
+#endif
 extern PyObject* PyInit__locale(void);
 extern PyObject* PyInit__io(void);
 extern PyObject* PyInit_zipimport(void);
@@ -127,6 +130,9 @@ struct _inittab _PyImport_Inittab[] = {
 #endif
 #if PY_MINOR_VERSION >= 4
 	{"_stat", PyInit__stat},
+#endif
+#if PY_MINOR_VERSION >= 4
+	{"_struct", PyInit__struct},
 #endif
 	{"_locale", PyInit__locale},
 	{"_io", PyInit__io},
