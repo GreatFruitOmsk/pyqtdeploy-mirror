@@ -1,2 +1,2 @@
-include ChangeLog* NEWS VERSION
+include ChangeLog* NEWS
 graft doc
