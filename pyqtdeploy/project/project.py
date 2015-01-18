@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,12 @@ from ..user_exception import UserException
 class Project(QObject):
     """ The encapsulation of a project. """
 
-    # The current project version.  Versions 0 to 3 are no longer supported.
-    # Note that we added the 'patch' attribute to the 'Project/Python' element
-    # to Version 4 without bumping the version number to 5.  This is because we
-    # haven't got round to implementing a proper mechanism to update the
-    # format.  It will only be a problem if a project targets Python v3.4.2 or
-    # later (using pyqtdeploy v0.7 or later) and is then edited with pyqtdeploy
-    # v0.6.
-    version = 4
+    # The minimum supported project version.  At the moment a project will be
+    # automatically updated to the current version when saved.
+    min_version = 4
+
+    # The current project version.
+    version = 5
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -93,6 +91,7 @@ class Project(QObject):
         self.application_name = ''
         self.application_is_pyqt5 = True
         self.application_is_console = False
+        self.application_use_py_dll = False
         self.application_is_bundle = True
         self.application_package = QrcPackage()
         self.application_script = ''
@@ -110,6 +109,7 @@ class Project(QObject):
         self.python_target_stdlib_dir = ''
         self.python_target_version = get_latest_supported_python_version()
         self.qmake = ''
+        self.qmake_configuration = ''
         self.standard_library = []
         self.sys_path = ''
 
@@ -268,7 +268,7 @@ class Project(QObject):
 
         cls._assert(version is not None, "Invalid 'version'.")
 
-        if version <= 3:
+        if version < cls.min_version:
             raise UserException("The project's format is no longer supported.")
 
         if version > cls.version:
@@ -304,11 +304,22 @@ class Project(QObject):
                 'Application')
         project.application_is_console = cls._get_bool(application,
                 'isconsole', 'Application')
+
+        # This was added in version 5.
+        project.application_use_py_dll = cls._get_bool(application,
+                'usepydll', 'Application', default=False)
+
         project.application_is_bundle = cls._get_bool(application, 'isbundle',
                 'Application')
         project.application_name = application.get('name', '')
         project.application_script = application.get('script', '')
         project.sys_path = application.get('syspath', '')
+
+        # Any qmake configuration. This was added in version 5.
+        qmake_configuration = application.find('QMakeConfiguration')
+
+        if qmake_configuration is not None:
+            project.qmake_configuration = qmake_configuration.text
 
         # Any application package.
         app_package = application.find('Package')
@@ -434,14 +445,14 @@ class Project(QObject):
         return contents
 
     @classmethod
-    def _get_bool(cls, element, name, context):
+    def _get_bool(cls, element, name, context, default=None):
         """ Get a boolean attribute from an element. """
 
         value = element.get(name)
         try:
             value = int(value)
         except:
-            value = None
+            value = default
 
         cls._assert(value is not None,
                 "Missing or invalid boolean value of '{0}.{1}'.".format(
@@ -491,7 +502,11 @@ class Project(QObject):
             'isbundle': str(int(self.application_is_bundle)),
             'name': self.application_name,
             'script': self.application_script,
-            'syspath': self.sys_path})
+            'syspath': self.sys_path,
+            'usepydll': str(int(self.application_use_py_dll))})
+
+        if self.qmake_configuration != '':
+            SubElement(application, 'QMakeConfiguration').text = self.qmake_configuration
 
         if self.application_package.name != '':
             self._save_package(application, self.application_package)
