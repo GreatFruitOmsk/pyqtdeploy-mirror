@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QFileDialog, QGridLayout,
-        QGroupBox, QLineEdit, QRadioButton, QVBoxLayout, QWidget)
+        QGroupBox, QHBoxLayout, QLineEdit, QRadioButton, QVBoxLayout, QWidget)
 
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
@@ -103,12 +103,15 @@ class ApplicationPage(QWidget):
         layout.addLayout(form, 0, 0)
 
         options_layout = QVBoxLayout()
+        pyqt_versions_layout = QHBoxLayout()
         self._pyqt_versions_bg = QButtonGroup()
 
         for version in ('PyQt5', 'PyQt4'):
             rb = QRadioButton(version)
-            options_layout.addWidget(rb)
+            pyqt_versions_layout.addWidget(rb)
             self._pyqt_versions_bg.addButton(rb)
+
+        options_layout.addLayout(pyqt_versions_layout)
 
         self._pyqt_versions_bg.buttonToggled.connect(
                 self._pyqt_version_changed)
@@ -117,7 +120,11 @@ class ApplicationPage(QWidget):
                 stateChanged=self._console_changed)
         options_layout.addWidget(self._console_edit)
 
-        self._bundle_edit = QCheckBox("Application bundle (OS/X)",
+        self._pydll_edit = QCheckBox("Use Python DLL (Windows)",
+                stateChanged=self._pydll_changed)
+        options_layout.addWidget(self._pydll_edit)
+
+        self._bundle_edit = QCheckBox("Application bundle (OS X)",
                 stateChanged=self._bundle_changed)
         options_layout.addWidget(self._bundle_edit)
 
@@ -160,6 +167,11 @@ class ApplicationPage(QWidget):
                 Qt.Checked if project.application_is_console else Qt.Unchecked)
         self._console_edit.blockSignals(blocked)
 
+        blocked = self._pydll_edit.blockSignals(True)
+        self._pydll_edit.setCheckState(
+                Qt.Checked if project.application_use_py_dll else Qt.Unchecked)
+        self._pydll_edit.blockSignals(blocked)
+
         blocked = self._bundle_edit.blockSignals(True)
         self._bundle_edit.setCheckState(
                 Qt.Checked if project.application_is_bundle else Qt.Unchecked)
@@ -178,6 +190,12 @@ class ApplicationPage(QWidget):
         """ Invoked when the user changes the console state. """
 
         self.project.application_is_console = (state == Qt.Checked)
+        self.project.modified = True
+
+    def _pydll_changed(self, state):
+        """ Invoked when the user changes the Python DLL state. """
+
+        self.project.application_use_py_dll = (state == Qt.Checked)
         self.project.modified = True
 
     def _bundle_changed(self, state):
