@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@ from .locations_page import LocationsPage
 from .other_extension_modules_page import OtherExtensionModulesPage
 from .other_packages_page import OtherPackagesPage
 from .pyqt_page import PyQtPage
+from .qmake_page import QMakePage
 from .standard_library_page import StandardLibraryPage
 
 
@@ -131,6 +132,9 @@ class ProjectGUI(QMainWindow):
 
         application_page = ApplicationPage()
         tabs.addTab(application_page, application_page.label)
+
+        qmake_page = QMakePage()
+        tabs.addTab(qmake_page, qmake_page.label)
 
         pyqt_page = PyQtPage()
         tabs.addTab(pyqt_page, pyqt_page.label)
