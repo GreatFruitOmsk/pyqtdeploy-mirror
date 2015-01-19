@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata']
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, ssl, scope, deps, hidden_deps, core, defines, xlib, modules, source, libs, includepath):
+    def __init__(self, internal, ssl, scope, deps, hidden_deps, core, in_py_dll, defines, xlib, modules, source, libs, includepath):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -60,6 +60,9 @@ class StdlibModule:
         # Python module).
         self.core = core
 
+        # Set if the module is compiled in to the standard Python DLL.
+        self.in_py_dll = in_py_dll
+
         # The sequence of (possibly scoped) DEFINES to add to the .pro file.
         self.defines = (defines, ) if isinstance(defines, str) else defines
 
@@ -85,7 +88,7 @@ class StdlibModule:
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, in_py_dll=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -104,7 +107,8 @@ class VersionedModule:
         self.max_version = self._expand_version(max_version, 255)
 
         self.module = StdlibModule(internal, ssl, scope, deps, hidden_deps,
-                core, defines, xlib, modules, source, libs, includepath)
+                core, in_py_dll, defines, xlib, modules, source, libs,
+                includepath)
 
     @staticmethod
     def _expand_version(version, default):
@@ -124,14 +128,14 @@ class VersionedModule:
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None):
+    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, in_py_dll=False, defines=None, xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, ssl=ssl,
                 scope=scope, deps=deps, hidden_deps=hidden_deps, core=core,
-                defines=defines, xlib=xlib, source=source, libs=libs,
-                includepath=includepath)
+                in_py_dll=in_py_dll, defines=defines, xlib=xlib, source=source,
+                libs=libs, includepath=includepath)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -295,7 +299,8 @@ _metadata = {
                         'warnings', 'weakref')),
 
     'bz2': (
-        ExtensionModule(version=2, source='bz2module.c', xlib='bz2'),
+        ExtensionModule(version=2, in_py_dll=True, source='bz2module.c',
+                xlib='bz2'),
         PythonModule(version=3, deps=('_thread', '_bz2', 'io', 'warnings'))),
 
     'calendar':
@@ -1517,7 +1522,7 @@ _metadata = {
         PythonModule(version=2, deps=('base64', 'os', 're', 'warnings')),
 
     'mmap':
-        ExtensionModule(source='mmapmodule.c'),
+        ExtensionModule(in_py_dll=True, source='mmapmodule.c'),
 
     'modulefinder': (
         PythonModule(version=2,
@@ -1535,7 +1540,8 @@ _metadata = {
                 deps=('_msi', 'os', 're', 'string', 'tempfile')),
 
     'msvcrt':
-        ExtensionModule(scope='win32', source='../PC/msvcrtmodule.c'),
+        ExtensionModule(in_py_dll=True, scope='win32',
+                source='../PC/msvcrtmodule.c'),
 
     'multifile':
         PythonModule(version=2, deps='warnings'),
@@ -2452,7 +2458,7 @@ _metadata = {
         CoreExtensionModule(),
 
     'zlib':
-        ExtensionModule(source='zlibmodule.c', xlib='zlib'),
+        ExtensionModule(in_py_dll=True, source='zlibmodule.c', xlib='zlib'),
 
     # These are internal modules.
 
@@ -2646,8 +2652,8 @@ _metadata = {
                 xlib='bsddb'),
 
     '_bz2':
-        ExtensionModule(version=3, internal=True, source='_bz2module.c',
-                xlib='bz2'),
+        ExtensionModule(version=3, internal=True, in_py_dll=True,
+                source='_bz2module.c', xlib='bz2'),
 
     'cl':
         ExtensionModule(version=2, internal=True, source='clmodule.c'),
@@ -2850,8 +2856,8 @@ _metadata = {
                 source='_gestalt.c'),
 
     '_hashlib':
-        ExtensionModule(internal=True, ssl=True, source='_hashopenssl.c',
-                xlib='ssl'),
+        ExtensionModule(internal=True, in_py_dll=True, ssl=True,
+                source='_hashopenssl.c', xlib='ssl'),
 
     '_heapq':
         ExtensionModule(internal=True, source='_heapqmodule.c'),
@@ -2880,7 +2886,7 @@ _metadata = {
                 deps='_bootlocale')),
 
     '_json':
-        ExtensionModule(internal=True, source='_json.c'),
+        ExtensionModule(internal=True, in_py_dll=True, source='_json.c'),
 
     'json.decoder': (
         PythonModule(version=2, internal=True,
@@ -3246,7 +3252,8 @@ _metadata = {
                 deps=('sre_constants', 'warnings'))),
 
     '_ssl':
-        ExtensionModule(internal=True, ssl=True, source='_ssl.c', xlib='ssl'),
+        ExtensionModule(internal=True, in_py_dll=True, ssl=True,
+                source='_ssl.c', xlib='ssl'),
 
     '_stat':
         CoreExtensionModule(min_version=(3, 4), internal=True),
@@ -3270,7 +3277,8 @@ _metadata = {
     # on Windows (because of the PyVarObject_HEAD_INIT() problem).  This is
     # probably a Python bug.
     '_struct': (
-        ExtensionModule(max_version=(3, 3), internal=True, source='_struct.c'),
+        ExtensionModule(max_version=(3, 3), internal=True, in_py_dll=True,
+                source='_struct.c'),
         CoreExtensionModule(min_version=(3, 4), internal=True)),
 
     '_subprocess':
