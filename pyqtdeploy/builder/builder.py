@@ -566,6 +566,12 @@ class Builder():
         # Add the project independent post-configuration stuff.
         self._write_embedded_lib_file('post_configuration.pro', f)
 
+        # Add any application specific stuff.
+        qmake_configuration = project.qmake_configuration.strip()
+
+        if qmake_configuration != '':
+            f.write('\n' + qmake_configuration + '\n')
+
         # All done.
         f.close()
 
