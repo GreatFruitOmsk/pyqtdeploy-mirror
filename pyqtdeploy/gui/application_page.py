@@ -120,10 +120,6 @@ class ApplicationPage(QWidget):
                 stateChanged=self._console_changed)
         options_layout.addWidget(self._console_edit)
 
-        self._pydll_edit = QCheckBox("Use Python DLLs (Windows)",
-                stateChanged=self._pydll_changed)
-        options_layout.addWidget(self._pydll_edit)
-
         self._bundle_edit = QCheckBox("Application bundle (OS X)",
                 stateChanged=self._bundle_changed)
         options_layout.addWidget(self._bundle_edit)
@@ -167,11 +163,6 @@ class ApplicationPage(QWidget):
                 Qt.Checked if project.application_is_console else Qt.Unchecked)
         self._console_edit.blockSignals(blocked)
 
-        blocked = self._pydll_edit.blockSignals(True)
-        self._pydll_edit.setCheckState(
-                Qt.Checked if project.application_use_py_dll else Qt.Unchecked)
-        self._pydll_edit.blockSignals(blocked)
-
         blocked = self._bundle_edit.blockSignals(True)
         self._bundle_edit.setCheckState(
                 Qt.Checked if project.application_is_bundle else Qt.Unchecked)
@@ -190,12 +181,6 @@ class ApplicationPage(QWidget):
         """ Invoked when the user changes the console state. """
 
         self.project.application_is_console = (state == Qt.Checked)
-        self.project.modified = True
-
-    def _pydll_changed(self, state):
-        """ Invoked when the user changes the Python DLL state. """
-
-        self.project.application_use_py_dll = (state == Qt.Checked)
         self.project.modified = True
 
     def _bundle_changed(self, state):

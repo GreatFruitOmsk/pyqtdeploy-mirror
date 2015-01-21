@@ -102,6 +102,7 @@ class Project(QObject):
         self.other_packages = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
+        self.python_use_platform = ['win32']
         self.python_source_dir = ''
         self.python_ssl = False
         self.python_target_include_dir = ''
@@ -284,6 +285,10 @@ class Project(QObject):
         cls._assert(python is not None, "Missing 'Python' tag.")
 
         project.python_host_interpreter = python.get('hostinterpreter', '')
+
+        # This was added in version 5.
+        project.python_use_platform = python.get('platformpython', 'win32').split()
+
         project.python_source_dir = python.get('sourcedir', '')
         project.python_ssl = cls._get_bool(python, 'ssl', 'Python')
         project.python_target_include_dir = python.get('targetincludedir', '')
@@ -304,10 +309,6 @@ class Project(QObject):
                 'Application')
         project.application_is_console = cls._get_bool(application,
                 'isconsole', 'Application')
-
-        # This was added in version 5.
-        project.application_use_py_dll = cls._get_bool(application,
-                'usepydll', 'Application', default=False)
 
         project.application_is_bundle = cls._get_bool(application, 'isbundle',
                 'Application')
@@ -486,6 +487,7 @@ class Project(QObject):
 
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,
+            'platformpython': ' '.join(self.python_use_platform),
             'sourcedir': self.python_source_dir,
             'ssl': str(int(self.python_ssl)),
             'targetincludedir': self.python_target_include_dir,
@@ -502,8 +504,7 @@ class Project(QObject):
             'isbundle': str(int(self.application_is_bundle)),
             'name': self.application_name,
             'script': self.application_script,
-            'syspath': self.sys_path,
-            'usepydll': str(int(self.application_use_py_dll))})
+            'syspath': self.sys_path})
 
         if self.qmake_configuration != '':
             SubElement(application, 'QMakeConfiguration').text = self.qmake_configuration

@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QSplitter,
-        QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
-        QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
+        QSplitter, QTreeView, QTreeWidget, QTreeWidgetItem,
+        QTreeWidgetItemIterator, QVBoxLayout, QWidget)
 
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         get_supported_python_version, get_supported_python_version_index,
-        get_supported_python_versions)
+        get_supported_python_versions, PLATFORM_SCOPES)
 from ..project import ExternalLibrary
 
 
@@ -91,6 +91,19 @@ class StandardLibraryPage(QSplitter):
 
         extlib_layout.addLayout(extlib_sublayout)
 
+        plat_gb = QGroupBox("Use standard Python libraries")
+        plat_gb_layout = QVBoxLayout()
+        self._platform_buttons = []
+
+        for scope, plat in PLATFORM_SCOPES:
+            plat_cb = QCheckBox(plat, stateChanged=self._platforms_changed)
+            plat_cb._scope = scope
+            plat_gb_layout.addWidget(plat_cb)
+            self._platform_buttons.append(plat_cb)
+
+        plat_gb.setLayout(plat_gb_layout)
+        extlib_layout.addWidget(plat_gb)
+
         self._extlib_edit = QTreeView()
         self._extlib_edit.setEditTriggers(
                 QTreeView.DoubleClicked|QTreeView.SelectedClicked|
@@ -134,6 +147,13 @@ class StandardLibraryPage(QSplitter):
         self._ssl_edit.setCheckState(
                 Qt.Checked if project.python_ssl else Qt.Unchecked)
         self._ssl_edit.blockSignals(blocked)
+
+        for plat in self._platform_buttons:
+            blocked = plat.blockSignals(True)
+            plat.setCheckState(
+                    Qt.Checked if plat._scope in project.python_use_platform
+                            else Qt.Unchecked)
+            plat.blockSignals(blocked)
 
         self._update_extlib_editor()
         self._update_stdlib_editor()
@@ -268,6 +288,19 @@ class StandardLibraryPage(QSplitter):
 
         project.python_ssl = (state == Qt.Checked)
         self._set_dependencies()
+
+        project.modified = True
+
+    def _platforms_changed(self, state):
+        """ Invoked when the platforms change. """
+
+        project = self._project
+
+        project.python_use_platform = []
+
+        for plat in self._platform_buttons:
+            if plat.checkState() == Qt.Checked:
+                project.python_use_platform.append(plat._scope)
 
         project.modified = True
 

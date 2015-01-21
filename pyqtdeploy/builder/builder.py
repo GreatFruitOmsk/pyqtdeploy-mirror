@@ -35,10 +35,14 @@ from PyQt5.QtCore import (QCoreApplication, QDir, QFile, QFileDevice,
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
 from ..metadata import (external_libraries_metadata, get_python_metadata,
-        pyqt4_metadata, pyqt5_metadata)
+        PLATFORM_SCOPES, pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
+
+
+# The sequence of all platform scopes.
+ALL_SCOPES = tuple((scope for scope, platform in PLATFORM_SCOPES))
 
 
 class Builder():
@@ -389,7 +393,7 @@ class Builder():
                 if pyqt == 'uic':
                     continue
 
-                self._add_value_for_scope(used_inittab,
+                self._add_value_for_scopes(used_inittab,
                         pyqt_version + '.' + pyqt)
 
                 lib_name = pyqt
@@ -403,13 +407,13 @@ class Builder():
 
             # Add the LIBS value for any PyQt modules to the global scope.
             if len(l_libs) > 0:
-                self._add_value_for_scope(used_libs,
+                self._add_value_for_scopes(used_libs,
                         '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
                                 ' '.join(l_libs)))
 
             # Add the sip module.
-            self._add_value_for_scope(used_inittab, 'sip')
-            self._add_value_for_scope(used_libs,
+            self._add_value_for_scopes(used_inittab, 'sip')
+            self._add_value_for_scopes(used_libs,
                     '-L{0} -lsip'.format(site_packages))
 
         # Handle any other extension modules.
@@ -417,12 +421,12 @@ class Builder():
             scoped_values = self._parse_scoped_values(other_em.libs, False)
 
             for scope, values in scoped_values.items():
-                self._add_value_for_scope(used_inittab, other_em.name, scope)
+                self._add_value_for_scopes(used_inittab, other_em.name, scope)
                 self._add_value_set_for_scope(used_libs, values, scope)
 
         # Configure the target Python interpreter.
         if project.python_target_include_dir != '':
-            self._add_value_for_scope(used_includepath,
+            self._add_value_for_scopes(used_includepath,
                     project.path_from_user(project.python_target_include_dir))
 
         if project.python_target_library != '':
@@ -438,60 +442,78 @@ class Builder():
                 lib = lib[3:]
 
             if '.' in lib:
-                self._add_value_for_scope(used_libs,
+                self._add_value_for_scopes(used_libs,
                         '-L{0} -l{1}'.format(lib_dir, lib.replace('.', '')),
                         'win32')
-                self._add_value_for_scope(used_libs,
+                self._add_value_for_scopes(used_libs,
                         '-L{0} -l{1}'.format(lib_dir, lib), '!win32')
             else:
-                self._add_value_for_scope(used_libs,
+                self._add_value_for_scopes(used_libs,
                         '-L{0} -l{1}'.format(lib_dir, lib))
 
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
             source_dir = project.path_from_user(project.python_source_dir)
-
-            self._add_value_for_scope(used_includepath,
-                    source_dir + '/Modules')
+            source_scopes = set()
 
             for name, module in required_ext.items():
-                if module.in_py_dlls and project.application_use_py_dll:
-                    if module.scope == 'win32':
-                        # The module is Windows-only so ignore it completely.
-                        continue
+                # Get the list of all applicable scopes.
+                module_scopes = list(ALL_SCOPES)
 
-                    # Don't build the module for Windows.
-                    module_scope = '!win32'
-                else:
-                    module_scope = module.scope
+                if module.scope != '':
+                    if module.scope.startswith('!'):
+                        module_scopes.remove(module.scope[1:])
+                    else:
+                        module_scopes = [module.scope]
 
-                self._add_value_for_scope(used_inittab, name, module_scope)
+                # Remove those scopes for which we are using the standard
+                # Python libraries.
+                for plat_scope in project.python_use_platform:
+                    try:
+                        module_scopes.remove(plat_scope)
+                    except ValueError:
+                        pass
+
+                if len(module_scopes) == 0:
+                    # The module is specific to a platform for which we are
+                    # using the standard Python libraries so ignore it
+                    # completely.
+                    continue
+
+                self._add_value_for_scopes(used_inittab, name, module_scopes)
 
                 for source in module.source:
-                    scope, source = self._get_scope_and_value(source,
-                            module_scope)
+                    scopes, source = self._get_scope_and_value(source,
+                            module_scopes)
                     source = self._python_source_file(source_dir, source)
-                    self._add_scoped_value(used_sources, source,
-                            default_scope=scope)
+                    self._add_value_for_scopes(used_sources, source, scopes)
+
+                    source_scopes.update(scopes)
 
                 if module.defines is not None:
                     for define in module.defines:
-                        self._add_scoped_value(used_defines, define,
-                                default_scope=module_scope)
+                        scopes, define = self._get_scope_and_value(define,
+                                module_scopes)
+                        self._add_value_for_scopes(used_defines, define,
+                                scopes)
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
-                        scope, includepath = self._get_scope_and_value(
-                                includepath, module_scope)
+                        scopes, includepath = self._get_scope_and_value(
+                                includepath, module_scopes)
                         includepath = self._python_source_file(source_dir,
                                 includepath)
-                        self._add_scoped_value(used_includepath, includepath,
-                                default_scope=scope)
+                        self._add_value_for_scopes(used_includepath,
+                                includepath, scopes)
 
                 if module.libs is not None:
                     for lib in module.libs:
-                        self._add_scoped_value(used_libs, lib,
-                                default_scope=module_scope)
+                        scopes, lib = self._get_scope_and_value(lib,
+                                module_scopes)
+                        self._add_value_for_scopes(used_libs, lib, scopes)
+
+            self._add_value_for_scopes(used_includepath,
+                        source_dir + '/Modules', source_scopes)
 
         # Handle any required external libraries.
         for required_lib in required_libraries:
@@ -514,7 +536,7 @@ class Builder():
                 for xlib in external_libraries_metadata:
                     if xlib.name == required_lib:
                         for lib in xlib.libs.split():
-                            self._add_value_for_scope(used_libs, lib)
+                            self._add_value_for_scopes(used_libs, lib)
 
                         break
 
@@ -625,52 +647,59 @@ class Builder():
         scoped_value_sets = {}
 
         for scoped_value in shlex.split(raw):
-            self._add_scoped_value(scoped_value_sets, scoped_value,
-                    isfilename=isfilename)
+            scopes, value = self._get_scope_and_value(scoped_value, ALL_SCOPES)
+
+            # Convert potential filenames.
+            if isfilename:
+                value = self.project.path_from_user(value)
+            elif value.startswith('-L'):
+                value = '-L' + self.project.path_from_user(value[2:])
+
+            self._add_value_for_scopes(scoped_value_sets, value, scopes)
 
         return scoped_value_sets
 
     @staticmethod
-    def _get_scope_and_value(scoped_value, default_scope):
-        """ Return the 2-tuple of scope and value from a (possibly) scoped
+    def _get_scope_and_value(scoped_value, scopes):
+        """ Return the 2-tuple of scopes and value from a (possibly) scoped
         value.
         """
 
         parts = scoped_value.split('#', maxsplit=1)
         if len(parts) == 2:
             scope, value = parts
+
+            if scope.startswith('!'):
+                scope = scope[1:]
+
+                # Make sure we don't modify the original list.
+                scopes = [s for s in scopes if s != scope]
+            elif scope in scopes:
+                scopes = [scope]
+            else:
+                scopes = []
         else:
-            scope = default_scope
             value = parts[0]
 
-        return scope, value
-
-    def _add_scoped_value(self, used_values, scoped_value, isfilename=False, default_scope=''):
-        """ Add an optionally scoped value to a dict of used values indexed by
-        scope.
-        """
-
-        # Isolate the scope and value.
-        scope, value = self._get_scope_and_value(scoped_value, default_scope)
-
-        # The use of the Python DLLs may have introduced a scope conflict (or
-        # rather a "never in scope" situation).
-        if default_scope.startswith('!') and default_scope[1:] == scope:
-            return
-
-        # Convert potential filenames.
-        if isfilename:
-            value = self.project.path_from_user(value)
-        elif value.startswith('-L'):
-            value = '-L' + self.project.path_from_user(value[2:])
-
-        self._add_value_for_scope(used_values, value, scope)
+        return scopes, value
 
     @staticmethod
-    def _add_value_for_scope(used_values, value, scope=''):
-        """ Add a value to the set of used values for a scope. """
+    def _add_value_for_scopes(used_values, value, scopes=None):
+        """ Add a value to the set of used values for some scopes. """
 
-        used_values.setdefault(scope, set()).add(value)
+        if scopes is None:
+            scopes = ['']
+        elif isinstance(scopes, str):
+            scopes = [scopes]
+        elif len(scopes) == len(ALL_SCOPES):
+            scopes = ['']
+        elif len(scopes) == len(ALL_SCOPES) - 1:
+            # This usually makes the generated code shorter because non-Windows
+            # scopes will be collapsed into one.
+            scopes = ['!' + (set(ALL_SCOPES) - set(scopes)).pop()]
+
+        for scope in scopes:
+            used_values.setdefault(scope, set()).add(value)
 
     @staticmethod
     def _add_value_set_for_scope(used_values, values, scope=''):
@@ -887,6 +916,7 @@ static struct _inittab %s[] = {
 
     # The map of scopes to pre-processor symbols.
     _guards = {
+        'linux':    'Q_OS_LINUX',
         'macx':     'Q_OS_MAC',
         'win32':    'Q_OS_WIN',
     }
