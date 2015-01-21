@@ -120,7 +120,7 @@ class ApplicationPage(QWidget):
                 stateChanged=self._console_changed)
         options_layout.addWidget(self._console_edit)
 
-        self._pydll_edit = QCheckBox("Use Python DLL (Windows)",
+        self._pydll_edit = QCheckBox("Use Python DLLs (Windows)",
                 stateChanged=self._pydll_changed)
         options_layout.addWidget(self._pydll_edit)
 

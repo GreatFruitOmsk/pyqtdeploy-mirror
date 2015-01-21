@@ -439,14 +439,13 @@ class Builder():
 
             if '.' in lib:
                 self._add_value_for_scope(used_libs,
-                        '-L{0} -l{1}\n'.format(
-                                lib_dir, lib.replace('.', '')),
+                        '-L{0} -l{1}'.format(lib_dir, lib.replace('.', '')),
                         'win32')
                 self._add_value_for_scope(used_libs,
-                        '-L{0} -l{1}\n'.format(lib_dir, lib), '!win32')
+                        '-L{0} -l{1}'.format(lib_dir, lib), '!win32')
             else:
                 self._add_value_for_scope(used_libs,
-                        '-L{0} -l{1}\n'.format(lib_dir, lib))
+                        '-L{0} -l{1}'.format(lib_dir, lib))
 
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
@@ -456,11 +455,21 @@ class Builder():
                     source_dir + '/Modules')
 
             for name, module in required_ext.items():
-                self._add_value_for_scope(used_inittab, name, module.scope)
+                if module.in_py_dlls and project.application_use_py_dll:
+                    if module.scope == 'win32':
+                        # The module is Windows-only so ignore it completely.
+                        continue
+
+                    # Don't build the module for Windows.
+                    module_scope = '!win32'
+                else:
+                    module_scope = module.scope
+
+                self._add_value_for_scope(used_inittab, name, module_scope)
 
                 for source in module.source:
                     scope, source = self._get_scope_and_value(source,
-                            module.scope)
+                            module_scope)
                     source = self._python_source_file(source_dir, source)
                     self._add_scoped_value(used_sources, source,
                             default_scope=scope)
@@ -468,12 +477,12 @@ class Builder():
                 if module.defines is not None:
                     for define in module.defines:
                         self._add_scoped_value(used_defines, define,
-                                default_scope=module.scope)
+                                default_scope=module_scope)
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
                         scope, includepath = self._get_scope_and_value(
-                                includepath, module.scope)
+                                includepath, module_scope)
                         includepath = self._python_source_file(source_dir,
                                 includepath)
                         self._add_scoped_value(used_includepath, includepath,
@@ -482,7 +491,7 @@ class Builder():
                 if module.libs is not None:
                     for lib in module.libs:
                         self._add_scoped_value(used_libs, lib,
-                                default_scope=module.scope)
+                                default_scope=module_scope)
 
         # Handle any required external libraries.
         for required_lib in required_libraries:
@@ -643,6 +652,11 @@ class Builder():
 
         # Isolate the scope and value.
         scope, value = self._get_scope_and_value(scoped_value, default_scope)
+
+        # The use of the Python DLLs may have introduced a scope conflict (or
+        # rather a "never in scope" situation).
+        if default_scope.startswith('!') and default_scope[1:] == scope:
+            return
 
         # Convert potential filenames.
         if isfilename:
