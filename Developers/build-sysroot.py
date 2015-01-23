@@ -58,6 +58,28 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
+    def platform_python_include_dir(self):
+        """ The name of the directory containing the platform Python include
+        files.
+        """
+
+        raise NotImplementedError
+
+    @property
+    def platform_python_lib(self):
+        """ The name of the platform Python library. """
+
+        raise NotImplementedError
+
+    @property
+    def platform_stdlib_dir(self):
+        """ The name of the directory containing the platform Python standard
+        library.
+        """
+
+        raise NotImplementedError
+
+    @property
     def pyqtdeploycli(self):
         """ The name of the pyqtdeploycli executable including any required
         path.
@@ -231,18 +253,40 @@ class WindowsHost(AbstractHost):
         return 'nmake'
 
     @property
+    def platform_python_include_dir(self):
+        """ The name of the directory containing the platform Python include
+        files.
+        """
+
+        return self._platform_python_root_dir() + '\\include'
+
+    @property
+    def platform_python_lib(self):
+        """ The name of the platform Python library. """
+
+        return self._platform_python_root_dir() + '\\libs\\python' + get_python_version(dotted=False) + '.lib'
+
+    @property
+    def platform_stdlib_dir(self):
+        """ The name of the directory containing the platform Python standard
+        library.
+        """
+
+        return self._platform_python_root_dir() + '\\Lib'
+
+    @property
     def pyqtdeploycli(self):
         """ The name of the pyqtdeploycli executable including any required
         path.
         """
 
-        return self._py_root_dir() + '\\Scripts\\pyqtdeploycli'
+        return self._platform_python_root_dir() + '\\Scripts\\pyqtdeploycli'
 
     @property
     def python(self):
         """ The name of the python executable including any required path. """
 
-        return self._py_root_dir() + '\\python'
+        return self._platform_python_root_dir() + '\\python'
 
     @property
     def pyqt_package(self):
@@ -325,12 +369,10 @@ class WindowsHost(AbstractHost):
         super().build_deconfigure(super_closure)
 
     @staticmethod
-    def _py_root_dir():
-        """ Return the Python root directory. """
+    def _platform_python_root_dir():
+        """ Return the platform Python root directory. """
 
-        py_version = PY_VERSION.split('.')
-
-        return 'C:\\Python' + py_version[0] + py_version[1]
+        return 'C:\\Python' + get_python_version(dotted=False)
 
 
 class PosixHost(AbstractHost):
@@ -517,6 +559,19 @@ def get_package_source(host, package):
     os.chdir(base_dir)
 
 
+def get_python_version(dotted=True):
+    """ Return a string of the Python major and minor versions with an optional
+    separating dot.
+    """
+
+    version = PY_VERSION[:3]
+
+    if not dotted:
+        version = version.replace('.', '')
+
+    return version
+
+
 def remove_current_dir():
     """ Remove the current directory. """
 
@@ -548,24 +603,51 @@ def build_qt(host):
     remove_current_dir()
 
 
-def build_python(host, enable_dynamic_loading):
-    """ Build a static Python that optionally supports dynamic loading. """
+def build_python(host, enable_dynamic_loading, use_platform_python):
+    """ Build a static Python that optionally supports dynamic loading and
+    using the platform Python.
+    """
 
-    get_package_source(host, host.python_package)
+    if use_platform_python:
+        # Copy the include files.
+        src = host.platform_python_include_dir
+        dst = os.path.join(host.sysroot, 'include',
+                'python' + get_python_version())
 
-    args = [host.pyqtdeploycli]
+        rmtree(dst)
+        shutil.copytree(src, dst)
 
-    if enable_dynamic_loading:
-        args.append('--enable-dynamic-loading')
+        # Copy the Python library.
+        src = host.platform_python_lib
+        dst = os.path.join(host.sysroot, 'lib')
 
-    args.extend(['--package', 'python', '--target', host.target, 'configure'])
+        os.makedirs(dst, exist_ok=True)
+        shutil.copy(src, dst)
 
-    # Note that we do not remove the source directory as it may be needed by
-    # the generated code.
-    host.run(*args)
-    host.run('qmake', 'SYSROOT=' + host.sysroot)
-    host.run(host.make)
-    host.run(host.make, 'install')
+        # Copy the Python standard library.
+        src = host.platform_stdlib_dir
+        dst = os.path.join(host.sysroot, 'lib',
+                'python' + get_python_version())
+
+        rmtree(dst)
+        shutil.copytree(src, dst)
+    else:
+        get_package_source(host, host.python_package)
+
+        args = [host.pyqtdeploycli]
+
+        if enable_dynamic_loading:
+            args.append('--enable-dynamic-loading')
+
+        args.extend(
+                ['--package', 'python', '--target', host.target, 'configure'])
+
+        # Note that we do not remove the source directory as it may be needed
+        # by the generated code.
+        host.run(*args)
+        host.run('qmake', 'SYSROOT=' + host.sysroot)
+        host.run(host.make)
+        host.run(host.make, 'install')
 
 
 def build_sip(host):
@@ -638,6 +720,8 @@ parser.add_argument('--enable-dynamic-loading',
 parser.add_argument('--target',
         help="the target platform [default: {0}]".format(default_target),
         choices=TARGETS, default=default_target)
+parser.add_argument('--use-platform-python',
+        help="use platform Python libraries", action='store_true')
 
 args = parser.parse_args()
 
@@ -657,7 +741,7 @@ if 'qt' in packages:
     build_qt(host)
 
 if 'python' in packages:
-    build_python(host, args.enable_dynamic_loading)
+    build_python(host, args.enable_dynamic_loading, args.use_platform_python)
 
 if 'sip' in packages:
     build_sip(host)
