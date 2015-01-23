@@ -421,7 +421,8 @@ class Builder():
             scoped_values = self._parse_scoped_values(other_em.libs, False)
 
             for scope, values in scoped_values.items():
-                self._add_value_for_scopes(used_inittab, other_em.name, scope)
+                self._add_value_for_scopes(used_inittab, other_em.name,
+                        [scope])
                 self._add_value_set_for_scope(used_libs, values, scope)
 
         # Configure the target Python interpreter.
@@ -444,9 +445,9 @@ class Builder():
             if '.' in lib:
                 self._add_value_for_scopes(used_libs,
                         '-L{0} -l{1}'.format(lib_dir, lib.replace('.', '')),
-                        'win32')
+                        ['win32'])
                 self._add_value_for_scopes(used_libs,
-                        '-L{0} -l{1}'.format(lib_dir, lib), '!win32')
+                        '-L{0} -l{1}'.format(lib_dir, lib), ['!win32'])
             else:
                 self._add_value_for_scopes(used_libs,
                         '-L{0} -l{1}'.format(lib_dir, lib))
@@ -616,18 +617,13 @@ class Builder():
 
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
-        """ Return the canonical name of a file in the Python source tree
-        relative to the Modules directory.  An exception is raised if the file
-        does not exist.
+        """ Return the absolute name of a file in the Python source tree
+        relative to the Modules directory.
         """
 
         file_path = py_source_dir + '/Modules/' + rel_path
 
-        canonical = QFileInfo(file_path).canonicalFilePath()
-        if canonical == '':
-            raise UserException("{0} could not be found".format(file_path))
-
-        return canonical
+        return QFileInfo(file_path).absoluteFilePath()
 
     def _add_parsed_scoped_values(self, used_values, raw, isfilename):
         """ Parse a string of space separated possible scoped values and add
@@ -684,14 +680,10 @@ class Builder():
         return scopes, value
 
     @staticmethod
-    def _add_value_for_scopes(used_values, value, scopes=None):
+    def _add_value_for_scopes(used_values, value, scopes=ALL_SCOPES):
         """ Add a value to the set of used values for some scopes. """
 
-        if scopes is None:
-            scopes = ['']
-        elif isinstance(scopes, str):
-            scopes = [scopes]
-        elif len(scopes) == len(ALL_SCOPES):
+        if len(scopes) == len(ALL_SCOPES):
             scopes = ['']
         elif len(scopes) == len(ALL_SCOPES) - 1:
             # This usually makes the generated code shorter because non-Windows
