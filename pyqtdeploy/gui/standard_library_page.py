@@ -91,7 +91,7 @@ class StandardLibraryPage(QSplitter):
 
         extlib_layout.addLayout(extlib_sublayout)
 
-        plat_gb = QGroupBox("Use standard Python libraries")
+        plat_gb = QGroupBox("Use standard Python shared library")
         plat_gb_layout = QVBoxLayout()
         self._platform_buttons = []
 
