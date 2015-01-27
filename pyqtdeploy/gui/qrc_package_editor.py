@@ -318,14 +318,15 @@ class QrcPackageEditor(QGridLayout):
 
         self._package_edit.clear()
 
-        if self._show_root:
-            parent = QTreeWidgetItem([':/' + self.package.name])
-            self._package_edit.addTopLevelItem(parent)
-            parent.setExpanded(True)
-        else:
-            parent = self._package_edit
+        if self.package.name is not None:
+            if self._show_root:
+                parent = QTreeWidgetItem([':/' + self.package.name])
+                self._package_edit.addTopLevelItem(parent)
+                parent.setExpanded(True)
+            else:
+                parent = self._package_edit
 
-        self._visualise_contents(self.package.contents, parent)
+            self._visualise_contents(self.package.contents, parent)
 
         self._package_edit.blockSignals(blocked)
 
