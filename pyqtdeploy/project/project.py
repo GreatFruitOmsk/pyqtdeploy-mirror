@@ -286,8 +286,10 @@ class Project(QObject):
 
         project.python_host_interpreter = python.get('hostinterpreter', '')
 
-        # This was added in version 5.
-        project.python_use_platform = python.get('platformpython', 'win32').split()
+        # This was added in version 5.  Note that the default for new projects
+        # is 'win32' but (so as not to break existing projects) we default to
+        # '' when upgrading projects.
+        project.python_use_platform = python.get('platformpython', '').split()
 
         project.python_source_dir = python.get('sourcedir', '')
         project.python_ssl = cls._get_bool(python, 'ssl', 'Python')
