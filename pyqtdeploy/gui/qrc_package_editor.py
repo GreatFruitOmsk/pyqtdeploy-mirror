@@ -319,7 +319,7 @@ class QrcPackageEditor(QGridLayout):
         self._package_edit.clear()
 
         if self._show_root:
-            parent = QTreeWidgetItem([self.package.name])
+            parent = QTreeWidgetItem([':/' + self.package.name])
             self._package_edit.addTopLevelItem(parent)
             parent.setExpanded(True)
         else:

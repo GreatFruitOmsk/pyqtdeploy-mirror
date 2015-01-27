@@ -511,7 +511,7 @@ class Project(QObject):
         if self.qmake_configuration != '':
             SubElement(application, 'QMakeConfiguration').text = self.qmake_configuration
 
-        if self.application_package.name != '':
+        if self.application_package.name is not None:
             self._save_package(application, self.application_package)
 
         for pyqt_module in self.pyqt_modules:
@@ -594,7 +594,7 @@ class QrcPackage():
     def __init__(self):
         """ Initialise the package. """
 
-        self.name = ''
+        self.name = None
         self.contents = []
         self.exclusions = ['*.pyc', '*.pyd', '*.pyo', '*.pyx', '__pycache__',
                 '*-info', '*.so']

@@ -174,12 +174,15 @@ class Builder():
         resource_contents = []
 
         # Handle any application package.
-        if project.application_package.name != '':
+        if project.application_package.name is not None:
             fi = QFileInfo(project.path_from_user(
                     project.application_package.name))
 
             package_src_dir = fi.canonicalFilePath()
-            package_name = fi.completeBaseName()
+
+            package_name = project.application_package.name
+            if package_name != '':
+                package_name = fi.completeBaseName()
 
             self._write_package(resource_contents, resources_dir, package_name,
                     project.application_package, package_src_dir, freeze, opt)
