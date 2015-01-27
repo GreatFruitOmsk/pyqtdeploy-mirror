@@ -29,9 +29,6 @@ that each have the icon loaded from a PNG file.  The PNG files are in a
 sub-directory called ``images`` in the same directory as the Python module.
 The following code will work in all cases::
 
-    from PyQt5.QtCore import QFileInfo
-    from PyQt5.QtGui import QIcon
-
     # Get the name of the directory containing the images directory, either a
     # directory in the real filesystem, or in the in-memory filesystem created
     # by rcc.
@@ -42,3 +39,11 @@ The following code will work in all cases::
     new_icon = QIcon(_root + '/images/new.png')
     open_icon = QIcon(_root + '/images/open.png')
     save_icon = QIcon(_root + '/images/save.png')
+
+Unfortunately QML files have to be treated a little differently because they
+are specified using a URL.  Lets say our QML files are in a sub-directory
+called ``qml``, we can then extend the code above as follows::
+
+    _root_url = 'qrc:' if _root.startswith(':') else _root
+
+    main_url = QUrl(_root_url + '/qml/main.qml')

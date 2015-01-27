@@ -256,7 +256,9 @@ The tab for defining the application source is shown below.
         attribute of a module to obtain the name of the directory containing
         the data file.  This approach will also work with deployed applications
         so long as the file is accessed using the :class:`~PyQt5.QtCore.QFile`
-        class (rather than the standard Python file access functions).
+        class (rather than the standard Python file access functions).  However
+        QML files require slightly different treatment as their locations are
+        specified using a URL.
 
 **Scan...**
     is clicked to specify the name of the directory containing the Python
