@@ -102,7 +102,7 @@ class Project(QObject):
         self.other_packages = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
-        self.python_use_platform = ['win32']
+        self.python_use_platform = []
         self.python_source_dir = ''
         self.python_ssl = False
         self.python_target_include_dir = ''
@@ -286,9 +286,7 @@ class Project(QObject):
 
         project.python_host_interpreter = python.get('hostinterpreter', '')
 
-        # This was added in version 5.  Note that the default for new projects
-        # is 'win32' but (so as not to break existing projects) we default to
-        # '' when upgrading projects.
+        # This was added in version 5.
         project.python_use_platform = python.get('platformpython', '').split()
 
         project.python_source_dir = python.get('sourcedir', '')
