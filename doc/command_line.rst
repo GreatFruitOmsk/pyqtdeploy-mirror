@@ -99,6 +99,14 @@ The full set of command line options is:
 
     This is required by the :option:`build` action to specify the project file.
 
+.. cmdoption:: --resources NUMBER
+
+    When used with the :option:`build` action this specifies the number of Qt
+    ``.qrc`` resource files that are generated.  On Windows, MSVC cannot cope
+    with very large resource files and complains of a lack of heap space.  If
+    you run into this problem then try increasing the the number of resource
+    files generated.
+
 .. cmdoption:: --target TARGET
 
     This is used with the :option:`configure` action to specify the target

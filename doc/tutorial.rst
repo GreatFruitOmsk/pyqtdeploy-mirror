@@ -511,6 +511,12 @@ The main area of the tab shows the output of the various stages of the build.
     is checked specify that additional information is displayed during the
     build process.
 
+**Resource files**
+    specifies the number of Qt ``.qrc`` resource files that are generated.  On
+    Windows, MSVC cannot cope with very large resource files and complains of a
+    lack of heap space.  If you run into this problem then try increasing the
+    the number of resource files generated.
+
 **Run qmake**
     is clicked to specify that :program:`qmake` will be run after generating
     the application code.  If this is disabled the later build steps will be
