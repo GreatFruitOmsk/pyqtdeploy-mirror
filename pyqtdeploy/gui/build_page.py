@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,8 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QAbstractSlider, QApplication, QCheckBox,
-        QGridLayout, QGroupBox, QMessageBox, QPlainTextEdit, QPushButton,
-        QVBoxLayout, QWidget)
+        QGridLayout, QGroupBox, QLabel, QMessageBox, QPlainTextEdit,
+        QPushButton, QSpinBox, QVBoxLayout, QWidget)
 
 from ..builder import Builder
 from ..message_handler import MessageHandler
@@ -76,12 +76,15 @@ class BuildPage(QWidget):
         layout.addWidget(optimisation, 1, 1)
 
         options = QGroupBox("Build Options")
-        options_layout = QVBoxLayout()
+        options_layout = QGridLayout()
 
         self._clean_button = QCheckBox("Clean before building", checked=True)
-        options_layout.addWidget(self._clean_button)
+        options_layout.addWidget(self._clean_button, 0, 0, 1, 2)
         self._verbose_button = QCheckBox("Verbose output")
-        options_layout.addWidget(self._verbose_button)
+        options_layout.addWidget(self._verbose_button, 1, 0, 1, 2)
+        options_layout.addWidget(QLabel("Resource files"), 2, 0)
+        self._resources_edit = QSpinBox(minimum=1)
+        options_layout.addWidget(self._resources_edit, 2, 1)
 
         options.setLayout(options_layout)
         layout.addWidget(options, 2, 1)
@@ -140,8 +143,11 @@ class BuildPage(QWidget):
         else:
             opt = 0
 
+        nr_resources = self._resources_edit.value()
+
         try:
-            builder.build(opt, clean=bool(self._clean_button.checkState()))
+            builder.build(opt, nr_resources,
+                    clean=bool(self._clean_button.checkState()))
         except UserException as e:
             logger.user_exception(e)
             handle_user_exception(e, self.label, self)
