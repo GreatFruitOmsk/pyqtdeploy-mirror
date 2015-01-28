@@ -1,3 +1,12 @@
+v0.9 28th January 2015
+  - Added support for Python v2.7.9.
+  - Added support for PyQt v5.4.
+  - Additional qmake configuration statements can be added.
+  - Applications can now be built against shared system installations of
+    Python.
+  - The number of resource files generated can now be increased in order to
+    work around problems with MSVC on Windows.
+
 v0.8 15th October 2014
   - A bug fix only release.
 
