@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,10 @@ def main():
             metavar="PACKAGE")
     parser.add_argument('--project', help="the project file (build)",
             metavar="FILE")
+    parser.add_argument('--resources',
+            help="the number of .qrc resource files to generate (build) "
+                    "[default: 1]",
+            metavar="NUMBER", type=int, default=1),
     parser.add_argument('--target', help="the target platform (configure)",
             metavar="TARGET")
     parser.add_argument('--quiet', help="disable progress messages (build)",
@@ -85,13 +89,20 @@ def build(args):
         missing_argument('--project')
         return 2
 
+    if args.resources < 1:
+        print(
+                "{0}: error: argument --resources: number must be at least 1".format(
+                        os.path.basename(sys.argv[0])),
+                file=sys.stderr)
+        return 2
+
     from . import Builder, MessageHandler, Project, UserException
 
     message_handler = MessageHandler(args.quiet, args.verbose)
 
     try:
         builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.opt, build_dir=args.output)
+        builder.build(args.opt, args.resources, build_dir=args.output)
     except UserException as e:
         handle_exception(e, args.verbose)
         return 1

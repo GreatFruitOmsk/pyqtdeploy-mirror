@@ -56,7 +56,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, opt, build_dir=None, clean=False):
+    def build(self, opt, nr_resources, build_dir=None, clean=False):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -131,9 +131,6 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 temp_dir.path(), dst_file_name='freeze.py')
 
-        self._write_qmake(build_dir, required_ext, required_libraries, freeze,
-                opt)
-
         # Freeze the bootstrap.
         py_major, py_minor, py_patch = project.python_target_version
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
@@ -160,12 +157,16 @@ class Builder():
         version_f.close()
 
         # Generate the application resource.
-        self._generate_resource(build_dir + '/resources', required_py, freeze,
-                opt)
+        resource_names = self._generate_resource(build_dir + '/resources',
+                required_py, freeze, opt, nr_resources)
+
+        # Write the .pro file.
+        self._write_qmake(build_dir, required_ext, required_libraries, freeze,
+                opt, resource_names)
 
         QFile.remove(freeze)
 
-    def _generate_resource(self, resources_dir, required_py, freeze, opt):
+    def _generate_resource(self, resources_dir, required_py, freeze, opt, nr_resources):
         """ Generate the application resource. """
 
         project = self._project
@@ -237,8 +238,40 @@ class Builder():
                         QDir.toNativeSeparators(pyqt_dst_dir + '/uic'),
                         copy_function=copy_freeze)
 
-        # Write the .qrc file.
-        f = self._create_file(resources_dir + '/pyqtdeploy.qrc')
+        # Write the .qrc files.
+        if nr_resources == 1:
+            resource_names = [self._write_resource(resources_dir,
+                    resource_contents)]
+        else:
+            resource_names = []
+
+            nr_files = len(resource_contents)
+
+            if nr_resources > nr_files:
+                nr_resources = nr_files
+
+            per_resource = (nr_files + nr_resources - 1) // nr_resources
+            start = 0
+
+            for r in range(nr_resources):
+                end = start + per_resource
+                if end > nr_files:
+                    end = nr_files
+
+                resource_names.append(
+                        self._write_resource(resources_dir,
+                                resource_contents[start:end], r))
+                start += per_resource
+
+        return resource_names
+
+    def _write_resource(self, resources_dir, resource_contents, nr=-1):
+        """ Write a single resource file and return its basename. """
+
+        suffix = '' if nr < 0 else str(nr)
+        basename = 'pyqtdeploy{0}.qrc'.format(suffix)
+
+        f = self._create_file(resources_dir + '/' + basename)
 
         f.write('''<!DOCTYPE RCC>
 <RCC version="1.0">
@@ -253,6 +286,8 @@ class Builder():
 ''')
 
         f.close()
+
+        return basename
 
     def _write_stdlib_py(self, resource_contents, resources_dir, required_py, freeze, opt):
         """ Write the required parts of the Python standard library that are
@@ -281,7 +316,7 @@ class Builder():
 
             resource_contents.append(out_file)
 
-    def _write_qmake(self, build_dir, required_ext, required_libraries, freeze, opt):
+    def _write_qmake(self, build_dir, required_ext, required_libraries, freeze, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -544,9 +579,11 @@ class Builder():
 
                         break
 
-        # Specify the resource file.
+        # Specify the resource files.
         f.write('\n')
-        f.write('RESOURCES = resources/pyqtdeploy.qrc\n')
+        f.write('RESOURCES = \\\n')
+        f.write(' \\\n'.join(['    resources/{0}'.format(n) for n in resource_names]))
+        f.write('\n')
 
         # Specify the source and header files.
         f.write('\n')
