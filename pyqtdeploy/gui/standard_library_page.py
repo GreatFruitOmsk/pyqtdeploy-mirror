@@ -235,9 +235,7 @@ class StandardLibraryPage(QSplitter):
 
         for extlib in external_libraries_metadata:
             if extlib.name in required_libraries:
-                print(required_libraries)
                 for idx, itm in enumerate(extlib._items):
-                    print(idx, itm)
                     itm.setFlags(
                             Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
                                     else Qt.ItemIsEnabled)

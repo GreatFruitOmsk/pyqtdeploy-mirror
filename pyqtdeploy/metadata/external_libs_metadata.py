@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ class ExternalLibraryMetadata:
 
 
 # The meta-data for each external library that might be needed by the Python
-# standard library..
+# standard library.
 external_libraries_metadata = (
     ExternalLibraryMetadata('ssl', '-lssl -lcrypto', "SSL encryption"),
     ExternalLibraryMetadata('bz2', '-lbz2', "bz2 compression"),
@@ -55,6 +55,7 @@ external_libraries_metadata = (
     ExternalLibraryMetadata('bsddb', '-ldb', "BSD db database"),
     ExternalLibraryMetadata('dbm', '-lndbm', "dbm database"),
     ExternalLibraryMetadata('gdbm', '-lgdbm', "gdbm database"),
+    ExternalLibraryMetadata('sqlite3', '-lsqlite3', "SQLite database"),
     ExternalLibraryMetadata('readline', '-lreadline -ltermcap', "readline"),
     ExternalLibraryMetadata('curses', '-lcurses -ltermcap', "Curses"),
     ExternalLibraryMetadata('panel', '-lpanel -lcurses', "Curses panel"),

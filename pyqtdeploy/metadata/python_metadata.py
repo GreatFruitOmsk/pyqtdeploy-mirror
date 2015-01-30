@@ -3236,7 +3236,8 @@ _metadata = {
                         '_sqlite/module.c', '_sqlite/prepare_protocol.c',
                         '_sqlite/row.c', '_sqlite/statement.c',
                         '_sqlite/util.c'),
-                defines='SQLITE_OMIT_LOAD_EXTENSION', includepath='_sqlite'),
+                defines='SQLITE_OMIT_LOAD_EXTENSION', includepath='_sqlite',
+                xlib='sqlite3'),
 
     '_sre':
         CoreExtensionModule(internal=True),
