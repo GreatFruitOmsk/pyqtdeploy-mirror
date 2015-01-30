@@ -233,19 +233,17 @@ class StandardLibraryPage(QSplitter):
 
         model = self._extlib_edit.model()
 
-        blocked = model.blockSignals(True)
-
         for extlib in external_libraries_metadata:
             if extlib.name in required_libraries:
+                print(required_libraries)
                 for idx, itm in enumerate(extlib._items):
+                    print(idx, itm)
                     itm.setFlags(
                             Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
                                     else Qt.ItemIsEnabled)
             else:
                 for itm in extlib._items:
                     itm.setFlags(Qt.NoItemFlags)
-
-        model.blockSignals(blocked)
 
     def _update_extlib_editor(self):
         """ Update the external library editor. """
