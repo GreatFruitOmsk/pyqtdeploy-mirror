@@ -129,6 +129,8 @@ class StandardLibraryPage(QSplitter):
 
         extlib_layout.addWidget(self._extlib_edit)
 
+        self._ignore_extlib_changes = False
+
         extlib_pane.setLayout(extlib_layout)
         self.addWidget(extlib_pane)
 
@@ -233,6 +235,10 @@ class StandardLibraryPage(QSplitter):
 
         model = self._extlib_edit.model()
 
+        # Note that we can't simply block the model's signals as this would
+        # interfere with the model/view interactions.
+        self._ignore_extlib_changes = True
+
         for extlib in external_libraries_metadata:
             if extlib.name in required_libraries:
                 for idx, itm in enumerate(extlib._items):
@@ -242,6 +248,8 @@ class StandardLibraryPage(QSplitter):
             else:
                 for itm in extlib._items:
                     itm.setFlags(Qt.NoItemFlags)
+
+        self._ignore_extlib_changes = False
 
     def _update_extlib_editor(self):
         """ Update the external library editor. """
@@ -317,6 +325,9 @@ class StandardLibraryPage(QSplitter):
 
     def _extlib_changed(self, itm):
         """ Invoked when an external library has changed. """
+
+        if self._ignore_extlib_changes:
+            return
 
         project = self.project
 
