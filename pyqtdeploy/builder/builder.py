@@ -672,13 +672,17 @@ class Builder():
         filenames with UNIX separators and have environment variables expanded.
         """
 
-        for scope, value_set in self._parse_scoped_values(raw, isfilename):
-            self._add_value_set_for_scope(used_values, value_set, scope)
+        scoped_values = self._parse_scoped_values(raw, isfilename)
+
+        for scope, values in scoped_values.items():
+            self._add_value_set_for_scope(used_values, values, scope)
 
     def _parse_scoped_values(self, raw, isfilename):
         """ Parse a string of space separated possible scoped values and return
         a dict, keyed by scope, of the values for each scope.
         """
+
+        project = self._project
 
         scoped_value_sets = {}
 
@@ -687,9 +691,9 @@ class Builder():
 
             # Convert potential filenames.
             if isfilename:
-                value = self.project.path_from_user(value)
+                value = project.path_from_user(value)
             elif value.startswith('-L'):
-                value = '-L' + self.project.path_from_user(value[2:])
+                value = '-L' + project.path_from_user(value[2:])
 
             self._add_value_for_scopes(scoped_value_sets, value, scopes)
 
