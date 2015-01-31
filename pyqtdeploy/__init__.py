@@ -31,4 +31,5 @@ from .packages import configure_package, get_supported_packages
 from .project import Project
 from .python import configure_python
 from .targets import get_supported_targets
+from .version import PYQTDEPLOY_RELEASE
 from .user_exception import UserException

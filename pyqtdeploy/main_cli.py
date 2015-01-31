@@ -37,7 +37,8 @@ def main():
 
     parser.add_argument('action',
             help="the action to perform",
-            choices=('build', 'configure', 'show-packages', 'show-targets'))
+            choices=('build', 'configure', 'show-packages', 'show-targets',
+                    'show-version'))
     parser.add_argument('--enable-dynamic-loading',
             help="enable the dynamic loading of modules (configure)",
             action='store_true')
@@ -75,6 +76,8 @@ def main():
         rc = show_packages(args)
     elif args.action == 'show-targets':
         rc = show_targets(args)
+    elif args.action == 'show-version':
+        rc = show_version(args)
     else:
         # This should never happen.
         rc = 1
@@ -170,6 +173,14 @@ def show_targets(args):
     show(targets)
 
     return 0
+
+
+def show_version(args):
+    """ Perform the show-version action. """
+
+    from . import PYQTDEPLOY_RELEASE
+
+    print(PYQTDEPLOY_RELEASE)
 
 
 def show(items):

@@ -54,6 +54,10 @@ The supported actions are:
     This will display a list of targets that :program:`pyqtdeploycli` can
     create configuration files for.
 
+.. cmdoption:: show-version
+
+    This will display the version number.
+
 The full set of command line options is:
 
 .. cmdoption:: -h, --help
