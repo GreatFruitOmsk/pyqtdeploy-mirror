@@ -140,14 +140,14 @@ class Builder():
         bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
                 dst_file_name='bootstrap.py')
         self._freeze(build_dir + '/frozen_bootstrap.h', bootstrap,
-                freeze, opt, name='pyqtdeploy_bootstrap')
+                freeze, opt, 'pyqtdeploy_bootstrap', as_c=True)
         QFile.remove(bootstrap)
 
         # Freeze any main application script.
         if project.application_script != '':
             self._freeze(build_dir + '/frozen_main.h',
                     project.path_from_user(project.application_script), freeze,
-                    opt, name='pyqtdeploy_main')
+                    opt, 'pyqtdeploy_main', as_c=True)
 
         # Create the pyqtdeploy module version file.
         version_f = self._create_file(build_dir + '/pyqtdeploy_version.h')
@@ -206,7 +206,8 @@ class Builder():
             self._create_directory(pyqt_dst_dir)
 
             self._freeze(pyqt_dst_dir + '/__init__.pyo',
-                    pyqt_src_dir + '/__init__.py', freeze, opt)
+                    pyqt_src_dir + '/__init__.py', freeze, opt,
+                    pyqt_subdir + '/__init__.pyo')
 
             resource_contents.append(pyqt_subdir + '/__init__.pyo')
 
@@ -228,10 +229,10 @@ class Builder():
 
                             src = QDir.fromNativeSeparators(src)
                             dst = QDir.fromNativeSeparators(dst)
-
-                            self._freeze(dst, src, freeze, opt)
-
                             rel_dst = dst[len(resources_dir) + 1:]
+
+                            self._freeze(dst, src, freeze, opt, rel_dst)
+
                             resource_contents.append(rel_dst)
 
                 shutil.copytree(QDir.toNativeSeparators(pyqt_src_dir + '/uic'),
@@ -312,7 +313,7 @@ class Builder():
                 self._create_directory(resources_dir + '/' + name_path)
 
             self._freeze(resources_dir + '/' + out_file,
-                    stdlib_src_dir + '/' + in_file, freeze, opt)
+                    stdlib_src_dir + '/' + in_file, freeze, opt, out_file)
 
             resource_contents.append(out_file)
 
@@ -830,8 +831,12 @@ class Builder():
 
                 dst_path = dst_dir + '/' + dst_file
 
+                file_path = list(dir_stack)
+                file_path.append(dst_file)
+                file_path = '/'.join(file_path)
+
                 if freeze_file:
-                    self._freeze(dst_path, src_path, freeze, opt)
+                    self._freeze(dst_path, src_path, freeze, opt, file_path)
                 else:
                     src_path = QDir.toNativeSeparators(src_path)
                     dst_path = QDir.toNativeSeparators(dst_path)
@@ -842,9 +847,7 @@ class Builder():
                         raise UserException(
                                 "{0} does not seem to exist".format(src_path))
 
-                file_path = list(dir_stack)
-                file_path.append(dst_file)
-                resource_contents.append('/'.join(file_path))
+                resource_contents.append(file_path)
 
     def _write_main(self, build_dir, inittab):
         """ Create the application specific pyqtdeploy_main.cpp file. """
@@ -969,7 +972,7 @@ static struct _inittab %s[] = {
 
         f.write('#if {0}defined({1})\n'.format(inv, cls._guards[scope]))
 
-    def _freeze(self, out_file, in_file, freeze, opt, name=None):
+    def _freeze(self, out_file, in_file, freeze, opt, name, as_c=False):
         """ Freeze a Python source file to a C header file or a data file. """
 
         # Note that we assume a relative filename is on PATH rather than being
@@ -993,12 +996,14 @@ static struct _inittab %s[] = {
             argv.append('-O')
 
         argv.append(freeze)
-        
-        if name is not None:
-            argv.append('--name')
+
+        argv.append('--name')
+
+        if as_c:
             argv.append(name)
             argv.append('--as-c')
         else:
+            argv.append(':/' + name)
             argv.append('--as-data')
 
         out_file = QDir.toNativeSeparators(out_file)

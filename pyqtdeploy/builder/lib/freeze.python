@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,10 @@ import os
 import sys
 
 
-def freeze_as_data(py_filename, data_filename):
+def freeze_as_data(py_filename, data_filename, name):
     """ Freeze a Python source file and save it as data. """
 
-    code = _get_marshalled_code(py_filename)
+    code = _get_marshalled_code(py_filename, name)
 
     data_file = open(data_filename, 'wb')
     data_file.write(code)
@@ -43,10 +43,7 @@ def freeze_as_data(py_filename, data_filename):
 def freeze_as_c(py_filename, c_filename, name):
     """ Freeze a Python source file and save it as C source code. """
 
-    code = _get_marshalled_code(py_filename)
-
-    if not name:
-        name, _ = os.path.splitext(os.path.basename(py_filename))
+    code = _get_marshalled_code(py_filename, os.path.basename(py_filename))
 
     c_file = open(c_filename, 'wt')
 
@@ -65,14 +62,14 @@ def freeze_as_c(py_filename, c_filename, name):
     c_file.close()
 
 
-def _get_marshalled_code(py_filename):
+def _get_marshalled_code(py_filename, embedded_name):
     """ Convert a Python source file to a marshalled code object. """
 
     source_file = open(py_filename, 'rb')
     source = source_file.read()
     source_file.close()
 
-    co = compile(source, os.path.basename(py_filename), 'exec')
+    co = compile(source, embedded_name, 'exec')
 
     return marshal.dumps(co)
 
@@ -84,7 +81,7 @@ parser.add_option('--as-c', help="freeze the Python source as C code in FILE",
         metavar="FILE")
 parser.add_option('--as-data', help="freeze the Python source as data in FILE",
         metavar="FILE")
-parser.add_option('--name', help="name the C structure frozen_NAME",
+parser.add_option('--name', help="the name of the C structure or Python file",
         metavar="NAME")
 
 (options, args) = parser.parse_args()
@@ -100,4 +97,4 @@ if options.as_c is not None:
     freeze_as_c(py_file, options.as_c, options.name)
 
 if options.as_data is not None:
-    freeze_as_data(py_file, options.as_data)
+    freeze_as_data(py_file, options.as_data, options.name)
