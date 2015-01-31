@@ -24,13 +24,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import csv
 import os
 import shlex
 import shutil
 import sys
 
-from PyQt5.QtCore import (QCoreApplication, QDir, QFile, QFileDevice,
-        QFileInfo, QProcess, QTemporaryDir, QTextCodec)
+from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
+        QFileDevice, QFileInfo, QProcess, QTemporaryDir, QTextCodec)
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
@@ -126,10 +127,10 @@ class Builder():
         # Now start the build.
         self._create_directory(build_dir)
 
-        # The odd naming of the Python source files is to prevent them from
-        # being frozen if we deploy ourself.
-        freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
-                temp_dir.path(), dst_file_name='freeze.py')
+        # Create the job file and writer.
+        job_filename = QDir.toNativeSeparators(temp_dir.path() + '/jobs.csv')
+        job_file = open(job_filename, 'w')
+        job_writer = csv.writer(job_file)
 
         # Freeze the bootstrap.
         py_major, py_minor, py_patch = project.python_target_version
@@ -139,15 +140,14 @@ class Builder():
                 'lib', 'bootstrap')
         bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
                 dst_file_name='bootstrap.py')
-        self._freeze(build_dir + '/frozen_bootstrap.h', bootstrap,
-                freeze, opt, 'pyqtdeploy_bootstrap', as_c=True)
-        QFile.remove(bootstrap)
+        self._freeze(job_writer, build_dir + '/frozen_bootstrap.h', bootstrap,
+                'pyqtdeploy_bootstrap', as_c=True)
 
         # Freeze any main application script.
         if project.application_script != '':
-            self._freeze(build_dir + '/frozen_main.h',
-                    project.path_from_user(project.application_script), freeze,
-                    opt, 'pyqtdeploy_main', as_c=True)
+            self._freeze(job_writer, build_dir + '/frozen_main.h',
+                    project.path_from_user(project.application_script),
+                    'pyqtdeploy_main', as_c=True)
 
         # Create the pyqtdeploy module version file.
         version_f = self._create_file(build_dir + '/pyqtdeploy_version.h')
@@ -158,15 +158,28 @@ class Builder():
 
         # Generate the application resource.
         resource_names = self._generate_resource(build_dir + '/resources',
-                required_py, freeze, opt, nr_resources)
+                required_py, job_writer, nr_resources)
 
         # Write the .pro file.
-        self._write_qmake(build_dir, required_ext, required_libraries, freeze,
-                opt, resource_names)
+        self._write_qmake(build_dir, required_ext, required_libraries,
+                job_writer, opt, resource_names)
 
+        # Run the freeze jobs.
+        job_file.close()
+
+        # The odd naming of Python source files is to prevent them from being
+        # frozen if we deploy ourself.
+        freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
+                temp_dir.path(), dst_file_name='freeze.py')
+
+        self._run_freeze(freeze, job_filename, opt)
+
+        # Remove the contents of the temporary directory.
         QFile.remove(freeze)
+        QFile.remove(bootstrap)
+        QFile.remove(job_filename)
 
-    def _generate_resource(self, resources_dir, required_py, freeze, opt, nr_resources):
+    def _generate_resource(self, resources_dir, required_py, job_writer, nr_resources):
         """ Generate the application resource. """
 
         project = self._project
@@ -186,16 +199,16 @@ class Builder():
                 package_name = fi.completeBaseName()
 
             self._write_package(resource_contents, resources_dir, package_name,
-                    project.application_package, package_src_dir, freeze, opt)
+                    project.application_package, package_src_dir, job_writer)
 
         # Handle the Python standard library.
         self._write_stdlib_py(resource_contents, resources_dir, required_py,
-                freeze, opt)
+                job_writer)
 
         # Handle any additional packages.
         for package in project.other_packages:
             self._write_package(resource_contents, resources_dir, '', package,
-                    project.path_from_user(package.name), freeze, opt)
+                    project.path_from_user(package.name), job_writer)
 
         # Handle the PyQt package.
         if len(project.pyqt_modules) != 0:
@@ -205,8 +218,8 @@ class Builder():
 
             self._create_directory(pyqt_dst_dir)
 
-            self._freeze(pyqt_dst_dir + '/__init__.pyo',
-                    pyqt_src_dir + '/__init__.py', freeze, opt,
+            self._freeze(job_writer, pyqt_dst_dir + '/__init__.pyo',
+                    pyqt_src_dir + '/__init__.py',
                     pyqt_subdir + '/__init__.pyo')
 
             resource_contents.append(pyqt_subdir + '/__init__.pyo')
@@ -231,7 +244,7 @@ class Builder():
                             dst = QDir.fromNativeSeparators(dst)
                             rel_dst = dst[len(resources_dir) + 1:]
 
-                            self._freeze(dst, src, freeze, opt, rel_dst)
+                            self._freeze(job_writer, dst, src, rel_dst)
 
                             resource_contents.append(rel_dst)
 
@@ -290,7 +303,7 @@ class Builder():
 
         return basename
 
-    def _write_stdlib_py(self, resource_contents, resources_dir, required_py, freeze, opt):
+    def _write_stdlib_py(self, resource_contents, resources_dir, required_py, job_writer):
         """ Write the required parts of the Python standard library that are
         implemented in Python.
         """
@@ -312,12 +325,12 @@ class Builder():
                 out_file = name_path + '/__init__.pyo'
                 self._create_directory(resources_dir + '/' + name_path)
 
-            self._freeze(resources_dir + '/' + out_file,
-                    stdlib_src_dir + '/' + in_file, freeze, opt, out_file)
+            self._freeze(job_writer, resources_dir + '/' + out_file,
+                    stdlib_src_dir + '/' + in_file, out_file)
 
             resource_contents.append(out_file)
 
-    def _write_qmake(self, build_dir, required_ext, required_libraries, freeze, opt, resource_names):
+    def _write_qmake(self, build_dir, required_ext, required_libraries, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -782,7 +795,7 @@ class Builder():
             # Handle sub-dependencies.
             self._get_pyqt_module_dependencies(dep, all_modules)
 
-    def _write_package(self, resource_contents, resources_dir, resource, package, src_dir, freeze, opt):
+    def _write_package(self, resource_contents, resources_dir, resource, package, src_dir, job_writer):
         """ Write the contents of a single package and return the list of files
         written relative to the resources directory.
         """
@@ -795,9 +808,9 @@ class Builder():
             dir_stack = [resource]
 
         self._write_package_contents(package.contents, dst_dir, src_dir,
-                dir_stack, freeze, opt, resource_contents)
+                dir_stack, job_writer, resource_contents)
 
-    def _write_package_contents(self, contents, dst_dir, src_dir, dir_stack, freeze, opt, resource_contents):
+    def _write_package_contents(self, contents, dst_dir, src_dir, dir_stack, job_writer, resource_contents):
         """ Write the contents of a single package directory. """
 
         self._create_directory(dst_dir)
@@ -811,7 +824,7 @@ class Builder():
 
                 self._write_package_contents(content.contents,
                         dst_dir + '/' + content.name,
-                        src_dir + '/' + content.name, dir_stack, freeze, opt,
+                        src_dir + '/' + content.name, dir_stack, job_writer,
                         resource_contents)
 
                 dir_stack.pop()
@@ -836,7 +849,7 @@ class Builder():
                 file_path = '/'.join(file_path)
 
                 if freeze_file:
-                    self._freeze(dst_path, src_path, freeze, opt, file_path)
+                    self._freeze(job_writer, dst_path, src_path, file_path)
                 else:
                     src_path = QDir.toNativeSeparators(src_path)
                     dst_path = QDir.toNativeSeparators(dst_path)
@@ -972,8 +985,23 @@ static struct _inittab %s[] = {
 
         f.write('#if {0}defined({1})\n'.format(inv, cls._guards[scope]))
 
-    def _freeze(self, out_file, in_file, freeze, opt, name, as_c=False):
+    @staticmethod
+    def _freeze(job_writer, out_file, in_file, name, as_c=False):
         """ Freeze a Python source file to a C header file or a data file. """
+
+        out_file = QDir.toNativeSeparators(out_file)
+        in_file = QDir.toNativeSeparators(in_file)
+
+        if as_c:
+            conversion = 'C'
+        else:
+            name = ':/' + name
+            conversion = 'data'
+
+        job_writer.writerow([out_file, in_file, name, conversion])
+
+    def _run_freeze(self, freeze, job_filename, opt):
+        """ Run the accumlated freeze jobs. """
 
         # Note that we assume a relative filename is on PATH rather than being
         # relative to the project file.
@@ -996,25 +1024,9 @@ static struct _inittab %s[] = {
             argv.append('-O')
 
         argv.append(freeze)
+        argv.append(job_filename)
 
-        argv.append('--name')
-
-        if as_c:
-            argv.append(name)
-            argv.append('--as-c')
-        else:
-            argv.append(':/' + name)
-            argv.append('--as-data')
-
-        out_file = QDir.toNativeSeparators(out_file)
-        in_file = QDir.toNativeSeparators(in_file)
-
-        argv.append(out_file)
-        argv.append(in_file)
-
-        self._message_handler.progress_message("Freezing {0}".format(in_file))
-
-        self.run(argv, "Unable to freeze {0}".format(in_file))
+        self.run(argv, "Unable to freeze files")
 
     def run(self, argv, error_message, in_build_dir=False):
         """ Execute a command and capture the output. """
@@ -1037,17 +1049,24 @@ static struct _inittab %s[] = {
         QCoreApplication.processEvents()
 
         process = QProcess()
-        process.setProcessChannelMode(QProcess.MergedChannels)
+
+        process.readyReadStandardOutput.connect(
+                lambda: self._message_handler.progress_message(
+                        QTextCodec.codecForLocale().toUnicode(
+                                process.readAllStandardOutput()).strip()))
+
+        stderr_output = QByteArray()
+        process.readyReadStandardError.connect(
+                lambda: stderr_output.append(process.readAllStandardError()))
 
         process.start(argv[0], argv[1:])
 
         if not process.waitForFinished():
             raise UserException(error_message, process.errorString())
 
-        output = process.readAll()
         if process.exitStatus() != QProcess.NormalExit or process.exitCode() != 0:
             raise UserException(error_message,
-                    QTextCodec.codecForLocale().toUnicode(output))
+                    QTextCodec.codecForLocale().toUnicode(stderr_output).strip())
 
         if saved_cwd is not None:
             os.chdir(saved_cwd)

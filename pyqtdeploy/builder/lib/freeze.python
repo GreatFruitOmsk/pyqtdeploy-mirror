@@ -24,23 +24,23 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import csv
 import marshal
-import optparse
 import os
 import sys
 
 
-def freeze_as_data(py_filename, data_filename, name):
+def freeze_as_data(py_filename, data_filename, embedded_name):
     """ Freeze a Python source file and save it as data. """
 
-    code = _get_marshalled_code(py_filename, name)
+    code = _get_marshalled_code(py_filename, embedded_name)
 
     data_file = open(data_filename, 'wb')
     data_file.write(code)
     data_file.close()
 
 
-def freeze_as_c(py_filename, c_filename, name):
+def freeze_as_c(py_filename, c_filename, embedded_name):
     """ Freeze a Python source file and save it as C source code. """
 
     code = _get_marshalled_code(py_filename, os.path.basename(py_filename))
@@ -48,7 +48,7 @@ def freeze_as_c(py_filename, c_filename, name):
     c_file = open(c_filename, 'wt')
 
     c_file.write(
-            'static unsigned char frozen_%s[] = {' % name)
+            'static unsigned char frozen_%s[] = {' % embedded_name)
 
     as_int = ord if sys.hexversion < 0x03000000 else lambda v: v
 
@@ -75,26 +75,23 @@ def _get_marshalled_code(py_filename, embedded_name):
 
 
 # Parse the command line.
-parser = optparse.OptionParser(usage="Usage: %prog [options] PYFILE")
-
-parser.add_option('--as-c', help="freeze the Python source as C code in FILE",
-        metavar="FILE")
-parser.add_option('--as-data', help="freeze the Python source as data in FILE",
-        metavar="FILE")
-parser.add_option('--name', help="the name of the C structure or Python file",
-        metavar="NAME")
-
-(options, args) = parser.parse_args()
-
-if len(args) != 1:
-    parser.print_help()
+if len(sys.argv) != 2:
+    sys.stderr.write("Invalid command line\n")
     sys.exit(1)
 
-py_file = args[0]
+job_filename = sys.argv[1]
 
-# Handle the specific actions.
-if options.as_c is not None:
-    freeze_as_c(py_file, options.as_c, options.name)
+# Read the jobs file.
+job_file = open(job_filename)
+job_reader = csv.reader(job_file)
 
-if options.as_data is not None:
-    freeze_as_data(py_file, options.as_data, options.name)
+for out_filename, py_filename, embedded_name, conversion in job_reader:
+    sys.stdout.write("Freezing %s...\n" % py_filename)
+    sys.stdout.flush()
+
+    if conversion == 'C':
+        freeze_as_c(py_filename, out_filename, embedded_name)
+    else:
+        freeze_as_data(py_filename, out_filename, embedded_name)
+
+job_file.close()
