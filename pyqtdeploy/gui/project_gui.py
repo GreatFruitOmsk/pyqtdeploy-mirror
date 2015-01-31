@@ -166,7 +166,7 @@ class ProjectGUI(QMainWindow):
         QMessageBox.about(self, "About pyqtdeploy",
 """This is pyqtdeploy v%s
 
-pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Python v2.6 or later or Python v3.3 or later to desktop and mobile devices.
+pyqtdeploy is a tool for deploying PyQt4 and PyQt5 applications written using Python v2.7 or later or Python v3.3 or later to desktop and mobile devices.
 """ % PYQTDEPLOY_RELEASE)
 
     def _new_project(self):
