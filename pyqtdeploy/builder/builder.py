@@ -129,7 +129,7 @@ class Builder():
 
         # Create the job file and writer.
         job_filename = QDir.toNativeSeparators(temp_dir.path() + '/jobs.csv')
-        job_file = open(job_filename, 'w')
+        job_file = open(job_filename, 'w', newline='')
         job_writer = csv.writer(job_file)
 
         # Freeze the bootstrap.

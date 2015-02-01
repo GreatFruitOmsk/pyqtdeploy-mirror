@@ -82,7 +82,11 @@ if len(sys.argv) != 2:
 job_filename = sys.argv[1]
 
 # Read the jobs file.
-job_file = open(job_filename)
+if sys.hexversion >= 0x03000000:
+    job_file = open(job_filename, newline='')
+else:
+    job_file = open(job_filename, 'rb')
+
 job_reader = csv.reader(job_file)
 
 for out_filename, py_filename, embedded_name, conversion in job_reader:

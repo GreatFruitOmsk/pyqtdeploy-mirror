@@ -29,9 +29,9 @@ import sys
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import (QAbstractSlider, QApplication, QCheckBox,
-        QGridLayout, QGroupBox, QLabel, QMessageBox, QPlainTextEdit,
-        QPushButton, QSpinBox, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QAbstractSlider, QCheckBox, QGridLayout,
+        QGroupBox, QLabel, QMessageBox, QPlainTextEdit, QPushButton, QSpinBox,
+        QVBoxLayout, QWidget)
 
 from ..builder import Builder
 from ..message_handler import MessageHandler
@@ -275,7 +275,6 @@ class LoggingMessageHandler(MessageHandler):
         """ Clear the viewer. """
 
         self._viewer.setPlainText('')
-        QApplication.processEvents()
 
     def status_message(self, message):
         """ Add a status message to the viewer. """
@@ -307,5 +306,3 @@ class LoggingMessageHandler(MessageHandler):
         # Make sure the new text is visible.
         viewer.verticalScrollBar().triggerAction(
                 QAbstractSlider.SliderToMaximum)
-
-        QApplication.processEvents()
