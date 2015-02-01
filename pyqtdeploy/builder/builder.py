@@ -1060,18 +1060,19 @@ static struct _inittab %s[] = {
                 lambda: stderr_output.append(process.readAllStandardError()))
 
         process.start(argv[0], argv[1:])
-
-        if not process.waitForFinished():
-            raise UserException(error_message, process.errorString())
-
-        if process.exitStatus() != QProcess.NormalExit or process.exitCode() != 0:
-            raise UserException(error_message,
-                    QTextCodec.codecForLocale().toUnicode(stderr_output).strip())
+        finished = process.waitForFinished()
 
         if saved_cwd is not None:
             os.chdir(saved_cwd)
             self._message_handler.verbose_message(
                     "{0} is now the current directory".format(saved_cwd))
+
+        if not finished:
+            raise UserException(error_message, process.errorString())
+
+        if process.exitStatus() != QProcess.NormalExit or process.exitCode() != 0:
+            raise UserException(error_message,
+                    QTextCodec.codecForLocale().toUnicode(stderr_output).strip())
 
     @staticmethod
     def _get_lib_file_name(file_name):
