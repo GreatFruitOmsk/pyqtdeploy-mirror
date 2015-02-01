@@ -369,7 +369,7 @@ class Project(QObject):
                     "Missing 'ExtensionModule.name' attribute.")
 
             libs = extension_module_element.get('libs')
-            cls._assert(path is not None,
+            cls._assert(libs is not None,
                     "Missing 'ExtensionModule.libs' attribute.")
 
             project.other_extension_modules.append(ExtensionModule(name, libs))
