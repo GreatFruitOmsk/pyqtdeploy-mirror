@@ -329,6 +329,8 @@ class StandardLibraryPage(QSplitter):
         if self._ignore_extlib_changes:
             return
 
+        self._ignore_extlib_changes = True
+
         project = self.project
 
         idx = self._extlib_edit.model().indexFromItem(itm)
@@ -362,3 +364,5 @@ class StandardLibraryPage(QSplitter):
             project.external_libraries.remove(prj_extlib)
 
         project.modified = True
+
+        self._ignore_extlib_changes = False
