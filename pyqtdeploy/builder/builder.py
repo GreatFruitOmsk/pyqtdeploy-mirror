@@ -700,7 +700,7 @@ class Builder():
 
         scoped_value_sets = {}
 
-        for scoped_value in shlex.split(raw):
+        for scoped_value in self._split_quotes(raw):
             scopes, value = self._get_scope_and_value(scoped_value, ALL_SCOPES)
 
             # Convert potential filenames.
@@ -712,6 +712,33 @@ class Builder():
             self._add_value_for_scopes(scoped_value_sets, value, scopes)
 
         return scoped_value_sets
+
+    @staticmethod
+    def _split_quotes(s):
+        """ A generator for a splitting a string allowing for quoted spaces.
+        """
+
+        s = s.lstrip()
+
+        while s != '':
+            quote_stack = []
+            i = 0
+
+            for ch in s:
+                if ch in '\'"':
+                    if len(quote_stack) == 0 or quote_stack[-1] != ch:
+                        quote_stack.append(ch)
+                    else:
+                        quote_stack.pop()
+                elif ch == ' ':
+                    if len(quote_stack) == 0:
+                        break
+
+                i += 1
+
+            yield s[:i]
+
+            s = s[i:].lstrip()
 
     @staticmethod
     def _get_scope_and_value(scoped_value, scopes):
