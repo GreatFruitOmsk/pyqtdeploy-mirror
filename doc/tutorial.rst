@@ -332,6 +332,24 @@ application is shown below.
 .. image:: /images/stdlib_packages_tab.png
     :align: center
 
+**Package**
+    is used to specify each of the target Python version's standard library
+    packages that is explicitly exported by the application.  Each package can
+    be in one of three states:
+
+    - *checked* meaning it is explicitly imported by the application
+    - *partially checked* meaning it is implicitly imported by the application
+      because an explicitly imported package depends on it, or the Python
+      interpreter itself imports it
+    - *unchecked* meaning it is not needed by the application.
+
+    You should always check a package if the application explicitly imports it,
+    even if it is already shown as partially checked.
+
+    Here we have checked the :mod:`argparse` module and the :mod:`_thread`,
+    :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar` modules have
+    been partially checked automatically.
+
 **Target Python version**
     is used to specify version of Python that you are targetting.
 
@@ -347,17 +365,6 @@ application is shown below.
     library.  When selected :program:`pyqtdeploy` assumes that all of the
     Python standard library that is implemented as C extension modules is
     implemented in the shared library.
-
-The main part of the tab contains all of the packages contained in the target
-Python version's standard library.  Simply check those packages that the
-application explicitly imports.  :program:`pyqtdeploy` understands the
-inter-package dependencies and will automatically select any additional
-packages that are required.  It will also automatically select any packages
-that are needed internally by the Python interpreter.
-
-Here we have explicitly selected the :mod:`argparse` module and the
-:mod:`_thread`, :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar`
-modules have been selected automatically.
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
