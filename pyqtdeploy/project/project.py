@@ -225,16 +225,26 @@ class Project(QObject):
 
         dep_state.visit = visit
 
-        if dep_state.module.ssl is not None:
-            if dep_state.module.ssl != self.python_ssl:
-                return
-
         dep_state.explicit = (name in self.standard_library)
 
         if dep_state.module.core or is_dep:
             dep_state.implicit = True
 
         for dep in dep_state.module.deps:
+            # If the first character of the module is '?' then it should be
+            # excluded if SSL support is disabled.  If the first character is
+            # '!' then it should be excluded if SSL support is enabled.
+            if dep[0] == '?':
+                if not self.python_ssl:
+                    continue
+
+                dep = dep[1:]
+            elif dep[0] == '!':
+                if self.python_ssl:
+                    continue
+
+                dep = dep[1:]
+
             self._set_dependency_state(all_modules, dep, visit,
                     (dep_state.explicit or dep_state.implicit))
 

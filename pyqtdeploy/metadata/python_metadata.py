@@ -34,15 +34,11 @@ PLATFORM_SCOPES = (('linux', "Linux"), ('macx', "OS X"), ('win32', "Windows"))
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, ssl, scope, deps, hidden_deps, core, defines, xlib, modules, source, libs, includepath):
+    def __init__(self, internal, scope, deps, hidden_deps, core, defines, xlib, modules, source, libs, includepath):
         """ Initialise the object. """
 
         # Set if the module is internal.
         self.internal = internal
-
-        # True if the module is required if SSL is enabled, False if it is
-        # required if SSL is disabled and None if SSL is not relevant.
-        self.ssl = ssl
 
         # The qmake scope of the module.  If specified then it is automatically
         # applied to any unscoped values.  Note that the code assumes that this
@@ -91,7 +87,7 @@ class StdlibModule:
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -109,8 +105,8 @@ class VersionedModule:
         self.min_version = self._expand_version(min_version, 0)
         self.max_version = self._expand_version(max_version, 255)
 
-        self.module = StdlibModule(internal, ssl, scope, deps, hidden_deps,
-                core, defines, xlib, modules, source, libs, includepath)
+        self.module = StdlibModule(internal, scope, deps, hidden_deps, core,
+                defines, xlib, modules, source, libs, includepath)
 
     @staticmethod
     def _expand_version(version, default):
@@ -130,14 +126,13 @@ class VersionedModule:
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None):
+    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, ssl=ssl,
-                scope=scope, deps=deps, hidden_deps=hidden_deps, core=core,
-                defines=defines, xlib=xlib, source=source, libs=libs,
-                includepath=includepath)
+                max_version=max_version, internal=internal, scope=scope,
+                deps=deps, hidden_deps=hidden_deps, core=core, defines=defines,
+                xlib=xlib, source=source, libs=libs, includepath=includepath)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -145,24 +140,23 @@ class CoreExtensionModule(ExtensionModule):
     compiled in to the interpreter library.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=()):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=()):
         """ Initialise the object. """
 
         super().__init__(source=(), min_version=min_version, version=version,
-                max_version=max_version, internal=internal, ssl=ssl,
-                scope=scope, deps=deps, hidden_deps=hidden_deps, core=True)
+                max_version=max_version, internal=internal, scope=scope,
+                deps=deps, hidden_deps=hidden_deps, core=True)
 
 
 class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, ssl=ssl,
-                scope=scope, deps=deps, hidden_deps=hidden_deps, core=core,
-                modules=modules)
+                max_version=max_version, internal=internal, scope=scope,
+                deps=deps, hidden_deps=hidden_deps, core=core, modules=modules)
 
 
 class CorePythonModule(PythonModule):
@@ -170,13 +164,12 @@ class CorePythonModule(PythonModule):
     an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, ssl=None, scope='', deps=(), hidden_deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
-                max_version=max_version, internal=internal, ssl=ssl,
-                scope=scope, deps=deps, hidden_deps=hidden_deps, core=True,
-                modules=modules)
+                max_version=max_version, internal=internal, scope=scope,
+                deps=deps, hidden_deps=hidden_deps, core=True, modules=modules)
 
 
 class CodecModule(PythonModule):
@@ -1172,10 +1165,10 @@ _metadata = {
                 deps=('decimal', 'math', 'numbers', 'operator', 're'))),
 
     'ftplib': (
-        PythonModule(max_version=(3, 3), ssl=True,
-                deps=('os', 're', 'socket')),
-        PythonModule(min_version=(3, 4), ssl=True,
-                deps=('os', 're', 'socket', 'warnings'))),
+        PythonModule(max_version=(3, 3),
+                deps=('os', 're', 'socket', '?ssl')),
+        PythonModule(min_version=(3, 4),
+                deps=('os', 're', 'socket', '?ssl', 'warnings'))),
 
     'functools': (
         PythonModule(version=2, deps='_functools'),
@@ -1226,10 +1219,10 @@ _metadata = {
 
     'hashlib': (
         PythonModule(version=2,
-                deps=('binascii', '_hashlib', '_md5', '_sha', '_sha256',
-                        '_sha512', 'struct')),
+                deps=('binascii', '?_hashlib', '!_md5', '!_sha', '!_sha256',
+                        '!_sha512', 'struct')),
         PythonModule(version=3,
-                deps=('_hashlib', '_md5', '_sha1', '_sha256', '_sha512'))),
+                deps=('?_hashlib', '_md5', '!_sha1', '!_sha256', '!_sha512'))),
 
     'heapq': (
         PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),
@@ -1319,12 +1312,12 @@ _metadata = {
         ExtensionModule(version=2, source='imageop.c'),
 
     'imaplib': (
-        PythonModule(version=2, ssl=True,
+        PythonModule(version=2,
                 deps=('binascii', 'errno', 'hmac', 'random', 're', 'socket',
-                        'subprocess', 'time')),
-        PythonModule(version=3, ssl=True,
+                        '?ssl', 'subprocess', 'time')),
+        PythonModule(version=3,
                 deps=('binascii', 'calendar', 'datetime', 'errno', 'hmac',
-                        'io', 'random', 're', 'socket', 'subprocess',
+                        'io', 'random', 're', 'socket', '?ssl', 'subprocess',
                         'time'))),
     'imghdr':
         PythonModule(),
@@ -1663,9 +1656,9 @@ _metadata = {
 
     'nntplib': (
         PythonModule(version=2, deps=('netrc', 're', 'socket')),
-        PythonModule(version=3, ssl=True,
+        PythonModule(version=3,
                 deps=('collections', 'datetime', 'email.header', 'netrc', 're',
-                        'socket', 'warnings'))),
+                        'socket', '?ssl', 'warnings'))),
 
     'numbers': (
         PythonModule(version=2, deps=('__future__', 'abc')),
@@ -1757,10 +1750,10 @@ _metadata = {
         PythonModule(version=2, deps=('os', 'warnings')),
 
     'poplib': (
-        PythonModule(max_version=(3, 3), ssl=True,
-                deps=('hashlib', 're', 'socket')),
-        PythonModule(min_version=(3, 4), ssl=True,
-                deps=('errno', 'hashlib', 're', 'socket'))),
+        PythonModule(max_version=(3, 3),
+                deps=('hashlib', 're', 'socket', '?ssl')),
+        PythonModule(min_version=(3, 4),
+                deps=('errno', 'hashlib', 're', 'socket', '?ssl'))),
 
     'posix':
         CoreExtensionModule(scope='!win32'),
@@ -2011,17 +2004,17 @@ _metadata = {
                         'time'))),
 
     'ssl': (
-        PythonModule(max_version=(2, 7, 8), ssl=True,
+        PythonModule(max_version=(2, 7, 8),
                 deps=('base64', 'errno', 'socket', '_ssl', 'textwrap',
                         'time')),
-        PythonModule(min_version=(2, 7, 9), max_version=2, ssl=True,
+        PythonModule(min_version=(2, 7, 9), max_version=2,
                 deps=('base64', 'calendar', 'collections', 'contextlib',
                         'errno', 'os', 're', 'socket', '_ssl', 'textwrap',
                         'time')),
-        PythonModule(version=(3, 3), ssl=True,
+        PythonModule(version=(3, 3),
                 deps=('base64', 'errno', 're', 'socket', '_ssl', 'textwrap',
                         'time', 'traceback')),
-        PythonModule(min_version=(3, 4), ssl=True,
+        PythonModule(min_version=(3, 4),
                 deps=('base64', 'collections', 'enum', 'errno', 'os', 're',
                         'socket', '_ssl', 'textwrap', 'time'))),
 
@@ -2230,12 +2223,12 @@ _metadata = {
                         'mimetools', 'mimetypes', 'os', 'posixpath', 'random',
                         're', 'socket', 'time', 'types', 'urllib', 'urlparse',
                         'warnings')),
-        PythonModule(min_version=(2, 7, 9), max_version=2, ssl=True,
+        PythonModule(min_version=(2, 7, 9), max_version=2,
                 deps=('base64', 'bisect', 'cStringIO', 'cookielib',
                         'email.utils', 'ftplib', 'hashlib', 'httplib',
                         'mimetools', 'mimetypes', 'os', 'posixpath', 'random',
-                        're', 'socket', 'time', 'types', 'urllib', 'urlparse',
-                        'warnings'))),
+                        're', 'socket', '?ssl', 'time', 'types', 'urllib',
+                        'urlparse', 'warnings'))),
 
     'urlparse':
         PythonModule(version=2, deps=('collections', 're')),
@@ -2858,8 +2851,7 @@ _metadata = {
                 source='_gestalt.c'),
 
     '_hashlib':
-        ExtensionModule(internal=True, ssl=True, source='_hashopenssl.c',
-                xlib='ssl'),
+        ExtensionModule(internal=True, source='_hashopenssl.c', xlib='ssl'),
 
     '_heapq':
         ExtensionModule(internal=True, source='_heapqmodule.c'),
@@ -2928,7 +2920,7 @@ _metadata = {
         PythonModule(version=3, internal=True, deps='re'),
 
     '_md5': (
-        ExtensionModule(version=2, internal=True, ssl=False,
+        ExtensionModule(version=2, internal=True,
                 source=('md5module.c', 'md5.c')),
         ExtensionModule(version=3, internal=True, source='md5module.c')),
 
@@ -3211,18 +3203,16 @@ _metadata = {
                 source='_scproxy.c')),
 
     '_sha':
-        ExtensionModule(version=2, internal=True, ssl=False,
-                source='shamodule.c'),
+        ExtensionModule(version=2, internal=True, source='shamodule.c'),
 
     '_sha1':
-        ExtensionModule(version=3, internal=True, ssl=False,
-                source='sha1module.c'),
+        ExtensionModule(version=3, internal=True, source='sha1module.c'),
 
     '_sha256':
-        ExtensionModule(internal=True, ssl=False, source='sha256module.c'),
+        ExtensionModule(internal=True, source='sha256module.c'),
 
     '_sha512':
-        ExtensionModule(internal=True, ssl=False, source='sha512module.c'),
+        ExtensionModule(internal=True, source='sha512module.c'),
 
     '_socket': (
         ExtensionModule(version=2, internal=True,
@@ -3255,7 +3245,7 @@ _metadata = {
                 deps=('sre_constants', 'warnings'))),
 
     '_ssl':
-        ExtensionModule(internal=True, ssl=True, source='_ssl.c', xlib='ssl'),
+        ExtensionModule(internal=True, source='_ssl.c', xlib='ssl'),
 
     '_stat':
         CoreExtensionModule(min_version=(3, 4), internal=True),
@@ -3384,6 +3374,9 @@ if __name__ == '__main__':
         """ Sanity check a list of module names. """
 
         for name in names:
+            if name[0] in '?!':
+                name = name[1:]
+
             module = metadata.get(name)
             if module is None:
                 print("Unknown module '{0}'".format(name))
