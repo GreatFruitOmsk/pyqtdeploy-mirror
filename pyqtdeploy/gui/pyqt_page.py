@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -215,6 +215,11 @@ class ModuleButton(QCheckBox):
 
         super().__init__(text)
 
+        self.setWhatsThis(
+                "Check this if the application explicitly imports the "
+                "<tt>{0}</tt> module. It will be partially checked (and "
+                "automatically included) if another module requires "
+                "it.".format(text))
         self.setTristate(True)
 
         self._explicit = False

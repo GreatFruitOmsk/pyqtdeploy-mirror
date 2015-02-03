@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,12 @@ class OtherPackagesPage(QWidget):
         # Create the page's GUI.
         layout = QHBoxLayout()
 
-        self._package_selector = QTreeWidget()
+        self._package_selector = QTreeWidget(
+                whatsThis="This shows a list of directories containing "
+                        "additional Python packages which can be scanned when "
+                        "selected. Double-click on a directory to edit or "
+                        "remove it. Double-click below the last directory in "
+                        "order to add a new one.")
         self._package_selector.setHeaderLabel("Packages Directory")
         self._package_selector.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|
@@ -165,6 +170,16 @@ class _PackageDirectoryEditor(QrcPackageEditor):
 
     # The editor title.
     title = "Packages Directory Contents"
+
+    def __init__(self):
+        """ Initialise the editor. """
+
+        super().__init__(
+                scan_whats_this="Scan the currently selected packages "
+                        "directory.",
+                whats_this="This shows the contents of the scanned packages "
+                        "directory. Check those directories and files that "
+                        "should be included in the application.")
 
     def get_root_dir(self):
         """ Get the name of the packages directory. """

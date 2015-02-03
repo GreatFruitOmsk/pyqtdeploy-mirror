@@ -56,20 +56,31 @@ class BuildPage(QWidget):
         # Create the page's GUI.
         layout = QGridLayout()
 
-        self._log_viewer = QPlainTextEdit(readOnly=True)
+        self._log_viewer = QPlainTextEdit(
+                whatsThis="This displays the messages generated when building "
+                        "the application.",
+                readOnly=True)
         layout.addWidget(self._log_viewer, 0, 0, 5, 1)
 
-        build = QPushButton("Build", clicked=self._build)
+        build = QPushButton("Build",
+                whatsThis="Build the application and optionally run "
+                        "<tt>qmake</tt>, <tt>make</tt> and the application "
+                        "itself.",
+                clicked=self._build)
         layout.addWidget(build, 0, 1)
 
         optimisation = QGroupBox("Optimisations")
         optimisation_layout = QVBoxLayout()
 
-        self._opt1_button = QCheckBox("No asserts", checked=True,
-                stateChanged=self._opt1_changed)
+        self._opt1_button = QCheckBox("No asserts",
+                whatsThis="The compiled Python code will not contain any "
+                        "<tt>assert</tt> statements.",
+                checked=True, stateChanged=self._opt1_changed)
         optimisation_layout.addWidget(self._opt1_button)
-        self._opt2_button = QCheckBox("No docstrings", checked=True,
-                stateChanged=self._opt2_changed)
+        self._opt2_button = QCheckBox("No docstrings",
+                whatsThis="The compiled Python code will not contain any "
+                        "docstrings.",
+                checked=True, stateChanged=self._opt2_changed)
         optimisation_layout.addWidget(self._opt2_button)
 
         optimisation.setLayout(optimisation_layout)
@@ -78,12 +89,22 @@ class BuildPage(QWidget):
         options = QGroupBox("Build Options")
         options_layout = QGridLayout()
 
-        self._clean_button = QCheckBox("Clean before building", checked=True)
+        self._clean_button = QCheckBox("Clean before building",
+                whatsThis="The build directory will be deleted and recreated "
+                        "before starting a new build.",
+                checked=True)
         options_layout.addWidget(self._clean_button, 0, 0, 1, 2)
-        self._verbose_button = QCheckBox("Verbose output")
+        self._verbose_button = QCheckBox("Verbose output",
+                whatsThis="Additional messages will be displayed during the "
+                        "build process.")
         options_layout.addWidget(self._verbose_button, 1, 0, 1, 2)
         options_layout.addWidget(QLabel("Resource files"), 2, 0)
-        self._resources_edit = QSpinBox(minimum=1)
+        self._resources_edit = QSpinBox(
+                whatsThis="The number of Qt <tt>.qrc</tt> files that will be "
+                        "generated. Increasing this number reduces the size "
+                        "of each file meaning <tt>rcc</tt> requires less "
+                        "memory.",
+                minimum=1)
         options_layout.addWidget(self._resources_edit, 2, 1)
 
         options.setLayout(options_layout)
@@ -93,12 +114,18 @@ class BuildPage(QWidget):
         steps_layout = QVBoxLayout()
 
         self._run_qmake_button = QCheckBox("Run qmake",
+                whatsThis="Run <tt>qmake</tt> after successfully generating "
+                        "the application code.",
                 stateChanged=self._run_qmake_changed)
         steps_layout.addWidget(self._run_qmake_button)
         self._run_make_button = QCheckBox("Run make",
+                whatsThis="Run <tt>make</tt> after successfully running "
+                        "<tt>qmake</tt>.",
                 stateChanged=self._run_make_changed)
         steps_layout.addWidget(self._run_make_button)
         self._run_application_button = QCheckBox("Run application",
+                whatsThis="Run the application after successfully running "
+                        "<tt>make</tt>.",
                 stateChanged=self._run_application_changed)
         steps_layout.addWidget(self._run_application_button)
 

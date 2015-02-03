@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ class QrcPackageEditor(QGridLayout):
     # Emitted when the package has changed.
     package_changed = pyqtSignal()
 
-    def __init__(self, show_root=False, scan="Scan"):
+    def __init__(self, show_root=False, scan="Scan", scan_whats_this='', whats_this=''):
         """ Initialise the editor. """
 
         super().__init__()
@@ -51,28 +51,36 @@ class QrcPackageEditor(QGridLayout):
 
         self._show_root = show_root
 
-        self._package_edit = QTreeWidget()
+        self._package_edit = QTreeWidget(whatsThis=whats_this)
         self._package_edit.header().hide()
         self._package_edit.itemChanged.connect(self._package_changed)
         self.addWidget(self._package_edit, 0, 0, 3, 1)
 
-        self._scan_button = QPushButton(scan,
+        self._scan_button = QPushButton(scan, whatsThis=scan_whats_this,
                 clicked=self._scan, enabled=False)
         self.addWidget(self._scan_button, 0, 1)
 
         self._remove_button = QPushButton("Remove all",
+                whatsThis="Remove all of the scanned directories and files.",
                 clicked=self._remove_all, enabled=False)
         self.addWidget(self._remove_button, 0, 2)
 
         self._include_button = QPushButton("Include all",
+                whatsThis="Select all of the scanned directories and files.",
                 clicked=self._include_all, enabled=False)
         self.addWidget(self._include_button, 1, 1)
 
         self._exclude_button = QPushButton("Exclude all",
+                whatsThis="Deselect all of the scanned directories and files.",
                 clicked=self._exclude_all, enabled=False)
         self.addWidget(self._exclude_button, 1, 2)
 
-        self._exclusions_edit = QTreeWidget()
+        self._exclusions_edit = QTreeWidget(
+                whatsThis="Any directory or file that matches any of the "
+                        "these patterns will be automatically ignored when "
+                        "scanning. Double-click on a pattern to edit or remove "
+                        "it. Double-click below the last pattern in order to "
+                        "add a new one.")
         self._exclusions_edit.setHeaderLabel("Exclusions")
         self._exclusions_edit.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|

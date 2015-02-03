@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,12 @@ class FilenameEditor(QWidget):
         icon = self._line_edit.style().standardIcon(
                 QStyle.SP_DirIcon if self._directory else QStyle.SP_FileIcon)
 
-        layout.addWidget(QToolButton(icon=icon, clicked=self._browse))
+        layout.addWidget(
+                QToolButton(icon=icon,
+                        whatsThis="Display a dialog from which you can select "
+                                "a {0}.".format(
+                                        "directory" if self._directory else "file"),
+                        clicked=self._browse))
 
         self.setLayout(layout)
 

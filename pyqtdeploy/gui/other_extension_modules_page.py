@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,17 @@ class OtherExtensionModulesPage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        self._extension_modules_edit = QTreeWidget()
+        self._extension_modules_edit = QTreeWidget(
+                whatsThis="This shows a list of additional compiled "
+                        "extension modules to be linked with the application. "
+                        "<b>Name</b> should be the full (dot separated) "
+                        "package name of the extension module. <b>LIBS</b> "
+                        "should be the value of the corresponding "
+                        "<tt>qmake</tt> variable needed to link the extension "
+                        "module. Double-click on an entry to edit or remove "
+                        "it. Double-click below the last entry in order to "
+                        "add a new one. Values may be prefixed by a platform "
+                        "specific <tt>qmake</tt> scope.")
         self._extension_modules_edit.setHeaderLabels(["Name", "LIBS"])
         self._extension_modules_edit.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|

@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -69,13 +69,14 @@ class LocationsPage(QWidget):
         self._host_interp_edit = FilenameEditor("Host Interpreter",
                 placeholderText="Interpreter executable",
                 whatsThis="The name of the host interpreter's executable. "
-                        "This must be on PATH or be an absolute pathname.",
+                        "This must be on <tt>PATH</tt> or be an absolute "
+                        "pathname.",
                 textEdited=self._host_interp_changed)
         py_host_layout.addRow("Interpreter", self._host_interp_edit)
 
         self._source_edit = FilenameEditor("Source Directory",
                 placeholderText="Source directory name",
-                whatsThis="The name of the source directory.",
+                whatsThis="The name of the Python source directory.",
                 textEdited=self._source_changed, directory=True)
         py_host_layout.addRow("Source directory", self._source_edit)
 
@@ -99,7 +100,8 @@ class LocationsPage(QWidget):
         self._target_stdlib_edit = FilenameEditor(
                 "Target Standard Library Directory",
                 placeholderText="Standard library directory name",
-                whatsThis="The target interpreter's standard library directory.",
+                whatsThis="The target interpreter's standard library "
+                        "directory.",
                 textEdited=self._target_stdlib_changed, directory=True)
         py_target_layout.addRow("Standard library directory",
                 self._target_stdlib_edit)
@@ -118,8 +120,8 @@ class LocationsPage(QWidget):
 
         self._qmake_edit = FilenameEditor("qmake",
                 placeholderText="qmake executable",
-                whatsThis="The name of the qmake executable. This must be on "
-                        "PATH or be an absolute pathname.",
+                whatsThis="The name of the <tt>qmake</tt> executable. This "
+                        "must be on <tt>PATH</tt> or be an absolute pathname.",
                 textEdited=self._qmake_changed)
         others_layout.addRow("qmake", self._qmake_edit)
 

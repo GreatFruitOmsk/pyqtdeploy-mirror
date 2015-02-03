@@ -60,7 +60,11 @@ class QMakePage(QWidget):
         # Create the page's GUI.
         layout = QVBoxLayout()
 
-        self._qmake_edit = QPlainTextEdit(textChanged=self._qmake_changed)
+        self._qmake_edit = QPlainTextEdit(
+                whatsThis="Any text entered here will be appended to the "
+                        "generated <tt>.pro</tt> that will be processed by "
+                        "<tt>qmake</tt>.",
+                textChanged=self._qmake_changed)
         layout.addWidget(self._qmake_edit)
 
         self.setLayout(layout)

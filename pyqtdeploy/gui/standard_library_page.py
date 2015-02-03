@@ -68,7 +68,13 @@ class StandardLibraryPage(QSplitter):
         stdlib_pane = QWidget()
         stdlib_layout = QVBoxLayout()
 
-        self._stdlib_edit = QTreeWidget()
+        self._stdlib_edit = QTreeWidget(
+                whatsThis="This shows the packages and modules in the target "
+                        "Python version's standard library. Check those "
+                        "packages and modules that are explicitly imported by "
+                        "the application. A module will be partially checked "
+                        "(and automatically included) if another module "
+                        "requires it.")
         self._stdlib_edit.setHeaderLabels(["Package"])
         self._stdlib_edit.itemChanged.connect(self._module_changed)
 
@@ -81,13 +87,19 @@ class StandardLibraryPage(QSplitter):
         extlib_layout = QVBoxLayout()
         extlib_sublayout = QFormLayout()
 
-        self._version_edit = QComboBox()
+        self._version_edit = QComboBox(
+                whatsThis="Select the target Python version. This will cause "
+                        "the standard library package hierarchy to be "
+                        "updated.")
         self._version_edit.addItems(get_supported_python_versions())
         self._version_edit.currentIndexChanged.connect(self._version_changed)
         extlib_sublayout.addRow("Target Python version", self._version_edit)
 
-        self._ssl_edit = QCheckBox(stateChanged=self._ssl_changed)
-        extlib_sublayout.addRow("Use SSL support", self._ssl_edit)
+        self._ssl_edit = QCheckBox(
+                whatsThis="Enable SSL for the standard library modules "
+                        "that have optional support for it.",
+                stateChanged=self._ssl_changed)
+        extlib_sublayout.addRow("Enable optional SSL support", self._ssl_edit)
 
         extlib_layout.addLayout(extlib_sublayout)
 
@@ -96,7 +108,11 @@ class StandardLibraryPage(QSplitter):
         self._platform_buttons = []
 
         for scope, plat in PLATFORM_SCOPES:
-            plat_cb = QCheckBox(plat, stateChanged=self._platforms_changed)
+            plat_cb = QCheckBox(plat,
+                    whatsThis="Enable the use of the standard Python shared "
+                            "library on {0} rather than a statically compiled "
+                            "library.".format(plat),
+                    stateChanged=self._platforms_changed)
             plat_cb._scope = scope
             plat_gb_layout.addWidget(plat_cb)
             self._platform_buttons.append(plat_cb)
@@ -104,7 +120,16 @@ class StandardLibraryPage(QSplitter):
         plat_gb.setLayout(plat_gb_layout)
         extlib_layout.addWidget(plat_gb)
 
-        self._extlib_edit = QTreeView()
+        self._extlib_edit = QTreeView(
+                whatsThis="This is the list of external libraries that must "
+                        "be linked with the application. A library will only "
+                        "be enabled if a module in the standard library uses "
+                        "it. Double-click in the <b>DEFINES</b>, "
+                        "<b>INCLUDEPATH</b> and <b>LIBS</b> columns to modify "
+                        "the corresponding <tt>qmake</tt> variable as "
+                        "required. Values may be prefixed by a platform "
+                        "specific <tt>qmake</tt> scope.")
+        self._extlib_edit.setRootIsDecorated(False)
         self._extlib_edit.setEditTriggers(
                 QTreeView.DoubleClicked|QTreeView.SelectedClicked|
                 QTreeView.EditKeyPressed)

@@ -107,7 +107,9 @@ class ApplicationPage(QWidget):
         self._pyqt_versions_bg = QButtonGroup()
 
         for version in ('PyQt5', 'PyQt4'):
-            rb = QRadioButton(version)
+            rb = QRadioButton(version,
+                    whatsThis="Click here if it is a {0} application.".format(
+                            version))
             pyqt_versions_layout.addWidget(rb)
             self._pyqt_versions_bg.addButton(rb)
 
@@ -117,10 +119,16 @@ class ApplicationPage(QWidget):
                 self._pyqt_version_changed)
 
         self._console_edit = QCheckBox("Use console (Windows)",
+                whatsThis="Enable console output for Windows applications. "
+                        "Console output will be enabled automatically if no "
+                        "graphical PyQt modules are used.",
                 stateChanged=self._console_changed)
         options_layout.addWidget(self._console_edit)
 
         self._bundle_edit = QCheckBox("Application bundle (OS X)",
+                whatsThis="Build an application bundle on OS X. If it is not "
+                        "checked then the application will be built as a "
+                        "simple executable.",
                 stateChanged=self._bundle_changed)
         options_layout.addWidget(self._bundle_edit)
 
@@ -228,7 +236,13 @@ class _ApplicationPackageEditor(QrcPackageEditor):
     def __init__(self):
         """ Initialise the editor. """
 
-        super().__init__(show_root=True, scan="Scan...")
+        super().__init__(show_root=True, scan="Scan...",
+                scan_whats_this="Display a dialog from which you can select "
+                        "the application package directory.",
+                whats_this="This shows the scanned application package "
+                        "directory and its contents. Check those directories "
+                        "and files that should be included in the "
+                        "application.")
 
         self._project = None
 

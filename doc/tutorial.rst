@@ -353,7 +353,7 @@ application is shown below.
 **Target Python version**
     is used to specify version of Python that you are targetting.
 
-**Use SSL support**
+**Enable optional SSL support**
     is used to specify if the application requires SSL support to be enabled.
     Several packages in the Python standard library will enable SSL related
     functionality if it is available - even if your application doesn't itself
