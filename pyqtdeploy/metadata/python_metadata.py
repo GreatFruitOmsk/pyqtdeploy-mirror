@@ -1222,7 +1222,8 @@ _metadata = {
                 deps=('binascii', '?_hashlib', '!_md5', '!_sha', '!_sha256',
                         '!_sha512', 'struct')),
         PythonModule(version=3,
-                deps=('?_hashlib', '_md5', '!_sha1', '!_sha256', '!_sha512'))),
+                deps=('?_hashlib', '!_md5', '!_sha1', '!_sha256',
+                        '!_sha512'))),
 
     'heapq': (
         PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),
