@@ -40,7 +40,8 @@ import tarfile
 import zipfile
 
 
-QT_VERSION = '5.4.0'
+QT_VERSION_NATIVE = '5.4.0'
+QT_VERSION_CROSS = '5.3.1'
 PY_VERSION = '3.4.2'
 
 # The supported targets.
@@ -128,6 +129,14 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
+    def qt_cross_root_dir(self):
+        """ The absolute path of the directory containing the binary
+        cross-compiled Qt installation.
+        """
+
+        raise NotImplementedError
+
+    @property
     def qt_package(self):
         """ The 2-tuple of the absolute path of the Qt source file and the base
         name of the package (without an extension).
@@ -137,7 +146,7 @@ class AbstractHost:
         if license == 'commercial':
             license = 'enterprise'
 
-        base_name = 'qt-everywhere-' + license + '-src-' + QT_VERSION
+        base_name = 'qt-everywhere-' + license + '-src-' + QT_VERSION_NATIVE
 
         return (os.path.join(self.qt_src_dir, base_name + ext), base_name)
 
@@ -169,6 +178,12 @@ class AbstractHost:
         raise NotImplementedError
 
     @property
+    def supported_cross_targets(self):
+        """ The sequence of non-native targets that this host supports. """
+
+        return ()
+
+    @property
     def sysroot(self):
         """ The absolute path of the sysroot directory. """
 
@@ -196,14 +211,21 @@ class AbstractHost:
         self.target = target
         self._sysroot = sysroot_base + '-' + self.target
 
+        if self.target == get_native_target():
+            self.qt_builder = NativeQtBuilder(self)
+        elif self.target in self.supported_cross_targets:
+            self.qt_builder = CrossQtBuilder(self)
+        else:
+            fatal("this host does not support building Qt for the {0} target".format(self.target))
+
     def build_configure(self):
         """ Perform any host-specific pre-build checks and configuration.
         Return a closure to be passed to build_deconfigure().
         """
 
         old_path = os.environ['PATH']
-        os.environ['PATH'] = os.path.join(
-                self.sysroot, 'qt-' + QT_VERSION, 'bin') + os.pathsep + old_path
+        os.environ['PATH'] = os.path.join(self.sysroot,
+                'qt-' + self.qt_builder.qt_version, 'bin') + os.pathsep + old_path
 
         return old_path
 
@@ -407,6 +429,14 @@ class PosixHost(AbstractHost):
         return './configure'
 
     @property
+    def qt_cross_root_dir(self):
+        """ The absolute path of the directory containing the binary
+        cross-compiled Qt installation.
+        """
+
+        return os.path.expandvars('$HOME/usr')
+
+    @property
     def qt_package_detail(self):
         """ The 2-tuple of the Qt license and file extension. """
 
@@ -431,6 +461,12 @@ class PosixHost(AbstractHost):
         self.run('./build.py', 'release')
 
         return self.find_package(sip_dir, 'sip-*', '.tar.gz')
+
+    @property
+    def supported_cross_targets(self):
+        """ The sequence of non-native targets that this host supports. """
+
+        return ('android-32', 'ios-64')
 
     def __init__(self, target):
         """ Initialise the object. """
@@ -505,6 +541,100 @@ class LinuxHost(PosixHost):
         return os.path.expandvars('$HOME/usr/src')
 
 
+class AbstractQtBuilder:
+    """ The abstract base class that encapsulates a Qt builder. """
+
+    @property
+    def qt_version(self):
+        """ The Qt version number. """
+
+        raise NotImplementedError
+
+    def __init__(self, host):
+        """ Initialise the object. """
+
+        self.host = host
+
+    def build(self):
+        """ Build Qt. """
+
+        raise NotImplementedError
+
+
+class NativeQtBuilder(AbstractQtBuilder):
+    """ The class that encapsulates a Qt builder for a native target. """
+
+    @property
+    def qt_version(self):
+        """ The Qt version number. """
+
+        return QT_VERSION_NATIVE
+
+    def build(self):
+        """ Build Qt. """
+
+        host = self.host
+
+        license, _ = host.qt_package_detail
+
+        get_package_source(host, host.qt_package)
+
+        host.run(host.qt_configure, '-prefix',
+                os.path.join(host.sysroot,
+                        'qt-' + QT_VERSION_NATIVE), '-' + license,
+                '-confirm-license', '-static', '-release', '-nomake',
+                'examples')
+        host.run(host.make)
+        host.run(host.make, 'install')
+
+        remove_current_dir()
+
+
+class CrossQtBuilder(AbstractQtBuilder):
+    """ The class that encapsulates a Qt builder for a cross-compiled target.
+    """
+
+    # Map the target to the corresponding sub-directory in the Qt binary.
+    TARGET_DIR_MAP = {
+            'android-32':   'android_armv7',
+            'ios-64':       'ios'}
+
+    @property
+    def qt_version(self):
+        """ The Qt version number. """
+
+        return QT_VERSION_CROSS
+
+    def build(self):
+        """ Build Qt. """
+
+        host = self.host
+
+        # For cross-compiling we use the Qt binary installation.
+        cross_root = host.qt_cross_root_dir
+        target_root = os.path.join(cross_root, 'Qt' + QT_VERSION_CROSS,
+                '.'.join(QT_VERSION_CROSS.split('.')[:2]))
+        target_subdir = self.TARGET_DIR_MAP[host.target]
+        target_dir = os.path.join(target_root, target_subdir)
+
+        sysroot_qt_dir = os.path.join(host.sysroot, 'qt-' + QT_VERSION_CROSS)
+
+        try:
+            os.remove(sysroot_qt_dir)
+        except FileNotFoundError:
+            pass
+
+        os.symlink(target_dir, sysroot_qt_dir, target_is_directory=True)
+
+
+def fatal(message):
+    """ Print an error message to stderr and exit the application. """
+
+    print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
+            file=sys.stderr)
+    sys.exit(1)
+
+
 def rmtree(dir_name):
     """ Remove a directory tree. """
 
@@ -522,8 +652,8 @@ def unpack(package):
         raise Exception("{0} has an unknown format".format(package))
 
 
-def get_default_target():
-    """ Return the default target platform. """
+def get_native_target():
+    """ Return the native target platform. """
 
     if sys.platform == 'darwin':
         main_target = 'osx'
@@ -588,19 +718,9 @@ def clean_sysroot(host):
 
 
 def build_qt(host):
-    """ Build a static Qt. """
+    """ Build Qt. """
 
-    license, _ = host.qt_package_detail
-
-    get_package_source(host, host.qt_package)
-
-    host.run(host.qt_configure, '-prefix',
-            os.path.join(host.sysroot, 'qt-' + QT_VERSION), '-' + license,
-            '-confirm-license', '-static', '-release', '-nomake', 'examples')
-    host.run(host.make)
-    host.run(host.make, 'install')
-
-    remove_current_dir()
+    host.qt_builder.build()
 
 
 def build_python(host, enable_dynamic_loading, use_platform_python):
@@ -706,7 +826,7 @@ all_packages = ('qt', 'python', 'sip', 'pyqt')
 # Parse the command line.
 parser = argparse.ArgumentParser()
 
-default_target = get_default_target()
+native_target = get_native_target()
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--all', help="build all packages", action='store_true')
@@ -718,8 +838,8 @@ parser.add_argument('--clean',
 parser.add_argument('--enable-dynamic-loading',
         help="build Python with dynamic loading enabled", action='store_true')
 parser.add_argument('--target',
-        help="the target platform [default: {0}]".format(default_target),
-        choices=TARGETS, default=default_target)
+        help="the target platform [default: {0}]".format(native_target),
+        choices=TARGETS, default=native_target)
 parser.add_argument('--use-platform-python',
         help="use platform Python libraries", action='store_true')
 
