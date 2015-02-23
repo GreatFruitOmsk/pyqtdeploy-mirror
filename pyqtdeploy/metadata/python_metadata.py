@@ -2934,7 +2934,7 @@ _metadata = {
                 libs=('-lfci', '-lmsi', '-lrpcrt4')),
 
     '_multibytecodec':
-        ExtensionModule(internal=True, source='cjkcodecs/_multibytecodec.c'),
+        ExtensionModule(internal=True, source='cjkcodecs/multibytecodec.c'),
 
     '_multiprocessing': (
         ExtensionModule(version=2, internal=True,
