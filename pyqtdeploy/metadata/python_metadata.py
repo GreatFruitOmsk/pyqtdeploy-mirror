@@ -521,6 +521,181 @@ _metadata = {
         PythonModule(min_version=(3, 4),
                 deps=('collections', 'io', 'opcode', 'types'))),
 
+    'distutils':
+        PythonModule(
+                modules=('distutils.archive_util', 'distutils.bcppcompiler',
+                        'distutils.ccompiler', 'distutils.cmd',
+                        'distutils.command', 'distutils.core',
+                        'distutils.cygwincompiler', 'distutils.debug',
+                        'distutils.dep_util', 'distutils.dir_util',
+                        'distutils.dist', 'distutils.errors',
+                        'distutils.extension', 'distutils.fancy_getopt',
+                        'distutils.file_util', 'distutils.filelist',
+                        'distutils.log', 'distutils.msvccompiler',
+                        'distutils.spawn', 'distutils.sysconfig',
+                        'distutils.text_file', 'distutils.unixccompiler',
+                        'distutils.util', 'distutils.version')),
+
+    'distutils.archive_util':
+        PythonModule(
+                deps=('distutils.dir_util', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn',
+                        'grp', 'os', 'pwd', 'tarfile', 'warnings', 'zipfile')),
+
+    'distutils.bcppcompiler':
+        PythonModule(
+                deps=('distutils.ccompiler', 'distutils.dep_util',
+                        'distutils.errors', 'distutils.file_util',
+                        'distutils.log', 'os')),
+
+    'distutils.ccompiler':
+        PythonModule(
+                deps=('distutils.debug', 'distutils.dep_util',
+                        'distutils.dir_util', 'distutils.errors',
+                        'distutils.fancy_getopt', 'distutils.file_util',
+                        'distutils.log', 'distutils.spawn',
+                        'distutils.sysconfig', 'distutils.util', 'os', 're',
+                        'tempfile')),
+
+    'distutils.cmd':
+        PythonModule(
+                deps=('distutils.archive_util', 'distutils.debug',
+                        'distutils.dep_util', 'distutils.dir_util',
+                        'distutils.dist', 'distutils.errors',
+                        'distutils.fancy_getopt', 'distutils.file_util',
+                        'distutils.log', 'distutils.spawn', 'distutils.util',
+                        'os', 're')),
+
+    'distutils.core':
+        PythonModule(
+                deps=('distutils.cmd', 'distutils.config', 'distutils.debug',
+                        'distutils.dist', 'distutils.errors',
+                        'distutils.extension', 'os')),
+
+    'distutils.cygwincompiler': (
+        PythonModule(version=2,
+                deps=('copy', 'distutils.ccompiler', 'distutils.errors',
+                        'distutils.file_util', 'distutils.log',
+                        'distutils.spawn', 'distutils.sysconfig',
+                        'distutils.unixccompiler', 'distutils.version', 'os',
+                        're', 'string')),
+        PythonModule(version=3,
+                deps=('copy', 'distutils.ccompiler', 'distutils.errors',
+                        'distutils.file_util', 'distutils.log',
+                        'distutils.spawn', 'distutils.sysconfig',
+                        'distutils.unixccompiler', 'distutils.version', 'os',
+                        're', 'subprocess'))),
+
+    'distutils.debug':
+        PythonModule(deps='os'),
+
+    'distutils.dep_util':
+        PythonModule(deps=('distutils.errors', 'os', 'stat')),
+
+    'distutils.dir_util':
+        PythonModule(deps=('distutils.errors', 'distutils.file_util',
+                'distutils.log', 'errno', 'os')),
+
+    'distutils.dist': (
+        PythonModule(version=2,
+                deps=('ConfigParser', 'distutils.cmd', 'distutils.command',
+                        'distutils.core', 'distutils.debug',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.log', 'distutils.util',
+                        'distutils.versionpredicate', 'email', 'os', 'pprint',
+                        're', 'warnings')),
+        PythonModule(version=3,
+                deps=('configparser', 'distutils.cmd', 'distutils.command',
+                        'distutils.core', 'distutils.debug',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.log', 'distutils.util',
+                        'distutils.versionpredicate', 'email', 'os', 'pprint',
+                        're', 'warnings'))),
+
+    'distutils.errors':
+        PythonModule(),
+
+    'distutils.extension': (
+        PythonModule(version=2,
+                deps=('distutils.sysconfig', 'distutils.text_file',
+                        'distutils.util', 'os', 'string', 'types',
+                        'warnings')),
+        PythonModule(version=3,
+                deps=('distutils.sysconfig', 'distutils.text_file',
+                        'distutils.util', 'os', 'warnings'))),
+
+    'distutils.fancy_getopt':
+        PythonModule(
+                deps=('distutils.errors', 'getopt', 're', 'string')),
+
+    'distutils.file_util':
+        PythonModule(
+                deps=('distutils.dep_util', 'distutils.errors',
+                        'distutils.log', 'errno', 'os', 'stat')),
+
+    'distutils.filelist':
+        PythonModule(
+                deps=('distutils.debug', 'distutils.errors', 'distutils.log',
+                        'distutils.util', 'fnmatch', 'os', 're', 'stat')),
+
+    'distutils.log':
+        PythonModule(),
+
+    'distutils.msvccompiler': (
+        PythonModule(version=2,
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.msvc9compiler', 'os',
+                        'string', '_winreg')),
+        PythonModule(version=3,
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.msvc9compiler', 'os',
+                        'winreg'))),
+
+    'distutils.spawn':
+        PythonModule(
+                deps=('distutils.debug', 'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'errno', 'os')),
+
+    'distutils.sysconfig': (
+        PythonModule(version=2,
+                deps=('distutils.errors', 'distutils.text_file', 'os',
+                        '_osx_support', 're', 'string')),
+        PythonModule(version=3,
+                deps=('distutils.errors', 'distutils.text_file', 'os',
+                        '_osx_support', 're', 'warnings'))),
+
+    'distutils.text_file': (
+        PythonModule(version=2),
+        PythonModule(version=3, deps=('io', 'os'))),
+
+    'distutils.unixccompiler': (
+        PythonModule(version=2,
+                deps=('distutils.ccompiler', 'distutils.dep_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'os', '_osx_support', 're',
+                        'types')),
+        PythonModule(version=3,
+                deps=('distutils.ccompiler', 'distutils.dep_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'os', '_osx_support', 're'))),
+
+    'distutils.util': (
+        PythonModule(version=2,
+                deps=('distutils.dep_util', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn',
+                        'distutils.sysconfig', 'os', '_osx_support', 'pwd',
+                        'py_compile', 're', 'string', 'tempfile')),
+        PythonModule(version=3,
+                deps=('distutils.dep_util', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn',
+                        'distutils.sysconfig', 'importlib.util', 'os',
+                        '_osx_support', 'pwd', 'py_compile', 're', 'string',
+                        'tempfile'))),
+
+    'distutils.version': (
+        PythonModule(version=2, deps=('re', 'string', 'types')),
+        PythonModule(version=3, deps='re')),
+
     'DocXMLRPCServer':
         PythonModule(version=2,
                 deps=('inspect', 'pydoc', 're', 'SimpleXMLRPCServer')),
@@ -2775,6 +2950,26 @@ _metadata = {
     '_dbm':
         ExtensionModule(version=3, internal=True, source='_dbmmodule.c',
                 defines='HAVE_NDBM_H', xlib='ndbm'),
+
+    'distutils.config': (
+        PythonModule(version=2,
+                deps=('ConfigParser', 'distutils.cmd', 'os')),
+        PythonModule(version=3,
+                deps=('cgi', 'configparser', 'distutils.cmd', 'os'))),
+
+    'distutils.msvc9compiler': (
+        PythonModule(version=2,
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.util', 'os', 're',
+                        'subprocess', '_winreg')),
+        PythonModule(version=3,
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.util', 'os', 're',
+                        'subprocess', 'winreg'))),
+
+    'distutils.versionpredicate':
+        PythonModule(
+                deps=('distutils.version', 'operator', 're')),
 
     '_elementtree': (
         ExtensionModule(version=2, internal=True,
