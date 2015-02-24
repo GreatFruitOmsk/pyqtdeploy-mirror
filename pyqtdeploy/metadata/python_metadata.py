@@ -566,6 +566,210 @@ _metadata = {
                         'distutils.log', 'distutils.spawn', 'distutils.util',
                         'os', 're')),
 
+    'distutils.command':
+        PythonModule(
+                modules=('distutils.command.bdist',
+                        'distutils.command.bdist_dumb',
+                        'distutils.command.bdist_msi',
+                        'distutils.command.bdist_rpm',
+                        'distutils.command.bdist_wininst',
+                        'distutils.command.build',
+                        'distutils.command.build_clib',
+                        'distutils.command.build_ext',
+                        'distutils.command.build_py',
+                        'distutils.command.build_scripts',
+                        'distutils.command.check', 'distutils.command.clean',
+                        'distutils.command.config',
+                        'distutils.command.install',
+                        'distutils.command.install_data',
+                        'distutils.command.install_egg_info',
+                        'distutils.command.install_headers',
+                        'distutils.command.install_lib',
+                        'distutils.command.install_scripts',
+                        'distutils.command.register',
+                        'distutils.command.sdist',
+                        'distutils.command.upload')),
+
+    'distutils.command.bdist':
+        PythonModule(
+                deps=('distutils.core', 'distutils.errors',
+                        'distutils.fancy_getopt', 'distutils.util', 'os')),
+
+    'distutils.command.bdist_dumb': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log', 'distutils.util',
+                        'os', 'sysconfig')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'distutils.util', 'os'))),
+
+    'distutils.command.bdist_msi': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log', 'distutils.util',
+                        'distutils.version', 'msilib', 'os', 'sysconfig')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'distutils.util',
+                        'distutils.version', 'msilib', 'os'))),
+
+    'distutils.command.bdist_rpm': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.debug', 'distutils.errors',
+                        'distutils.file_util', 'distutils.log',
+                        'distutils.sysconfig', 'os', 'string')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.debug', 'distutils.errors',
+                        'distutils.file_util', 'distutils.log',
+                        'distutils.sysconfig', 'distutils.util', 'os',
+                        'subprocess'))),
+
+    'distutils.command.bdist_wininst': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.msvccompiler', 'distutils.util', 'os',
+                        'string', 'struct', 'sysconfig', 'tempfile', 'time')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.msvccompiler', 'distutils.sysconfig',
+                        'distutils.util', 'os', 'struct', 'tempfile',
+                        'time'))),
+
+    'distutils.command.build':
+        PythonModule(
+                deps=('distutils.ccompiler', 'distutils.core',
+                        'distutils.errors', 'distutils.util', 'os')),
+
+    'distutils.command.build_clib':
+        PythonModule(
+                deps=('distutils.ccompiler', 'distutils.core',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'os')),
+
+    'distutils.command.build_ext': (
+        PythonModule(version=2,
+                deps=('distutils.ccompiler', 'distutils.core',
+                        'distutils.dep_util', 'distutils.errors',
+                        'distutils.extension', 'distutils.log',
+                        'distutils.msvccompiler', 'distutils.sysconfig',
+                        'distutils.util', 'os', 're', 'string', 'types')),
+        PythonModule(version=3,
+                deps=('distutils.ccompiler', 'distutils.core',
+                        'distutils.dep_util', 'distutils.errors',
+                        'distutils.extension', 'distutils.log',
+                        'distutils.msvccompiler', 'distutils.sysconfig',
+                        'distutils.util', 'os', 're'))),
+
+    'distutils.command.build_py': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.errors', 'distutils.log',
+                        'distutils.util', 'glob', 'os')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.errors', 'distutils.log',
+                        'distutils.util', 'glob', 'importlib.util', 'os'))),
+
+    'distutils.command.build_scripts': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.dep_util', 'distutils.log',
+                        'distutils.util', 'os', 're', 'stat', 'sysconfig')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.dep_util', 'distutils.log',
+                        'distutils.sysconfig', 'distutils.util', 'os', 're',
+                        'stat', 'tokenize'))),
+
+    'distutils.command.check': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.dist', 'distutils.errors')),
+        PythonModule(version=3, deps=('distutils.core', 'distutils.errors'))),
+
+    'distutils.command.clean':
+        PythonModule(
+                deps=('distutils.core', 'distutils.dir_util', 'distutils.log',
+                        'os')),
+
+    'distutils.command.config':
+        PythonModule(
+                deps=('distutils.ccompiler', 'distutils.core',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'os', 're')),
+
+    'distutils.command.install': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.debug', 'distutils.errors',
+                        'distutils.fancy_getopt', 'distutils.file_util',
+                        'distutils.log', 'distutils.sysconfig',
+                        'distutils.util', 'os', 'pprint', 'string', 'types')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.debug', 'distutils.errors',
+                        'distutils.fancy_getopt', 'distutils.file_util',
+                        'distutils.log', 'distutils.sysconfig',
+                        'distutils.util', 'os', 'pprint'))),
+
+    'distutils.command.install_data':
+        PythonModule(deps=('distutils.core', 'distutils.util', 'os')),
+
+    'distutils.command.install_egg_info':
+        PythonModule(
+                deps=('distutils.cmd', 'distutils.dir_util', 'distutils.log',
+                        'os', 're')),
+
+    'distutils.command.install_headers':
+        PythonModule(deps='distutils.core'),
+
+    'distutils.command.install_lib': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.errors', 'distutils.util',
+                        'os')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.errors', 'distutils.util',
+                        'importlib.util', 'os'))),
+
+    'distutils.command.install_scripts':
+        PythonModule(deps=('distutils.core', 'distutils.log', 'os', 'stat')),
+
+    'distutils.command.register': (
+        PythonModule(version=2,
+                deps=('distutils.core', 'distutils.log', 'getpass', 'urllib2',
+                        'urlparse', 'warnings')),
+        PythonModule(version=3,
+                deps=('distutils.core', 'distutils.errors', 'distutils.log',
+                        'getpass', 'io', 'os', 'string', 'urllib.parse',
+                        'urllib.request', 'warnings'))),
+
+    'distutils.command.sdist': (
+        PythonModule(version=2,
+                deps=('distutils.archive_util', 'distutils.core',
+                        'distutils.dep_util', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.file_util', 'distutils.filelist',
+                        'distutils.log', 'distutils.text_file',
+                        'distutils.util', 'glob', 'os', 'string', 'warnings')),
+        PythonModule(version=3,
+                deps=('distutils.archive_util', 'distutils.core',
+                        'distutils.dep_util', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.file_util', 'distutils.filelist',
+                        'distutils.log', 'distutils.text_file',
+                        'distutils.util', 'glob', 'os', 'string', 'types',
+                        'warnings'))),
+
+    'distutils.command.upload': (
+        PythonModule(version=2,
+                deps=('base64', 'cStringIO', 'distutils.core',
+                        'distutils.errors', 'distutils.log', 'distutils.spawn',
+                        'hashlib', 'os', 'platform', 'socket', 'urllib2',
+                        'urlparse')),
+        PythonModule(version=3,
+                deps=('base64', 'distutils.core', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn', 'hashlib', 'io',
+                        'os', 'platform', 'socket', 'urllib.parse',
+                        'urllib.request'))),
+
     'distutils.core':
         PythonModule(
                 deps=('distutils.cmd', 'distutils.config', 'distutils.debug',
