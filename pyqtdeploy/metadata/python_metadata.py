@@ -251,9 +251,17 @@ _metadata = {
                         'asyncio.tasks', 'asyncio.transports',
                         'asyncio.unix_events', 'asyncio.windows_events',
                         'selectors')),
-        PythonModule(min_version=(3, 4, 2),
+        PythonModule(version=(3, 4, 2),
                 deps=('asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.locks',
+                        'asyncio.protocols', 'asyncio.queues',
+                        'asyncio.streams', 'asyncio.subprocess',
+                        'asyncio.tasks', 'asyncio.transports',
+                        'asyncio.unix_events', 'asyncio.windows_events',
+                        'selectors')),
+        PythonModule(min_version=(3, 4, 3),
+                deps=('asyncio.base_events', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.locks',
                         'asyncio.protocols', 'asyncio.queues',
                         'asyncio.streams', 'asyncio.subprocess',
                         'asyncio.tasks', 'asyncio.transports',
@@ -962,10 +970,13 @@ _metadata = {
                 deps=('email', 'binascii', 'email.base64mime', 'email.charset',
                         'email.errors', 'email.quoprimime', 're')),
 
-    'email.headerregistry':
-        PythonModule(version=3,
+    'email.headerregistry': (
+        PythonModule(min_version=3, max_version=(3, 4, 2),
                 deps=('email', 'email.errors', 'email._header_value_parser',
                         'email.utils')),
+        PythonModule(min_version=(3, 4, 3),
+                deps=('email', 'email.errors', 'email._header_value_parser',
+                        'email.utils', 'types'))),
 
     'email.iterators': (
         PythonModule(version=2, deps=('email', 'cStringIO')),
@@ -2242,8 +2253,10 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('copyreg', 'functools', 'sre_compile', 'sre_constants',
                         'sre_parse')),
-        PythonModule(min_version=(3, 4),
-                deps=('copyreg', 'sre_compile', 'sre_constants',
+        PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 2),
+                deps=('copyreg', 'sre_compile', 'sre_constants', 'sre_parse')),
+        PythonModule(min_version=(3, 4, 3),
+                deps=('copyreg', '_locale', 'sre_compile', 'sre_constants',
                         'sre_parse'))),
 
     'readline':
@@ -2718,7 +2731,10 @@ _metadata = {
         PythonModule(max_version=(2, 7, 8), deps=('cStringIO', 'struct')),
         PythonModule(min_version=(2, 7, 9), max_version=2,
                 deps=('cStringIO', 'functools', 'struct')),
-        PythonModule(version=3, deps=('io', 'struct'))),
+        PythonModule(min_version=3, max_version=(3, 4, 2),
+                deps=('io', 'struct')),
+        PythonModule(min_version=(3, 4, 3),
+                deps=('functools', 'io', 'struct'))),
 
     'xml':
         PythonModule(
@@ -2848,22 +2864,33 @@ _metadata = {
                         'asyncio.log', 'asyncio.tasks', 'collections',
                         'concurrent.futures', 'heapq', 'logging', 'os',
                         'socket', 'subprocess', 'time')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(version=(3, 4, 2), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.tasks',
                         'collections', 'concurrent.futures', 'heapq',
                         'inspect', 'logging', 'os', 'socket', 'subprocess',
-                        'time', 'traceback'))),
+                        'time', 'traceback')),
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.log', 'asyncio.tasks',
+                        'collections', 'concurrent.futures', 'heapq',
+                        'inspect', 'logging', 'os', 'socket', 'subprocess',
+                        'threading', 'time', 'traceback', 'warnings'))),
 
     'asyncio.base_subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
                 deps=('asyncio', 'asyncio.protocols', 'asyncio.tasks',
                         'asyncio.transports', 'collections', 'subprocess')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(version=(3, 4, 2), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.log',
                         'asyncio.protocols', 'asyncio.transports',
-                        'collections', 'subprocess'))),
+                        'collections', 'subprocess')),
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('asyncio', 'asyncio.coroutines', 'asyncio.futures',
+                        'asyncio.log', 'asyncio.protocols',
+                        'asyncio.transports', 'collections', 'subprocess',
+                        'warnings'))),
 
     'asyncio.constants':
         PythonModule(min_version=(3, 4), internal=True, deps='asyncio'),
@@ -2904,11 +2931,16 @@ _metadata = {
         PythonModule(min_version=(3, 4), internal=True,
                 deps=('asyncio', 'logging')),
 
-    'asyncio.proactor_events':
-        PythonModule(min_version=(3, 4), internal=True,
+    'asyncio.proactor_events': (
+        PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.futures', 'asyncio.log', 'asyncio.transports',
                         'socket')),
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
+                        'asyncio.futures', 'asyncio.log', 'asyncio.sslproto',
+                        'asyncio.transports', 'socket', 'warnings'))),
 
     'asyncio.protocols':
         PythonModule(min_version=(3, 4), internal=True, deps='asyncio'),
@@ -2926,11 +2958,24 @@ _metadata = {
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.transports', 'collections', 'errno',
                         'selectors', 'socket', 'ssl')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(version=(3, 4, 2), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.transports', 'collections', 'errno',
-                        'functools', 'selectors', 'socket', 'ssl'))),
+                        'functools', 'selectors', 'socket', 'ssl')),
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
+                        'asyncio.coroutines', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.log', 'asyncio.sslproto',
+                        'asyncio.transports', 'collections', 'errno',
+                        'functools', 'selectors', 'socket', 'ssl',
+                        'warnings'))),
+
+    'asyncio.sslproto':
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('asyncio', 'asyncio.log', 'asyncio.protocols',
+                        'asyncio.transports', 'collections', 'ssl',
+                        'warnings')),
 
     'asyncio.streams': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -2979,13 +3024,21 @@ _metadata = {
                         'asyncio.selector_events', 'asyncio.tasks',
                         'asyncio.transports', 'errno', 'fcntl', 'os', 'signal',
                         'socket', 'stat', 'subprocess', 'threading')),
-        PythonModule(min_version=(3, 4, 2), internal=True, scope='!win32',
+        PythonModule(version=(3, 4, 2), internal=True, scope='!win32',
                 deps=('asyncio', 'asyncio.base_events',
                         'asyncio.base_subprocess', 'asyncio.coroutines',
                         'asyncio.constants', 'asyncio.events', 'asyncio.log',
                         'asyncio.selector_events', 'asyncio.transports',
                         'errno', 'fcntl', 'os', 'signal', 'socket', 'stat',
-                        'subprocess', 'threading'))),
+                        'subprocess', 'threading')),
+        PythonModule(min_version=(3, 4, 3), internal=True, scope='!win32',
+                deps=('asyncio', 'asyncio.base_events',
+                        'asyncio.base_subprocess', 'asyncio.coroutines',
+                        'asyncio.constants', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.log',
+                        'asyncio.selector_events', 'asyncio.transports',
+                        'errno', 'fcntl', 'os', 'signal', 'socket', 'stat',
+                        'subprocess', 'threading', 'warnings'))),
 
     'asyncio.windows_events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3002,10 +3055,14 @@ _metadata = {
                         'asyncio.tasks', 'asyncio.windows_utils', 'errno',
                         'math', 'socket', 'struct', 'weakref', '_winapi'))),
 
-    'asyncio.windows_utils':
-        PythonModule(min_version=(3, 4), internal=True, scope='win32',
+    'asyncio.windows_utils': (
+        PythonModule(min_version=(3, 4), max_version=(3, 4, 2),
+                internal=True, scope='win32',
                 deps=('asyncio', 'itertools', 'msvcrt', 'os', 'socket',
                         'subprocess', 'tempfile', '_winapi')),
+        PythonModule(min_version=(3, 4, 3), internal=True, scope='win32',
+                deps=('asyncio', 'itertools', 'msvcrt', 'os', 'socket',
+                        'subprocess', 'tempfile', 'warnings', '_winapi'))),
 
     '_bisect':
         ExtensionModule(internal=True, source='_bisectmodule.c'),
@@ -3633,9 +3690,11 @@ _metadata = {
     '_sre':
         CoreExtensionModule(internal=True),
 
-    'sre_compile':
-        PythonModule(internal=True,
+    'sre_compile': (
+        PythonModule(max_version=(3, 4, 2), internal=True,
                 deps=('array', '_sre', 'sre_constants', 'sre_parse')),
+        PythonModule(min_version=(3, 4, 3), internal=True,
+                deps=('_sre', 'sre_constants', 'sre_parse'))),
 
     'sre_constants':
         PythonModule(internal=True, deps='_sre'),
@@ -3847,3 +3906,4 @@ if __name__ == '__main__':
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 2)
+    check_version(3, 4, 3)
