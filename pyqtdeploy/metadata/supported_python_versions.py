@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,8 @@ _supported_versions = (
     ((2, 7, 0), "2.7"),
     ((3, 3, 0), "3.3"),
     ((3, 4, 0), "3.4.0 and 3.4.1"),
-    ((3, 4, 2), "3.4.2 and later"))
+    ((3, 4, 2), "3.4.2"),
+    ((3, 4, 3), "3.4.3 and later"))
 
 
 def get_supported_python_versions():
