@@ -91,7 +91,7 @@ extension modules.  Therefore, if you need this functionality (perhaps because
 you need to use extension modules that cannot be built statically), you must
 use a dynamic build of Python.  If so then it is recommended that you use the
 Python DLL installed by the appropriate standard Windows binary package from
-``python.org``.
+``python.org``.  See also :ref:`ref-win-dynload`.
 
 To build a static version of Python, change to the Python source directory and
 run::
