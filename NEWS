@@ -1,3 +1,6 @@
+v1.0 2nd March 2015
+  - Added support for Python v3.4.3.
+
 v0.10 4th February 2015
   - All GUI elements now have What's This? help.
   - Added the show-version action to pyqtdeploycli.
