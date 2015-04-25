@@ -340,9 +340,6 @@ class Builder():
 
         f.write('TEMPLATE = app\n')
 
-        # Add the project independent pre-configuration stuff.
-        self._write_embedded_lib_file('pre_configuration.pro', f)
-
         # Configure the CONFIG and QT values that are project dependent.
         needs_cpp11 = False
         needs_gui = False
