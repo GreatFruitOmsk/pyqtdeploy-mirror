@@ -2079,6 +2079,13 @@ _metadata = {
     'parser':
         ExtensionModule(source='parsermodule.c'),
 
+    'pathlib':
+        PythonModule(min_version=(3, 4),
+                deps=('collections', 'contextlib', 'errno', 'fnmatch',
+                        'functools', 'grp', 'io', 'nt', 'ntpath', 'operator',
+                        'os', 'posixpath', 'pwd', 're', 'stat',
+                        'urllib.parse')),
+
     'pickle': (
         PythonModule(version=2,
                 deps=('binascii', 'copy_reg', 'cStringIO', 'marshal', 're',
