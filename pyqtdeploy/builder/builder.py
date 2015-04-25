@@ -618,11 +618,18 @@ class Builder():
         for scope in used_scopes:
             f.write('\n')
 
-            if scope != '':
+            if scope == '':
+                prefix = ''
+                tail = None
+            elif scope.startswith('win32_'):
+                prefix = '        '
+                f.write(
+                        'win32 {\n    %scontains(QMAKE_TARGET.arch, x86_64) {\n' % ('!' if scope == 'win32_x86' else ''))
+                tail = '    }\n}\n'
+            else:
                 prefix = '    '
                 f.write('%s {\n' % scope)
-            else:
-                prefix = ''
+                tail = '}\n'
 
             for defines in used_defines.get(scope, ()):
                 f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
@@ -636,8 +643,8 @@ class Builder():
             for source in used_sources.get(scope, ()):
                 f.write('{0}SOURCES += {1}\n'.format(prefix, source))
 
-            if scope != '':
-                f.write('}\n')
+            if tail is not None:
+                f.write(tail)
 
         # Add the project independent post-configuration stuff.
         self._write_embedded_lib_file('post_configuration.pro', f)
@@ -769,10 +776,14 @@ class Builder():
 
                 # Make sure we don't modify the original list.
                 scopes = [s for s in scopes if s != scope]
-            elif scope in scopes:
-                scopes = [scope]
             else:
-                scopes = []
+                for s in scopes:
+                    # Allow sub-scopes of the platform scopes.
+                    if scope.startswith(s):
+                        scopes = [scope]
+                        break
+                else:
+                    scopes = []
         else:
             value = parts[0]
 
@@ -781,6 +792,14 @@ class Builder():
     @staticmethod
     def _add_value_for_scopes(used_values, value, scopes=ALL_SCOPES):
         """ Add a value to the set of used values for some scopes. """
+
+        # Collapse known sub-scopes.
+        collapsed = [s for s in scopes if s not in ('win32_x86', 'win32_x64')]
+        if len(collapsed) == len(scopes) - 2:
+            if 'win32' not in collapsed:
+                collapsed.append('win32')
+
+            scopes = collapsed
 
         if len(scopes) == len(ALL_SCOPES):
             scopes = ['']
@@ -1009,7 +1028,7 @@ static struct _inittab %s[] = {
 
     # The map of scopes to pre-processor symbols.
     _guards = {
-        'linux':    'Q_OS_LINUX',
+        'linux-*':  'Q_OS_LINUX',
         'macx':     'Q_OS_MAC',
         'win32':    'Q_OS_WIN',
     }
