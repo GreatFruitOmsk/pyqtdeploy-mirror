@@ -43,7 +43,7 @@ from ..version import PYQTDEPLOY_HEXVERSION
 
 
 # The sequence of all platform scopes.
-ALL_SCOPES = tuple((scope for scope, platform in PLATFORM_SCOPES))
+ALL_SCOPES = tuple((scope for scope, platform, subscopes in PLATFORM_SCOPES))
 
 
 class Builder():
@@ -622,6 +622,9 @@ class Builder():
                 prefix = ''
                 tail = None
             elif scope.startswith('win32_'):
+                # We could avoid the hardcoded handling by reverting to
+                # defining appropriate CONFIG values in a pre_configuration.pro
+                # file.
                 prefix = '        '
                 f.write(
                         'win32 {\n    %scontains(QMAKE_TARGET.arch, x86_64) {\n' % ('!' if scope == 'win32_x86' else ''))
@@ -778,7 +781,7 @@ class Builder():
                 scopes = [s for s in scopes if s != scope]
             else:
                 for s in scopes:
-                    # Allow sub-scopes of the platform scopes.
+                    # Assume sub-scopes start with the scope.
                     if scope.startswith(s):
                         scopes = [scope]
                         break
@@ -793,13 +796,28 @@ class Builder():
     def _add_value_for_scopes(used_values, value, scopes=ALL_SCOPES):
         """ Add a value to the set of used values for some scopes. """
 
-        # Collapse known sub-scopes.
-        collapsed = [s for s in scopes if s not in ('win32_x86', 'win32_x64')]
-        if len(collapsed) == len(scopes) - 2:
-            if 'win32' not in collapsed:
-                collapsed.append('win32')
+        # Make sure we have a fresh list as we may want to modify it.
+        scopes = list(scopes)
 
-            scopes = collapsed
+        # Optimise any sub-scopes.
+        for scope, platform, subscopes in PLATFORM_SCOPES:
+            if len(subscopes) == 0:
+                continue
+
+            if scope in scopes:
+                # Remove any redundant sub-scopes.
+                for ss in subscopes:
+                    try:
+                        scopes.remove(ss)
+                    except ValueError:
+                        pass
+            else:
+                # Replace all sub-scopes if all are present.
+                collapsed = [s for s in scopes if s not in subscopes]
+
+                if len(collapsed) == len(scopes) - len(subscopes):
+                    collapsed.append(scope)
+                    scopes = collapsed
 
         if len(scopes) == len(ALL_SCOPES):
             scopes = ['']

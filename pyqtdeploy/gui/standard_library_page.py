@@ -107,7 +107,7 @@ class StandardLibraryPage(QSplitter):
         plat_gb_layout = QVBoxLayout()
         self._platform_buttons = []
 
-        for scope, plat in PLATFORM_SCOPES:
+        for scope, plat, subscopes in PLATFORM_SCOPES:
             plat_cb = QCheckBox(plat,
                     whatsThis="Enable the use of the standard Python shared "
                             "library on {0} rather than a statically compiled "
