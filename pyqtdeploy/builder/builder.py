@@ -508,25 +508,11 @@ class Builder():
 
             for name, module in required_ext.items():
                 # Get the list of all applicable scopes.
-                module_scopes = list(ALL_SCOPES)
-
-                if module.scope != '':
-                    if module.scope.startswith('!'):
-                        module_scopes.remove(module.scope[1:])
-                    else:
-                        module_scopes = [module.scope]
-
-                # Remove those scopes for which we are using the standard
-                # Python libraries.
-                for plat_scope in project.python_use_platform:
-                    try:
-                        module_scopes.remove(plat_scope)
-                    except ValueError:
-                        pass
+                module_scopes = self._stdlib_scopes(module.scope)
 
                 if len(module_scopes) == 0:
                     # The module is specific to a platform for which we are
-                    # using the standard Python libraries so ignore it
+                    # using the python.org Python libraries so ignore it
                     # completely.
                     continue
 
@@ -588,8 +574,12 @@ class Builder():
             else:
                 for xlib in external_libraries_metadata:
                     if xlib.name == required_lib:
-                        for lib in xlib.libs.split():
-                            self._add_value_for_scopes(used_libs, lib)
+                        scopes = self._stdlib_scopes()
+
+                        if len(scopes) != 0:
+                            for lib in xlib.libs.split():
+                                self._add_value_for_scopes(used_libs, lib,
+                                        scopes)
 
                         break
 
@@ -668,6 +658,30 @@ class Builder():
 
         f.write('\n')
         f.write(contents.data().decode('latin1'))
+
+    def _stdlib_scopes(self, module_scope=''):
+        """ Return the list of scopes for the standard library and, optionally,
+        one of its modules.
+        """
+
+        # Get the list of all applicable scopes.
+        stdlib_scopes = list(ALL_SCOPES)
+
+        if module_scope != '':
+            if module_scope.startswith('!'):
+                stdlib_scopes.remove(module_scope[1:])
+            else:
+                stdlib_scopes = [module_scope]
+
+        # Remove those scopes for which we are using the python.org Python
+        # libraries.
+        for plat_scope in self._project.python_use_platform:
+            try:
+                stdlib_scopes.remove(plat_scope)
+            except ValueError:
+                pass
+
+        return stdlib_scopes
 
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
