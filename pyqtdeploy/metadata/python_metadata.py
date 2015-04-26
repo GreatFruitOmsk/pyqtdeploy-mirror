@@ -3733,13 +3733,15 @@ _metadata = {
                 deps=('calendar', 'datetime', 'locale', 're', '_thread',
                         'time'))),
 
-    # We treat _struct as a core module (ie. built in with the interpreter
-    # library) for Python v3.4 and later because it cannot be linked separately
-    # on Windows (because of the PyVarObject_HEAD_INIT() problem).  This is
-    # probably a Python bug.
+    # For Python v3.4 and later assume that the source code is compiled in
+    # elsewhere (eg. by using the python.org Python library, or by using a
+    # static Python library configured by pyqtdeploy).  This is because it
+    # cannot be linked separately on Windows (because of the
+    # PyVarObject_HEAD_INIT() problem).  This is probably a Python bug.
     '_struct': (
         ExtensionModule(max_version=(3, 3), internal=True, source='_struct.c'),
-        CoreExtensionModule(min_version=(3, 4), internal=True)),
+        ExtensionModule(min_version=(3, 4), internal=True,
+                source='!win32#_struct.c')),
 
     '_subprocess':
         ExtensionModule(version=2, internal=True, scope='win32',
