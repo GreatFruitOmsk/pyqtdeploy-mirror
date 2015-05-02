@@ -94,9 +94,10 @@ class ApplicationPage(QWidget):
 
         self._sys_path_edit = QLineEdit(
                 placeholderText="Additional sys.path directories",
-                whatsThis="A space separated list of additional directories "
-                        "to add to <tt>sys.path</tt>. Only set this if you "
-                        "want to allow external packages to be imported.",
+                whatsThis="A space separated list of additional directories, "
+                        "ZIP files and eggs to add to <tt>sys.path</tt>. Only "
+                        "set this if you want to allow external packages to "
+                        "be imported.",
                 textEdited=self._sys_path_changed)
         form.addRow("sys.path", self._sys_path_edit)
 
