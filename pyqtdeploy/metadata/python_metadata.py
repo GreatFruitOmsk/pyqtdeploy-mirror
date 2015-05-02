@@ -2853,7 +2853,7 @@ _metadata = {
                         'stat', 'struct', 'time', 'warnings', 'zlib'))),
 
     'zipimport':
-        CoreExtensionModule(),
+        ExtensionModule(source='zipimport.c', deps='zlib'),
 
     'zlib':
         ExtensionModule(source='zlibmodule.c', xlib='zlib'),

@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -245,7 +245,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_io/bufferedio.c \
         Modules/_io/textio.c \
         Modules/_io/stringio.c \
-        Modules/zipimport.c \
         Modules/faulthandler.c \
         Modules/symtablemodule.c \
 
@@ -269,7 +268,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/errnomodule.c \
         Modules/_sre.c \
         Modules/_codecsmodule.c \
-        Modules/zipimport.c \
         Modules/symtablemodule.c \
         Modules/_weakref.c
 }

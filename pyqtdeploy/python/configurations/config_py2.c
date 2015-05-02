@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Riverbank Computing Limited
+ * Copyright (c) 2015, Riverbank Computing Limited
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,6 @@ extern void init_codecs(void);
 #if PY_MINOR_VERSION >= 7
 extern void init_weakref(void);
 #endif
-extern void initzipimport(void);
 extern void init_symtable(void);
 /* -- ADDMODULE MARKER 1 -- */
 
@@ -94,7 +93,6 @@ struct _inittab _PyImport_Inittab[] = {
 #if PY_MINOR_VERSION >= 7
 {"_weakref", init_weakref},
 #endif
-{"zipimport", initzipimport},
 {"_symtable", init_symtable},
 /* -- ADDMODULE MARKER 2 -- */
 

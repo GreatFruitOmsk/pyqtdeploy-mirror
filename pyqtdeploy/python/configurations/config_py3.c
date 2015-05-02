@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Riverbank Computing Limited
+ * Copyright (c) 2015, Riverbank Computing Limited
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,7 +81,6 @@ extern PyObject* PyInit__stat(void);
 #endif
 extern PyObject* PyInit__locale(void);
 extern PyObject* PyInit__io(void);
-extern PyObject* PyInit_zipimport(void);
 extern PyObject* PyInit_faulthandler(void);
 #if PY_MINOR_VERSION >= 4
 extern PyObject* PyInit__tracemalloc(void);
@@ -130,7 +129,6 @@ struct _inittab _PyImport_Inittab[] = {
 #endif
 	{"_locale", PyInit__locale},
 	{"_io", PyInit__io},
-	{"zipimport", PyInit_zipimport},
 	{"faulthandler", PyInit_faulthandler},
 #if PY_MINOR_VERSION >= 4
 	{"_tracemalloc", PyInit__tracemalloc},
