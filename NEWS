@@ -1,3 +1,6 @@
+v1.0.1 6th May 2015
+  - Added support for the pathlib module.
+
 v1.0 2nd March 2015
   - Added support for Python v3.4.3.
 
