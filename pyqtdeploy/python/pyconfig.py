@@ -378,6 +378,9 @@ pyconfig = (
     # Define this if you have flockfile(), getc_unlocked(), and funlockfile()
     Config('HAVE_GETC_UNLOCKED', default=1),
 
+    # Define to 1 if you have the `getentropy' function.
+    Config('HAVE_GETENTROPY', default=0),
+
     # Define to 1 if you have the `getgrouplist' function.
     Config('HAVE_GETGROUPLIST', default=1),
 
@@ -720,6 +723,9 @@ pyconfig = (
 
     # Define to 1 if you have the `pwrite' function.
     Config('HAVE_PWRITE', default=1),
+
+    # Define if libcrypto has `RAND_egd'.
+    Config('HAVE_RAND_EGD', default=1),
 
     # Define to 1 if you have the `readlink' function.
     Config('HAVE_READLINK', default=1),
