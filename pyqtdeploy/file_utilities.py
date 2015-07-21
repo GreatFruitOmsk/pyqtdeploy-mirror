@@ -102,8 +102,8 @@ def copy_embedded_file(src_name, dst_name, macros={}):
     contents = read_embedded_file(src_name)
 
     for key, value in macros.items():
-        contents.replace(bytes(key, encoding='UTF-8'),
-                bytes(value, encoding='UTF-8'))
+        contents.replace(bytes(key, encoding='ascii'),
+                bytes(value, encoding='ascii'))
 
     dst_file = QFile(dst_name)
 
