@@ -914,8 +914,10 @@ _metadata = {
         PythonModule(version=2,
                 deps=('inspect', 'pydoc', 're', 'SimpleXMLRPCServer')),
 
-    'dumbdbm':
-        PythonModule(version=2, deps=('os', 'UserDict')),
+    'dumbdbm': (
+        PythonModule(max_version=(2, 7, 9), deps=('os', 'UserDict')),
+        PythonModule(min_version=(2, 7, 10), max_version=2,
+                deps=('ast', 'os', 'UserDict'))),
 
     'email': (
         PythonModule(version=2, deps=('email.mime', 'email.parser'),
@@ -1696,10 +1698,13 @@ _metadata = {
                         'pwd', 'select', 'shutil', 'socket', 'socketserver',
                         'subprocess', 'time', 'urllib.parse'))),
 
-    'httplib':
-        PythonModule(version=2,
+    'httplib': (
+        PythonModule(max_version=(2, 7, 9),
                 deps=('array', 'cStringIO', 'mimetools', 'os', 'socket', 'ssl',
                         'urlparse', 'warnings')),
+        PythonModule(min_version=(2, 7, 10), max_version=2,
+                deps=('array', 'cStringIO', 'mimetools', 'os', 're', 'socket',
+                        'ssl', 'urlparse', 'warnings'))),
 
     'imageop':
         ExtensionModule(version=2, source='imageop.c'),
@@ -2340,10 +2345,13 @@ _metadata = {
     'signal':
         CoreExtensionModule(),
 
-    'SimpleHTTPServer':
-        PythonModule(version=2,
+    'SimpleHTTPServer': (
+        PythonModule(max_version=(2, 7, 9),
                 deps=('BaseHTTPServer', 'cgi', 'cStringIO', 'mimetypes', 'os',
                         'posixpath', 'shutil', 'urllib')),
+        PythonModule(min_version=(2, 7, 10), max_version=2,
+                deps=('BaseHTTPServer', 'cgi', 'cStringIO', 'mimetypes', 'os',
+                        'posixpath', 'shutil', 'urllib', 'urlparse'))),
 
     'SimpleXMLRPCServer': (
         PythonModule(version=2,
@@ -3709,7 +3717,10 @@ _metadata = {
         PythonModule(internal=True, deps='_sre'),
 
     'sre_parse': (
-        PythonModule(version=2, internal=True, deps='sre_constants'),
+        PythonModule(max_version=(2, 7, 9), internal=True,
+                deps='sre_constants'),
+        PythonModule(min_version=(2, 7, 10), max_version=2, internal=True,
+                deps=('sre_constants', 'warnings')),
         PythonModule(version=3, internal=True,
                 deps=('sre_constants', 'warnings'))),
 
@@ -3914,6 +3925,7 @@ if __name__ == '__main__':
     # Check each supported version.
     check_version(2, 7, 0)
     check_version(2, 7, 9)
+    check_version(2, 7, 10)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 2)
