@@ -258,20 +258,6 @@ if __name__ == '__main__':
             sys.exit(2)
 
 
-    def _version(options):
-        """query the version of the package"""
-
-        if options.output is not None:
-            out_file = open(options.output, 'w')
-        else:
-            out_file = sys.stdout
-
-        out_file.write(version() + "\n")
-
-        if options.output is not None:
-            out_file.close()
-
-
     def _pyversion(options):
         """create Python code implementing the version of the package"""
 
@@ -286,7 +272,7 @@ if __name__ == '__main__':
             out_file.close()
 
 
-    actions = (_changelog, _pyversion, _version)
+    actions = (_changelog, _pyversion)
 
     import optparse
 
