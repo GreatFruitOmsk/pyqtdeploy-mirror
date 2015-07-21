@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,8 @@ def copy_embedded_file(src_name, dst_name, macros={}):
     contents = read_embedded_file(src_name)
 
     for key, value in macros.items():
-        contents.replace(key, value)
+        contents.replace(bytes(key, encoding='UTF-8'),
+                bytes(value, encoding='UTF-8'))
 
     dst_file = QFile(dst_name)
 
