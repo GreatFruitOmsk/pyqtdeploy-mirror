@@ -43,122 +43,89 @@ class PyQt4Metadata(PyQtMetadata):
 
 # The dictionary of meta-data for the PyQt4 modules.
 pyqt4_metadata = {
-    'sip':              PyQt4Metadata(gui=False),
+    'sip':
+            PyQt4Metadata(gui=False),
 
-    'QAxContainer':     PyQt4Metadata(
-                            deps=['QtGui'],
-                            config4=['qaxcontainer'],
-                            qt5=['axcontainer']),
+    'QAxContainer':
+        PyQt4Metadata(deps=['QtGui'], config4=['qaxcontainer'],
+                qt5=['axcontainer']),
 
-    'Qt':               PyQt4Metadata(
-                            deps=['sip']),
+    'Qt':
+        PyQt4Metadata(deps=['sip']),
 
-    'QtCore':           PyQt4Metadata(
-                            deps=['sip'],
-                            gui=False),
+    'QtCore':
+        PyQt4Metadata(deps=['sip'], gui=False),
 
-    'QtDBus':           PyQt4Metadata(
-                            deps=['QtCore'],
-                            gui=False,
-                            qt4=['dbus'],
-                            qt5=['dbus']),
+    'QtDBus':
+        PyQt4Metadata(deps=['QtCore'], gui=False, qt4=['dbus'], qt5=['dbus']),
 
-    'QtDeclarative':    PyQt4Metadata(
-                            deps=['QtGui', 'QtNetwork'],
-                            qt4=['declarative', 'network'],
-                            qt5=['declarative', 'network']),
+    'QtDeclarative':
+        PyQt4Metadata(deps=['QtGui', 'QtNetwork'],
+                qt4=['declarative', 'network'],
+                qt5=['declarative', 'network']),
 
-    'QtDesigner':       PyQt4Metadata(
-                            deps=['QtGui'],
-                            config4=['designer'],
-                            qt5=['designer']),
+    'QtDesigner':
+        PyQt4Metadata(deps=['QtGui'], config4=['designer'], qt5=['designer']),
 
-    'QtGui':            PyQt4Metadata(
-                            deps=['QtCore'],
-                            qt5=['widgets', 'printsupport']),
+    'QtGui':
+        PyQt4Metadata(deps=['QtCore'], qt5=['widgets', 'printsupport']),
 
-    'QtHelp':           PyQt4Metadata(
-                            deps=['QtGui'],
-                            config4=['help'],
-                            qt5=['help']),
+    'QtHelp':
+        PyQt4Metadata(deps=['QtGui'], config4=['help'], qt5=['help']),
 
-    'QtMultimedia':     PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['multimedia'],
-                            qt5=['multimedia']),
+    'QtMultimedia':
+        PyQt4Metadata(deps=['QtGui'], qt4=['multimedia'], qt5=['multimedia']),
 
-    'QtNetwork':        PyQt4Metadata(
-                            deps=['QtCore'],
-                            gui=False,
-                            qt4=['network'],
-                            qt5=['network']),
+    'QtNetwork':
+        PyQt4Metadata(deps=['QtCore'], gui=False, qt4=['network'],
+                qt5=['network']),
 
-    'QtOpenGL':         PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['opengl'],
-                            qt5=['opengl']),
+    'QtOpenGL':
+        PyQt4Metadata(deps=['QtGui'], qt4=['opengl'], qt5=['opengl']),
 
-    'QtScript':         PyQt4Metadata(
-                            deps=['QtCore'],
-                            gui=False,
-                            qt4=['script'],
-                            qt5=['script']),
+    'QtScript':
+        PyQt4Metadata(deps=['QtCore'], gui=False, qt4=['script'],
+                qt5=['script']),
 
-    'QtScriptTools':    PyQt4Metadata(
-                            deps=['QtGui', 'QtScript'],
-                            qt4=['scripttools', 'script'],
-                            qt5=['scripttools', 'script', 'widgets']),
+    'QtScriptTools':
+        PyQt4Metadata(deps=['QtGui', 'QtScript'],
+                qt4=['scripttools', 'script'],
+                qt5=['scripttools', 'script', 'widgets']),
 
-    'QtSql':            PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['sql'],
-                            qt5=['sql', 'widgets']),
+    'QtSql':
+        PyQt4Metadata(deps=['QtGui'], qt4=['sql'], qt5=['sql', 'widgets']),
 
-    'QtSvg':            PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['svg'],
-                            qt5=['svg']),
+    'QtSvg':
+        PyQt4Metadata(deps=['QtGui'], qt4=['svg'], qt5=['svg']),
 
-    'QtTest':           PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['testlib'],
-                            qt5=['testlib', 'widgets']),
+    'QtTest':
+        PyQt4Metadata(deps=['QtGui'], qt4=['testlib'],
+                qt5=['testlib', 'widgets']),
 
-    'QtWebKit':         PyQt4Metadata(
-                            deps=['QtGui', 'QtNetwork'],
-                            qt4=['webkit', 'network'],
-                            qt5=['webkit', 'webkitwidgets', 'network']),
+    'QtWebKit':
+        PyQt4Metadata(deps=['QtGui', 'QtNetwork'], qt4=['webkit', 'network'],
+                qt5=['webkit', 'webkitwidgets', 'network']),
 
-    'QtXml':            PyQt4Metadata(
-                            deps=['QtCore'],
-                            gui=False,
-                            qt4=['xml'],
-                            qt5=['xml']),
+    'QtXml':
+        PyQt4Metadata(deps=['QtCore'], gui=False, qt4=['xml'], qt5=['xml']),
 
-    'QtXmlPatterns':    PyQt4Metadata(
-                            deps=['QtNetwork'],
-                            gui=False,
-                            qt4=['xmlpatterns', 'network'],
-                            qt5=['xmlpatterns', 'network']),
+    'QtXmlPatterns':
+        PyQt4Metadata(deps=['QtNetwork'], gui=False,
+                qt4=['xmlpatterns', 'network'],
+                qt5=['xmlpatterns', 'network']),
 
-    'phonon':           PyQt4Metadata(
-                            deps=['QtGui'],
-                            qt4=['phonon']),
+    'phonon':
+        PyQt4Metadata(deps=['QtGui'], qt4=['phonon']),
 
-    'uic':              PyQt4Metadata(
-                            deps=['QtGui']),
+    'uic':
+        PyQt4Metadata(deps=['QtGui']),
 
-    'QtChart':          PyQt4Metadata(
-                            group='addon',
-                            deps=['QtGui'],
-                            config4=['qtcommercialchart'],
-                            config5=['qtcommercialchart'],
-                            needs_suffix=False),
+    'QtChart':
+        PyQt4Metadata(group='addon', deps=['QtGui'],
+                config4=['qtcommercialchart'], config5=['qtcommercialchart'],
+                needs_suffix=False),
 
-    'Qsci':             PyQt4Metadata(
-                            group='addon',
-                            deps=['QtGui'],
-                            config4=['qscintilla2'],
-                            config5=['qscintilla2'],
-                            needs_suffix=False),
+    'Qsci':
+        PyQt4Metadata(group='addon', deps=['QtGui'], config4=['qscintilla2'],
+                config5=['qscintilla2'], needs_suffix=False),
 }

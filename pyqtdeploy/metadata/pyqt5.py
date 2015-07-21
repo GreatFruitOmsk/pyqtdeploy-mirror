@@ -42,178 +42,148 @@ class PyQt5Metadata(PyQtMetadata):
 
 # The dictionary of meta-data for the PyQt5 modules.
 pyqt5_metadata = {
-    'sip':                      PyQt5Metadata(gui=False),
+    'sip':
+        PyQt5Metadata(gui=False),
 
-    'QAxContainer':             PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['axcontainer']),
+    'QAxContainer':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['axcontainer']),
 
-    'Qt':                       PyQt5Metadata(
-                                    deps=['sip']),
+    'Qt':
+        PyQt5Metadata(deps=['sip']),
 
-    'QtBluetooth':              PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['bluetooth']),
+    'QtBluetooth':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['bluetooth']),
 
-    'QtCore':                   PyQt5Metadata(
-                                    deps=['sip'],
-                                    gui=False),
+    'QtCore':
+        PyQt5Metadata(deps=['sip'], gui=False),
 
-    'QtDBus':                   PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    gui=False,
-                                    qt5=['dbus']),
+    'QtDBus':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['dbus']),
 
-    'QtDesigner':               PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['designer']),
+    'QtDesigner':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['designer']),
 
-    'QtGui':                    PyQt5Metadata(
-                                    deps=['QtCore']),
+    'QtGui':
+        PyQt5Metadata(deps=['QtCore']),
 
-    'QtHelp':                   PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['help']),
+    'QtHelp':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['help']),
 
-    'QtMacExtras':              PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['macextras']),
+    'QtLocation':
+        PyQt5Metadata(deps=['QtPositioning'], qt5=['location']),
 
-    'QtMultimedia':             PyQt5Metadata(
-                                    deps=['QtGui', 'QtNetwork'],
-                                    qt5=['multimedia']),
+    'QtMacExtras':
+        PyQt5Metadata(deps=['QtGui'], qt5=['macextras']),
 
-    'QtMultimediaWidgets':      PyQt5Metadata(
-                                    deps=['QtMultimedia', 'QtWidgets'],
-                                    qt5=['multimediawidgets', 'multimedia']),
+    'QtMultimedia':
+        PyQt5Metadata(deps=['QtGui', 'QtNetwork'], qt5=['multimedia']),
 
-    'QtNetwork':                PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    gui=False,
-                                    qt5=['network']),
+    'QtMultimediaWidgets':
+        PyQt5Metadata(deps=['QtMultimedia', 'QtWidgets'],
+                qt5=['multimediawidgets', 'multimedia']),
 
-    'QtOpenGL':                 PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['opengl']),
+    'QtNetwork':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['network']),
 
-    'QtPositioning':            PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['positioning']),
+    'QtNfc':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['nfc']),
 
-    'QtPrintSupport':           PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['printsupport']),
+    'QtOpenGL':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['opengl']),
 
-    'QtQml':                    PyQt5Metadata(
-                                    deps=['QtNetwork'],
-                                    qt5=['qml']),
+    'QtPositioning':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['positioning']),
 
-    'QtQuick':                  PyQt5Metadata(
-                                    deps=['QtGui', 'QtQml'],
-                                    qt5=['quick']),
+    'QtPrintSupport':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['printsupport']),
 
-    'QtQuickWidgets':           PyQt5Metadata(
-                                    deps=['QtQuick', 'QtWidgets'],
-                                    qt5=['quickwidgets']),
+    'QtQml':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['qml']),
 
-    'QtSensors':                PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['sensors']),
+    'QtQuick':
+        PyQt5Metadata(deps=['QtGui', 'QtQml'], qt5=['quick']),
 
-    'QtSerialPort':             PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['serialport']),
+    'QtQuickWidgets':
+        PyQt5Metadata(deps=['QtQuick', 'QtWidgets'], qt5=['quickwidgets']),
 
-    'QtSql':                    PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['sql', 'widgets']),
+    'QtSensors':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['sensors']),
 
-    'QtSvg':                    PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['svg']),
+    'QtSerialPort':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['serialport']),
 
-    'QtTest':                   PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['testlib', 'widgets']),
+    'QtSql':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['sql', 'widgets']),
 
-    'QtWebChannel':             PyQt5Metadata(
-                                    deps=['QtNetwork'],
-                                    gui=False,
-                                    qt5=['webchannel']),
+    'QtSvg':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['svg']),
 
-    'QtWebEngineWidgets':       PyQt5Metadata(
-                                    deps=['QtNetwork', 'QtWidgets'],
-                                    cpp11=True,
-                                    qt5=['webenginewidgets']),
+    'QtTest':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['testlib', 'widgets']),
 
-    'QtWebKit':                 PyQt5Metadata(
-                                    deps=['QtGui', 'QtNetwork'],
-                                    qt5=['webkit', 'network']),
+    'QtWebChannel':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['webchannel']),
 
-    'QtWebKitWidgets':          PyQt5Metadata(
-                                    deps=['QtPrintSupport', 'QtWebKit'],
-                                    qt5=['webkitwidgets']),
+    'QtWebEngineWidgets':
+        PyQt5Metadata(deps=['QtNetwork', 'QtWebChannel', 'QtWidgets'],
+                cpp11=True, qt5=['webenginewidgets']),
 
-    'QtWebSockets':             PyQt5Metadata(
-                                    deps=['QtNetwork'],
-                                    gui=False,
-                                    qt5=['websockets']),
+    'QtWebKit':
+        PyQt5Metadata(deps=['QtGui', 'QtNetwork'], qt5=['webkit', 'network']),
 
-    'QtWidgets':                PyQt5Metadata(
-                                    deps=['QtGui'],
-                                    qt5=['widgets']),
+    'QtWebKitWidgets':
+        PyQt5Metadata(deps=['QtPrintSupport', 'QtWebKit', 'QtWidgets'],
+                qt5=['webkitwidgets']),
 
-    'QtWinExtras':              PyQt5Metadata(
-                                    deps=['QtWidgets'],
-                                    qt5=['winextras', 'widgets']),
+    'QtWebSockets':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['websockets']),
 
-    'QtX11Extras':              PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    qt5=['x11extras']),
+    'QtWidgets':
+        PyQt5Metadata(deps=['QtGui'], qt5=['widgets']),
 
-    'QtXml':                    PyQt5Metadata(
-                                    deps=['QtCore'],
-                                    gui=False,
-                                    qt5=['xml']),
+    'QtWinExtras':
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras', 'widgets']),
 
-    'QtXmlPatterns':            PyQt5Metadata(
-                                    deps=['QtNetwork'],
-                                    gui=False,
-                                    qt5=['xmlpatterns', 'network']),
+    'QtX11Extras':
+        PyQt5Metadata(deps=['QtCore'], qt5=['x11extras']),
 
-    'Enginio':                  PyQt5Metadata(
-                                    deps=['QtNetwork'],
-                                    gui=False,
-                                    qt5=['enginio']),
+    'QtXml':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['xml']),
 
-    'uic':                      PyQt5Metadata(
-                                    deps=['QtWidgets']),
+    'QtXmlPatterns':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False,
+                qt5=['xmlpatterns', 'network']),
 
-    '_QOpenGLFunctions_2_0':    PyQt5Metadata(
-                                    group='opengl',
-                                    deps=['QtGui']),
+    'Enginio':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['enginio']),
 
-    '_QOpenGLFunctions_ES2':    PyQt5Metadata(
-                                    group='opengl',
-                                    deps=['QtGui']),
+    'uic':
+        PyQt5Metadata(deps=['QtWidgets']),
 
-    'QtChart':                  PyQt5Metadata(
-                                    group='addon',
-                                    deps=['QtWidgets'],
-                                    config5=['qtcommercialchart']),
+    '_QOpenGLFunctions_2_0':
+        PyQt5Metadata(group='opengl', deps=['QtGui']),
 
-    'QtDataVisualization':      PyQt5Metadata(
-                                    group='addon',
-                                    deps=['QtGui'],
-                                    qt5=['datavisualization']),
+    '_QOpenGLFunctions_2_1':
+        PyQt5Metadata(group='opengl', deps=['QtGui']),
 
-    'QtPurchasing':             PyQt5Metadata(
-                                    group='addon',
-                                    deps=['QtCore'],
-                                    qt5=['purchasing']),
+    '_QOpenGLFunctions_4_1_Core':
+        PyQt5Metadata(group='opengl', deps=['QtGui']),
 
-    'Qsci':                     PyQt5Metadata(
-                                    group='addon',
-                                    deps=['QtWidgets'],
-                                    config5=['qscintilla2']),
+    '_QOpenGLFunctions_ES2':
+        PyQt5Metadata(group='opengl', deps=['QtGui']),
+
+    'QtChart':
+        PyQt5Metadata(group='addon', deps=['QtWidgets'],
+                config5=['qtcommercialchart']),
+
+    'QtDataVisualization':
+        PyQt5Metadata(group='addon', deps=['QtGui'],
+                qt5=['datavisualization']),
+
+    'QtPurchasing':
+        PyQt5Metadata(group='addon', deps=['QtCore'], qt5=['purchasing']),
+
+    'Qsci':
+        PyQt5Metadata(group='addon', deps=['QtWidgets'],
+                config5=['qscintilla2']),
 }
