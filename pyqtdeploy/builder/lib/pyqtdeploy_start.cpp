@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Riverbank Computing Limited
+// Copyright (c) 2015, Riverbank Computing Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -255,6 +255,7 @@ static int handle_exception()
         PyObject *exc, *value, *tb;
 
         PyErr_Fetch(&exc, &value, &tb);
+        PyErr_NormalizeException(&exc, &value, &tb);
 
         if (!value || value == Py_None)
         {
