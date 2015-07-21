@@ -64,7 +64,7 @@ def parse_diffs(diff):
 
     diffs = []
 
-    if diff.endsWith('\n'):
+    if diff.endsWith(b'\n'):
         diff.chop(1)
 
     if diff.isEmpty():
