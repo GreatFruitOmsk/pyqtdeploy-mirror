@@ -27,8 +27,10 @@
 __all__ = ['ExtensionModule', 'get_python_metadata', 'PLATFORM_SCOPES']
 
 
-# The diffent qmake platform scopes and their corresponding descriptive names.
-PLATFORM_SCOPES = (('linux', "Linux"), ('macx', "OS X"), ('win32', "Windows"))
+# The diffent qmake platform scopes and their corresponding descriptive names
+# and sub-scopes.
+PLATFORM_SCOPES = (('linux-*', "Linux", ()), ('macx', "OS X", ()),
+        ('win32', "Windows", ('win32_x86', 'win32_x64')))
 
 
 class StdlibModule:
@@ -2079,6 +2081,13 @@ _metadata = {
     'parser':
         ExtensionModule(source='parsermodule.c'),
 
+    'pathlib':
+        PythonModule(min_version=(3, 4),
+                deps=('collections', 'contextlib', 'errno', 'fnmatch',
+                        'functools', 'grp', 'io', 'nt', 'ntpath', 'operator',
+                        'os', 'posixpath', 'pwd', 're', 'stat',
+                        'urllib.parse')),
+
     'pickle': (
         PythonModule(version=2,
                 deps=('binascii', 'copy_reg', 'cStringIO', 'marshal', 're',
@@ -2844,7 +2853,7 @@ _metadata = {
                         'stat', 'struct', 'time', 'warnings', 'zlib'))),
 
     'zipimport':
-        CoreExtensionModule(),
+        ExtensionModule(source='zipimport.c', deps='zlib'),
 
     'zlib':
         ExtensionModule(source='zlibmodule.c', xlib='zlib'),
@@ -3724,13 +3733,15 @@ _metadata = {
                 deps=('calendar', 'datetime', 'locale', 're', '_thread',
                         'time'))),
 
-    # We treat _struct as a core module (ie. built in with the interpreter
-    # library) for Python v3.4 and later because it cannot be linked separately
-    # on Windows (because of the PyVarObject_HEAD_INIT() problem).  This is
-    # probably a Python bug.
+    # For Python v3.4 and later assume that the source code is compiled in
+    # elsewhere (eg. by using the python.org Python library, or by using a
+    # static Python library configured by pyqtdeploy).  This is because it
+    # cannot be linked separately on Windows (because of the
+    # PyVarObject_HEAD_INIT() problem).  This is probably a Python bug.
     '_struct': (
         ExtensionModule(max_version=(3, 3), internal=True, source='_struct.c'),
-        CoreExtensionModule(min_version=(3, 4), internal=True)),
+        ExtensionModule(min_version=(3, 4), internal=True,
+                source='!win32#_struct.c')),
 
     '_subprocess':
         ExtensionModule(version=2, internal=True, scope='win32',

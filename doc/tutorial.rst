@@ -172,8 +172,8 @@ The tab for defining the application source is shown below.
     specified.
 
 **sys.path**
-    is used to specify additional directories that will be added to
-    :data:`sys.path`.  By default :program:`pyqtdeploy` generates an
+    is used to specify additional directories, ZIP files and eggs that will be
+    added to :data:`sys.path`.  By default :program:`pyqtdeploy` generates an
     application that does not support the importing of packages or extension
     modules that are not embedded in the application.  Indeed, some platforms
     specifically disallow this.  However there are circumstances where this

@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -245,7 +245,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_io/bufferedio.c \
         Modules/_io/textio.c \
         Modules/_io/stringio.c \
-        Modules/zipimport.c \
         Modules/faulthandler.c \
         Modules/symtablemodule.c \
 
@@ -253,9 +252,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         MOD_SOURCES += \
             Modules/_operator.c \
             Modules/_stat.c \
-            Modules/_struct.c \
             Modules/_tracemalloc.c \
             Modules/hashtable.c
+
+        win32 {
+            # Work around the PyVarObject_HEAD_INIT() problem in Python v3.4.
+            MOD_SOURCES += Modules/_struct.c
+        }
     }
 } else {
     MOD_SOURCES = \
@@ -265,7 +268,6 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/errnomodule.c \
         Modules/_sre.c \
         Modules/_codecsmodule.c \
-        Modules/zipimport.c \
         Modules/symtablemodule.c \
         Modules/_weakref.c
 }
