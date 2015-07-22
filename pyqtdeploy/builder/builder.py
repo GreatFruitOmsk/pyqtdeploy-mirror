@@ -370,7 +370,6 @@ class Builder():
         qmake_config4 -= both_config
         qmake_config5 -= both_config
 
-        both_config.add('release')
         both_config.add('warn_off')
 
         if project.application_is_console or not needs_gui:

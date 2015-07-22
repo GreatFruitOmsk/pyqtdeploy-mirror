@@ -42,7 +42,7 @@ win32 {
 }
 
 CONFIG -= qt
-CONFIG += warn_off staticlib release
+CONFIG += warn_off staticlib
 
 # Work around QTBUG-39300.
 CONFIG -= android_install
