@@ -723,7 +723,7 @@ def build_qt(host):
     host.qt_builder.build()
 
 
-def build_python(host, enable_dynamic_loading, use_platform_python):
+def build_python(host, debug, enable_dynamic_loading, use_platform_python):
     """ Build a static Python that optionally supports dynamic loading and
     using the platform Python.
     """
@@ -754,23 +754,29 @@ def build_python(host, enable_dynamic_loading, use_platform_python):
     else:
         get_package_source(host, host.python_package)
 
-        args = [host.pyqtdeploycli]
+        pyqtdeploycli_args = [host.pyqtdeploycli]
 
         if enable_dynamic_loading:
-            args.append('--enable-dynamic-loading')
+            pyqtdeploycli_args.append('--enable-dynamic-loading')
 
-        args.extend(
+        pyqtdeploycli_args.extend(
                 ['--package', 'python', '--target', host.target, 'configure'])
 
         # Note that we do not remove the source directory as it may be needed
         # by the generated code.
-        host.run(*args)
-        host.run('qmake', 'SYSROOT=' + host.sysroot)
+        host.run(*pyqtdeploycli_args)
+
+        qmake_args = ['qmake', 'SYSROOT=' + host.sysroot]
+        if debug:
+            qmake_args.append('CONFIG+=debug')
+
+        host.run(*qmake_args)
+
         host.run(host.make)
         host.run(host.make, 'install')
 
 
-def build_sip(host):
+def build_sip(host, debug):
     """ Build a static SIP. """
 
     # Build the host-specific code generator.
@@ -791,9 +797,15 @@ def build_sip(host):
 
     host.run(host.pyqtdeploycli, '--package', 'sip', '--output', configuration,
             '--target', host.target, 'configure')
-    host.run(host.python, 'configure.py', '--static', '--sysroot',
-            host.sysroot, '--no-tools', '--use-qmake', '--configuration',
-            configuration)
+
+    args = [host.python, 'configure.py', '--static', '--sysroot', host.sysroot,
+            '--no-tools', '--use-qmake', '--configuration', configuration]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
     host.run('qmake')
     host.run(host.make)
     host.run(host.make, 'install')
@@ -801,7 +813,7 @@ def build_sip(host):
     remove_current_dir()
 
 
-def build_pyqt(host):
+def build_pyqt(host, debug):
     """ Build a static PyQt5. """
 
     get_package_source(host, host.pyqt_package)
@@ -810,10 +822,17 @@ def build_pyqt(host):
 
     host.run(host.pyqtdeploycli, '--package', 'pyqt5', '--output',
             configuration, '--target', host.target, 'configure')
-    host.run(host.python, 'configure.py', '--static', '--sysroot',
-            host.sysroot, '--no-tools', '--no-qsci-api',
-            '--no-designer-plugin', '--no-qml-plugin', '--configuration',
-            configuration, '--sip', host.sip, '--confirm-license', '-c', '-j2')
+
+    args = [host.python, 'configure.py', '--static', '--sysroot', host.sysroot,
+            '--no-tools', '--no-qsci-api', '--no-designer-plugin',
+            '--no-qml-plugin', '--configuration', configuration, '--sip',
+            host.sip, '--confirm-license', '-c', '-j2']
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
     host.run(host.make)
     host.run(host.make, 'install')
 
@@ -834,6 +853,9 @@ group.add_argument('--build', help="the packages to build", nargs='+',
         choices=all_packages)
 parser.add_argument('--clean',
         help="clean the sysroot directory before building",
+        action='store_true')
+parser.add_argument('--debug',
+        help="build the debug versions of packages where possible",
         action='store_true')
 parser.add_argument('--enable-dynamic-loading',
         help="build Python with dynamic loading enabled", action='store_true')
@@ -861,12 +883,13 @@ if 'qt' in packages:
     build_qt(host)
 
 if 'python' in packages:
-    build_python(host, args.enable_dynamic_loading, args.use_platform_python)
+    build_python(host, args.debug, args.enable_dynamic_loading,
+            args.use_platform_python)
 
 if 'sip' in packages:
-    build_sip(host)
+    build_sip(host, args.debug)
 
 if 'pyqt' in packages:
-    build_pyqt(host)
+    build_pyqt(host, args.debug)
 
 host.build_deconfigure(closure)

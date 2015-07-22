@@ -159,7 +159,7 @@ Building a sysroot
 
 To build a new sysroot, run::
 
-    build-sysroot.py --target android-32 --clean --all
+    build-sysroot.py --target android-32 --clean --debug --all
 
 To make the sysroot the default, run::
 
