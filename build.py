@@ -117,7 +117,7 @@ def _get_release():
         if version is not None:
             ctx = before
         else:
-            release_suffix = time.strftime('-preview-%y%m%d%H%M')
+            release_suffix = time.strftime('.dev%y%m%d%H%M')
 
         changelog = [_format_changelog(ctx)]
 
@@ -140,8 +140,8 @@ def _get_release():
             parents = parent_ctx.parents()
 
         if version is None and parent_version is not None:
-            # This is a preview so work out what the next version will be based
-            # on the previous version.
+            # This is a development release so work out what the next version
+            # will be based on the previous version.
             major, minor, micro = parent_version
 
             if ctx.branch() == 'default':
@@ -181,7 +181,7 @@ def _get_release():
     else:
         version = '%d.%d.%d' % (major, minor, micro)
 
-    if 'preview' in release_suffix:
+    if 'dev' in release_suffix:
         level = 0x0
     elif 'alpha' in release_suffix:
         level = 0xa
@@ -215,7 +215,7 @@ def changelog(output_dir):
         return False
 
     changelog_name = 'ChangeLog'
-    if 'preview' in release:
+    if 'dev' in release:
         changelog_name += '-' + release
 
     out_file = open(os.path.join(output_dir, changelog_name), 'w')
@@ -228,10 +228,10 @@ def changelog(output_dir):
 def pyversion(py_file):
     """ Write the version of the package as a string and a hexversion to a
     file.  If it is a release then it will be of the form x.y[.z].  If it is a
-    preview then it will be of the form x.y[.z]-preview-timestamp where
-    x.y[.z] is the version number of the next release (not the previous one).
-    If this is a Mercurial archive (rather than a repository) then it does the
-    best it can (based on the name of the directory) with the limited
+    development release then it will be of the form x.y[.z].dev{timestamp}
+    where x.y[.z] is the version number of the next release (not the previous
+    one).  If this is a Mercurial archive (rather than a repository) then it
+    does the best it can (based on the name of the directory) with the limited
     information available.
 
     :param py_file:

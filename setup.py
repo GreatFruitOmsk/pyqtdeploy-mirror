@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ try:
     version_file.close()
 except FileNotFoundError:
     # Provide a minimal version file.
-    version = 'unknown'
+    version = '0.0.dev0'
     version_file = open(version_file_name, 'w')
     version_file.write(
             'PYQTDEPLOY_RELEASE = \'%s\'\nPYQTDEPLOY_HEXVERSION = 0\n' %
