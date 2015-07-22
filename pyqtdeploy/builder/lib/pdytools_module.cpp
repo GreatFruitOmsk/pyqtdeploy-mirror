@@ -560,29 +560,33 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
     if (QFileInfo(filename).isFile())
         return ModuleIsPackage;
 
-    // See if it is an adjacent extension module.
-    const QDir &exec_dir = pdytools_get_executable_dir();
+    // See if it is an adjacent extension module.  Allow for the fact that we
+    // can be called before we have set the executable directory.
+    if (executable_dir)
+    {
+        const QDir &exec_dir = pdytools_get_executable_dir();
 
-    QString em_name(fqmn);
-    em_name.append(extension_module_extension);
+        QString em_name(fqmn);
+        em_name.append(extension_module_extension);
 
 #if defined(Q_OS_DARWIN)
-    // The PlugIns directory is the prefered location for dynamic modules.
-    filename = exec_dir.filePath(QString("../PlugIns/%1").arg(em_name));
+        // The PlugIns directory is the prefered location for dynamic modules.
+        filename = exec_dir.filePath(QString("../PlugIns/%1").arg(em_name));
 
-    if (QFileInfo(filename).isFile())
-        return ModuleIsAdjacentExtensionModule;
+        if (QFileInfo(filename).isFile())
+            return ModuleIsAdjacentExtensionModule;
 
-    filename = exec_dir.filePath(QString("../Frameworks/%1").arg(em_name));
+        filename = exec_dir.filePath(QString("../Frameworks/%1").arg(em_name));
 
-    if (QFileInfo(filename).isFile())
-        return ModuleIsAdjacentExtensionModule;
+        if (QFileInfo(filename).isFile())
+            return ModuleIsAdjacentExtensionModule;
 #endif
 
-    filename = exec_dir.filePath(em_name);
+        filename = exec_dir.filePath(em_name);
 
-    if (QFileInfo(filename).isFile())
-        return ModuleIsAdjacentExtensionModule;
+        if (QFileInfo(filename).isFile())
+            return ModuleIsAdjacentExtensionModule;
+    }
 
     // See if it is a namespace.
     filename = pathname;
