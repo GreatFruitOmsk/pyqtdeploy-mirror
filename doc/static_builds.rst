@@ -24,7 +24,7 @@ refer to the :program:`qmake` command of your Qt installation as ``qmake``.
 You must make sure that you run the correct copy of :program:`qmake` if you
 have multiple versions of Qt installed.  When cross-compiling for mobile
 devices it is recommended that you use one of the binary installers provided by
-Digia.
+The Qt Company.
 
 You must also have a host SIP installation that is the same version as the
 target version you will be building.
@@ -59,7 +59,7 @@ and run::
 ``X.Y.Z`` is the version number of Qt you are building.
 
 When cross-compiling for mobile devices it is recommended that you use one of
-the binary installers provided by Digia.
+the binary installers provided by The Qt Company.
 
 If your Qt installation is affected by `QTBUG-41204
 <https://bugreports.qt-project.org/browse/QTBUG-41204>`_ then you should not
