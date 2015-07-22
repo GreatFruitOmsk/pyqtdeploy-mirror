@@ -154,6 +154,19 @@ To configure the environment (assuming an OS/X host), run::
     export PATH=/path/to/apache-ant-x.y.z/bin:$PATH
 
 
+Building a sysroot
+------------------
+
+To build a new sysroot, run::
+
+    build-sysroot.py --target android-32 --clean --all
+
+To make the sysroot the default, run::
+
+    rm /path/to/sysroot
+    ln -s sysroot-android-32 /path/to/sysroot
+
+
 Creating an Android Virtual Device
 ----------------------------------
 

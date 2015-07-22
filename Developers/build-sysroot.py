@@ -40,8 +40,8 @@ import tarfile
 import zipfile
 
 
-QT_VERSION_NATIVE = '5.4.1'
-QT_VERSION_CROSS = '5.3.1'
+QT_VERSION_NATIVE = '5.5.0'
+QT_VERSION_CROSS = '5.5.0'
 PY_VERSION = '3.4.3'
 
 # The supported targets.
