@@ -117,7 +117,8 @@ def _get_release():
         if version is not None:
             ctx = before
         else:
-            release_suffix = time.strftime('.dev%y%m%d%H%M')
+            release_suffix = time.strftime('.dev%y%m%d%H%M',
+                    time.localtime(ctx.date()[0]))
 
         changelog = [_format_changelog(ctx)]
 
