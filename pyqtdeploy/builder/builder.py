@@ -985,32 +985,19 @@ class Builder():
 
         path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
-        f.write('\n#if defined(Q_OS_WIN) && PY_MAJOR_VERSION >= 3\n\n')
-        self._write_main_call(f, 'wmain', 'wchar_t', c_inittab, main_module,
-                entry_point, path_dirs)
-        f.write('\n#else\n\n')
-        self._write_main_call(f, 'main', 'char', c_inittab, main_module,
-                entry_point, path_dirs)
-        f.write('\n#endif\n')
-
-        f.close()
-
-    @staticmethod
-    def _write_main_call(f, main_name, argv_type, c_inittab, main_module, entry_point, path_dirs):
-        """ Write the forward declaration of pyqtdeploy_start() and the
-        implementation of the main function.
-        """
-
-        f.write('''extern int pyqtdeploy_start(int argc, %s **argv,
+        f.write('''extern int pyqtdeploy_start(int argc, char **argv,
         struct _inittab *extension_modules, const char *main_module,
         const char *entry_point, const char **path_dirs);
+''')
 
-int %s(int argc, %s **argv)
+        f.write('''
+int main(int argc, char **argv)
 {
     return pyqtdeploy_start(argc, argv, %s, "%s", %s, %s);
 }
-''' % (argv_type, main_name, argv_type, c_inittab, main_module, entry_point,
-        path_dirs))
+''' % (c_inittab, main_module, entry_point, path_dirs))
+
+        f.close()
 
     @classmethod
     def _write_inittab(cls, f, inittab, c_inittab, py3):
