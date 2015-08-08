@@ -985,17 +985,32 @@ class Builder():
 
         path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
-        f.write('''extern int pyqtdeploy_start(int argc, char **argv,
+        f.write('''
+#if defined(Q_OS_WIN) && PY_MAJOR_VERSION >= 3
+#include <windows.h>
+
+extern int pyqtdeploy_start(int argc, wchar_t **w_argv,
         struct _inittab *extension_modules, const char *main_module,
         const char *entry_point, const char **path_dirs);
-''')
 
-        f.write('''
+int main(int argc, char **)
+{
+    LPWSTR *w_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+    return pyqtdeploy_start(argc, w_argv, %s, "%s", %s, %s);
+}
+#else
+extern int pyqtdeploy_start(int argc, char **argv,
+        struct _inittab *extension_modules, const char *main_module,
+        const char *entry_point, const char **path_dirs);
+
 int main(int argc, char **argv)
 {
     return pyqtdeploy_start(argc, argv, %s, "%s", %s, %s);
 }
-''' % (c_inittab, main_module, entry_point, path_dirs))
+#endif
+''' % (c_inittab, main_module, entry_point, path_dirs,
+       c_inittab, main_module, entry_point, path_dirs))
 
         f.close()
 
