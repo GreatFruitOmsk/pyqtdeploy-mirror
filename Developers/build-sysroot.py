@@ -568,7 +568,7 @@ class OSXPythonInstallation(PosixPythonInstallation):
         """ The name of the host python executable including any required path.
         """
 
-        return 'python3'
+        return 'python3' if self.version.startswith('3') else 'python'
 
     @property
     def src_dir(self):
@@ -587,7 +587,7 @@ class LinuxPythonInstallation(PosixPythonInstallation):
         """ The name of the host python executable including any required path.
         """
 
-        return os.path.expandvars('$HOME/usr/bin/python3')
+        return os.path.expandvars('$HOME/usr/bin/python3' if self.version.startswith('3') else '$HOME/usr/bin/python')
 
     @property
     def src_dir(self):
