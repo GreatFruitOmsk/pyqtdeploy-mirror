@@ -32,6 +32,80 @@ diff -ruN Python-3.4.3.orig/Lib/_bootlocale.py Python-3.4.3/Lib/_bootlocale.py
      else:
          def getpreferredencoding(do_setlocale=True):
              assert not do_setlocale
+diff -ruN Python-3.4.3.orig/Lib/locale.py Python-3.4.3/Lib/locale.py
+--- Python-3.4.3.orig/Lib/locale.py	2015-02-25 11:27:44.000000000 +0000
++++ Python-3.4.3/Lib/locale.py	2015-08-09 11:07:54.000000000 +0100
+@@ -31,6 +31,30 @@
+            "normalize", "LC_CTYPE", "LC_COLLATE", "LC_TIME", "LC_MONETARY",
+            "LC_NUMERIC", "LC_ALL", "CHAR_MAX"]
+ 
++def _localeconv():
++    """ localeconv() -> dict.
++        Returns numeric and monetary locale-specific parameters.
++    """
++    # 'C' locale default values
++    return {'grouping': [127],
++            'currency_symbol': '',
++            'n_sign_posn': 127,
++            'p_cs_precedes': 127,
++            'n_cs_precedes': 127,
++            'mon_grouping': [],
++            'n_sep_by_space': 127,
++            'decimal_point': '.',
++            'negative_sign': '',
++            'positive_sign': '',
++            'p_sep_by_space': 127,
++            'int_curr_symbol': '',
++            'p_sign_posn': 127,
++            'thousands_sep': '',
++            'mon_thousands_sep': '',
++            'frac_digits': 127,
++            'mon_decimal_point': '',
++            'int_frac_digits': 127}
++
+ def _strcoll(a,b):
+     """ strcoll(string,string) -> int.
+         Compares two strings according to the locale.
+@@ -61,30 +85,6 @@
+     LC_TIME = 2
+     Error = ValueError
+ 
+-    def localeconv():
+-        """ localeconv() -> dict.
+-            Returns numeric and monetary locale-specific parameters.
+-        """
+-        # 'C' locale default values
+-        return {'grouping': [127],
+-                'currency_symbol': '',
+-                'n_sign_posn': 127,
+-                'p_cs_precedes': 127,
+-                'n_cs_precedes': 127,
+-                'mon_grouping': [],
+-                'n_sep_by_space': 127,
+-                'decimal_point': '.',
+-                'negative_sign': '',
+-                'positive_sign': '',
+-                'p_sep_by_space': 127,
+-                'int_curr_symbol': '',
+-                'p_sign_posn': 127,
+-                'thousands_sep': '',
+-                'mon_thousands_sep': '',
+-                'frac_digits': 127,
+-                'mon_decimal_point': '',
+-                'int_frac_digits': 127}
+-
+     def setlocale(category, value=None):
+         """ setlocale(integer,string=None) -> string.
+             Activates/queries locale processing.
+@@ -94,6 +94,8 @@
+         return 'C'
+ 
+ # These may or may not exist in _locale, so be sure to set them.
++if 'localeconv' not in globals():
++    localeconv = _localeconv
+ if 'strxfrm' not in globals():
+     strxfrm = _strxfrm
+ if 'strcoll' not in globals():
 diff -ruN Python-3.4.3.orig/Modules/_decimal/_decimal.c Python-3.4.3/Modules/_decimal/_decimal.c
 --- Python-3.4.3.orig/Modules/_decimal/_decimal.c	2015-02-25 11:27:45.000000000 +0000
 +++ Python-3.4.3/Modules/_decimal/_decimal.c	2015-08-08 22:23:04.000000000 +0100
