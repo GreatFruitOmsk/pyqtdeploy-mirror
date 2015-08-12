@@ -604,8 +604,8 @@ class QrcPackage():
 
         self.name = None
         self.contents = []
-        self.exclusions = ['*.pyc', '*.pyd', '*.pyo', '*.pyx', '__pycache__',
-                '*-info', '*.so']
+        self.exclusions = ['*.pyc', '*.pyd', '*.pyo', '*.pyx', '*.pxi',
+                '__pycache__', '*-info', '*.so']
 
     def copy(self):
         """ Return a copy of the package. """
