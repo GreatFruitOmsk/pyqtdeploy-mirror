@@ -618,32 +618,33 @@ class Builder():
             f.write('\n')
 
             if scope == '':
-                prefix = ''
+                indent = ''
                 tail = None
             elif scope.startswith('win32_'):
                 # We could avoid the hardcoded handling by reverting to
                 # defining appropriate CONFIG values in a pre_configuration.pro
                 # file.
-                prefix = '        '
+                indent = '        '
                 f.write(
                         'win32 {\n    %scontains(QMAKE_TARGET.arch, x86_64) {\n' % ('!' if scope == 'win32_x86' else ''))
                 tail = '    }\n}\n'
             else:
-                prefix = '    '
+                indent = '    '
                 f.write('%s {\n' % scope)
                 tail = '}\n'
 
             for defines in used_defines.get(scope, ()):
-                f.write('{0}DEFINES += {1}\n'.format(prefix, defines))
+                f.write('{0}DEFINES += {1}\n'.format(indent, defines))
 
             for includepath in used_includepath.get(scope, ()):
-                f.write('{0}INCLUDEPATH += {1}\n'.format(prefix, includepath))
+                f.write('{0}INCLUDEPATH += {1}\n'.format(indent, includepath))
 
             for lib in used_libs.get(scope, ()):
-                f.write('{0}LIBS += {1}\n'.format(prefix, lib))
+                f.write('{0}LIBS += {1}\n'.format(indent, lib))
 
             for source in used_sources.get(scope, ()):
-                f.write('{0}SOURCES += {1}\n'.format(prefix, source))
+                sources_prefix = 'MASM' if source.endswith('.asm') else ''
+                f.write('{0}{1}SOURCES += {2}\n'.format(indent, sources_prefix, source))
 
             if tail is not None:
                 f.write(tail)

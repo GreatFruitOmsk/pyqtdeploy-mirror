@@ -3,10 +3,7 @@ linux-* {
 }
 
 win32 {
-    ASM = $$find(SOURCES, ^.*\.asm$)
-    SOURCES -= $$ASM
-
-    masm.input = ASM
+    masm.input = MASMSOURCES
     masm.output = ${QMAKE_FILE_BASE}.obj
 
     contains(QMAKE_TARGET.arch, x86_64) {
