@@ -1,3 +1,11 @@
+cython.name = Cython compiler
+cython.input = CYTHONSOURCES
+cython.output = ${QMAKE_FILE_BASE}.c
+cython.variable_out = GENERATED_SOURCES
+cython.commands = cython ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+
+QMAKE_EXTRA_COMPILERS += cython
+
 linux-* {
     LIBS += -lutil -ldl
 }
