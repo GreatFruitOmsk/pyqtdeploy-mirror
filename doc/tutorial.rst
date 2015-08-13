@@ -74,11 +74,11 @@ Scoped :program:`qmake` Variables
 ---------------------------------
 
 A :program:`pyqtdeploy` project has several places where it is possible to
-enter the values of certain :program:`qmake` variables (specifically
-``DEFINES``, ``INCLUDEPATH`` and ``LIBS``) which will then be included in the
-generated ``.pro`` file.  :program:`pyqtdeploy` goes to some trouble to make it
-possible to create project files that can be used without modification across
-all supported host platforms.
+enter the values of certain :program:`qmake` variables (specifically ``QT``,
+``CONFIG``, ``SOURCES``, ``DEFINES``, ``INCLUDEPATH`` and ``LIBS``) which will
+then be included in the generated ``.pro`` file.  :program:`pyqtdeploy` goes to
+some trouble to make it possible to create project files that can be used
+without modification across all supported host platforms.
 
 To this end the values of these :program:`qmake` variables may be *scoped* with
 any supported :program:`qmake` scope.  The most common requirement is to
@@ -421,12 +421,43 @@ This tab is used to specify any additional C extension modules (i.e. other than
 those that are part of the Python standard library or PyQt) that will be
 statically linked into the application.
 
+These extension modules may already have been built, but this tab can also be
+used to compile them source.  You would only normally do this for simple
+extension modules typically made up of a single source file.
+
 **Name**
     is the full (dot separated) package name of the extension module.
 
+**QT**
+    are the values added to the :program:`qmake` ``QT`` variable.
+
+**CONFIG**
+    are the values added to the :program:`qmake` ``CONFIG`` variable.
+
+**SOURCES**
+    are the names of the source files that will be compiled to create the
+    extension module.  The file name extension determines which
+    :program:`qmake` variable the file is added to:
+
+    - ``.asm`` files are added to ``MASMSOURCES``
+    - ``.h`` files are added to ``HEADERS``
+    - ``.java`` files are added to ``JAVASOURCES``
+    - ``.l`` files are added to ``LEXSOURCES``
+    - ``.pyx`` files are added to ``CYTHONSOURCES``
+    - ``.y`` files are added to ``YACCSOURCES``.
+
+    Files with any other extension are added to ``SOURCES``.
+
+**DEFINES**
+    are the values added to the :program:`qmake` ``DEFINES`` variable.
+
+**INCLUDEPATH**
+    are the values added to the :program:`qmake` ``INCLUDEPATH`` variable.
+
 **LIBS**
-    is the value added to the :program:`qmake` ``LIBS`` variable in order to
-    link the compiled extension module.
+    are the values added to the :program:`qmake` ``LIBS`` variable.  If the
+    extension module has already been compiled then this is used to link it
+    with the application.
 
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.
