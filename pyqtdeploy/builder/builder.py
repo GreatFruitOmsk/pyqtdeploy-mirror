@@ -330,6 +330,16 @@ class Builder():
 
             resource_contents.append(out_file)
 
+    # The map of non-C/C++ source extensions to qmake variable.
+    _source_extensions = {
+        '.asm':     'MASMSOURCES',
+        '.h':       'HEADERS',
+        '.java':    'JAVASOURCES',
+        '.l':       'LEXSOURCES',
+        '.pyx':     'CYTHONSOURCES',
+        '.y':       'YACCSOURCES',
+    }
+
     def _write_qmake(self, build_dir, required_ext, required_libraries, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
@@ -417,6 +427,8 @@ class Builder():
         # Modules can share sources so we need to make sure we don't include
         # them more than once.  We might as well handle the other things in the
         # same way.
+        used_qt = {}
+        used_config = {}
         used_sources = {}
         used_defines = {}
         used_includepath = {}
@@ -466,12 +478,31 @@ class Builder():
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
-            scoped_values = self._parse_scoped_values(other_em.libs, False)
+            scopes, value = self._get_scopes_and_value(other_em.name,
+                    ALL_SCOPES)
+            self._add_value_for_scopes(used_inittab, value, scopes)
 
-            for scope, values in scoped_values.items():
-                self._add_value_for_scopes(used_inittab, other_em.name,
-                        [scope])
-                self._add_value_set_for_scope(used_libs, values, scope)
+            if other_em.qt != '':
+                self._add_parsed_scoped_values(used_qt, other_em.qt, False)
+
+            if other_em.config != '':
+                self._add_parsed_scoped_values(used_config, other_em.config,
+                        False)
+
+            if other_em.sources != '':
+                self._add_parsed_scoped_values(used_sources, other_em.sources,
+                        True)
+
+            if other_em.defines != '':
+                self._add_parsed_scoped_values(used_defines, other_em.defines,
+                        False)
+
+            if other_em.includepath != '':
+                self._add_parsed_scoped_values(used_includepath,
+                        other_em.includepath, True)
+
+            if other_em.libs != '':
+                self._add_parsed_scoped_values(used_libs, other_em.libs, False)
 
         # Configure the target Python interpreter.
         if project.python_target_include_dir != '':
@@ -518,7 +549,7 @@ class Builder():
                 self._add_value_for_scopes(used_inittab, name, module_scopes)
 
                 for source in module.source:
-                    scopes, source = self._get_scope_and_value(source,
+                    scopes, source = self._get_scopes_and_value(source,
                             module_scopes)
                     source = self._python_source_file(source_dir, source)
                     self._add_value_for_scopes(used_sources, source, scopes)
@@ -527,14 +558,14 @@ class Builder():
 
                 if module.defines is not None:
                     for define in module.defines:
-                        scopes, define = self._get_scope_and_value(define,
+                        scopes, define = self._get_scopes_and_value(define,
                                 module_scopes)
                         self._add_value_for_scopes(used_defines, define,
                                 scopes)
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
-                        scopes, includepath = self._get_scope_and_value(
+                        scopes, includepath = self._get_scopes_and_value(
                                 includepath, module_scopes)
                         includepath = self._python_source_file(source_dir,
                                 includepath)
@@ -543,7 +574,7 @@ class Builder():
 
                 if module.libs is not None:
                     for lib in module.libs:
-                        scopes, lib = self._get_scope_and_value(lib,
+                        scopes, lib = self._get_scopes_and_value(lib,
                                 module_scopes)
                         self._add_value_for_scopes(used_libs, lib, scopes)
 
@@ -608,7 +639,9 @@ class Builder():
         f.write('\n')
 
         # Get the set of all scopes used.
-        used_scopes = set(used_sources.keys())
+        used_scopes = set(used_qt.keys())
+        used_scopes.update(used_config.keys())
+        used_scopes.update(used_sources.keys())
         used_scopes.update(used_defines.keys())
         used_scopes.update(used_includepath.keys())
         used_scopes.update(used_libs.keys())
@@ -633,6 +666,12 @@ class Builder():
                 f.write('%s {\n' % scope)
                 tail = '}\n'
 
+            for qt in used_qt.get(scope, ()):
+                f.write('{0}QT += {1}\n'.format(indent, qt))
+
+            for config in used_config.get(scope, ()):
+                f.write('{0}CONFIG += {1}\n'.format(indent, config))
+
             for defines in used_defines.get(scope, ()):
                 f.write('{0}DEFINES += {1}\n'.format(indent, defines))
 
@@ -640,11 +679,20 @@ class Builder():
                 f.write('{0}INCLUDEPATH += {1}\n'.format(indent, includepath))
 
             for lib in used_libs.get(scope, ()):
+                # A (strictly unnecessary) bit of pretty printing.
+                if lib.startswith('"-framework') and lib.endswith('"'):
+                    lib = lib[1:-1]
+
                 f.write('{0}LIBS += {1}\n'.format(indent, lib))
 
             for source in used_sources.get(scope, ()):
-                sources_prefix = 'MASM' if source.endswith('.asm') else ''
-                f.write('{0}{1}SOURCES += {2}\n'.format(indent, sources_prefix, source))
+                for ext, qmake_var in self._source_extensions.items():
+                    if source.endswith(ext):
+                        break
+                else:
+                    qmake_var = 'SOURCES'
+
+                f.write('{0}{1} += {2}\n'.format(indent, qmake_var, source))
 
             if tail is not None:
                 f.write(tail)
@@ -725,7 +773,7 @@ class Builder():
         scoped_value_sets = {}
 
         for scoped_value in self._split_quotes(raw):
-            scopes, value = self._get_scope_and_value(scoped_value, ALL_SCOPES)
+            scopes, value = self._get_scopes_and_value(scoped_value, ALL_SCOPES)
 
             # Convert potential filenames.
             if isfilename:
@@ -765,7 +813,7 @@ class Builder():
             s = s[i:].lstrip()
 
     @staticmethod
-    def _get_scope_and_value(scoped_value, scopes):
+    def _get_scopes_and_value(scoped_value, scopes):
         """ Return the 2-tuple of scopes and value from a (possibly) scoped
         value.
         """
@@ -1061,6 +1109,7 @@ static struct _inittab %s[] = {
 
     # The map of scopes to pre-processor symbols.
     _guards = {
+        'android':  'Q_OS_ANDROID',
         'linux-*':  'Q_OS_LINUX',
         'macx':     'Q_OS_MAC',
         'win32':    'Q_OS_WIN',

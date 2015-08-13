@@ -41,7 +41,7 @@ class Project(QObject):
     min_version = 4
 
     # The current project version.
-    version = 5
+    version = 6
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -378,11 +378,16 @@ class Project(QObject):
             cls._assert(name is not None,
                     "Missing 'ExtensionModule.name' attribute.")
 
-            libs = extension_module_element.get('libs')
-            cls._assert(libs is not None,
-                    "Missing 'ExtensionModule.libs' attribute.")
+            qt = extension_module_element.get('qt', '')
+            config = extension_module_element.get('config', '')
+            sources = extension_module_element.get('sources', '')
+            defines = extension_module_element.get('defines', '')
+            includepath = extension_module_element.get('includepath', '')
+            libs = extension_module_element.get('libs', '')
 
-            project.other_extension_modules.append(ExtensionModule(name, libs))
+            project.other_extension_modules.append(
+                    ExtensionModule(name, qt, config, sources, defines,
+                            includepath, libs))
 
         # The other configuration.
         others = root.find('Others')
@@ -543,6 +548,11 @@ class Project(QObject):
         for extension_module in self.other_extension_modules:
             SubElement(root, 'ExtensionModule', attrib={
                 'name': extension_module.name,
+                'qt': extension_module.qt,
+                'config': extension_module.config,
+                'sources': extension_module.sources,
+                'defines': extension_module.defines,
+                'includepath': extension_module.includepath,
                 'libs': extension_module.libs})
 
         SubElement(root, 'Others', attrib={
@@ -669,10 +679,15 @@ class ExternalLibrary():
 class ExtensionModule():
     """ The encapsulation of an extension module. """
 
-    def __init__(self, name, libs):
+    def __init__(self, name, qt, config, sources, defines, includepath, libs):
         """ Initialise the extension module. """
 
         self.name = name
+        self.qt = qt
+        self.config = config
+        self.sources = sources
+        self.defines = defines
+        self.includepath = includepath
         self.libs = libs
 
 

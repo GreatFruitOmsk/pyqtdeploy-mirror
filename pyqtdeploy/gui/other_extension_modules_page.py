@@ -49,7 +49,8 @@ class OtherExtensionModulesPage(QWidget):
 
         if self._project != value:
             self._project = value
-            self._extension_modules_delegate.set_project(value)
+            self._sources_delegate.set_project(value)
+            self._includepath_delegate.set_project(value)
             self._update_page()
 
     def __init__(self):
@@ -63,17 +64,19 @@ class OtherExtensionModulesPage(QWidget):
         layout = QVBoxLayout()
 
         self._extension_modules_edit = QTreeWidget(
-                whatsThis="This shows a list of additional compiled "
-                        "extension modules to be linked with the application. "
+                whatsThis="This shows a list of additional extension modules "
+                        "to be compiled or linked with the application. "
                         "<b>Name</b> should be the full (dot separated) "
-                        "package name of the extension module. <b>LIBS</b> "
-                        "should be the value of the corresponding "
-                        "<tt>qmake</tt> variable needed to link the extension "
-                        "module. Double-click on an entry to edit or remove "
-                        "it. Double-click below the last entry in order to "
-                        "add a new one. Values may be prefixed by a platform "
+                        "package name of the extension module. The remaining "
+                        "columns correspond to <tt>qmake</tt> variables "
+                        "needed to compile or link the extension module. "
+                        "Double-click on an entry to edit or remove it. "
+                        "Double-click below the last entry in order to add a "
+                        "new one. Values may be prefixed by a platform "
                         "specific <tt>qmake</tt> scope.")
-        self._extension_modules_edit.setHeaderLabels(["Name", "LIBS"])
+        self._extension_modules_edit.setHeaderLabels(
+                ["Name", "QT", "CONFIG", "SOURCES", "DEFINES", "INCLUDEPATH",
+                        "LIBS"])
         self._extension_modules_edit.setEditTriggers(
                 QTreeWidget.DoubleClicked|QTreeWidget.SelectedClicked|
                 QTreeWidget.EditKeyPressed)
@@ -81,11 +84,15 @@ class OtherExtensionModulesPage(QWidget):
         self._extension_modules_edit.itemChanged.connect(
                 self._extension_module_changed)
 
-        self._extension_modules_delegate = FilenameEditorDelegate(
-                "Extension Module Directory", directory=True)
+        self._sources_delegate = FilenameEditorDelegate(
+                "Extension Module Source")
+        self._extension_modules_edit.setItemDelegateForColumn(3,
+                self._sources_delegate)
 
-        self._extension_modules_edit.setItemDelegateForColumn(1,
-                self._extension_modules_delegate)
+        self._includepath_delegate = FilenameEditorDelegate(
+                "Extension Module Include Directory", directory=True)
+        self._extension_modules_edit.setItemDelegateForColumn(5,
+                self._includepath_delegate)
 
         layout.addWidget(self._extension_modules_edit)
 
@@ -106,15 +113,21 @@ class OtherExtensionModulesPage(QWidget):
         self._add_extension_module_item()
 
     def _add_extension_module_item(self, extension_module=None):
-        """ Add a QTreeWidgetItem that holds an exclusion. """
+        """ Add a QTreeWidgetItem that holds an extension module. """
 
         if extension_module is not None:
             name = extension_module.name
+            qt = extension_module.qt
+            config = extension_module.config
+            sources = extension_module.sources
+            defines = extension_module.defines
+            includepath = extension_module.includepath
             libs = extension_module.libs
         else:
-            name = libs = ''
+            name = qt = config = sources = defines = includepath = libs = ''
 
-        itm = QTreeWidgetItem([name, libs])
+        itm = QTreeWidgetItem(
+                [name, qt, config, sources, defines, includepath, libs])
 
         itm.setFlags(
                 Qt.ItemIsSelectable|Qt.ItemIsEditable|Qt.ItemIsEnabled|
@@ -129,13 +142,21 @@ class OtherExtensionModulesPage(QWidget):
         em_edit = self._extension_modules_edit
 
         new_name = itm.data(0, Qt.DisplayRole).strip()
-        new_libs = itm.data(1, Qt.DisplayRole).strip()
+        new_qt = itm.data(1, Qt.DisplayRole).strip()
+        new_config = itm.data(2, Qt.DisplayRole).strip()
+        new_sources = itm.data(3, Qt.DisplayRole).strip()
+        new_defines = itm.data(4, Qt.DisplayRole).strip()
+        new_includepath = itm.data(5, Qt.DisplayRole).strip()
+        new_libs = itm.data(6, Qt.DisplayRole).strip()
         itm_index = em_edit.indexOfTopLevelItem(itm)
 
-        if new_name != '' or new_libs != '':
-            # See if we have added a new one.
-            if itm_index == em_edit.topLevelItemCount() - 1:
-                self._add_extension_module_item()
+        for new in (new_name, new_qt, new_config, new_sources, new_defines, new_includepath, new_libs):
+            if new != '':
+                # See if we have added a new one.
+                if itm_index == em_edit.topLevelItemCount() - 1:
+                    self._add_extension_module_item()
+
+                break
         else:
             # It is empty so remove it.
             em_edit.takeTopLevelItem(itm_index)
@@ -144,7 +165,12 @@ class OtherExtensionModulesPage(QWidget):
         project.other_extension_modules = [
                 ExtensionModule(
                         em_edit.topLevelItem(i).data(0, Qt.DisplayRole).strip(),
-                        em_edit.topLevelItem(i).data(1, Qt.DisplayRole).strip())
+                        em_edit.topLevelItem(i).data(1, Qt.DisplayRole).strip(),
+                        em_edit.topLevelItem(i).data(2, Qt.DisplayRole).strip(),
+                        em_edit.topLevelItem(i).data(3, Qt.DisplayRole).strip(),
+                        em_edit.topLevelItem(i).data(4, Qt.DisplayRole).strip(),
+                        em_edit.topLevelItem(i).data(5, Qt.DisplayRole).strip(),
+                        em_edit.topLevelItem(i).data(6, Qt.DisplayRole).strip())
                         for i in range(em_edit.topLevelItemCount() - 1)]
 
         project.modified = True
