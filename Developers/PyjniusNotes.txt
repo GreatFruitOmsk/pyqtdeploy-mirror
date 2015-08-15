@@ -1,0 +1,143 @@
+pyjnius on Android
+==================
+
+These notes describe how to build the Python v3 fork of pyjnius for Android and
+using it as part of a pyqtdeploy'ed application.
+
+An application that imports ``jnius`` and displays ``jnius.__version__`` works.
+It is highly unlikely that anything else does.  It is hoped that somebody with
+greater Android and Java knowledge can take this basic information and turn it
+into something genuinely useful.
+
+pyqtdeploy v1.1 or later is required.
+
+
+Obtaining the Source Code
+-------------------------
+
+The source code of the Python v3 fork can be found at
+https://github.com/physion/pyjnius
+
+Click on the **Download ZIP** button to download ``pyjnius-master.zip``.
+Unpack this somewhere.  In the rest of these notes the source directory will be
+referred to as */path/to/pyjnius-master*.
+
+
+Restructure the Source Code
+---------------------------
+
+pyjnius is implemented as a package called ``jnius`` which contains a Cython
+generated module also called ``jnius``.  Each of pyjnius, Cython and Python
+itself have problems handling this structure when built as a statically
+compiled extention linked into the interpreter as a built-in module.
+
+By making the following changes the Cython module is instead implemented as a
+top level module called ``_jnius`` and avoids all the problems.
+
+To restructure the source code, run::
+
+    cd /path/to/pyjnius-master
+    mv jnius/*.pxi .
+    mv jnius/jnius.pyx _jnius.pyx
+
+Edit /path/to/pyjnius-master/jnius/__init__.py and replace ``from .jnius`` with
+``from _jnius``.
+
+Edit /path/to/pyjnius-master/jnius/reflect.py and replace ``from jnius`` with
+``from _jnius``.
+
+
+Fixing Bugs in the Source Code
+------------------------------
+
+There remain some bugs in the source code relating to support for Python v3.
+
+Edit /path/to/pyjnius-master/jnius_export_class.pxi and:
+
+- change the call to ``classDict.get('__javainterfaces__', '')`` so that the
+  second argument is ``b''``
+
+- change the call to ``classDict.get('__javabaseclass__', '')`` so that the
+  second argument is ``b''``.
+
+
+Removing the Dependency on the six Module
+-----------------------------------------
+
+The dependency on the external ``six`` module can be (optionally) removed.
+
+Edit /path/to/pyjnius-master/jnius_conversion.pxi and:
+
+- remove the import of the ``six`` module
+
+- replace ``string_types`` with ``str``.
+
+Edit /path/to/pyjnius-master/jnius_export_class.pxi and:
+
+- remove the import of the ``six`` module
+
+- replace all calls to ``iteritems(dict)`` with ``dict.items()``.
+
+Edit /path/to/pyjnius-master/jnius_nativetypes.pxi and:
+
+- remove the import of the ``six`` module.
+
+Edit /path/to/pyjnius-master/jnius_utils.pxi and:
+
+- remove the import of the ``six`` module
+
+- replace ``string_types`` with ``str``.
+
+
+Configuring the Source Code
+---------------------------
+
+In order to configure the source code for Android, create
+/path/to/pyjnius-master/config.pxi containing::
+
+    DEF JNIUS_PLATFORM = 'android'
+
+
+Faking SDL
+----------
+
+On Android pyjnius uses SDL to provide a pointer to the JNI environment.
+However Qt can provide the same thing.
+
+To use Qt rather than SDL create /path/to/pyjnius-master/sdl_fake.cpp
+containing::
+
+    // Copyright (c) 2015 Riverbank Computing Limited.
+
+    #include <QAndroidJniEnvironment>
+
+    extern "C" JNIEnv *SDL_ANDROID_GetJNIEnv()
+    {
+        static QAndroidJniEnvironment *env = 0;
+
+        if (!env)
+            env = new QAndroidJniEnvironment();
+
+        return (env ? env->operator JNIEnv*() : 0);
+    }
+
+
+Using in a pyqtdeploy Project
+-----------------------------
+
+The pure Python part of pyjnius is specified using the **Other Packages** tab.
+Enter /path/to/pyjnius-master in the **Packages Directory** table and press the
+**Scan** button.  Select the ``jnius_config.py`` module and the ``jnius``
+package and *all* of its contents.
+
+The Cython extension module is specified using the **Other Extension Modules**
+tab.  Make a new entry will the following values.
+
+**Name**
+    _jnius
+
+**QT**
+    androidextras
+
+**SOURCES**
+    /path/to/pyjnius-master/_jnius.pyx /path/to/pyjnius-master/sdl_fake.cpp
