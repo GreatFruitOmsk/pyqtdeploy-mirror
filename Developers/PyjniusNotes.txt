@@ -46,6 +46,10 @@ Edit /path/to/pyjnius-master/jnius/__init__.py and replace ``from .jnius`` with
 Edit /path/to/pyjnius-master/jnius/reflect.py and replace ``from jnius`` with
 ``from _jnius``.
 
+Edit jnius_conversion.pxi, jnius_export_func.pxi and jnius_proxy.pxi in the
+/path/to/pyjnius-master directory and replace all ``from .reflect`` to
+``from jnius``.
+
 
 Fixing Bugs in the Source Code
 ------------------------------
