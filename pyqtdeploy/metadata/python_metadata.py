@@ -3389,8 +3389,7 @@ _metadata = {
         PythonModule(internal=True, deps=('_json', 're')),
 
     '_locale': (
-        ExtensionModule(version=2, internal=True, source='_localemodule.c',
-                libs='linux-*#-lintl'),
+        ExtensionModule(version=2, internal=True, source='_localemodule.c'),
         CoreExtensionModule(version=3, internal=True)),
 
     '_lsprof':
