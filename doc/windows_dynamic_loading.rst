@@ -20,5 +20,6 @@ interpreter library with the deployed application.)
 Building the Python interpreter DLL on Windows is not particularly
 straightforward, especially if you want to customise it for your specific
 needs.  Therefore it is recommended that *if* you wish to dynamically load
-C/C++ extension modules then you use a copy of the Python interpreter DLL that
-is installed by the binary installer from python.org.
+C/C++ extension modules (or to load DLLs using the :mod:`ctypes` module) then
+you use a copy of the Python interpreter DLL that is installed by the binary
+installer from python.org.
