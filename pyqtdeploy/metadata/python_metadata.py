@@ -288,6 +288,14 @@ _metadata = {
                 deps=('mimetools', 'socket', 'SocketServer', 'time',
                         'warnings')),
 
+    'bdb': (
+        PythonModule(version=2,
+                deps=('fnmatch', 'linecache', 'os', 'repr', 'types')),
+        PythonModule(version=(3, 3),
+                deps=('fnmatch', 'linecache', 'os', 'reprlib')),
+        PythonModule(min_version=(3, 4),
+                deps=('fnmatch', 'inspect', 'linecache', 'os', 'reprlib'))),
+
     'binascii':
         ExtensionModule(source='binascii.c'),
 
