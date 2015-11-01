@@ -2101,6 +2101,15 @@ _metadata = {
                         'os', 'posixpath', 'pwd', 're', 'stat',
                         'urllib.parse')),
 
+    'pdb': (
+        PythonModule(version=2,
+                deps=('bdb', 'cmd', 'linecache', 'os', 'pprint', 're', 'repr',
+                        'shlex', 'traceback')),
+        PythonModule(version=3,
+                deps=('bdb', 'cmd', 'code', 'dis', 'glob', 'inspect',
+                        'linecache', 'os', 'pprint', 'pydoc', 're', 'shlex',
+                        'signal', 'traceback'))),
+
     'pickle': (
         PythonModule(version=2,
                 deps=('binascii', 'copy_reg', 'cStringIO', 'marshal', 're',
