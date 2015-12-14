@@ -279,7 +279,10 @@ _metadata = {
         ExtensionModule(source='audioop.c'),
 
     'base64': (
-        PythonModule(version=2, deps=('binascii', 're', 'struct')),
+        PythonModule(max_version=(2, 7, 10),
+                deps=('binascii', 're', 'struct')),
+        PythonModule(min_version=(2, 7, 11), max_version=2,
+                deps=('binascii', 're', 'string', 'struct')),
         PythonModule(version=3,
                 deps=('binascii', 're', 'struct', 'warnings'))),
 
@@ -2144,10 +2147,14 @@ _metadata = {
                         'warnings'))),
 
     'platform': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 10),
                 deps=('gestalt', 'MacOS', 'os', 'plistlib', 're', 'socket',
                         'string', 'struct', 'subprocess', 'tempfile',
                         '_winreg')),
+        PythonModule(min_version=(2, 7, 11), max_version=2,
+                deps=('ctypes', 'ctypes.wintypes', 'gestalt', 'MacOS', 'os',
+                        'plistlib', 're', 'socket', 'string', 'struct',
+                        'subprocess', 'tempfile', '_winreg')),
         PythonModule(version=(3, 3),
                 deps=('collections', '_gestalt', 'os', 'plistlib', 're',
                         'socket', 'struct', 'subprocess', 'warnings',
@@ -2663,8 +2670,10 @@ _metadata = {
     'user':
         PythonModule(version=2, deps=('os', 'warnings')),
 
-    'UserDict':
-        PythonModule(version=2, deps=('_abcoll', 'copy')),
+    'UserDict': (
+        PythonModule(max_version=(2, 7, 10), deps=('_abcoll', 'copy')),
+        PythonModule(min_version=(2, 7, 11), max_version=2,
+                deps=('_abcoll', 'copy', 'warnings'))),
 
     'UserList':
         PythonModule(version=2, deps='collections'),
@@ -3942,6 +3951,7 @@ if __name__ == '__main__':
     check_version(2, 7, 0)
     check_version(2, 7, 9)
     check_version(2, 7, 10)
+    check_version(2, 7, 11)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 2)
