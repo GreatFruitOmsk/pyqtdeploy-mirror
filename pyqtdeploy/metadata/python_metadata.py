@@ -54,7 +54,7 @@ class StdlibModule:
         # The sequence of additional modules that this one is dependent on.
         # These dependencies are hidden from the user and (most importantly)
         # further sub-dependencies are ignored.  The use case is the warnings
-        # module in Python v3 which is a dependence of the core (for a simple
+        # module in Python v3 which is a dependency of the core (for a simple
         # function that should never be called) but drags in a lot of other
         # stuff.
         self.hidden_deps = (hidden_deps, ) if isinstance(hidden_deps, str) else hidden_deps
@@ -239,11 +239,16 @@ _metadata = {
                         'warnings')),
         PythonModule(version=(3, 3),
                 deps=('asyncore', 'collections', 'socket')),
-        PythonModule(min_version=(3, 4), deps=('asyncore', 'collections'))),
+        PythonModule(version=(3, 4), deps=('asyncore', 'collections')),
+        PythonModule(min_version=(3, 5),
+                deps=('asyncore', 'collections', 'warnings'))),
 
-    'asyncore':
-        PythonModule(deps=('errno', 'fcntl', 'os', 'select', 'socket', 'time',
-                'warnings')),
+    'asyncore': (
+        PythonModule(max_version=(3, 4),
+                deps=('errno', 'fcntl', 'os', 'select', 'socket', 'time',
+                        'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('errno', 'os', 'select', 'socket', 'time', 'warnings'))),
 
     'asyncio': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -316,7 +321,10 @@ _metadata = {
 
     'bz2': (
         ExtensionModule(version=2, source='bz2module.c', xlib='bz2'),
-        PythonModule(version=3, deps=('_thread', '_bz2', 'io', 'warnings'))),
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('_thread', '_bz2', 'io', 'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('_compression', '_thread', '_bz2', 'io', 'warnings'))),
 
     'calendar':
         PythonModule(deps=('datetime', 'locale')),
@@ -355,8 +363,10 @@ _metadata = {
     'cmd':
         PythonModule(deps='string'),
 
-    'code':
-        PythonModule(deps=('codeop', 'traceback')),
+    'code': (
+        PythonModule(max_version=(3, 4), deps=('codeop', 'traceback')),
+        PythonModule(min_version=(3, 5),
+                deps=('argparse', 'codeop', 'traceback'))),
 
     'codecs':
         PythonModule(deps='_codecs'),
@@ -393,8 +403,11 @@ _metadata = {
         PythonModule(version=2, deps=('imp', 'os', 'py_compile', 'struct')),
         PythonModule(version=(3, 3),
                 deps=('errno', 'imp', 'os', 'py_compile', 'struct')),
-        PythonModule(min_version=(3, 4),
-                deps=('importlib.util', 'os', 'py_compile', 'struct'))),
+        PythonModule(version=(3, 4),
+                deps=('importlib.util', 'os', 'py_compile', 'struct')),
+        PythonModule(min_version=(3, 5),
+                deps=('concurrent.futures', 'functools', 'importlib.util',
+                        'os', 'py_compile', 'struct'))),
 
     'concurrent':
         PythonModule(version=3, modules='concurrent.futures'),
@@ -510,8 +523,11 @@ _metadata = {
         PythonModule(version=3, deps=('io', 'os', 'struct'),
                 modules=('dbm.dumb', 'dbm.gnu', 'dbm.ndbm'))),
 
-    'dbm.dumb':
-        PythonModule(version=3, deps=('dbm', 'collections', 'io', 'os')),
+    'dbm.dumb': (
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('dbm', 'collections', 'io', 'os')),
+        PythonModule(min_version=(3, 5),
+                deps=('dbm', 'ast', 'collections', 'io', 'os'))),
 
     'dbm.gnu':
         PythonModule(version=3, scope='!win32', deps=('dbm', '_gdbm')),
@@ -526,9 +542,13 @@ _metadata = {
         PythonModule(min_version=(2, 7, 9), max_version=2,
                 deps=('collections', 'itertools', 'locale', 'math', 'numbers',
                         're', 'threading')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4, 0),
                 deps=('collections', 'copy', 'itertools', 'locale', 'math',
-                        'numbers', 're', 'threading'))),
+                        'numbers', 're', 'threading')),
+        PythonModule(min_version=(3, 4, 1), max_version=(3, 4),
+                deps=('collections', 'itertools', 'locale', 'math', 'numbers',
+                        're', 'threading')),
+        PythonModule(min_version=(3, 5), deps='_pydecimal')),
 
     'difflib': (
         PythonModule(version=2,
@@ -654,12 +674,17 @@ _metadata = {
                         'distutils.errors', 'distutils.log',
                         'distutils.msvccompiler', 'distutils.util', 'os',
                         'string', 'struct', 'sysconfig', 'tempfile', 'time')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('distutils.core', 'distutils.dir_util',
                         'distutils.errors', 'distutils.log',
                         'distutils.msvccompiler', 'distutils.sysconfig',
                         'distutils.util', 'os', 'struct', 'tempfile',
-                        'time'))),
+                        'time')),
+        PythonModule(min_version=(3, 5),
+                deps=('distutils.core', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'distutils.util', 'msvcrt',
+                        'os', 'struct', 'tempfile', 'time'))),
 
     'distutils.command.build':
         PythonModule(
@@ -679,11 +704,18 @@ _metadata = {
                         'distutils.extension', 'distutils.log',
                         'distutils.msvccompiler', 'distutils.sysconfig',
                         'distutils.util', 'os', 're', 'string', 'types')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('distutils.ccompiler', 'distutils.core',
                         'distutils.dep_util', 'distutils.errors',
                         'distutils.extension', 'distutils.log',
                         'distutils.msvccompiler', 'distutils.sysconfig',
+                        'distutils.util', 'os', 're')),
+        PythonModule(min_version=(3, 5),
+                deps=('concurrent.futures', 'contextlib',
+                        'distutils.ccompiler', 'distutils.core',
+                        'distutils.dep_util', 'distutils.errors',
+                        'distutils.extension', 'distutils.log',
+                        'distutils._msvccompiler', 'distutils.sysconfig',
                         'distutils.util', 'os', 're'))),
 
     'distutils.command.build_py': (
@@ -785,11 +817,15 @@ _metadata = {
                         'distutils.errors', 'distutils.log', 'distutils.spawn',
                         'hashlib', 'os', 'platform', 'socket', 'urllib2',
                         'urlparse')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('base64', 'distutils.core', 'distutils.errors',
                         'distutils.log', 'distutils.spawn', 'hashlib', 'io',
                         'os', 'platform', 'socket', 'urllib.parse',
-                        'urllib.request'))),
+                        'urllib.request')),
+        PythonModule(min_version=(3, 5),
+                deps=('base64', 'distutils.core', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn', 'hashlib', 'io',
+                        'os', 'platform', 'urllib.parse', 'urllib.request'))),
 
     'distutils.core':
         PythonModule(
@@ -876,17 +912,23 @@ _metadata = {
                         'distutils.log', 'distutils.msvc9compiler', 'os',
                         'winreg'))),
 
-    'distutils.spawn':
-        PythonModule(
+    'distutils.spawn': (
+        PythonModule(max_version=(3, 4),
                 deps=('distutils.debug', 'distutils.errors', 'distutils.log',
                         'distutils.sysconfig', 'errno', 'os')),
+        PythonModule(min_version=(3, 5),
+                deps=('distutils.debug', 'distutils.errors', 'distutils.log',
+                        'distutils.sysconfig', 'os'))),
 
     'distutils.sysconfig': (
         PythonModule(version=2,
                 deps=('distutils.errors', 'distutils.text_file', 'os',
                         '_osx_support', 're', 'string')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('distutils.errors', 'distutils.text_file', 'os',
+                        '_osx_support', 're', 'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('distutils.errors', 'distutils.text_file', '_imp', 'os',
                         '_osx_support', 're', 'warnings'))),
 
     'distutils.text_file': (
@@ -1061,8 +1103,11 @@ _metadata = {
         PythonModule(max_version=(3, 3),
                 deps=('email.mime', 'email.encoders',
                         'email.mime.nonmultipart')),
-        PythonModule(min_version=(3, 4),
-                deps=('email.mime', 'email.mime.nonmultipart'))),
+        PythonModule(version=(3, 4),
+                deps=('email.mime', 'email.mime.nonmultipart')),
+        PythonModule(min_version=(3, 5),
+                deps=('email.mime', 'email.charset',
+                        'email.mime.nonmultipart'))),
 
     'email.parser': (
         PythonModule(version=2,
@@ -1140,7 +1185,8 @@ _metadata = {
                         'encodings.iso8859_6', 'encodings.iso8859_7',
                         'encodings.iso8859_8', 'encodings.iso8859_9',
                         'encodings.johab', 'encodings.koi8_r',
-                        'encodings.koi8_u', 'encodings.latin_1',
+                        'encodings.koi8_t', 'encodings.koi8_u',
+                        'encodings.kz1048', 'encodings.latin_1',
                         'encodings.mac_arabic', 'encodings.mac_centeuro',
                         'encodings.mac_croatian', 'encodings.mac_cyrillic',
                         'encodings.mac_farsi', 'encodings.mac_greek',
@@ -1410,8 +1456,14 @@ _metadata = {
     'encodings.koi8_r':
         CodecModule(),
 
+    'encodings.koi8_t':
+        CodecModule(min_version=(3, 5)),
+
     'encodings.koi8_u':
         CodecModule(),
+
+    'encodings.kz1048':
+        CodecModule(min_version=(3, 5)),
 
     'encodings.latin_1': (
         CodecModule(version=2),
@@ -1566,8 +1618,11 @@ _metadata = {
         PythonModule(version=2,
                 deps=('__future__', 'decimal', 'math', 'numbers', 'operator',
                         're')),
-        PythonModule(version=3,
-                deps=('decimal', 'math', 'numbers', 'operator', 're'))),
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('decimal', 'math', 'numbers', 'operator', 're')),
+        PythonModule(min_version=(3, 5),
+                deps=('decimal', 'math', 'numbers', 'operator', 're',
+                        'warnings'))),
 
     'ftplib': (
         PythonModule(max_version=(3, 3),
@@ -1617,10 +1672,13 @@ _metadata = {
     'grp':
         ExtensionModule(scope='!win32', source='grpmodule.c'),
 
-    'gzip':
-        PythonModule(
+    'gzip': (
+        PythonModule(max_version=(3, 4),
                 deps=('errno', 'io', 'os', 'struct', 'time', 'warnings',
                         'zlib')),
+        PythonModule(min_version=(3, 5),
+                deps=('_compression', 'errno', 'io', 'os', 'struct', 'time',
+                        'warnings', 'zlib'))),
 
     'hashlib': (
         PythonModule(version=2,
@@ -1632,7 +1690,9 @@ _metadata = {
 
     'heapq': (
         PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),
-        PythonModule(version=3, deps=('_heapq', 'itertools'))),
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('_heapq', 'itertools')),
+        PythonModule(min_version=(3, 5), deps='_heapq')),
 
     'hmac': (
         PythonModule(max_version=(3, 3),
@@ -1673,19 +1733,25 @@ _metadata = {
     'HTMLParser':
         PythonModule(version=2, deps=('htmlentitydefs', 'markupbase', 're')),
 
-    'http':
-        PythonModule(version=3,
+    'http': (
+        PythonModule(min_version=3, max_version=(3, 4),
                 modules=('http.client', 'http.cookiejar', 'http.cookies',
                         'http.server')),
+        PythonModule(min_version=(3, 5), deps='enum',
+                modules=('http.client', 'http.cookiejar', 'http.cookies',
+                        'http.server'))),
 
     'http.client': (
         PythonModule(version=(3, 3),
                 deps=('http', 'collections', 'email.message', 'email.parser',
                         'io', 'os', 'socket', 'ssl', 'urllib.parse',
                         'warnings')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('http', 'collections', 'email.message', 'email.parser',
-                        'io', 'os', 'socket', 'ssl', 'urllib.parse'))),
+                        'io', 'os', 'socket', 'ssl', 'urllib.parse')),
+        PythonModule(min_version=(3, 5),
+                deps=('http', 'collections', 'email.message', 'email.parser',
+                        'io', 'os', 're', 'socket', 'ssl', 'urllib.parse'))),
 
     'http.cookiejar':
         PythonModule(version=3,
@@ -1693,8 +1759,11 @@ _metadata = {
                         're', 'threading', 'time', 'urllib.parse',
                         'urllib.request')),
 
-    'http.cookies':
-        PythonModule(version=3, deps=('http', 're', 'string', 'time')),
+    'http.cookies': (
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('http', 're', 'string', 'time')),
+        PythonModule(min_version=(3, 5),
+                deps=('http', 're', 'string', 'time', 'warnings'))),
 
     'http.server': (
         PythonModule(version=(3, 3),
@@ -1736,18 +1805,29 @@ _metadata = {
         CorePythonModule(version=(3, 3),
                 deps=('_imp', 'importlib', 'importlib._bootstrap',
                         'importlib.machinery', 'os', 'tokenize', 'warnings')),
-        CorePythonModule(min_version=(3, 4),
+        CorePythonModule(version=(3, 4),
                 deps=('_imp', 'importlib', 'importlib._bootstrap',
                         'importlib.machinery', 'importlib.util', 'os',
-                        'tokenize', 'types', 'warnings'))),
+                        'tokenize', 'types', 'warnings')),
+        CorePythonModule(min_version=(3, 5),
+                deps=('_imp', 'importlib', 'importlib._bootstrap',
+                        'importlib._bootstrap_external', 'importlib.machinery',
+                        'importlib.util', 'os', 'tokenize', 'types',
+                        'warnings'))),
 
     'importlib': (
         PythonModule(version=2, modules=()),
         CorePythonModule(version=(3, 3), deps=('importlib._bootstrap', '_imp'),
                 modules=('importlib.abc', 'importlib.machinery',
                         'importlib.util')),
-        CorePythonModule(min_version=(3, 4),
+        CorePythonModule(version=(3, 4),
                 deps=('importlib._bootstrap', '_imp', 'types'),
+                hidden_deps='warnings',
+                modules=('importlib.abc', 'importlib.machinery',
+                        'importlib.util')),
+        CorePythonModule(min_version=(3, 5),
+                deps=('importlib._bootstrap', 'importlib._bootstrap_external',
+                        '_imp', 'types'),
                 hidden_deps='warnings',
                 modules=('importlib.abc', 'importlib.machinery',
                         'importlib.util'))),
@@ -1757,20 +1837,32 @@ _metadata = {
                 deps=('importlib', 'abc', 'imp', 'importlib._bootstrap',
                         'importlib.machinery', 'marshal', 'tokenize',
                         'warnings')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('importlib', 'abc', 'importlib._bootstrap',
+                        'importlib.machinery')),
+        PythonModule(min_version=(3, 5),
+                deps=('importlib', 'abc', 'importlib._bootstrap',
+                        'importlib._bootstrap_external',
                         'importlib.machinery'))),
 
-    'importlib.machinery':
-        PythonModule(version=3,
+    'importlib.machinery': (
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('importlib', '_imp', 'importlib._bootstrap')),
+        PythonModule(min_version=(3, 5),
+                deps=('importlib', '_imp', 'importlib._bootstrap',
+                        'importlib._bootstrap_external'))),
 
     'importlib.util': (
         PythonModule(version=(3, 3),
                 deps=('importlib', 'importlib._bootstrap')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('importlib', 'contextlib', 'functools',
-                        'importlib._bootstrap', 'warnings'))),
+                        'importlib._bootstrap', 'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('importlib', 'contextlib', 'functools', 'importlib.abc',
+                        'importlib._bootstrap',
+                        'importlib._bootstrap_external', 'types',
+                        'warnings'))),
 
     'imputil':
         PythonModule(version=2, deps=('imp', 'marshal', 'struct', 'warnings')),
@@ -1783,11 +1875,16 @@ _metadata = {
                 deps=('collections', 'functools', 'imp', 'importlib.machinery',
                         'itertools', 'linecache', 'operator', 'os', 're',
                         'tokenize', 'types', 'warnings')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('ast', 'collections', 'functools', 'imp',
                         'importlib.machinery', 'itertools', 'linecache',
                         'operator', 'os', 're', 'token', 'tokenize', 'types',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('ast', 'collections', 'collections.abc', 'dis', 'enum',
+                        'functools', 'imp', 'importlib.machinery', 'itertools',
+                        'linecache', 'operator', 'os', 're', 'token',
+                        'tokenize', 'types', 'warnings'))),
 
     'io': (
         PythonModule(version=2, deps=('abc', '_io')),
@@ -1808,7 +1905,10 @@ _metadata = {
 
     'linecache': (
         PythonModule(version=2, deps='os'),
-        PythonModule(version=3, deps=('os', 'tokenize'))),
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('os', 'tokenize')),
+        PythonModule(min_version=(3, 5),
+                deps=('functools', 'os', 'tokenize'))),
 
     'linuxaudiodev':
         ExtensionModule(version=2, source='linuxaudiodev.c'),
@@ -1868,8 +1968,10 @@ _metadata = {
                         'smtplib', 'stat', 'struct', 'threading', 'time',
                         'urllib.parse'))),
 
-    'lzma':
-        PythonModule(version=3, deps=('io', '_lzma')),
+    'lzma': (
+        PythonModule(min_version=3, max_version=(3, 4), deps=('io', '_lzma')),
+        PythonModule(min_version=(3, 5),
+                deps=('_compression', 'io', '_lzma'))),
 
     'MacOS':
         ExtensionModule(version=2, scope='macx',
@@ -1934,9 +2036,13 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('dis', 'imp', 'importlib.machinery', 'marshal', 'os',
                         'types', 'struct')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('dis', 'importlib._bootstrap', 'importlib.machinery',
-                        'marshal', 'os', 'types', 'struct', 'warnings'))),
+                        'marshal', 'os', 'types', 'struct', 'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('dis', 'importlib._bootstrap_external',
+                        'importlib.machinery', 'marshal', 'os', 'types',
+                        'struct', 'warnings'))),
 
     'msilib':
         PythonModule(scope='win32',
@@ -2076,7 +2182,8 @@ _metadata = {
     'operator': (
         ExtensionModule(version=2, source='operator.c'),
         CoreExtensionModule(version=(3, 3)),
-        PythonModule(min_version=(3, 4), deps='_operator')),
+        PythonModule(version=(3, 4), deps='_operator'),
+        PythonModule(min_version=(3, 5), deps=('functools', '_operator'))),
 
     'optparse': (
         PythonModule(version=2, deps=('gettext', 'os', 'textwrap', 'types')),
@@ -2194,8 +2301,9 @@ _metadata = {
     'pprint': (
         PythonModule(version=2, deps=('cStringIO', 'time', 'warnings')),
         PythonModule(version=(3, 3), deps=('collections', 'io', 'time')),
-        PythonModule(min_version=(3, 4),
-                deps=('collections', 'io', 're', 'time'))),
+        PythonModule(version=(3, 4), deps=('collections', 'io', 're', 'time')),
+        PythonModule(min_version=(3, 5),
+                deps=('collections', 'io', 're', 'time', 'types'))),
 
     'profile':
         PythonModule(
@@ -2216,8 +2324,11 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('errno', 'imp', 'marshal', 'os', 'tokenize',
                         'traceback')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('importlib._bootstrap', 'importlib.machinery',
+                        'importlib.util', 'os', 'traceback')),
+        PythonModule(min_version=(3, 5),
+                deps=('importlib._bootstrap_external', 'importlib.machinery',
                         'importlib.util', 'os', 'traceback'))),
 
     'pyclbr': (
@@ -2249,14 +2360,22 @@ _metadata = {
                         'pkgutil', 'platform', 're', 'reprlib', 'select',
                         'tempfile', 'textwrap', 'threading', 'time',
                         'tokenize', 'traceback', 'tty', 'warnings')),
-        PythonModule(min_version=(3, 4, 2),
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4),
                 deps=('collections', 'email.message', 'http.server',
                         'importlib._bootstrap', 'importlib.machinery',
                         'importlib.util', 'inspect', 'io', 'os', 'pkgutil',
                         'platform', 're', 'reprlib', 'select', 'tempfile',
                         'textwrap', 'threading', 'time', 'tokenize',
-                        'traceback', 'tty', 'urllib.parse', 'warnings'))),
-
+                        'traceback', 'tty', 'urllib.parse', 'warnings')),
+        PythonModule(min_version=(3, 5),
+                deps=('collections', 'email.message', 'http.server',
+                        'importlib._bootstrap',
+                        'importlib._bootstrap_external', 'importlib.machinery',
+                        'importlib.util', 'inspect', 'io', 'os', 'pkgutil',
+                        'platform', 're', 'reprlib', 'select', 'subprocess',
+                        'tempfile', 'textwrap', 'threading', 'time',
+                        'tokenize', 'traceback', 'tty', 'urllib.parse',
+                        'warnings'))),
 
     'Queue':
         PythonModule(version=2,
@@ -2362,12 +2481,17 @@ _metadata = {
         PythonModule(version=2,
                 deps=('collections', 'errno', 'fnmatch', 'grp', 'os', 'pwd',
                         'stat', 'tarfile')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('collections', 'errno', 'fnmatch', 'grp', 'nt', 'os',
-                        'pwd', 'stat', 'tarfile'))),
+                        'pwd', 'stat', 'tarfile')),
+        PythonModule(min_version=(3, 5),
+                deps=('collections', 'errno', 'fnmatch', 'grp', 'nt', 'os',
+                        'pwd', 'stat', 'tarfile', 'zipfile'))),
 
-    'signal':
-        CoreExtensionModule(),
+    'signal': (
+        CoreExtensionModule(max_version=(3, 4)),
+        PythonModule(min_version=(3, 5),
+                deps=('enum', 'functools', '_signal'))),
 
     'SimpleHTTPServer': (
         PythonModule(max_version=(2, 7, 9),
@@ -2395,14 +2519,20 @@ _metadata = {
         PythonModule(version=2,
                 deps=('base64', 'email.base64mime', 'email.utils', 'hmac',
                         're', 'socket', 'ssl')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('base64', 'copy', 'email.base64mime', 'email.generator',
                         'email.message', 'email.utils', 'hmac', 'io', 're',
-                        'socket', 'ssl'))),
+                        'socket', 'ssl')),
+        PythonModule(min_version=(3, 5),
+                deps=('base64', 'copy', 'datetime', 'email.base64mime',
+                        'email.generator', 'email.message', 'email.utils',
+                        'hmac', 'io', 're', 'socket', 'ssl'))),
 
     'sndhdr': (
         PythonModule(max_version=(3, 3), deps='aifc'),
-        PythonModule(min_version=(3, 4), deps=('aifc', 'wave'))),
+        PythonModule(version=(3, 4), deps=('aifc', 'wave')),
+        PythonModule(min_version=(3, 5),
+                deps=('aifc', 'collections', 'wave'))),
 
     'spwd':
         ExtensionModule(scope='!win32', source='spwdmodule.c'),
@@ -2412,18 +2542,24 @@ _metadata = {
                 deps=('cStringIO', 'errno', 'functools', 'os', 'ssl', '_ssl',
                         '_socket', 'types', 'warnings')),
         PythonModule(version=(3, 3), deps=('errno', 'io', 'os', '_socket')),
-        PythonModule(min_version=(3, 4),
-                deps=('errno', 'enum', 'io', 'os', '_socket'))),
+        PythonModule(version=(3, 4),
+                deps=('errno', 'enum', 'io', 'os', '_socket')),
+        PythonModule(min_version=(3, 5),
+                deps=('errno', 'enum', 'io', 'os', 'selectors', '_socket'))),
 
     'SocketServer':
         PythonModule(version=2,
                 deps=('cStringIO', 'errno', 'os', 'select', 'socket',
                         'threading', 'traceback')),
 
-    'socketserver':
-        PythonModule(version=3,
+    'socketserver': (
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('errno', 'io', 'os', 'select', 'socket', 'traceback',
                         'threading')),
+        PythonModule(min_version=(3, 5),
+                deps=('errno', 'io', 'os', 'selectors', 'socket', 'time',
+                        'traceback', 'threading'))),
+
     'sqlite3':
         PythonModule(deps='sqlite3.dbapi2', modules=('sqlite3.dbapi2')),
 
@@ -2448,9 +2584,13 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('base64', 'errno', 're', 'socket', '_ssl', 'textwrap',
                         'time', 'traceback')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('base64', 'collections', 'enum', 'errno', 'os', 're',
-                        'socket', '_ssl', 'textwrap', 'time'))),
+                        'socket', '_ssl', 'textwrap', 'time')),
+        PythonModule(min_version=(3, 5),
+                deps=('base64', 'calendar', 'collections', 'enum', 'errno',
+                        'ipaddress', 'os', 're', 'socket', '_ssl', 'textwrap',
+                        'time'))),
 
     'stat': (
         PythonModule(version=2),
@@ -2466,7 +2606,10 @@ _metadata = {
 
     'string': (
         PythonModule(version=2, deps=('re', 'strop')),
-        PythonModule(version=3, deps=('collections', 're', '_string'))),
+        PythonModule(min_version=3, max_version=(3, 4),
+                deps=('collections', 're', '_string')),
+        PythonModule(min_version=(3, 5),
+                deps=('collections', 're', '_string', 'warnings'))),
 
     'StringIO':
         PythonModule(version=2, deps='errno'),
@@ -2599,7 +2742,9 @@ _metadata = {
     'traceback': (
         PythonModule(version=2, deps=('linecache', 'types')),
         PythonModule(version=(3, 3), deps='linecache'),
-        PythonModule(min_version=(3, 4), deps=('linecache', 'operator'))),
+        PythonModule(version=(3, 4), deps=('linecache', 'operator')),
+        PythonModule(min_version=(3, 5),
+                deps=('collections', 'itertools', 'linecache'))),
 
     'tracemalloc':
         PythonModule(min_version=(3, 4),
@@ -2609,8 +2754,15 @@ _metadata = {
     'tty':
         PythonModule(scope='!win32', deps='termios'),
 
-    'types':
-        PythonModule(),
+    'types': (
+        PythonModule(max_version=(3, 4)),
+        PythonModule(min_version=(3, 5),
+                deps=('collections.abc', 'functools'))),
+
+    'typing':
+        PythonModule(min_version=(3, 5),
+                deps=('abc', 'collections', 'collections.abc', 'functools',
+                        're', 'types')),
 
     'unicodedata':
         ExtensionModule(source='unicodedata.c'),
@@ -2688,9 +2840,12 @@ _metadata = {
         PythonModule(version=2,
                 deps=('ctypes', 'hashlib', 'os', 'random', 're', 'socket',
                         'time')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4),
                 deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
-                        'socket', 'time'))),
+                        'socket', 'time')),
+        PythonModule(min_version=(3, 5),
+                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
+                        'socket', 'subprocess', 'time'))),
 
     'warnings': (
         PythonModule(version=2,
@@ -2875,6 +3030,11 @@ _metadata = {
                         'operator', 're', 'socket', 'string', 'time', 'types',
                         'urllib', 'xml.parsers.expat')),
 
+    'zipapp':
+        PythonModule(min_version=(3, 5),
+                deps=('contextlib', 'os', 'pathlib', 'shutil', 'stat',
+                        'zipfile')),
+
     'zipfile': (
         PythonModule(version=2,
                 deps=('binascii', 'cStringIO', 'io', 'os', 're', 'shutil',
@@ -2882,9 +3042,13 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('binascii', 'imp', 'io', 'os', 're', 'shutil', 'stat',
                         'struct', 'time', 'warnings', 'zlib')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(version=(3, 4),
                 deps=('binascii', 'importlib.util', 'io', 'os', 're', 'shutil',
-                        'stat', 'struct', 'time', 'warnings', 'zlib'))),
+                        'stat', 'struct', 'time', 'warnings', 'zlib')),
+        PythonModule(min_version=(3, 5),
+                deps=('binascii', 'importlib.util', 'io', 'os', 're', 'shutil',
+                        'stat', 'struct', 'threading', 'time', 'warnings',
+                        'zlib'))),
 
     'zipimport':
         ExtensionModule(source='zipimport.c', deps='zlib'),
@@ -2913,12 +3077,19 @@ _metadata = {
                         'collections', 'concurrent.futures', 'heapq',
                         'inspect', 'logging', 'os', 'socket', 'subprocess',
                         'time', 'traceback')),
-        PythonModule(min_version=(3, 4, 3), internal=True,
+        PythonModule(version=(3, 4, 3), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.tasks',
                         'collections', 'concurrent.futures', 'heapq',
                         'inspect', 'logging', 'os', 'socket', 'subprocess',
-                        'threading', 'time', 'traceback', 'warnings'))),
+                        'threading', 'time', 'traceback', 'warnings')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.tasks', 'collections', 'concurrent.futures',
+                        'heapq', 'inspect', 'logging', 'os', 'socket',
+                        'subprocess', 'threading', 'time', 'traceback',
+                        'warnings'))),
 
     'asyncio.base_subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -2929,46 +3100,70 @@ _metadata = {
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.log',
                         'asyncio.protocols', 'asyncio.transports',
                         'collections', 'subprocess')),
-        PythonModule(min_version=(3, 4, 3), internal=True,
+        PythonModule(version=(3, 4, 3), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.futures',
                         'asyncio.log', 'asyncio.protocols',
                         'asyncio.transports', 'collections', 'subprocess',
+                        'warnings')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.futures', 'asyncio.log', 'asyncio.protocols',
+                        'asyncio.transports', 'collections', 'subprocess',
                         'warnings'))),
+
+    'asyncio.compat':
+        PythonModule(min_version=(3, 5), internal=True, deps='asyncio'),
 
     'asyncio.constants':
         PythonModule(min_version=(3, 4), internal=True, deps='asyncio'),
 
-    'asyncio.coroutines':
-        PythonModule(min_version=(3, 4, 2), internal=True,
+    'asyncio.coroutines': (
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.log', 'functools', 'inspect', 'opcode', 'os',
                         'traceback', 'types')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.log', 'collections.abc',
+                        'functools', 'inspect', 'opcode', 'os', 'traceback',
+                        'types'))),
 
     'asyncio.events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
                 deps=('asyncio', 'socket', 'subprocess', 'threading')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'functools', 'inspect', 'reprlib', 'socket',
-                        'subprocess', 'threading', 'traceback'))),
+                        'subprocess', 'threading', 'traceback')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
+                        'reprlib', 'socket', 'subprocess', 'threading',
+                        'traceback'))),
 
     'asyncio.futures': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
                 deps=('asyncio', 'asyncio.events', 'concurrent.futures._base',
                         'logging', 'traceback')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.events', 'concurrent.futures._base',
-                        'logging', 'reprlib', 'traceback'))),
+                        'logging', 'reprlib', 'traceback')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.events',
+                        'concurrent.futures._base', 'logging', 'reprlib',
+                        'traceback'))),
 
     'asyncio.locks': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.tasks', 'collections')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
-                        'asyncio.futures', 'collections'))),
+                        'asyncio.futures', 'collections')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'collections'))),
 
     'asyncio.log':
         PythonModule(min_version=(3, 4), internal=True,
@@ -2980,19 +3175,28 @@ _metadata = {
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.futures', 'asyncio.log', 'asyncio.transports',
                         'socket')),
-        PythonModule(min_version=(3, 4, 3), internal=True,
+        PythonModule(min_version=(3, 4, 3), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.futures', 'asyncio.log', 'asyncio.sslproto',
-                        'asyncio.transports', 'socket', 'warnings'))),
+                        'asyncio.transports', 'socket', 'warnings')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
+                        'asyncio.constants', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.sslproto', 'asyncio.transports', 'socket',
+                        'warnings'))),
 
     'asyncio.protocols':
         PythonModule(min_version=(3, 4), internal=True, deps='asyncio'),
 
-    'asyncio.queues':
-        PythonModule(min_version=(3, 4), internal=True,
+    'asyncio.queues': (
+        PythonModule(version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.locks', 'asyncio.tasks', 'collections',
                         'heapq')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.locks',
+                        'collections', 'heapq'))),
 
     'asyncio.selector_events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3006,29 +3210,44 @@ _metadata = {
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.transports', 'collections', 'errno',
                         'functools', 'selectors', 'socket', 'ssl')),
-        PythonModule(min_version=(3, 4, 3), internal=True,
+        PythonModule(min_version=(3, 4, 3), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.sslproto',
                         'asyncio.transports', 'collections', 'errno',
                         'functools', 'selectors', 'socket', 'ssl',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
+                        'asyncio.constants', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.sslproto', 'asyncio.transports',
+                        'collections', 'errno', 'functools', 'selectors',
+                        'socket', 'ssl', 'warnings'))),
 
-    'asyncio.sslproto':
-        PythonModule(min_version=(3, 4, 3), internal=True,
+    'asyncio.sslproto': (
+        PythonModule(min_version=(3, 4, 3), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.log', 'asyncio.protocols',
                         'asyncio.transports', 'collections', 'ssl',
                         'warnings')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.log',
+                        'asyncio.protocols', 'asyncio.transports',
+                        'collections', 'ssl', 'warnings'))),
 
     'asyncio.streams': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.protocols', 'asyncio.tasks', 'socket')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.protocols',
-                        'socket'))),
+                        'socket')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.protocols', 'socket'))),
 
     'asyncio.subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3036,11 +3255,15 @@ _metadata = {
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.protocols', 'asyncio.streams',
                         'asyncio.tasks', 'collections', 'subprocess')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.protocols',
                         'asyncio.streams', 'asyncio.tasks', 'collections',
-                        'subprocess'))),
+                        'subprocess')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
+                        'asyncio.log', 'asyncio.protocols', 'asyncio.streams',
+                        'asyncio.tasks', 'subprocess'))),
 
     'asyncio.tasks': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3049,14 +3272,22 @@ _metadata = {
                         'asyncio.log', 'asyncio.queues', 'asyncio.tasks',
                         'concurrent.futures', 'functools', 'inspect',
                         'linecache', 'os', 'traceback', 'weakref')),
-        PythonModule(min_version=(3, 4, 2), internal=True,
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.queues', 'asyncio.tasks',
                         'concurrent.futures', 'functools', 'inspect',
-                        'linecache', 'traceback', 'weakref'))),
+                        'linecache', 'traceback', 'weakref')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.queues',
+                        'asyncio.tasks', 'concurrent.futures', 'functools',
+                        'inspect', 'linecache', 'traceback', 'warnings',
+                        'weakref'))),
 
-    'asyncio.transports':
-        PythonModule(min_version=(3, 4), internal=True, deps='asyncio'),
+    'asyncio.transports': (
+        PythonModule(version=(3, 4), internal=True, deps='asyncio'),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat'))),
 
     'asyncio.unix_events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3074,11 +3305,20 @@ _metadata = {
                         'asyncio.selector_events', 'asyncio.transports',
                         'errno', 'fcntl', 'os', 'signal', 'socket', 'stat',
                         'subprocess', 'threading')),
-        PythonModule(min_version=(3, 4, 3), internal=True, scope='!win32',
+        PythonModule(min_version=(3, 4, 3), max_version=(3, 4), internal=True,
+                scope='!win32',
                 deps=('asyncio', 'asyncio.base_events',
                         'asyncio.base_subprocess', 'asyncio.coroutines',
                         'asyncio.constants', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log',
+                        'asyncio.selector_events', 'asyncio.transports',
+                        'errno', 'fcntl', 'os', 'signal', 'socket', 'stat',
+                        'subprocess', 'threading', 'warnings')),
+        PythonModule(min_version=(3, 5), internal=True, scope='!win32',
+                deps=('asyncio', 'asyncio.base_events',
+                        'asyncio.base_subprocess', 'asyncio.compat',
+                        'asyncio.coroutines', 'asyncio.constants',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.selector_events', 'asyncio.transports',
                         'errno', 'fcntl', 'os', 'signal', 'socket', 'stat',
                         'subprocess', 'threading', 'warnings'))),
@@ -3163,23 +3403,36 @@ _metadata = {
     '_compat_pickle':
         PythonModule(version=3, internal=True),
 
+    '_compression':
+        PythonModule(min_version=(3, 5), internal=True, deps='io'),
+
     'concurrent.futures._base':
         PythonModule(version=3, internal=True,
                 deps=('concurrent.futures', 'collections', 'logging',
                         'threading', 'time')),
 
-    'concurrent.futures.process':
-        PythonModule(version=3, internal=True,
+    'concurrent.futures.process': (
+        PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('concurrent.futures', 'atexit',
                         'concurrent.futures._base', 'multiprocessing',
                         'multiprocessing.connection', 'multiprocessing.queues',
                         'os', 'queue', 'threading', 'weakref')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('concurrent.futures', 'atexit',
+                        'concurrent.futures._base', 'functools', 'itertools',
+                        'multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.queues', 'os', 'queue', 'threading',
+                        'traceback', 'weakref'))),
 
-    'concurrent.futures.thread':
-        PythonModule(version=3, internal=True,
+    'concurrent.futures.thread': (
+        PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('concurrent.futures', 'atexit',
                         'concurrent.futures._base', 'queue', 'threading',
                         'weakref')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('concurrent.futures', 'atexit',
+                        'concurrent.futures._base', 'os', 'queue', 'threading',
+                        'weakref'))),
 
     '_crypt':
         ExtensionModule(version=3, internal=True, scope='!win32',
@@ -3271,6 +3524,12 @@ _metadata = {
                         'distutils.log', 'distutils.util', 'os', 're',
                         'subprocess', 'winreg'))),
 
+    'distutils._msvccompiler':
+        PythonModule(min_version=(3, 5),
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.util', 'itertools', 'os',
+                        'shutil', 'stat', 'subprocess', 'winreg')),
+
     'distutils.versionpredicate':
         PythonModule(
                 deps=('distutils.version', 'operator', 're')),
@@ -3301,15 +3560,22 @@ _metadata = {
     'email.feedparser': (
         PythonModule(version=2, internal=True,
                 deps=('email', 'email.errors', 'email.message', 're')),
-        PythonModule(version=3, internal=True,
+        PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('email', 'email.errors', 'email.message',
+                        'email._policybase', 're')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('email', 'collections', 'email.errors', 'email.message',
                         'email._policybase', 're'))),
 
-    'email._header_value_parser':
-        PythonModule(version=3, internal=True,
+    'email._header_value_parser': (
+        PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('email', 'collections', 'email._encoded_words',
                         'email.errors', 'email.utils', 're', 'string',
                         'urllib')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('email', 'collections', 'email._encoded_words',
+                        'email.errors', 'email.utils', 'operator', 're',
+                        'string', 'urllib'))),
 
     'email._parseaddr':
         PythonModule(internal=True, deps=('email', 'calendar', 'time')),
@@ -3368,6 +3634,9 @@ _metadata = {
 
     'importlib._bootstrap':
         PythonModule(version=3, internal=True, deps='importlib'),
+
+    'importlib._bootstrap_external':
+        PythonModule(min_version=(3, 5), internal=True, deps='importlib'),
 
     '_io': (
         ExtensionModule(version=2, internal=True,
@@ -3508,10 +3777,13 @@ _metadata = {
                         'multiprocessing.reduction', 'multiprocessing.util',
                         'mmap', 'tempfile', 'os', 'threading', '_winapi'))),
 
-    'multiprocessing.popen_fork':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.popen_fork': (
+        PythonModule(version=(3, 4), internal=True,
                 deps=('multiprocessing', 'errno', 'multiprocessing.connection',
                         'multiprocessing.util', 'os', 'signal')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.util', 'os', 'signal'))),
 
     'multiprocessing.popen_forkserver':
         PythonModule(min_version=(3, 4), internal=True,
@@ -3566,12 +3838,19 @@ _metadata = {
                         'multiprocessing.synchronize', 'multiprocessing.util',
                         'os', 'queue', 'threading', 'time', 'traceback',
                         'weakref')),
-        PythonModule(min_version=(3, 4), internal=True,
+        PythonModule(version=(3, 4), internal=True,
                 deps=('multiprocessing', 'collections', 'errno',
                         '_multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.context', 'multiprocessing.reduction',
                         'multiprocessing.util', 'os', 'queue', 'threading',
-                        'time', 'traceback', 'weakref'))),
+                        'time', 'traceback', 'weakref')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('multiprocessing', 'collections', 'errno',
+                        '_multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.context', 'multiprocessing.reduction',
+                        'multiprocessing.synchronize', 'multiprocessing.util',
+                        'os', 'queue', 'threading', 'time', 'traceback',
+                        'weakref'))),
 
     'multiprocessing.reduction': (
         PythonModule(version=2, internal=True,
@@ -3684,6 +3963,11 @@ _metadata = {
         ExtensionModule(version=3, internal=True, scope='!win32',
                 source='_posixsubprocess.c'),
 
+    '_pydecimal':
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('collections', 'itertools', 'locale', 'math', 'numbers',
+                        're', 'threading')),
+
     'pyexpat':
         ExtensionModule(internal=True,
                 source=('expat/xmlparse.c', 'expat/xmlrole.c',
@@ -3712,6 +3996,9 @@ _metadata = {
 
     '_sha512':
         ExtensionModule(internal=True, source='sha512module.c'),
+
+    '_signal':
+        CoreExtensionModule(min_version=(3, 5)),
 
     '_socket': (
         ExtensionModule(version=2, internal=True,
@@ -3822,9 +4109,13 @@ _metadata = {
         PythonModule(version=2, internal=True,
                 deps=('xml.dom', 'copy', 'posixpath', 'urllib2', 'urlparse',
                         'xml.dom.expatbuilder')),
-        PythonModule(version=3, internal=True,
+        PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('xml.dom', 'copy', 'posixpath', 'urllib.parse',
-                        'urllib.request', 'xml.dom.expatbuilder'))),
+                        'urllib.request', 'xml.dom.expatbuilder')),
+        PythonModule(min_version=(3, 5), internal=True,
+                deps=('xml.dom', 'copy', 'posixpath', 'urllib.parse',
+                        'urllib.request', 'warnings',
+                        'xml.dom.expatbuilder'))),
 
     'xml.etree.ElementPath':
         PythonModule(internal=True, deps=('xml.etree', 're')),
@@ -3954,5 +4245,7 @@ if __name__ == '__main__':
     check_version(2, 7, 11)
     check_version(3, 3)
     check_version(3, 4, 0)
+    check_version(3, 4, 1)
     check_version(3, 4, 2)
     check_version(3, 4, 3)
+    check_version(3, 5)
