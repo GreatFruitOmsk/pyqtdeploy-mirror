@@ -104,7 +104,6 @@ OBJECT_SOURCES = \
     Objects/boolobject.c \
     Objects/bytes_methods.c \
     Objects/bytearrayobject.c \
-    Objects/capsule.c \
     Objects/cellobject.c \
     Objects/classobject.c \
     Objects/codeobject.c \
@@ -126,6 +125,7 @@ OBJECT_SOURCES = \
     Objects/moduleobject.c \
     Objects/object.c \
     Objects/obmalloc.c \
+    Objects/capsule.c \
     Objects/rangeobject.c \
     Objects/setobject.c \
     Objects/sliceobject.c \
@@ -141,6 +141,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Objects/accu.c \
         Objects/bytesobject.c \
         Objects/namespaceobject.c
+
+    greaterThan(PY_MINOR_VERSION, 4) {
+        OBJECT_SOURCES += \
+            Objects/odictobject.c
+    }
 } else {
     OBJECT_SOURCES += \
         Objects/bufferobject.c \
@@ -200,6 +205,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     greaterThan(PY_MINOR_VERSION, 3) {
         PYTHON_SOURCES += \
             Python/pyhash.c
+    }
+
+    greaterThan(PY_MINOR_VERSION, 4) {
+        PYTHON_SOURCES += \
+            Python/dynamic_annotations.c \
+            Python/pylifecycle.c \
+            Python/pystrhex.c
     }
 } else {
     PYTHON_SOURCES += \
