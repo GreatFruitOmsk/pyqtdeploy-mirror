@@ -153,6 +153,9 @@ pyconfig = (
     # Define if `unsetenv` does not return an int.
     Config('HAVE_BROKEN_UNSETENV'),
 
+    # Define if you have builtin atomics.
+    Config('HAVE_BUILTIN_ATOMIC', default=1),
+
     # Define this if you have the type _Bool.
     Config('HAVE_C99_BOOL', default=1),
 
@@ -229,6 +232,9 @@ pyconfig = (
 
     # Define to 1 if you have the <direct.h> header file.
     Config('HAVE_DIRECT_H'),
+
+    # Define to 1 if the dirent structure has a d_type field.
+    Config('HAVE_DIRENT_D_TYPE', default=1),
 
     # Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
     Config('HAVE_DIRENT_H', default=1),
@@ -359,6 +365,9 @@ pyconfig = (
     # Define to 1 if you have the `gamma' function.
     Config('HAVE_GAMMA', default=1),
 
+    # Define if we can use gcc inline assembler to get and set mc68881 fpcr.
+    Config('HAVE_GCC_ASM_FOR_MC68881'),
+
     # Define if we can use x64 gcc inline assembler
     Config('HAVE_GCC_ASM_FOR_X64', android_64=1, ios_64=1, linux_64=1,
             osx_64=1),
@@ -366,7 +375,7 @@ pyconfig = (
     # Define if we can use gcc inline assembler to get and set x87 control word
     Config('HAVE_GCC_ASM_FOR_X87', default=1, android=None),
 
-    # Define if your compiler provides __uint128_t
+    # Define if your compiler provides __uint128_t.
     Config('HAVE_GCC_UINT128_T', android_64=1, ios_64=1, linux_64=1, osx_64=1),
 
     # Define if you have the getaddrinfo function.
@@ -434,6 +443,9 @@ pyconfig = (
 
     # Define to 1 if you have the `getpwent' function.
     Config('HAVE_GETPWENT', default=1, android=None),
+
+    # Define to 1 if the Linux getrandom() syscall is available.
+    Config('HAVE_GETRANDOM_SYSCALL'),
 
     # Define to 1 if you have the `getresgid' function.
     Config('HAVE_GETRESGID', android=1, linux=1),
@@ -567,6 +579,9 @@ pyconfig = (
 
     # Define to 1 if you have the <linux/can.h> header file.
     Config('HAVE_LINUX_CAN_H', android=1, linux=1),
+
+    # Define if compiling using Linux 3.6 or later.
+    Config('HAVE_LINUX_CAN_RAW_FD_FRAMES', android=1, linux=1),
 
     # Define to 1 if you have the <linux/can/raw.h> header file.
     Config('HAVE_LINUX_CAN_RAW_H', android=1, linux=1),
@@ -741,6 +756,9 @@ pyconfig = (
 
     # Define to 1 if you have the `renameat' function.
     Config('HAVE_RENAMEAT', android=1, linux=1),
+
+    # Define if readline supports append_history.
+    Config('HAVE_RL_APPEND_HISTORY', linux=1),
 
     # Define if you have readline 2.1
     Config('HAVE_RL_CALLBACK', default=1, android=None),
@@ -919,6 +937,9 @@ pyconfig = (
 
     # Define to 1 if you have the <stdlib.h> header file.
     Config('HAVE_STDLIB_H', default=1),
+
+    # Define if you have stdatomic.h and atomic_int and _Atomic void* types work
+    Config('HAVE_STD_ATOMIC', android=1, linux=1),
 
     # Define to 1 if you have the `strdup' function.
     Config('HAVE_STRDUP', default=1),
