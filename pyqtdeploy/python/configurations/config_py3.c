@@ -51,7 +51,11 @@ extern "C" {
 
 
 extern PyObject* PyInit__thread(void);
+#if PY_MINOR_VERSION >= 5
+extern PyObject* PyInit__signal(void);
+#else
 extern PyObject* PyInit_signal(void);
+#endif
 #if defined(MS_WINDOWS)
 extern PyObject* PyInit_nt(void);
 extern PyObject* PyInit_winreg(void);
@@ -99,7 +103,11 @@ extern PyObject* PyInit__string(void);
 struct _inittab _PyImport_Inittab[] = {
 
 	{"_thread", PyInit__thread},
+#if PY_MINOR_VERSION >= 5
+	{"_signal", PyInit__signal},
+#else
 	{"signal", PyInit_signal},
+#endif
 #if defined(MS_WINDOWS)
 	{"nt", PyInit_nt},
 	{"winreg", PyInit_winreg},
