@@ -40,10 +40,10 @@ import tarfile
 import zipfile
 
 
-QT_VERSION_NATIVE = '5.5.0'
-QT_VERSION_CROSS = '5.5.0'
-PY2_VERSION = '2.7.10'
-PY3_VERSION = '3.4.3'
+QT_VERSION_NATIVE = '5.5.1'
+QT_VERSION_CROSS = '5.5.1'
+PY2_VERSION = '2.7.11'
+PY3_VERSION = '3.5.1'
 
 # The supported targets.
 TARGETS = ('android-32', 'ios-64', 'linux-32', 'linux-64', 'osx-64', 'win-32',
