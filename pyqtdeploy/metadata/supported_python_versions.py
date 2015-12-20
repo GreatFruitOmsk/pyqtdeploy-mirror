@@ -31,7 +31,8 @@ _supported_versions = (
     ((3, 4, 0), "3.4.0 and 3.4.1"),
     ((3, 4, 2), "3.4.2"),
     ((3, 4, 3), "3.4.3"),
-    ((3, 5, 0), "3.5 and later"))
+    ((3, 5, 0), "3.5.0"),
+    ((3, 5, 1), "3.5.1 and later"))
 
 
 def get_supported_python_versions():

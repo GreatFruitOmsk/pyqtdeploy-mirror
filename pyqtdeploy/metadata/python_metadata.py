@@ -383,10 +383,15 @@ _metadata = {
                         'itertools', 'keyword', 'operator', 'reprlib',
                         'weakref'),
                 modules='collections.abc'),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5, 0),
                 deps=('_collections', '_collections_abc', 'copy', 'heapq',
                         'itertools', 'keyword', 'operator', 'reprlib',
                         '_weakref'),
+                modules='collections.abc'),
+        PythonModule(min_version=(3, 5, 1),
+                deps=('_collections', '_collections_abc', 'copy', 'heapq',
+                        'itertools', 'keyword', 'operator', 'reprlib',
+                        'warnings', '_weakref'),
                 modules='collections.abc')),
 
     'collections.abc': (
@@ -1962,11 +1967,16 @@ _metadata = {
                 deps=('logging', 'codecs', 'cPickle', 'email.utils', 'errno',
                         'httplib', 'os', 're', 'socket', 'smtplib', 'stat',
                         'struct', 'time', 'urllib')),
-        PythonModule(min_version=(3, 3),
+        PythonModule(min_version=(3, 3), max_version=(3, 5, 0),
                 deps=('logging', 'base64', 'codecs', 'email.utils', 'errno',
                         'http.client', 'os', 'pickle', 'queue', 're', 'socket',
                         'smtplib', 'stat', 'struct', 'threading', 'time',
-                        'urllib.parse'))),
+                        'urllib.parse')),
+        PythonModule(min_version=(3, 5, 1),
+                deps=('logging', 'base64', 'codecs', 'email.message',
+                        'email.utils', 'errno', 'http.client', 'os', 'pickle',
+                        'queue', 're', 'socket', 'smtplib', 'stat', 'struct',
+                        'threading', 'time', 'urllib.parse'))),
 
     'lzma': (
         PythonModule(min_version=3, max_version=(3, 4), deps=('io', '_lzma')),
@@ -2266,9 +2276,13 @@ _metadata = {
                 deps=('collections', '_gestalt', 'os', 'plistlib', 're',
                         'socket', 'struct', 'subprocess', 'warnings',
                         'winreg')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5, 0),
                 deps=('collections', 'os', 'plistlib', 're', 'socket',
-                        'struct', 'subprocess', 'warnings', 'winreg'))),
+                        'struct', 'subprocess', 'warnings', 'winreg')),
+        PythonModule(min_version=(3, 5, 1),
+                deps=('collections', 'ctypes', 'ctypes.wintypes', 'os',
+                        'plistlib', 're', 'socket', 'struct', 'subprocess',
+                        'warnings', 'winreg'))),
 
     'plistlib': (
         PythonModule(version=2,
@@ -3083,13 +3097,20 @@ _metadata = {
                         'collections', 'concurrent.futures', 'heapq',
                         'inspect', 'logging', 'os', 'socket', 'subprocess',
                         'threading', 'time', 'traceback', 'warnings')),
-        PythonModule(min_version=(3, 5), internal=True,
+        PythonModule(version=(3, 5, 0), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.tasks', 'collections', 'concurrent.futures',
                         'heapq', 'inspect', 'logging', 'os', 'socket',
                         'subprocess', 'threading', 'time', 'traceback',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 5, 1), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.tasks', 'collections', 'concurrent.futures',
+                        'heapq', 'inspect', 'itertools', 'logging', 'os',
+                        'socket', 'subprocess', 'threading', 'time',
+                        'traceback', 'warnings'))),
 
     'asyncio.base_subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -4248,4 +4269,5 @@ if __name__ == '__main__':
     check_version(3, 4, 1)
     check_version(3, 4, 2)
     check_version(3, 4, 3)
-    check_version(3, 5)
+    check_version(3, 5, 0)
+    check_version(3, 5, 1)

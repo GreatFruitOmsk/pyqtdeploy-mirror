@@ -444,6 +444,9 @@ pyconfig = (
     # Define to 1 if you have the `getpwent' function.
     Config('HAVE_GETPWENT', default=1, android=None),
 
+    # Define to 1 if the getrandom() function is available.
+    Config('HAVE_GETRANDOM'),
+
     # Define to 1 if the Linux getrandom() syscall is available.
     Config('HAVE_GETRANDOM_SYSCALL'),
 
