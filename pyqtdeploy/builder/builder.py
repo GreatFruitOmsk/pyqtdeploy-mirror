@@ -132,16 +132,19 @@ class Builder():
         job_file = open(job_filename, 'w', newline='')
         job_writer = csv.writer(job_file)
 
-        # Freeze the bootstrap.
+        # Freeze the bootstrap.  Note that from Python v3.5 the modified part
+        # is in _bootstrap_external.py and _bootstrap.py is unchanged from the
+        # original source.  However we continue to use a local copy of
+        # _bootstrap.py for now in case the structure changes again.
         py_major, py_minor, py_patch = project.python_target_version
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
-        bootstrap_src = get_embedded_file_for_version(py_version, __file__,
-                'lib', 'bootstrap')
-        bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
-                dst_file_name='bootstrap.py')
-        self._freeze(job_writer, build_dir + '/frozen_bootstrap.h', bootstrap,
-                'pyqtdeploy_bootstrap', as_c=True)
+        self._freeze_bootstrap(self, 'bootstrap', py_version, build_dir,
+                temp_dir, job_writer)
+
+        if py_version >= 0x030500:
+            self._freeze_bootstrap(self, 'bootstrap_external', py_version,
+                    build_dir, temp_dir, job_writer)
 
         # Freeze any main application script.
         if project.application_script != '':
@@ -161,8 +164,8 @@ class Builder():
                 required_py, job_writer, nr_resources)
 
         # Write the .pro file.
-        self._write_qmake(build_dir, required_ext, required_libraries,
-                job_writer, opt, resource_names)
+        self._write_qmake(py_version, build_dir, required_ext,
+                required_libraries, job_writer, opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -174,10 +177,15 @@ class Builder():
 
         self._run_freeze(freeze, job_filename, opt)
 
-        # Remove the contents of the temporary directory.
-        QFile.remove(freeze)
-        QFile.remove(bootstrap)
-        QFile.remove(job_filename)
+    def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
+        """ Freeze a version dependent bootstrap script. """
+
+        bootstrap_src = get_embedded_file_for_version(py_version, __file__,
+                'lib', name)
+        bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
+                dst_file_name=name + '.py')
+        self._freeze(job_writer, build_dir + '/frozen_' + name + '.h',
+                bootstrap, 'pyqtdeploy_' + name, as_c=True)
 
     def _generate_resource(self, resources_dir, required_py, job_writer, nr_resources):
         """ Generate the application resource. """
@@ -340,7 +348,7 @@ class Builder():
         '.y':       'YACCSOURCES',
     }
 
-    def _write_qmake(self, build_dir, required_ext, required_libraries, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -627,16 +635,23 @@ class Builder():
         self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
         self._copy_lib_file('pdytools_module.cpp', build_dir)
 
-        headers = 'HEADERS = pyqtdeploy_version.h frozen_bootstrap.h'
+        defines = []
+        headers = ['pyqtdeploy_version.h', 'frozen_bootstrap.h']
+
+        if py_version >= 0x030500:
+            headers.append('frozen_bootstrap_external.h')
+
         if project.application_script != '':
-            f.write('DEFINES += PYQTDEPLOY_FROZEN_MAIN\n')
-            headers += ' frozen_main.h'
+            defines.append('PYQTDEPLOY_FROZEN_MAIN')
+            headers.append('frozen_main.h')
 
         if opt:
-            f.write('DEFINES += PYQTDEPLOY_OPTIMIZED\n')
+            defines.append('PYQTDEPLOY_OPTIMIZED')
 
-        f.write(headers)
-        f.write('\n')
+        if len(defines) != 0:
+            f.write('DEFINES += {0}\n'.format(' '.join(defines)))
+
+        f.write('HEADERS = {0}\n'.format(' '.join(headers)))
 
         # Get the set of all scopes used.
         used_scopes = set(used_qt.keys())

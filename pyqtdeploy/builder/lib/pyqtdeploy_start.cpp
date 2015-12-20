@@ -36,6 +36,10 @@
 
 #include "frozen_bootstrap.h"
 
+#if PY_VERSION_HEX >= 0x03050000
+#include "frozen_bootstrap_external.h"
+#endif
+
 #if defined(PYQTDEPLOY_FROZEN_MAIN)
 #include "frozen_main.h"
 #endif
@@ -43,9 +47,10 @@
 
 #if PY_MAJOR_VERSION >= 3
 
-#define BOOTSTRAP_MODULE    "_frozen_importlib"
-#define PDYTOOLS_INIT       PyInit_pdytools
-#define CONST_CAST(s)       s
+#define BOOTSTRAP_MODULE            "_frozen_importlib"
+#define BOOTSTRAP_EXTERNAL_MODULE   "_frozen_importlib_external"
+#define PDYTOOLS_INIT               PyInit_pdytools
+#define CONST_CAST(s)               s
 extern "C" PyObject *PyInit_pdytools(void);
 
 #if defined(Q_OS_WIN)
@@ -92,9 +97,24 @@ int pyqtdeploy_start(int argc, char **argv,
 {
     // The replacement table of frozen modules.
     static struct _frozen modules[] = {
-        {CONST_CAST(BOOTSTRAP_MODULE), frozen_pyqtdeploy_bootstrap, sizeof (frozen_pyqtdeploy_bootstrap)},
+        {
+            CONST_CAST(BOOTSTRAP_MODULE),
+            frozen_pyqtdeploy_bootstrap,
+            sizeof (frozen_pyqtdeploy_bootstrap)
+        },
+#if PY_VERSION_HEX >= 0x03050000
+        {
+            CONST_CAST(BOOTSTRAP_EXTERNAL_MODULE),
+            frozen_pyqtdeploy_bootstrap_external,
+            sizeof (frozen_pyqtdeploy_bootstrap_external)
+        },
+#endif
 #if defined(PYQTDEPLOY_FROZEN_MAIN)
-        {CONST_CAST("__main__"), frozen_pyqtdeploy_main, sizeof (frozen_pyqtdeploy_main)},
+        {
+            CONST_CAST("__main__"),
+            frozen_pyqtdeploy_main,
+            sizeof (frozen_pyqtdeploy_main)
+        },
 #endif
         {NULL, NULL, 0}
     };
