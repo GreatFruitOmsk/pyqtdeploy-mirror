@@ -12,7 +12,7 @@ executable file.  Having a single file makes such an application easier to
 deploy.  However with :program:`pyrcc5` and :program:`pyrcc4`, while they
 reduce the number of files that need to be deployed, there will always be at
 least two.  Of course the standard Python distribution tools are designed to
-cope with multiple source files, so using :program:`pyrcc5` and
+cope with multiple source files, so using :program:`pyrcc5` or
 :program:`pyrcc4` doesn't offer any significant benefits.
 
 :program:`pyqtdeploy` itself uses :program:`rcc` to embed all the files
