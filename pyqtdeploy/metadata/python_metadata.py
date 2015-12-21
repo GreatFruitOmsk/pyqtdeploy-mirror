@@ -2056,8 +2056,10 @@ _metadata = {
     'mimify':
         PythonModule(version=2, deps=('base64', 'os', 're', 'warnings')),
 
-    'mmap':
-        ExtensionModule(source='mmapmodule.c'),
+    'mmap': (
+        ExtensionModule(max_version=(3, 4), source='mmapmodule.c'),
+        ExtensionModule(min_version=(3, 5), source='mmapmodule.c',
+                defines='Py_BUILD_CORE')),
 
     'modulefinder': (
         PythonModule(version=2,
@@ -2078,8 +2080,11 @@ _metadata = {
         PythonModule(scope='win32',
                 deps=('_msi', 'os', 're', 'string', 'tempfile')),
 
-    'msvcrt':
-        ExtensionModule(scope='win32', source='../PC/msvcrtmodule.c'),
+    'msvcrt': (
+        ExtensionModule(max_version=(3, 4), scope='win32',
+                source='../PC/msvcrtmodule.c'),
+        ExtensionModule(min_version=(3, 5), scope='win32',
+                source='../PC/msvcrtmodule.c', defines='Py_BUILD_CORE')),
 
     'multifile':
         PythonModule(version=2, deps='warnings'),
@@ -2768,8 +2773,11 @@ _metadata = {
                 deps=('_collections', 'itertools', '_thread', 'time',
                         'traceback', '_weakrefset'))),
 
-    'time':
-        ExtensionModule(source='timemodule.c', libs='linux-*#-lm'),
+    'time': (
+        ExtensionModule(max_version=(3, 4), source='timemodule.c',
+                libs='linux-*#-lm'),
+        ExtensionModule(min_version=(3, 5), source='timemodule.c',
+                defines='Py_BUILD_CORE', libs='linux-*#-lm')),
 
     'timeit':
         PythonModule(

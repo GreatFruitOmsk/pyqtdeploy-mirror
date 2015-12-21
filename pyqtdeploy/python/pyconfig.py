@@ -387,8 +387,8 @@ pyconfig = (
     # Define this if you have flockfile(), getc_unlocked(), and funlockfile()
     Config('HAVE_GETC_UNLOCKED', default=1),
 
-    # Define to 1 if you have the `getentropy' function.
-    Config('HAVE_GETENTROPY', default=0),
+    # Define this if you have the `getentropy' function.
+    Config('HAVE_GETENTROPY'),
 
     # Define to 1 if you have the `getgrouplist' function.
     Config('HAVE_GETGROUPLIST', default=1),

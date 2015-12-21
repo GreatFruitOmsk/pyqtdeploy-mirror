@@ -139,12 +139,12 @@ class Builder():
         py_major, py_minor, py_patch = project.python_target_version
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
-        self._freeze_bootstrap(self, 'bootstrap', py_version, build_dir,
-                temp_dir, job_writer)
+        self._freeze_bootstrap('bootstrap', py_version, build_dir, temp_dir,
+                job_writer)
 
         if py_version >= 0x030500:
-            self._freeze_bootstrap(self, 'bootstrap_external', py_version,
-                    build_dir, temp_dir, job_writer)
+            self._freeze_bootstrap('bootstrap_external', py_version, build_dir,
+                    temp_dir, job_writer)
 
         # Freeze any main application script.
         if project.application_script != '':
