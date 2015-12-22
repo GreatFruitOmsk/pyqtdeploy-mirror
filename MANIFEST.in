@@ -1,2 +1,2 @@
-include ChangeLog* NEWS
+include ChangeLog* NEWS THANKS
 graft doc
