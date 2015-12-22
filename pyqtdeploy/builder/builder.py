@@ -228,7 +228,7 @@ class Builder():
 
             self._freeze(job_writer, pyqt_dst_dir + '/__init__.pyo',
                     pyqt_src_dir + '/__init__.py',
-                    pyqt_subdir + '/__init__.pyo')
+                    pyqt_subdir + '/__init__.py')
 
             resource_contents.append(pyqt_subdir + '/__init__.pyo')
 
@@ -246,13 +246,11 @@ class Builder():
                             break
                     else:
                         if dst.endswith('.py'):
-                            dst += 'o'
-
                             src = QDir.fromNativeSeparators(src)
                             dst = QDir.fromNativeSeparators(dst)
                             rel_dst = dst[len(resources_dir) + 1:]
 
-                            self._freeze(job_writer, dst, src, rel_dst)
+                            self._freeze(job_writer, dst + 'o', src, rel_dst)
 
                             resource_contents.append(rel_dst)
 
@@ -334,7 +332,7 @@ class Builder():
                 self._create_directory(resources_dir + '/' + name_path)
 
             self._freeze(job_writer, resources_dir + '/' + out_file,
-                    stdlib_src_dir + '/' + in_file, out_file)
+                    stdlib_src_dir + '/' + in_file, in_file)
 
             resource_contents.append(out_file)
 
@@ -990,7 +988,8 @@ class Builder():
                 file_path = '/'.join(file_path)
 
                 if freeze_file:
-                    self._freeze(job_writer, dst_path, src_path, file_path)
+                    self._freeze(job_writer, dst_path, src_path,
+                            file_path[:-1])
                 else:
                     src_path = QDir.toNativeSeparators(src_path)
                     dst_path = QDir.toNativeSeparators(dst_path)
