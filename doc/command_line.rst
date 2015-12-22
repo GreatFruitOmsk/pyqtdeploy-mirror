@@ -64,6 +64,18 @@ The full set of command line options is:
 
     This will display a summary of the command line actions and options.
 
+.. cmdoption:: --disable-patches
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`configure` action to configure the ``python``
+    package this specifies that the Python source code will not be patched.
+    The default is to enable the patching of the Python source code for Android
+    based targets.  Use this option when you want to apply your own set of
+    patches, or if you are using an NDK (such as `CrystaX NDK
+    <https://www.crystax.net>`__) that doesn't require the Python source code
+    to be patched at all.
+
 .. cmdoption:: --enable-dynamic-loading
 
     When used with the :option:`configure` action to configure the ``python``

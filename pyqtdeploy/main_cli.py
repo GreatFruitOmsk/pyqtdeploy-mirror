@@ -39,6 +39,9 @@ def main():
             help="the action to perform",
             choices=('build', 'configure', 'show-packages', 'show-targets',
                     'show-version'))
+    parser.add_argument('--disable-patches',
+            help="disable the patching of the Python source code (configure)",
+            action='store_true')
     parser.add_argument('--enable-dynamic-loading',
             help="enable the dynamic loading of modules (configure)",
             action='store_true')
@@ -127,7 +130,8 @@ def configure(args):
 
         try:
             configure_python(args.target, args.output,
-                    args.enable_dynamic_loading, message_handler)
+                    args.enable_dynamic_loading, not args.disable_patches,
+                    message_handler)
         except UserException as e:
             handle_exception(e, args.verbose)
             return 1

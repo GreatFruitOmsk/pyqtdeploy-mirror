@@ -1,4 +1,6 @@
 v1.2 ??? ??? ???
+  - Added the --disable-patches command line option to pyqtdeploycli to prevent
+    the patching of the Python source code.
   - Added support for Python v2.7.11, v3.4.4, v3.5.0 and v3.5.1.
   - Added support for the bdb and pdb modules.
 

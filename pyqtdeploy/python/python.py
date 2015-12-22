@@ -35,7 +35,7 @@ from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
 
 
-def configure_python(target, output, dynamic_loading, message_handler):
+def configure_python(target, output, dynamic_loading, patches, message_handler):
     """ Configure a Python source directory for a particular target. """
 
     # Validate the target.
@@ -71,7 +71,7 @@ def configure_python(target, output, dynamic_loading, message_handler):
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
     # Patch with the most appropriate diff.  Only Android needs patches.
-    if target.startswith('android'):
+    if patches and target.startswith('android'):
         python_diff_src_file = _get_file_for_version(py_version, 'patches')
 
         # I'm too lazy to generate patches for all old versions.

@@ -22,4 +22,4 @@ straightforward, especially if you want to customise it for your specific
 needs.  Therefore it is recommended that *if* you wish to dynamically load
 C/C++ extension modules (or to load DLLs using the :mod:`ctypes` module) then
 you use a copy of the Python interpreter DLL that is installed by the binary
-installer from python.org.
+installer or the embeddable zip file from python.org.
