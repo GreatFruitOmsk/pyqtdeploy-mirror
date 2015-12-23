@@ -1759,14 +1759,14 @@ _metadata = {
     'http.client': (
         PythonModule(version=(3, 3),
                 deps=('http', 'collections', 'email.message', 'email.parser',
-                        'io', 'os', 'socket', 'ssl', 'urllib.parse',
+                        'io', 'os', 'socket', '?ssl', 'urllib.parse',
                         'warnings')),
         PythonModule(min_version=(3, 4), max_version=(3, 4, 3),
                 deps=('http', 'collections', 'email.message', 'email.parser',
-                        'io', 'os', 'socket', 'ssl', 'urllib.parse')),
+                        'io', 'os', 'socket', '?ssl', 'urllib.parse')),
         PythonModule(min_version=(3, 4, 4),
                 deps=('http', 'collections', 'email.message', 'email.parser',
-                        'io', 'os', 're', 'socket', 'ssl', 'urllib.parse'))),
+                        'io', 'os', 're', 'socket', '?ssl', 'urllib.parse'))),
 
     'http.cookiejar':
         PythonModule(version=3,
@@ -1795,11 +1795,11 @@ _metadata = {
 
     'httplib': (
         PythonModule(max_version=(2, 7, 9),
-                deps=('array', 'cStringIO', 'mimetools', 'os', 'socket', 'ssl',
-                        'urlparse', 'warnings')),
+                deps=('array', 'cStringIO', 'mimetools', 'os', 'socket',
+                        '?ssl', 'urlparse', 'warnings')),
         PythonModule(min_version=(2, 7, 10), max_version=2,
                 deps=('array', 'cStringIO', 'mimetools', 'os', 're', 'socket',
-                        'ssl', 'urlparse', 'warnings'))),
+                        '?ssl', 'urlparse', 'warnings'))),
 
     'imageop':
         ExtensionModule(version=2, source='imageop.c'),
@@ -2572,15 +2572,15 @@ _metadata = {
     'smtplib': (
         PythonModule(version=2,
                 deps=('base64', 'email.base64mime', 'email.utils', 'hmac',
-                        're', 'socket', 'ssl')),
+                        're', 'socket', '?ssl')),
         PythonModule(min_version=3, max_version=(3, 4),
                 deps=('base64', 'copy', 'email.base64mime', 'email.generator',
                         'email.message', 'email.utils', 'hmac', 'io', 're',
-                        'socket', 'ssl')),
+                        'socket', '?ssl')),
         PythonModule(min_version=(3, 5),
                 deps=('base64', 'copy', 'datetime', 'email.base64mime',
                         'email.generator', 'email.message', 'email.utils',
-                        'hmac', 'io', 're', 'socket', 'ssl'))),
+                        'hmac', 'io', 're', 'socket', '?ssl'))),
 
     'sndhdr': (
         PythonModule(max_version=(3, 3), deps='aifc'),
@@ -2593,7 +2593,7 @@ _metadata = {
 
     'socket': (
         PythonModule(version=2,
-                deps=('cStringIO', 'errno', 'functools', 'os', 'ssl', '_ssl',
+                deps=('cStringIO', 'errno', 'functools', 'os', '?ssl', '?_ssl',
                         '_socket', 'types', 'warnings')),
         PythonModule(version=(3, 3), deps=('errno', 'io', 'os', '_socket')),
         PythonModule(version=(3, 4),
@@ -2833,7 +2833,7 @@ _metadata = {
         PythonModule(version=2,
                 deps=('base64', 'cStringIO', 'email.utils', 'ftplib',
                         'getpass', 'httplib', 'mimetools', 'mimetypes',
-                        'nturl2path', 'os', 're', '_scproxy', 'socket', 'ssl',
+                        'nturl2path', 'os', 're', '_scproxy', 'socket', '?ssl',
                         'string', 'tempfile', 'time', 'urlparse', 'warnings',
                         '_winreg')),
         PythonModule(version=3,
@@ -2852,7 +2852,7 @@ _metadata = {
                         'contextlib', 'email', 'email.utils', 'fnmatch',
                         'ftplib', 'getpass', 'hashlib', 'http.client',
                         'http.cookiejar', 'io', 'mimetypes', 'nturl2path',
-                        'os', 'posixpath', 're', '_scproxy', 'socket', 'ssl',
+                        'os', 'posixpath', 're', '_scproxy', 'socket', '?ssl',
                         'tempfile', 'time', 'urllib.error', 'urllib.parse',
                         'urllib.response', 'warnings', 'winreg')),
 
@@ -3285,18 +3285,18 @@ _metadata = {
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.transports', 'collections', 'errno',
-                        'selectors', 'socket', 'ssl')),
+                        'selectors', 'socket', '?ssl')),
         PythonModule(version=(3, 4, 2), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.transports', 'collections', 'errno',
-                        'functools', 'selectors', 'socket', 'ssl')),
+                        'functools', 'selectors', 'socket', '?ssl')),
         PythonModule(version=(3, 4, 3), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.constants',
                         'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.sslproto',
                         'asyncio.transports', 'collections', 'errno',
-                        'functools', 'selectors', 'socket', 'ssl',
+                        'functools', 'selectors', 'socket', '?ssl',
                         'warnings')),
         PythonModule(min_version=(3, 4, 4), internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
@@ -3304,17 +3304,17 @@ _metadata = {
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.sslproto', 'asyncio.transports',
                         'collections', 'errno', 'functools', 'selectors',
-                        'socket', 'ssl', 'warnings'))),
+                        'socket', '?ssl', 'warnings'))),
 
     'asyncio.sslproto': (
         PythonModule(version=(3, 4, 3), internal=True,
                 deps=('asyncio', 'asyncio.log', 'asyncio.protocols',
-                        'asyncio.transports', 'collections', 'ssl',
+                        'asyncio.transports', 'collections', '?ssl',
                         'warnings')),
         PythonModule(min_version=(3, 4, 4), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.log',
                         'asyncio.protocols', 'asyncio.transports',
-                        'collections', 'ssl', 'warnings'))),
+                        'collections', '?ssl', 'warnings'))),
 
     'asyncio.streams': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
