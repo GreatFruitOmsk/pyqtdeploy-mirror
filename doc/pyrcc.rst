@@ -47,3 +47,16 @@ called ``qml``, we can then extend the code above as follows::
     _root_url = 'qrc:' if _root.startswith(':') else _root
 
     main_url = QUrl(_root_url + '/qml/main.qml')
+
+
+Support for PEP 302 Optional Import Hooks
+-----------------------------------------
+
+.. versionadded:: 1.2
+
+Internally a deployed application contains a `PEP 302
+<https://www.python.org/dev/peps/pep-0302/>`__ compatible module importer (i.e.
+finder and loader) that handles modules embedded in the executable by
+:program:`pyrcc`.  This importer implements the optional :py:func:`get_data`,
+:py:func:`get_code`, :py:func:`get_source` and :py:func:`is_package` methods.
+The importer itself is available as the :py:data:`__loader__` module attribute.
