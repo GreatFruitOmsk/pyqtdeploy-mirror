@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Riverbank Computing Limited
+// Copyright (c) 2015, Riverbank Computing Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -108,6 +108,9 @@ static void qrcimporter_dealloc(PyObject *self);
 static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
 #endif
 static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args);
 static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
 PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
 
@@ -118,6 +121,9 @@ static PyMethodDef qrcimporter_methods[] = {
     {"find_loader", qrcimporter_find_loader, METH_VARARGS, NULL},
 #endif
     {"find_module", qrcimporter_find_module, METH_VARARGS, NULL},
+    {"get_code", qrcimporter_get_code, METH_VARARGS, NULL},
+    {"get_source", qrcimporter_get_source, METH_VARARGS, NULL},
+    {"is_package", qrcimporter_is_package, METH_VARARGS, NULL},
     {"load_module", qrcimporter_load_module, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}
 };
@@ -198,6 +204,8 @@ const QDir &pdytools_get_executable_dir();
 // Other forward declarations.
 static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename);
+static PyObject *get_code_object(const QString &filename, const QString &fqmn);
+static void raise_import_error(const QString &fqmn);
 static QString str_to_qstring(PyObject *str);
 static PyObject *qstring_to_str(const QString &qstring);
 
@@ -461,27 +469,12 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
 
     if (mt != ModuleIsModule && mt != ModuleIsPackage)
     {
-        PyErr_Format(PyExc_ImportError, "qrcimporter: can't find module %s",
-                fqmn.toLatin1().constData());
+        raise_import_error(fqmn);
         return NULL;
     }
 
     // Read in the code object from the file.
-    QFile mfile(filename);
-
-    if (!mfile.open(QIODevice::ReadOnly))
-    {
-        PyErr_Format(PyExc_ImportError,
-                "qrcimporter: error opening file for module %s",
-                        fqmn.toLatin1().constData());
-        return NULL;
-    }
-
-    QByteArray data = mfile.readAll();
-
-    mfile.close();
-
-    code = PyMarshal_ReadObjectFromString(data.data(), data.size());
+    code = get_code_object(filename, fqmn);
     if (!code)
         return NULL;
 
@@ -538,6 +531,76 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
 error:
     Py_DECREF(code);
     return NULL;
+}
+
+
+// Implement the optional get_code() method for the importer.
+static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args)
+{
+    PyObject *py_fqmn;
+
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.get_code", &py_fqmn))
+        return NULL;
+
+    QString fqmn = str_to_qstring(py_fqmn);
+    QString pathname, filename;
+    PyObject *result;
+
+    switch (find_module((QrcImporter *)self, fqmn, pathname, filename))
+    {
+    case ModuleNotFound:
+        raise_import_error(fqmn);
+        return NULL;
+
+    case ModuleIsModule:
+    case ModuleIsPackage:
+        result = get_code_object(filename, fqmn);
+        break;
+
+    default:
+        result = Py_None;
+        Py_INCREF(result);
+    }
+
+    return result;
+}
+
+
+// Implement the optional get_source() method for the importer.
+static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args)
+{
+    Py_RETURN_NONE;
+}
+
+
+// Implement the optional is_package() method for the importer.
+static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args)
+{
+    PyObject *py_fqmn;
+
+    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.is_package", &py_fqmn))
+        return NULL;
+
+    QString fqmn = str_to_qstring(py_fqmn);
+    QString pathname, filename;
+    PyObject *result;
+
+    switch (find_module((QrcImporter *)self, fqmn, pathname, filename))
+    {
+    case ModuleNotFound:
+        raise_import_error(fqmn);
+        return NULL;
+
+    case ModuleIsPackage:
+        result = Py_True;
+        break;
+
+    default:
+        result = Py_False;
+    }
+
+    Py_INCREF(result);
+    return result;
 }
 
 
@@ -599,6 +662,27 @@ static ModuleType find_module(QrcImporter *self, const QString &fqmn,
 }
 
 
+// Get the code object for a module.
+static PyObject *get_code_object(const QString &filename, const QString &fqmn)
+{
+    QFile mfile(filename);
+
+    if (!mfile.open(QIODevice::ReadOnly))
+    {
+        PyErr_Format(PyExc_ImportError,
+                "qrcimporter: error opening file for module %s",
+                        fqmn.toLatin1().constData());
+        return NULL;
+    }
+
+    QByteArray data = mfile.readAll();
+
+    mfile.close();
+
+    return PyMarshal_ReadObjectFromString(data.data(), data.size());
+}
+
+
 // Convert a Python str object to a QString.
 static QString str_to_qstring(PyObject *str)
 {
@@ -636,6 +720,14 @@ static PyObject *qstring_to_str(const QString &qstring)
 #else
     return PyString_FromString(qstring.toLatin1().constData());
 #endif
+}
+
+
+// Raise an ImportError when a module could not be found.
+static void raise_import_error(const QString &fqmn)
+{
+    PyErr_Format(PyExc_ImportError, "qrcimporter: can't find module %s",
+            fqmn.toLatin1().constData());
 }
 
 
