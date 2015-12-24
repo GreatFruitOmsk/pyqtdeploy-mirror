@@ -45,6 +45,11 @@ QT_VERSION_CROSS = '5.5.1'
 PY2_VERSION = '2.7.11'
 PY3_VERSION = '3.5.1'
 
+# The version of Python used to run pyqtdeploycli on Windows.  It is normally
+# set to PY3_VERSION but doesn't have to be.
+WINDOWS_PYQTDEPLOYCLI_PY_VERSION = '3.4'
+
+
 # The supported targets.
 TARGETS = ('android-32', 'ios-64', 'linux-32', 'linux-64', 'osx-64', 'win-32',
         'win-64')
@@ -243,7 +248,7 @@ class WindowsHost(AbstractHost):
         path.
         """
 
-        return self.python3_installation.host_root_dir + '\\Scripts\\pyqtdeploycli'
+        return self.python3_installation.host_root_dir_for_version(WINDOWS_PYQTDEPLOYCLI_PY_VERSION) + '\\Scripts\\pyqtdeploycli'
 
     @property
     def pyqt_package(self):
@@ -294,9 +299,11 @@ class WindowsHost(AbstractHost):
 
         super_closure = super().build_configure()
 
-        self.run(
-                os.path.expandvars(
-                        '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd'))
+        dx_setenv = os.path.expandvars(
+                '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd')
+
+        if os.path.exists(dx_setenv):
+            self.run(dx_setenv)
 
         old_path = os.environ['PATH']
         os.environ['PATH'] = 'C:\\Python27;' + old_path
@@ -478,15 +485,23 @@ class AbstractPythonInstallation:
 
         raise NotImplementedError
 
-    def major_minor_version(self, dotted=True):
+    @classmethod
+    def major_minor_for_version(cls, version, dotted=True):
+        """ Return a string of the major and minor elements of a version with
+        an optional separating dot.
+        """
+
+        major, minor, maint = version.split('.')
+        sep = '.' if dotted else ''
+
+        return major + sep + minor
+
+    def major_minor(self, dotted=True):
         """ Return a string of the Python major and minor versions with an
         optional separating dot.
         """
 
-        major, minor, maint = self.version.split('.')
-        sep = '.' if dotted else ''
-
-        return major + sep + minor
+        return self.major_minor_for_version(self.version, dotted)
 
     @property
     def package(self):
@@ -522,7 +537,7 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
     def host_library(self):
         """ The name of the host Python library. """
 
-        return self.host_root_dir + '\\libs\\python' + self.major_minor_version(dotted=False) + '.lib'
+        return self.host_root_dir + '\\libs\\python' + self.major_minor(dotted=False) + '.lib'
 
     @property
     def host_python(self):
@@ -531,11 +546,22 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
 
         return self.host_root_dir + '\\python'
 
+    @classmethod
+    def host_root_dir_for_version(cls, version):
+        """ The host Python root directory for a particular version. """
+
+        version = self.major_minor_for_version(version, dotted=False)
+
+        if int(version) >= 35:
+            return 'C:\\Program Files\\Python' + version
+
+        return 'C:\\Python' + version
+
     @property
     def host_root_dir(self):
         """ The host Python root directory. """
 
-        return 'C:\\Python' + self.major_minor_version(dotted=False)
+        return self.host_root_dir_for_version(self.version)
 
     @property
     def host_stdlib_dir(self):
@@ -776,7 +802,7 @@ def build_python(host, python_installation, debug, enable_dynamic_loading, use_p
         # Copy the include files.
         src = python_installation.host_include_dir
         dst = os.path.join(host.sysroot, 'include',
-                'python' + python_installation.major_minor_version())
+                'python' + python_installation.major_minor())
 
         rmtree(dst)
         shutil.copytree(src, dst)
@@ -791,7 +817,7 @@ def build_python(host, python_installation, debug, enable_dynamic_loading, use_p
         # Copy the Python standard library.
         src = python_installation.host_stdlib_dir
         dst = os.path.join(host.sysroot, 'lib',
-                'python' + python_installation.major_minor_version())
+                'python' + python_installation.major_minor())
 
         rmtree(dst)
         shutil.copytree(src, dst)
