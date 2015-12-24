@@ -1027,7 +1027,7 @@ pyconfig = (
     Config('HAVE_SYS_IOCTL_H', default=1),
 
     # Define to 1 if you have the <sys/kern_control.h> header file.
-    Config('HAVE_SYS_KERN_CONTROL_H', ios=1, osx=1),
+    Config('HAVE_SYS_KERN_CONTROL_H', osx=1),
 
     # Define to 1 if you have the <sys/loadavg.h> header file.
     Config('HAVE_SYS_LOADAVG_H'),
@@ -1073,7 +1073,7 @@ pyconfig = (
     Config('HAVE_SYS_SYSCALL_H', default=1),
 
     # Define to 1 if you have the <sys/sys_domain.h> header file.
-    Config('HAVE_SYS_SYS_DOMAIN_H', ios=1, osx=1),
+    Config('HAVE_SYS_SYS_DOMAIN_H', osx=1),
 
     # Define to 1 if you have the <sys/termio.h> header file.
     Config('HAVE_SYS_TERMIO_H'),
