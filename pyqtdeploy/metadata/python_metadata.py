@@ -36,7 +36,7 @@ PLATFORM_SCOPES = (('android', "Android", ()), ('linux-*', "Linux", ()),
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, scope, deps, hidden_deps, core, defines, xlib, modules, source, libs, includepath):
+    def __init__(self, internal, scope, deps, hidden_deps, core, builtin, defines, xlib, modules, source, libs, includepath):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -64,6 +64,10 @@ class StdlibModule:
         # Python module).
         self.core = core
 
+        # Set if the module is a core Python module that is embedded as a
+        # builtin.
+        self.builtin = builtin
+
         # The sequence of (possibly scoped) DEFINES to add to the .pro file.
         self.defines = (defines, ) if isinstance(defines, str) else defines
 
@@ -89,7 +93,7 @@ class StdlibModule:
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, builtin=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -108,7 +112,7 @@ class VersionedModule:
         self.max_version = self._expand_version(max_version, 255)
 
         self.module = StdlibModule(internal, scope, deps, hidden_deps, core,
-                defines, xlib, modules, source, libs, includepath)
+                builtin, defines, xlib, modules, source, libs, includepath)
 
     @staticmethod
     def _expand_version(version, default):
@@ -153,25 +157,27 @@ class CoreExtensionModule(ExtensionModule):
 class PythonModule(VersionedModule):
     """ Encapsulate the meta-data for a single Python module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, builtin=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, scope=scope,
-                deps=deps, hidden_deps=hidden_deps, core=core, modules=modules)
+                deps=deps, hidden_deps=hidden_deps, core=core, builtin=builtin,
+                modules=modules)
 
 
 class CorePythonModule(PythonModule):
     """ Encapsulate the meta-data for a Python module that is always required
-    an application.
+    by an application.
     """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), modules=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), builtin=False, modules=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, scope=scope,
-                deps=deps, hidden_deps=hidden_deps, core=True, modules=modules)
+                deps=deps, hidden_deps=hidden_deps, core=True, builtin=builtin,
+                modules=modules)
 
 
 class CodecModule(PythonModule):
@@ -3717,10 +3723,12 @@ _metadata = {
         CoreExtensionModule(version=3, internal=True),
 
     'importlib._bootstrap':
-        PythonModule(version=3, internal=True, deps='importlib'),
+        CorePythonModule(version=3, internal=True, builtin=True,
+                deps='importlib'),
 
     'importlib._bootstrap_external':
-        PythonModule(min_version=(3, 5), internal=True, deps='importlib'),
+        CorePythonModule(min_version=(3, 5), internal=True, builtin=True,
+                deps='importlib'),
 
     '_io': (
         ExtensionModule(version=2, internal=True,

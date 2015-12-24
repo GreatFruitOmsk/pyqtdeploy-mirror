@@ -225,6 +225,11 @@ class Project(QObject):
 
         dep_state.visit = visit
 
+        if dep_state.module.builtin:
+            # This will mean that the explicit and implicit states will remain
+            # None and so the module will be omitted from the list.
+            return
+
         dep_state.explicit = (name in self.standard_library)
 
         if dep_state.module.core or is_dep:
