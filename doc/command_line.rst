@@ -82,6 +82,22 @@ The full set of command line options is:
     package this specifies that the Python interpreter will have dynamic
     loading enabled.  The default is to disable dynamic loading.
 
+.. cmdoption:: --include-dir
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`build` action this specifies the name of the
+    directory containing the target Python installation's ``Python.h`` file.
+    It overrides any value specified in the project file.
+
+.. cmdoption:: --interpreter
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`build` action this specifies the **host**
+    Python interpreter used to compile all of the Python modules used by the
+    application.  It overrides any value specified in the project file.
+
 .. cmdoption:: --opt LEVEL
 
     When used with the :option:`build` action this specifies the level of
@@ -115,6 +131,14 @@ The full set of command line options is:
 
     This is required by the :option:`build` action to specify the project file.
 
+.. cmdoption:: --python-library
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`build` action this specifies the name of the
+    target Python interpreter library.  It overrides any value specified in the
+    project file.
+
 .. cmdoption:: --resources NUMBER
 
     When used with the :option:`build` action this specifies the number of Qt
@@ -122,6 +146,22 @@ The full set of command line options is:
     with very large resource files and complains of a lack of heap space.  If
     you run into this problem then try increasing the the number of resource
     files generated.
+
+.. cmdoption:: --source-dir
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`build` action this specifies the name of the
+    directory containing the Python source code.  It overrides any value
+    specified in the project file.
+
+.. cmdoption:: --standard-library-directory
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`build` action this specifies the name of the
+    directory containing the target Python interpreter's standard library.  It
+    overrides any value specified in the project file.
 
 .. cmdoption:: --target TARGET
 

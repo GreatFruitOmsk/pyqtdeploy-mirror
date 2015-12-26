@@ -57,7 +57,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, opt, nr_resources, build_dir=None, clean=False):
+    def build(self, opt, nr_resources, build_dir=None, clean=False, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -88,11 +88,14 @@ class Builder():
                 required_ext[name] = module
 
         # Initialise and check we have the information we need.
-        if len(required_py) != 0 or len(required_ext) != 0:
-            if project.python_source_dir == '':
-                raise UserException(
-                        "The name of the Python source directory has not been "
-                        "specified")
+        if len(required_ext) != 0:
+            if source_dir is None:
+                if project.python_source_dir == '':
+                    raise UserException(
+                            "The name of the Python source directory has not "
+                            "been specified")
+
+                source_dir = project.path_from_user(project.python_source_dir)
 
         if project.get_executable_basename() == '':
             raise UserException("The name of the application has not been "
@@ -108,6 +111,25 @@ class Builder():
         elif project.application_entry_point != '':
             raise UserException("Either the application script name or the "
                     "entry point must be specified but not both")
+
+        # Get other directories from the project that may be overridden.
+        if include_dir is None:
+            include_dir = project.path_from_user(
+                    project.python_target_include_dir)
+
+        if interpreter is None:
+            # Note that we assume a relative filename is on PATH rather than
+            # being relative to the project file.
+            interpreter = os.path.expandvars(
+                    self._project.python_host_interpreter)
+
+        if python_library is None:
+            python_library = project.path_from_user(
+                    project.python_target_library)
+
+        if standard_library_dir is None:
+            standard_library_dir = project.path_from_user(
+                    project.python_target_stdlib_dir)
 
         # Get the name of the build directory.
         if build_dir is None:
@@ -161,11 +183,12 @@ class Builder():
 
         # Generate the application resource.
         resource_names = self._generate_resource(build_dir + '/resources',
-                required_py, job_writer, nr_resources)
+                required_py, standard_library_dir, job_writer, nr_resources)
 
         # Write the .pro file.
         self._write_qmake(py_version, build_dir, required_ext,
-                required_libraries, job_writer, opt, resource_names)
+                required_libraries, include_dir, python_library,
+                standard_library_dir, job_writer, opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -175,7 +198,7 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 temp_dir.path(), dst_file_name='freeze.py')
 
-        self._run_freeze(freeze, job_filename, opt)
+        self._run_freeze(freeze, interpreter, job_filename, opt)
 
     def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
         """ Freeze a version dependent bootstrap script. """
@@ -187,7 +210,7 @@ class Builder():
         self._freeze(job_writer, build_dir + '/frozen_' + name + '.h',
                 bootstrap, 'pyqtdeploy_' + name, as_c=True)
 
-    def _generate_resource(self, resources_dir, required_py, job_writer, nr_resources):
+    def _generate_resource(self, resources_dir, required_py, standard_library_dir, job_writer, nr_resources):
         """ Generate the application resource. """
 
         project = self._project
@@ -211,7 +234,7 @@ class Builder():
 
         # Handle the Python standard library.
         self._write_stdlib_py(resource_contents, resources_dir, required_py,
-                job_writer)
+                standard_library_dir, job_writer)
 
         # Handle any additional packages.
         for package in project.other_packages:
@@ -222,7 +245,7 @@ class Builder():
         if len(project.pyqt_modules) != 0:
             pyqt_subdir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
             pyqt_dst_dir = resources_dir + '/' +  pyqt_subdir
-            pyqt_src_dir = project.path_from_user(project.python_target_stdlib_dir) + '/site-packages/' + pyqt_subdir
+            pyqt_src_dir = standard_library_dir + '/site-packages/' + pyqt_subdir
 
             self._create_directory(pyqt_dst_dir)
 
@@ -309,15 +332,12 @@ class Builder():
 
         return basename
 
-    def _write_stdlib_py(self, resource_contents, resources_dir, required_py, job_writer):
+    def _write_stdlib_py(self, resource_contents, resources_dir, required_py, standard_library_dir, job_writer):
         """ Write the required parts of the Python standard library that are
         implemented in Python.
         """
 
         project = self._project
-
-        stdlib_src_dir = project.path_from_user(
-                project.python_target_stdlib_dir)
 
         # By sorting the names we ensure parents are handled before children.
         for name in sorted(required_py.keys()):
@@ -332,7 +352,7 @@ class Builder():
                 self._create_directory(resources_dir + '/' + name_path)
 
             self._freeze(job_writer, resources_dir + '/' + out_file,
-                    stdlib_src_dir + '/' + in_file, in_file)
+                    standard_library_dir + '/' + in_file, in_file)
 
             resource_contents.append(out_file)
 
@@ -346,7 +366,7 @@ class Builder():
         '.y':       'YACCSOURCES',
     }
 
-    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, include_dir, python_library, standard_library_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -443,8 +463,7 @@ class Builder():
 
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
-            site_packages = project.path_from_user(
-                    project.python_target_stdlib_dir) + '/site-packages'
+            site_packages = standard_library_dir + '/site-packages'
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
             l_libs = []
@@ -511,13 +530,11 @@ class Builder():
                 self._add_parsed_scoped_values(used_libs, other_em.libs, False)
 
         # Configure the target Python interpreter.
-        if project.python_target_include_dir != '':
-            self._add_value_for_scopes(used_includepath,
-                    project.path_from_user(project.python_target_include_dir))
+        if include_dir != '':
+            self._add_value_for_scopes(used_includepath, include_dir)
 
-        if project.python_target_library != '':
-            fi = QFileInfo(project.path_from_user(
-                    project.python_target_library))
+        if python_library != '':
+            fi = QFileInfo(python_library)
 
             lib_dir = fi.absolutePath()
             lib = fi.completeBaseName()
@@ -1156,23 +1173,19 @@ static struct _inittab %s[] = {
 
         job_writer.writerow([out_file, in_file, name, conversion])
 
-    def _run_freeze(self, freeze, job_filename, opt):
+    def _run_freeze(self, freeze, interpreter, job_filename, opt):
         """ Run the accumlated freeze jobs. """
-
-        # Note that we assume a relative filename is on PATH rather than being
-        # relative to the project file.
-        interp = os.path.expandvars(self._project.python_host_interpreter)
 
         # On Windows the interpreter name is simply 'python'.  So in order to
         # make the .pdy file more portable we strip any trailing version
         # number.
         if sys.platform == 'win32':
-            for i in range(len(interp) - 1, -1, -1):
-                if interp[i] not in '.0123456789':
-                    interp = interp[:i + 1]
+            for i in range(len(interpreter) - 1, -1, -1):
+                if interpreter[i] not in '.0123456789':
+                    interpreter = interpreter[:i + 1]
                     break
 
-        argv = [QDir.toNativeSeparators(interp)]
+        argv = [QDir.toNativeSeparators(interpreter)]
 
         if opt == 2:
             argv.append('-OO')

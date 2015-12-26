@@ -45,6 +45,11 @@ def main():
     parser.add_argument('--enable-dynamic-loading',
             help="enable the dynamic loading of modules (configure)",
             action='store_true')
+    parser.add_argument('--include-dir',
+            help="the target Python include directory (build)", metavar="DIR")
+    parser.add_argument('--interpreter',
+            help="the host interpreter executable (build)",
+            metavar="EXECUTABLE")
     parser.add_argument('--opt',
             help="the optimisation level where 0 is none, 1 is no asserts, 2 "
                     "is no asserts or docstrings (build) [default: 2]",
@@ -56,10 +61,17 @@ def main():
             metavar="PACKAGE")
     parser.add_argument('--project', help="the project file (build)",
             metavar="FILE")
+    parser.add_argument('--python-library',
+            help="the target Python library (build)", metavar="LIB")
     parser.add_argument('--resources',
             help="the number of .qrc resource files to generate (build) "
                     "[default: 1]",
             metavar="NUMBER", type=int, default=1),
+    parser.add_argument('--source-dir',
+            help="the Python source code directory (build)", metavar="DIR")
+    parser.add_argument('--standard-library-dir',
+            help="the target Python standard library directory (build)",
+            metavar="DIR")
     parser.add_argument('--target', help="the target platform (configure)",
             metavar="TARGET")
     parser.add_argument('--quiet', help="disable progress messages (build)",
@@ -108,7 +120,10 @@ def build(args):
 
     try:
         builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.opt, args.resources, build_dir=args.output)
+        builder.build(args.opt, args.resources, build_dir=args.output,
+                include_dir=args.include_dir, interpreter=args.interpreter,
+                python_library=args.python_library, source_dir=args.source_dir,
+                standard_library_dir=args.standard_library_dir)
     except UserException as e:
         handle_exception(e, args.verbose)
         return 1
