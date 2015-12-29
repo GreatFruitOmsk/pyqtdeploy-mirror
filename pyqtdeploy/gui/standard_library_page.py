@@ -26,9 +26,9 @@
 
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QCheckBox, QFormLayout, QGroupBox, QSplitter,
-        QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
-        QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTreeView,
+        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout,
+        QWidget)
 
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         PLATFORM_SCOPES)
@@ -84,7 +84,6 @@ class StandardLibraryPage(QSplitter):
 
         extlib_pane = QWidget()
         extlib_layout = QVBoxLayout()
-        extlib_sublayout = QFormLayout()
 
         plat_gb = QGroupBox("Use standard Python shared library")
         plat_gb_layout = QVBoxLayout()
@@ -103,13 +102,11 @@ class StandardLibraryPage(QSplitter):
         plat_gb.setLayout(plat_gb_layout)
         extlib_layout.addWidget(plat_gb)
 
-        self._ssl_edit = QCheckBox(
+        self._ssl_edit = QCheckBox("Enable optional SSL support",
                 whatsThis="Enable SSL for the standard library modules "
                         "that have optional support for it.",
                 stateChanged=self._ssl_changed)
-        extlib_sublayout.addRow("Enable optional SSL support", self._ssl_edit)
-
-        extlib_layout.addLayout(extlib_sublayout)
+        extlib_layout.addWidget(self._ssl_edit)
 
         self._extlib_edit = QTreeView(
                 whatsThis="This is the list of external libraries that must "
