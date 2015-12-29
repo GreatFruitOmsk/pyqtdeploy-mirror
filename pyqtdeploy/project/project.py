@@ -33,6 +33,12 @@ from ..metadata import get_latest_supported_python_version, get_python_metadata
 from ..user_exception import UserException
 
 
+# The different types of Python Windows installations.
+WINDOWS_INSTALLATION_CURRENT_USER = 'current'
+WINDOWS_INSTALLATION_ALL_USERS = 'all'
+WINDOWS_INSTALLATION_CUSTOM = 'custom'
+
+
 class Project(QObject):
     """ The encapsulation of a project. """
 
@@ -41,7 +47,7 @@ class Project(QObject):
     min_version = 4
 
     # The current project version.
-    version = 6
+    version = 7
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -109,6 +115,7 @@ class Project(QObject):
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
         self.python_target_version = get_latest_supported_python_version()
+        self.python_windows_install = WINDOWS_INSTALLATION_CURRENT_USER
         self.qmake = ''
         self.qmake_configuration = ''
         self.standard_library = []
@@ -315,6 +322,11 @@ class Project(QObject):
         patch = cls._get_int(python, 'patch', 'Python', default=0)
         project.python_target_version = (major, minor, patch)
 
+        # This was added in version 7.  The default value reflects the
+        # behaviour of ealier versions.
+        project.python_windows_install = python.get('windowsinstall',
+                WINDOWS_INSTALLATION_CUSTOM)
+
         # The application specific configuration.
         application = root.find('Application')
         cls._assert(application is not None, "Missing 'Application' tag.")
@@ -515,7 +527,8 @@ class Project(QObject):
             'targetstdlibdir': self.python_target_stdlib_dir,
             'major': str(self.python_target_version[0]),
             'minor': str(self.python_target_version[1]),
-            'patch': str(self.python_target_version[2])})
+            'patch': str(self.python_target_version[2]),
+            'windowsinstall': self.python_windows_install})
 
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,

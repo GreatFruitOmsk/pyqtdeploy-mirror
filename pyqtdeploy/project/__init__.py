@@ -26,4 +26,5 @@
 
 # Publish the sub-package's API.
 from .project import (ExtensionModule, ExternalLibrary, Project, QrcDirectory,
-        QrcFile, QrcPackage)
+        QrcFile, QrcPackage, WINDOWS_INSTALLATION_CURRENT_USER,
+        WINDOWS_INSTALLATION_ALL_USERS, WINDOWS_INSTALLATION_CUSTOM)

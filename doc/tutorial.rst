@@ -473,6 +473,23 @@ The tab for defining the locations of various files and directories needed by
 .. image:: /images/locations_tab.png
     :align: center
 
+**Installed for current user**
+    is used to specify that, on Windows, Python is installed for the current
+    user by the official installer from python.org.  Any *Host Python
+    Locations* and *Target Python Locations* are ignored.  For versions of
+    Python earlier than v3.5 this has the same effect as an *all users*
+    installation.
+
+**Installed for all users**
+    is used to specify that, on Windows, Python is installed for all users by
+    the official installer from python.org.  Any *Host Python Locations* and
+    *Target Python Locations* are ignored.
+
+**Custom installation**
+    is used to specify that, on Windows, Python is installed in non-standard
+    locations as specified by the *Host Python Locations* and *Target Python
+    Locations* as they are for non-Windows platforms.
+
 **Interpreter**
     is used to specify the **host** Python interpreter used to compile all of
     the Python modules used by the application.  This must be the same version

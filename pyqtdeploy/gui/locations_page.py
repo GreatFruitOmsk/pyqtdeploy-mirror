@@ -24,10 +24,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QGroupBox, QMessageBox, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (QButtonGroup, QGroupBox, QHBoxLayout, QMessageBox,
+        QRadioButton, QVBoxLayout, QWidget)
 
+from ..project import (WINDOWS_INSTALLATION_CURRENT_USER,
+        WINDOWS_INSTALLATION_ALL_USERS, WINDOWS_INSTALLATION_CUSTOM)
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
+
+
+_WINDOWS_INSTALLS = (
+    (WINDOWS_INSTALLATION_CURRENT_USER, "Installed for the current user",
+            "Python is installed in the default location used for a "
+            "<em>current user</em> installation using the official installer "
+            "from python.org.  For all versions of Python earlier than v3.5 "
+            "this is the same as an <em>all users</em> installation."),
+    (WINDOWS_INSTALLATION_ALL_USERS, "Installed for all users",
+            "Python is installed in the default location used for an <em>all "
+            "users</em> installation using the official installer from "
+            "python.org."),
+    (WINDOWS_INSTALLATION_CUSTOM, "Custom installation",
+            "Python is installed in non-standard locations specified by the "
+            "rest of this form."))
 
 
 class LocationsPage(QWidget):
@@ -63,6 +81,22 @@ class LocationsPage(QWidget):
         self._project = None
 
         # Create the page's GUI.
+        win_py_group = QGroupBox("Windows Python Locations")
+        win_py_layout = QHBoxLayout()
+
+        self._win_py_bg = QButtonGroup()
+        self._win_py_bg.buttonClicked[int].connect(
+                self._windows_install_changed)
+
+        for wi, (_, wi_text, wi_whatsthis) in enumerate(_WINDOWS_INSTALLS):
+            rb = QRadioButton(wi_text, whatsThis=wi_whatsthis)
+            win_py_layout.addWidget(rb)
+            self._win_py_bg.addButton(rb, wi)
+
+        win_py_layout.addStretch()
+
+        win_py_group.setLayout(win_py_layout)
+
         py_host_group = QGroupBox("Host Python Locations")
         py_host_layout = BetterForm()
 
@@ -128,6 +162,7 @@ class LocationsPage(QWidget):
         others_group.setLayout(others_layout)
 
         layout = QVBoxLayout()
+        layout.addWidget(win_py_group)
         layout.addWidget(py_host_group)
         layout.addWidget(py_target_group)
         layout.addWidget(others_group)
@@ -142,6 +177,10 @@ class LocationsPage(QWidget):
 
         project = self.project
 
+        for wi, (wi_value, _, _) in enumerate(_WINDOWS_INSTALLS):
+            if wi_value == project.python_windows_install:
+                self._win_py_bg.button(wi).setChecked(True)
+
         self._host_interp_edit.setText(project.python_host_interpreter)
         self._source_edit.setText(project.python_source_dir)
         self._target_inc_edit.setText(project.python_target_include_dir)
@@ -149,6 +188,12 @@ class LocationsPage(QWidget):
         self._target_stdlib_edit.setText(project.python_target_stdlib_dir)
         self._build_edit.setText(project.build_dir)
         self._qmake_edit.setText(project.qmake)
+
+    def _windows_install_changed(self, button_id):
+        """ Invoked when the user changes the Windows installation type. """
+
+        self.project.python_windows_install = _WINDOWS_INSTALLS[button_id][0]
+        self.project.modified = True
 
     def _host_interp_changed(self, value):
         """ Invoked when the user edits the host interpreter name. """
