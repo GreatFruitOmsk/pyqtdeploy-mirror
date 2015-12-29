@@ -102,7 +102,7 @@ class Project(QObject):
         self.other_packages = []
         self.pyqt_modules = []
         self.python_host_interpreter = ''
-        self.python_use_platform = []
+        self.python_use_platform = ['win32']
         self.python_source_dir = ''
         self.python_ssl = False
         self.python_target_include_dir = ''

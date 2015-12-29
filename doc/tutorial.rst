@@ -364,7 +364,8 @@ application is shown below.
     library is to be used instead of a specially compiled shared or static
     library.  When selected :program:`pyqtdeploy` assumes that all of the
     Python standard library that is implemented as C extension modules is
-    implemented in the shared library.  See also :ref:`ref-win-dynload`
+    implemented in the shared library.  The default is to enable this for
+    Windows.  See also :ref:`ref-win-dynload`
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
