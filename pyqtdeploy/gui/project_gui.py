@@ -158,6 +158,9 @@ class ProjectGUI(QMainWindow):
         application_page.pyqt_version_changed.connect(
                 pyqt_page.set_pyqt_version)
 
+        application_page.python_target_version_changed.connect(
+                standard_library_page.python_target_version_changed)
+
         self.setCentralWidget(tabs)
 
     def _about(self):

@@ -25,9 +25,11 @@
 
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QFileDialog, QGridLayout,
-        QGroupBox, QHBoxLayout, QLineEdit, QRadioButton, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QFileDialog,
+        QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QRadioButton, QWidget)
 
+from ..metadata import (get_supported_python_version,
+        get_supported_python_version_index, get_supported_python_versions)
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
 from .qrc_package_editor import QrcPackageEditor
@@ -41,6 +43,9 @@ class ApplicationPage(QWidget):
 
     # Emitted when the user changes the PyQt version.
     pyqt_version_changed = pyqtSignal(bool)
+
+    # Emitted when the user changes the Python target version.
+    python_target_version_changed = pyqtSignal()
 
     @property
     def project(self):
@@ -103,37 +108,35 @@ class ApplicationPage(QWidget):
 
         layout.addLayout(form, 0, 0)
 
-        options_layout = QVBoxLayout()
-        pyqt_versions_layout = QHBoxLayout()
-        self._pyqt_versions_bg = QButtonGroup()
+        options_layout = BetterForm()
 
-        for version in ('PyQt5', 'PyQt4'):
-            rb = QRadioButton(version,
-                    whatsThis="Click here if it is a {0} application.".format(
-                            version))
-            pyqt_versions_layout.addWidget(rb)
-            self._pyqt_versions_bg.addButton(rb)
+        self._py_version_edit = QComboBox(
+                whatsThis="Select the target Python version.")
+        self._py_version_edit.addItems(get_supported_python_versions())
+        self._py_version_edit.currentIndexChanged.connect(
+                self._py_version_changed)
+        options_layout.addRow("Target Python version", self._py_version_edit)
 
-        options_layout.addLayout(pyqt_versions_layout)
-
-        self._pyqt_versions_bg.buttonToggled.connect(
+        self._pyqt_version_edit = QComboBox(
+                whatsThis="Select the PyQt version.")
+        self._pyqt_version_edit.addItems(["PyQt4", "PyQt5"])
+        self._pyqt_version_edit.currentIndexChanged.connect(
                 self._pyqt_version_changed)
+        options_layout.addRow("Target PyQt version", self._pyqt_version_edit)
 
         self._console_edit = QCheckBox("Use console (Windows)",
                 whatsThis="Enable console output for Windows applications. "
                         "Console output will be enabled automatically if no "
                         "graphical PyQt modules are used.",
                 stateChanged=self._console_changed)
-        options_layout.addWidget(self._console_edit)
+        options_layout.addRow(self._console_edit)
 
         self._bundle_edit = QCheckBox("Application bundle (OS X)",
                 whatsThis="Build an application bundle on OS X. If it is not "
                         "checked then the application will be built as a "
                         "simple executable.",
                 stateChanged=self._bundle_changed)
-        options_layout.addWidget(self._bundle_edit)
-
-        options_layout.addStretch()
+        options_layout.addRow(self._bundle_edit)
 
         layout.addLayout(options_layout, 0, 1)
 
@@ -157,15 +160,16 @@ class ApplicationPage(QWidget):
         self._sys_path_edit.setText(project.sys_path)
         self._package_edit.configure(project.application_package, project)
 
-        blocked = self._pyqt_versions_bg.blockSignals(True)
+        blocked = self._py_version_edit.blockSignals(True)
+        self._py_version_edit.setCurrentIndex(
+                get_supported_python_version_index(
+                        project.python_target_version))
+        self._py_version_edit.blockSignals(blocked)
 
-        for rb in self._pyqt_versions_bg.buttons():
-            if rb.text() == 'PyQt5':
-                rb.setChecked(project.application_is_pyqt5)
-            else:
-                rb.setChecked(not project.application_is_pyqt5)
-
-        self._pyqt_versions_bg.blockSignals(blocked)
+        blocked = self._pyqt_version_edit.blockSignals(True)
+        self._pyqt_version_edit.setCurrentIndex(
+                1 if project.application_is_pyqt5 else 0)
+        self._pyqt_version_edit.blockSignals(blocked)
 
         blocked = self._console_edit.blockSignals(True)
         self._console_edit.setCheckState(
@@ -177,14 +181,22 @@ class ApplicationPage(QWidget):
                 Qt.Checked if project.application_is_bundle else Qt.Unchecked)
         self._bundle_edit.blockSignals(blocked)
 
-    def _pyqt_version_changed(self, button, checked):
+    def _py_version_changed(self, idx):
+        """ Invoked when the user changes the Python version number. """
+
+        self.project.python_target_version = get_supported_python_version(idx)
+        self.project.modified = True
+
+        self.python_target_version_changed.emit()
+
+    def _pyqt_version_changed(self, idx):
         """ Invoked when the user changes the PyQt version number. """
 
-        if button.text() == 'PyQt5':
-            self.project.application_is_pyqt5 = checked
-            self.project.modified = True
+        pyqt5 = (idx == 1)
+        self.project.application_is_pyqt5 = pyqt5
+        self.project.modified = True
 
-            self.pyqt_version_changed.emit(checked)
+        self.pyqt_version_changed.emit(pyqt5)
 
     def _console_changed(self, state):
         """ Invoked when the user changes the console state. """

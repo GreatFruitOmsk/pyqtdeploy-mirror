@@ -24,15 +24,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QGroupBox,
-        QSplitter, QTreeView, QTreeWidget, QTreeWidgetItem,
-        QTreeWidgetItemIterator, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QFormLayout, QGroupBox, QSplitter,
+        QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
+        QVBoxLayout, QWidget)
 
 from ..metadata import (external_libraries_metadata, get_python_metadata,
-        get_supported_python_version, get_supported_python_version_index,
-        get_supported_python_versions, PLATFORM_SCOPES)
+        PLATFORM_SCOPES)
 from ..project import ExternalLibrary
 
 
@@ -87,22 +86,6 @@ class StandardLibraryPage(QSplitter):
         extlib_layout = QVBoxLayout()
         extlib_sublayout = QFormLayout()
 
-        self._version_edit = QComboBox(
-                whatsThis="Select the target Python version. This will cause "
-                        "the standard library package hierarchy to be "
-                        "updated.")
-        self._version_edit.addItems(get_supported_python_versions())
-        self._version_edit.currentIndexChanged.connect(self._version_changed)
-        extlib_sublayout.addRow("Target Python version", self._version_edit)
-
-        self._ssl_edit = QCheckBox(
-                whatsThis="Enable SSL for the standard library modules "
-                        "that have optional support for it.",
-                stateChanged=self._ssl_changed)
-        extlib_sublayout.addRow("Enable optional SSL support", self._ssl_edit)
-
-        extlib_layout.addLayout(extlib_sublayout)
-
         plat_gb = QGroupBox("Use standard Python shared library")
         plat_gb_layout = QVBoxLayout()
         self._platform_buttons = []
@@ -119,6 +102,14 @@ class StandardLibraryPage(QSplitter):
 
         plat_gb.setLayout(plat_gb_layout)
         extlib_layout.addWidget(plat_gb)
+
+        self._ssl_edit = QCheckBox(
+                whatsThis="Enable SSL for the standard library modules "
+                        "that have optional support for it.",
+                stateChanged=self._ssl_changed)
+        extlib_sublayout.addRow("Enable optional SSL support", self._ssl_edit)
+
+        extlib_layout.addLayout(extlib_sublayout)
 
         self._extlib_edit = QTreeView(
                 whatsThis="This is the list of external libraries that must "
@@ -159,21 +150,16 @@ class StandardLibraryPage(QSplitter):
         extlib_pane.setLayout(extlib_layout)
         self.addWidget(extlib_pane)
 
+    @pyqtSlot()
+    def python_target_version_changed(self):
+        """ Configure the page after the Python target version has changed. """
+
+        self._update_page()
+ 
     def _update_page(self):
         """ Update the page using the current project. """
 
         project = self.project
-
-        blocked = self._version_edit.blockSignals(True)
-        self._version_edit.setCurrentIndex(
-                get_supported_python_version_index(
-                        project.python_target_version))
-        self._version_edit.blockSignals(blocked)
-
-        blocked = self._ssl_edit.blockSignals(True)
-        self._ssl_edit.setCheckState(
-                Qt.Checked if project.python_ssl else Qt.Unchecked)
-        self._ssl_edit.blockSignals(blocked)
 
         for plat in self._platform_buttons:
             blocked = plat.blockSignals(True)
@@ -181,6 +167,11 @@ class StandardLibraryPage(QSplitter):
                     Qt.Checked if plat._scope in project.python_use_platform
                             else Qt.Unchecked)
             plat.blockSignals(blocked)
+
+        blocked = self._ssl_edit.blockSignals(True)
+        self._ssl_edit.setCheckState(
+                Qt.Checked if project.python_ssl else Qt.Unchecked)
+        self._ssl_edit.blockSignals(blocked)
 
         self._update_extlib_editor()
         self._update_stdlib_editor()
@@ -299,16 +290,6 @@ class StandardLibraryPage(QSplitter):
                 libs.setText(extlib.libs)
 
         model.blockSignals(blocked)
-
-    def _version_changed(self, idx):
-        """ Invoked when the target Python version changes. """
-
-        project = self.project
-
-        project.python_target_version = get_supported_python_version(idx)
-        self._update_page()
-
-        project.modified = True
 
     def _ssl_changed(self, state):
         """ Invoked when the SSL support changes. """

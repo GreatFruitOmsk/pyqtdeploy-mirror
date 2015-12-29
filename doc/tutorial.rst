@@ -221,11 +221,12 @@ The tab for defining the application source is shown below.
         enabled.  See the :option:`--enable-dynamic-loading` option of the
         :option:`configure` action.
 
-**PyQt5**
-    is used to specify that the application is a PyQt5 application.
+**Target Python version**
+    is used to specify version of Python that you are targetting.
 
-**PyQt4**
-    is used to specify that the application is a PyQt4 application.
+**Target PyQt version**
+    is used to specify that the application is either a PyQt4 or a PyQt5
+    application.
 
 **Use console (Windows)**
     is checked if the application should use a console.  Specifically it adds
@@ -349,9 +350,6 @@ application is shown below.
     Here we have checked the :mod:`argparse` module and the :mod:`_thread`,
     :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar` modules have
     been partially checked automatically.
-
-**Target Python version**
-    is used to specify version of Python that you are targetting.
 
 **Enable optional SSL support**
     is used to specify if the application requires SSL support to be enabled.
