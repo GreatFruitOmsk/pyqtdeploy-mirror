@@ -515,8 +515,7 @@ class Project(QObject):
             'targetstdlibdir': self.python_target_stdlib_dir,
             'major': str(self.python_target_version[0]),
             'minor': str(self.python_target_version[1]),
-            'patch': str(self.python_target_version[2]),
-            'windowsinstall': self.python_windows_install})
+            'patch': str(self.python_target_version[2])})
 
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,
