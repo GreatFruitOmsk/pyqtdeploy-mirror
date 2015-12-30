@@ -33,12 +33,6 @@ from ..metadata import get_latest_supported_python_version, get_python_metadata
 from ..user_exception import UserException
 
 
-# The different types of Python Windows installations.
-WINDOWS_INSTALLATION_CURRENT_USER = 'current'
-WINDOWS_INSTALLATION_ALL_USERS = 'all'
-WINDOWS_INSTALLATION_CUSTOM = 'custom'
-
-
 class Project(QObject):
     """ The encapsulation of a project. """
 
@@ -115,7 +109,6 @@ class Project(QObject):
         self.python_target_library = ''
         self.python_target_stdlib_dir = ''
         self.python_target_version = get_latest_supported_python_version()
-        self.python_windows_install = WINDOWS_INSTALLATION_CURRENT_USER
         self.qmake = ''
         self.qmake_configuration = ''
         self.standard_library = []
@@ -321,11 +314,6 @@ class Project(QObject):
         minor = cls._get_int(python, 'minor', 'Python')
         patch = cls._get_int(python, 'patch', 'Python', default=0)
         project.python_target_version = (major, minor, patch)
-
-        # This was added in version 7.  The default value reflects the
-        # behaviour of ealier versions.
-        project.python_windows_install = python.get('windowsinstall',
-                WINDOWS_INSTALLATION_CUSTOM)
 
         # The application specific configuration.
         application = root.find('Application')

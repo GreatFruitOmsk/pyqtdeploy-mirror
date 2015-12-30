@@ -27,42 +27,31 @@
 import os
 import sys
 
-from ..project import (WINDOWS_INSTALLATION_CURRENT_USER,
-        WINDOWS_INSTALLATION_ALL_USERS)
+from ..user_exception import UserException
 
 
 class Locations():
     """ Encapsulate the Python host and target locations for a project. """
 
-    def __init__(self, project, include_dir, interpreter, python_dll, python_library, source_dir, standard_library_dir):
+    def __init__(self, project, include_dir, interpreter, python_library, source_dir, standard_library_dir):
         """ Initialise the object. """
 
         self.project = project
         self._include_dir = include_dir
         self._interpreter = interpreter
-        self._python_dll = python_dll
         self._python_library = python_library
         self._source_dir = source_dir
         self._standard_library_dir = standard_library_dir
 
     @classmethod
-    def get_locations(cls, project, include_dir, interpreter, python_dll, python_library, source_dir, standard_library_dir):
+    def get_locations(cls, project, include_dir, interpreter, python_library, source_dir, standard_library_dir):
         """ Create a sub-class instance to handle the locations for a project.
         """
 
-        factory = CustomLocations
+        factory = WindowsLocations if sys.platform == 'win32' and 'win32' in project.python_use_platform else CustomLocations
 
-        if sys.platform == 'win32':
-            if project.python_windows_install == WINDOWS_INSTALLATION_CURRENT_USER:
-                if project.python_target_version >= (3, 5, 0):
-                    factory = WindowsCurrentUserLocations
-                else:
-                    factory = WindowsAllUsersLocations
-            elif project.python_windows_install == WINDOWS_INSTALLATION_ALL_USERS:
-                factory = WindowsAllUsersLocations
-
-        return factory(project, include_dir, interpreter, python_dll,
-                python_library, source_dir, standard_library_dir)
+        return factory(project, include_dir, interpreter, python_library,
+                source_dir, standard_library_dir)
 
     @property
     def include_dir(self):
@@ -140,31 +129,61 @@ class Locations():
 class WindowsLocations(Locations):
     """ Encapsulate the locations for a Windows installation. """
 
+    def __init__(self, project, include_dir, interpreter, python_library, source_dir, standard_library_dir):
+        """ Initialise the object. """
+
+        super().__init__(project, include_dir, interpreter, python_library,
+                source_dir, standard_library_dir)
+
+        self._major, self._minor, _ = project.python_target_version
+
+        from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
+
+        sub_key = 'Software\\Python\\PythonCore\\%d.%d\\InstallPath' % (self._major, self._minor)
+
+        install_path = None
+
+        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+            try:
+                install_path = QueryValue(key, sub_key)
+            except OSError:
+                pass
+            else:
+                break
+
+        if install_path is None:
+            raise UserException(
+                    "Unable to find an installation of Python v%d.%d" % (
+                            self._major, self._minor))
+
+        self._install_path = install_path
+
     def get_include_dir(self):
         """ Re-implemented to return the target include directory. """
 
-        return self.get_root_dir() + '\\include'
+        return self._install_path + 'include'
 
     def get_interpreter(self):
         """ Re-implemented to return the host interpreter. """
 
-        return self.get_root_dir() + '\\python'
+        return self._install_path + 'python'
 
     def get_python_dll(self):
         """ Re-implemented to return the target Python DLL. """
 
-        version = self._major_minor()
+        dll = 'python%d%d.dll' % (self._major, self._minor)
 
-        return os.path.expandvars(
-                ('%PROGRAMFILES%\\Python%s\\python%s.dll' % (version, version))
-                        if self._is_py_3_5()
-                        else ('%SYSTEMROOT%\System32\\python%s.dll' % version))
+        if self._major >= 3 and self._minor >= 5:
+            return self._install_path + dll
+
+        return os.path.expandvars('%SYSTEMROOT%\\System32\\' + dll)
 
     def get_python_library(self):
         """ Re-implemented to return the target Python library. """
 
-        return '%s\\libs\\python%s.lib' % (self.get_root_dir(),
-                self.major_minor())
+        lib = 'libs\\python%d%d.lib' % (self._major, self._minor)
+
+        return self._install_path + lib
 
     def get_source_dir(self):
         """ Re-implemented to return the host source directory. """
@@ -175,50 +194,7 @@ class WindowsLocations(Locations):
     def get_standard_library_dir(self):
         """ Re-implemented to return the target standard library directory. """
 
-        return self.get_root_dir() + '\\Lib'
-
-    def get_root_dir(self):
-        """ Return the root directory of the installation. """
-
-        return self.get_prefix() + '\\Python' + self._major_minor()
-
-    def get_prefix(self):
-        """ Get the installation-specific prefix of the root directory. """
-
-        raise NotImplementedError
-
-    def is_py_3_5(self):
-        """ Return True if the target Python version is v3.5 or later. """
-
-        return self.project.python_target_version >= (3, 5, 0)
-
-    def _major_minor(self):
-        """ Return the major and minor version number as a string. """
-
-        major, minor, _ = self.project.python_target_version
-
-        return "%d%d" % (major, minor)
-
-
-class WindowsCurrentUserLocations(WindowsLocations):
-    """ Encapsulate the locations for a Windows installation for the current
-    user.
-    """
-
-    def get_prefix(self):
-        """ Re-implemented to get the prefix of the root directory. """
-
-        return os.path.expandvars('%LOCALAPPDATA%\\Programs\\Python')
-
-
-class WindowsAllUsersLocations(WindowsLocations):
-    """ Encapsulate the locations for a Windows installation for all users.
-    """
-
-    def get_prefix(self):
-        """ Re-implemented to get the prefix of the root directory. """
-
-        return os.path.expandvars('%PROGRAMFILES%' if self.is_py_3_5() else '%HOMEDRIVE%')
+        return self._install_path + 'Lib'
 
 
 class CustomLocations(Locations):

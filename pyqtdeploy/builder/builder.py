@@ -58,7 +58,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, opt, nr_resources, build_dir=None, clean=False, include_dir=None, interpreter=None, python_dll=None, python_library=None, source_dir=None, standard_library_dir=None):
+    def build(self, opt, nr_resources, build_dir=None, clean=False, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -74,7 +74,7 @@ class Builder():
 
         # Get the Python host and target locations.
         locations = Locations.get_locations(project, include_dir, interpreter,
-                python_dll, python_library, source_dir, standard_library_dir)
+                python_library, source_dir, standard_library_dir)
 
         # Get the names of the required Python modules, extension modules and
         # libraries.
