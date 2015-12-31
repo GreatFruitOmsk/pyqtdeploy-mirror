@@ -40,7 +40,6 @@ from ..metadata import (external_libraries_metadata, get_python_metadata,
 from ..project import QrcDirectory
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
-from .locations import Locations
 
 
 # The sequence of all platform scopes.
@@ -72,10 +71,6 @@ class Builder():
             raise UserException(
                     "There was an error creating a temporary directory")
 
-        # Get the Python host and target locations.
-        locations = Locations.get_locations(project, include_dir, interpreter,
-                python_library, source_dir, standard_library_dir)
-
         # Get the names of the required Python modules, extension modules and
         # libraries.
         metadata = get_python_metadata(project.python_target_version)
@@ -89,15 +84,18 @@ class Builder():
 
             if module.source is None:
                 required_py[name] = module
-            elif not (module.core or project.is_standard_windows_build()):
+            elif not module.core:
                 required_ext[name] = module
 
         # Initialise and check we have the information we need.
         if len(required_ext) != 0:
-            if locations.source_dir == '':
-                raise UserException(
-                        "The name of the Python source directory is needed "
-                        "but has not been specified")
+            if source_dir is None:
+                if project.python_source_dir == '':
+                    raise UserException(
+                            "The name of the Python source directory has not "
+                            "been specified")
+
+                source_dir = project.path_from_user(project.python_source_dir)
 
         if project.get_executable_basename() == '':
             raise UserException("The name of the application has not been "
@@ -113,6 +111,25 @@ class Builder():
         elif project.application_entry_point != '':
             raise UserException("Either the application script name or the "
                     "entry point must be specified but not both")
+
+        # Get other directories from the project that may be overridden.
+        if include_dir is None:
+            include_dir = project.path_from_user(
+                    project.python_target_include_dir)
+
+        if interpreter is None:
+            # Note that we assume a relative filename is on PATH rather than
+            # being relative to the project file.
+            interpreter = os.path.expandvars(
+                    self._project.python_host_interpreter)
+
+        if python_library is None:
+            python_library = project.path_from_user(
+                    project.python_target_library)
+
+        if standard_library_dir is None:
+            standard_library_dir = project.path_from_user(
+                    project.python_target_stdlib_dir)
 
         # Get the name of the build directory.
         if build_dir is None:
@@ -166,12 +183,12 @@ class Builder():
 
         # Generate the application resource.
         resource_names = self._generate_resource(build_dir + '/resources',
-                required_py, locations.standard_library_dir, job_writer,
-                nr_resources)
+                required_py, standard_library_dir, job_writer, nr_resources)
 
         # Write the .pro file.
         self._write_qmake(py_version, build_dir, required_ext,
-                required_libraries, locations, job_writer, opt, resource_names)
+                required_libraries, include_dir, python_library,
+                standard_library_dir, job_writer, opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -181,7 +198,7 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 temp_dir.path(), dst_file_name='freeze.py')
 
-        self._run_freeze(freeze, locations.interpreter, job_filename, opt)
+        self._run_freeze(freeze, interpreter, job_filename, opt)
 
     def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
         """ Freeze a version dependent bootstrap script. """
@@ -349,7 +366,7 @@ class Builder():
         '.y':       'YACCSOURCES',
     }
 
-    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, locations, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, include_dir, python_library, standard_library_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -446,7 +463,7 @@ class Builder():
 
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
-            site_packages = locations.standard_library_dir + '/site-packages'
+            site_packages = standard_library_dir + '/site-packages'
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
             l_libs = []
@@ -513,11 +530,11 @@ class Builder():
                 self._add_parsed_scoped_values(used_libs, other_em.libs, False)
 
         # Configure the target Python interpreter.
-        if locations.include_dir != '':
-            self._add_value_for_scopes(used_includepath, locations.include_dir)
+        if include_dir != '':
+            self._add_value_for_scopes(used_includepath, include_dir)
 
-        if locations.python_library != '':
-            fi = QFileInfo(locations.python_library)
+        if python_library != '':
+            fi = QFileInfo(python_library)
 
             lib_dir = fi.absolutePath()
             lib = fi.completeBaseName()
@@ -539,7 +556,7 @@ class Builder():
 
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
-            source_dir = locations.source_dir
+            source_dir = project.path_from_user(project.python_source_dir)
             source_scopes = set()
 
             for name, module in required_ext.items():

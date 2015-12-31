@@ -517,12 +517,6 @@ The tab for defining the locations of various files and directories needed by
     is used to specify the name of the :program:`qmake` executable that is
     optionally used to build a ``Makefile`` for the application.
 
-.. note::
-    The host and target Python locations are ignored on Windows when the
-    standard Python shared library is specified.  In this case the locations
-    are derived from the Windows registry values set by the official installer
-    from python.org.
-
 
 Building the Application
 ------------------------
