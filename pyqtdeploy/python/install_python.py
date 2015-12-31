@@ -25,6 +25,7 @@
 
 
 import os
+import shutil
 import sys
 
 from ..file_utilities import parse_version
@@ -63,10 +64,135 @@ def install_python(target, sysroot, system_python, message_handler):
             "Installing Python v{0}.{1} for {2} in {3}".format(
                     py_major, py_minor, target, sysroot))
 
-    _install_windows_system_python(py_major, py_minor, sysroot)
+    _install_windows_system_python(py_major, py_minor, sysroot,
+            message_handler)
 
 
-def _install_windows_system_python(py_major, py_minor, sysroot):
+def _install_windows_system_python(py_major, py_minor, sysroot, message_handler):
     """ Install the Windows system Python. """
 
     import winreg
+
+    sub_key = 'Software\\Python\\PythonCore\\{0}.{1}\\InstallPath'.format(
+            py_major, py_minor)
+
+    for key in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        try:
+            install_path = winreg.QueryValue(key, sub_key)
+        except OSError:
+            pass
+        else:
+            break
+    else:
+        raise UserException(
+                "Unable to find an installation of Python v{0}.{1}.".format(
+                        py_major, py_minor))
+
+    message_handler.progress_message(
+            "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
+                    install_path))
+
+    # The interpreter.
+    bin_dir = os.path.join(sysroot, 'bin')
+    _create_dir(bin_dir, message_handler)
+    _copy_file(install_path + 'python.exe',
+            os.path.join(bin_dir,
+                    'python{0}.{1}.exe'.format(py_major, py_minor)),
+            message_handler)
+
+    # The interpreter DLL.
+    if py_major == 3 and py_minor >= 5:
+        dll_dir = install_path
+
+        vc_dll = 'vcruntime140.dll'
+        _copy_file(dll_dir + vc_dll, os.path.join(bin_dir, vc_dll),
+                message_handler)
+    else:
+        dll_dir = 'C:\\Windows\\System32\\'
+
+    dll_name = 'python{0}{1}.dll'.format(py_major, py_minor)
+
+    _copy_file(dll_dir + dll_name, os.path.join(bin_dir, dll_name),
+            message_handler)
+
+    # The interpreter library.
+    lib_dir = os.path.join(sysroot, 'lib')
+    _create_dir(lib_dir, message_handler)
+
+    lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
+
+    _copy_file(install_path + 'libs\\' + lib_name,
+            os.path.join(lib_dir, lib_name), message_handler)
+
+    # The standard library.
+    py_subdir = 'python{0}.{1}'.format(py_major, py_minor)
+
+    dst_dir = _clean_dir(lib_dir, py_subdir, message_handler)
+    _copy_dir(install_path + 'Lib', dst_dir, message_handler)
+
+    # The header files.
+    include_dir = os.path.join(sysroot, 'include')
+    dst_dir = _clean_dir(include_dir, py_subdir, message_handler)
+    _copy_dir(install_path + 'include', dst_dir, message_handler)
+
+
+def _clean_dir(parent, name, message_handler):
+    """ Ensure that a directory doesn't exist but its parent does.  Return the
+    full path of the directory.
+    """
+
+    name_path = os.path.join(parent, name)
+
+    _create_dir(parent, message_handler)
+    _remove_dir(name_path, message_handler)
+
+    return name_path
+
+
+def _copy_file(src, dst, message_handler):
+    """ Copy a file. """
+
+    message_handler.progress_message("Copying {0} to {1}".format(src, dst))
+
+    try:
+        shutil.copy(src, dst)
+    except Exception as e:
+        raise UserException("Unable to copy {0}.".format(src),
+                detail=str(e))
+
+
+def _copy_dir(src, dst, message_handler):
+    """ Copy a directory and its contents. """
+
+    message_handler.progress_message("Copying {0} to {1}".format(src, dst))
+
+    try:
+        shutil.copytree(src, dst)
+    except Exception as e:
+        raise UserException("Unable to copy directory {0}.".format(src),
+                detail=str(e))
+
+
+def _create_dir(name, message_handler):
+    """ Ensure a directory exists. """
+
+    message_handler.progress_message("Creating {0}".format(name))
+
+    try:
+        os.makedirs(name, exist_ok=True)
+    except Exception as e:
+        raise UserException("Unable to create directory {0}.".format(name),
+                detail=str(e))
+
+
+def _remove_dir(name, message_handler):
+    """ Remove a directory and its contents. """
+
+    if os.path.exists(name):
+        message_handler.progress_message("Removing {0}".format(name))
+
+        try:
+            shutil.rmtree(name)
+        except Exception as e:
+            raise UserException("Unable to remove directory {0}.".format(name),
+                    detail=str(e))

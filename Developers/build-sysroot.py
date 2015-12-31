@@ -175,8 +175,10 @@ class AbstractHost:
         else:
             fatal("this host does not support building Qt for the {0} target".format(self.target))
 
-        self.python2_installation = python_installation_factory(PY2_VERSION)
-        self.python3_installation = python_installation_factory(PY3_VERSION)
+        self.python2_installation = python_installation_factory(PY2_VERSION,
+                self)
+        self.python3_installation = python_installation_factory(PY3_VERSION,
+                self)
 
     def build_configure(self):
         """ Perform any host-specific pre-build checks and configuration.
@@ -450,10 +452,11 @@ class LinuxHost(PosixHost):
 class AbstractPythonInstallation:
     """ The abstract base class that encapsulates a Python version. """
 
-    def __init__(self, version):
+    def __init__(self, version, host):
         """ Initialise the object. """
 
         self.version = version
+        self.host = host
 
     @property
     def host_include_dir(self):
@@ -514,6 +517,7 @@ class AbstractPythonInstallation:
 
 class WindowsPythonInstallation(AbstractPythonInstallation):
     """ The class that encapsulates a Python installation for a Windows host.
+    Note that this assumes we have installed the system Python.
     """
 
     @property
@@ -521,31 +525,20 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
         """ The name of the directory containing the host Python include files.
         """
 
-        return self.host_root_dir + '\\include'
+        return self.host.sysroot + '\\include\\python' + self.major_minor_version()
 
     @property
     def host_library(self):
         """ The name of the host Python library. """
 
-        return self.host_root_dir + '\\libs\\python' + self.major_minor_version(dotted=False) + '.lib'
+        return self.host.sysroot + '\\lib\\python' + self.major_minor_version(dotted=False) + '.lib'
 
     @property
     def host_python(self):
         """ The name of the host python executable including any required path.
         """
 
-        return self.host_root_dir + '\\python'
-
-    @property
-    def host_root_dir(self):
-        """ The host Python root directory. """
-
-        version = self.major_minor_version(dotted=False)
-
-        if int(version) >= 35:
-            return 'C:\\Program Files\\Python' + version
-
-        return 'C:\\Python' + version
+        return self.host.sysroot + '\\bin\\python' + self.major_minor_version()
 
     @property
     def host_stdlib_dir(self):
@@ -553,7 +546,7 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
         library.
         """
 
-        return self.host_root_dir + '\\Lib'
+        return self.host.sysroot + '\\lib\\python' + self.major_minor_version()
 
     @property
     def src_dir(self):
@@ -777,34 +770,15 @@ def build_qt(host):
     host.qt_builder.build()
 
 
-def build_python(host, python_installation, debug, enable_dynamic_loading, use_platform_python):
-    """ Build a static Python that optionally supports dynamic loading and
-    using the platform Python.
-    """
+def build_python(host, python_installation, debug, enable_dynamic_loading):
+    """ Build a Python that optionally supports dynamic loading. """
 
-    if use_platform_python:
-        # Copy the include files.
-        src = python_installation.host_include_dir
-        dst = os.path.join(host.sysroot, 'include',
-                'python' + python_installation.major_minor_version())
-
-        rmtree(dst)
-        shutil.copytree(src, dst)
-
-        # Copy the Python library.
-        src = python_installation.host_library
-        dst = os.path.join(host.sysroot, 'lib')
-
-        os.makedirs(dst, exist_ok=True)
-        shutil.copy(src, dst)
-
-        # Copy the Python standard library.
-        src = python_installation.host_stdlib_dir
-        dst = os.path.join(host.sysroot, 'lib',
-                'python' + python_installation.major_minor_version())
-
-        rmtree(dst)
-        shutil.copytree(src, dst)
+    if sys.platform == 'win32':
+        host.run(host.pyqtdeploycli,
+                '--sysroot', host.sysroot,
+                '--package', 'python',
+                '--system-python', python_installation.major_minor_version(),
+                'install')
     else:
         get_package_source(host, python_installation.package)
 
@@ -920,8 +894,6 @@ parser.add_argument('--enable-dynamic-loading',
 parser.add_argument('--target',
         help="the target platform [default: {0}]".format(native_target),
         choices=TARGETS, default=native_target)
-parser.add_argument('--use-platform-python',
-        help="use platform Python libraries", action='store_true')
 
 args = parser.parse_args()
 
@@ -942,11 +914,11 @@ if 'qt' in packages:
 
 if 'python2' in packages:
     build_python(host, host.python2_installation, args.debug,
-            args.enable_dynamic_loading, args.use_platform_python)
+            args.enable_dynamic_loading)
 
 if 'python3' in packages:
     build_python(host, host.python3_installation, args.debug,
-            args.enable_dynamic_loading, args.use_platform_python)
+            args.enable_dynamic_loading)
 
 if 'sip' in packages:
     build_sip_code_generator(host, host.python3_installation)
