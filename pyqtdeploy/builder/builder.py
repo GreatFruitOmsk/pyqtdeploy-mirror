@@ -89,7 +89,7 @@ class Builder():
 
             if module.source is None:
                 required_py[name] = module
-            elif not module.core:
+            elif not (module.core or project.is_standard_windows_build()):
                 required_ext[name] = module
 
         # Initialise and check we have the information we need.

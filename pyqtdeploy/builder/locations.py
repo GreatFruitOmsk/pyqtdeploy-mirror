@@ -25,7 +25,6 @@
 
 
 import os
-import sys
 
 from ..user_exception import UserException
 
@@ -48,7 +47,7 @@ class Locations():
         """ Create a sub-class instance to handle the locations for a project.
         """
 
-        factory = WindowsLocations if sys.platform == 'win32' and 'win32' in project.python_use_platform else CustomLocations
+        factory = WindowsLocations if project.is_standard_windows_build() else CustomLocations
 
         return factory(project, include_dir, interpreter, python_library,
                 source_dir, standard_library_dir)

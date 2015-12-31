@@ -25,6 +25,7 @@
 
 
 import os
+import sys
 from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
@@ -142,6 +143,13 @@ class Project(QObject):
             path = fi.absoluteFilePath()
 
         return path
+
+    def is_standard_windows_build(self):
+        """ Return True if this is a native Windows build using the official
+        Python installer.
+        """
+
+        return sys.platform == 'win32' and 'win32' in project.python_use_platform
 
     def get_executable_basename(self):
         """ Return the basename of the application executable (i.e. with no
