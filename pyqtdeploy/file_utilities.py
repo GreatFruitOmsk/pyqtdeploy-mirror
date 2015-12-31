@@ -178,6 +178,14 @@ def extract_version(name):
     while not version_str[-1].isdigit():
         version_str = version_str[:-1]
 
+    return parse_version(version_str)
+
+
+def parse_version(version_str):
+    """ Return an encoded version number from a string.  version_str is the
+    string.  0 is returned if a version number could not be extracted.
+    """
+
     version_parts = version_str.split('.')
 
     while len(version_parts) < 3:

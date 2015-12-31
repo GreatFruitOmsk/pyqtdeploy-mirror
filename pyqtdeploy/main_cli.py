@@ -37,8 +37,8 @@ def main():
 
     parser.add_argument('action',
             help="the action to perform",
-            choices=('build', 'configure', 'show-packages', 'show-targets',
-                    'show-version'))
+            choices=('build', 'configure', 'install', 'show-packages',
+                    'show-targets', 'show-version'))
     parser.add_argument('--disable-patches',
             help="disable the patching of the Python source code (configure)",
             action='store_true')
@@ -57,7 +57,8 @@ def main():
     parser.add_argument('--output',
             help="the name of the output file or directory (configure, build)",
             metavar="OUTPUT")
-    parser.add_argument('--package', help="the package name (configure)",
+    parser.add_argument('--package',
+            help="the package name (configure, install)",
             metavar="PACKAGE")
     parser.add_argument('--project', help="the project file (build)",
             metavar="FILE")
@@ -72,7 +73,14 @@ def main():
     parser.add_argument('--standard-library-dir',
             help="the target Python standard library directory (build)",
             metavar="DIR")
-    parser.add_argument('--target', help="the target platform (configure)",
+    parser.add_argument('--sysroot',
+            help="the system image root directory (install)",
+            metavar="DIR")
+    parser.add_argument('--system-python',
+            help="use the system installed Python (install)",
+            metavar="VERSION")
+    parser.add_argument('--target',
+            help="the target platform (configure, install)",
             metavar="TARGET")
     parser.add_argument('--quiet', help="disable progress messages (build)",
             action='store_true')
@@ -87,6 +95,8 @@ def main():
         rc = build(args)
     elif args.action == 'configure':
         rc = configure(args)
+    elif args.action == 'install':
+        rc = install(args)
     elif args.action == 'show-packages':
         rc = show_packages(args)
     elif args.action == 'show-targets':
@@ -162,6 +172,39 @@ def configure(args):
     return 0
 
 
+def install(args):
+    """ Perform the install action. """
+
+    # Note that the intent is to support the installation of all supported
+    # packages into sysroot in a future version.  For now we just handle the
+    # Windows version of Python installed from the official installers.
+
+    if args.package is None:
+        missing_argument('--package')
+        return 2
+
+    if args.sysroot is None:
+        missing_argument('--sysroot')
+        return 2
+
+    if args.package == 'python':
+        from . import install_python, MessageHandler, UserException
+
+        message_handler = MessageHandler(args.quiet, args.verbose)
+
+        try:
+            install_python(args.target, args.sysroot, args.system_python,
+                    message_handler)
+        except UserException as e:
+            handle_exception(e, args.verbose)
+            return 1
+    else:
+        error("install only supports the python package at the moment.")
+        return 1
+
+    return 0
+
+
 def show_packages(args):
     """ Perform the show-packages action. """
 
@@ -213,19 +256,20 @@ def missing_argument(name):
     """ Tell the user about a missing argument. """
 
     # Mimic the argparse message.
-    print(
-            "{0}: error: the following arguments are required: {1}".format(
-                    os.path.basename(sys.argv[0]), name),
-            file=sys.stderr)
+    error("error: the following arguments are required: {0}".format(name))
 
 
 def handle_exception(e, verbose):
     """ Tell the user about an exception. """
 
-    program = os.path.basename(sys.argv[0])
-
     if verbose and e.detail != '':
-        print("{0}: {1}: {2}".format(program, e.text, e.detail),
-                file=sys.stderr)
+        error("{0}: {1}".format(e.text, e.detail))
     else:
-        print("{0}: {1}".format(program, e.text), file=sys.stderr)
+        error(e.text)
+
+
+def error(message):
+    """ Tell the user about an error. """
+
+    print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
+            file=sys.stderr)

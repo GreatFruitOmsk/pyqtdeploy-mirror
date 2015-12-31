@@ -33,6 +33,7 @@ from ..user_exception import UserException
 
 from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
+from .supported_versions import check_version
 
 
 def configure_python(target, output, dynamic_loading, patches, message_handler):
@@ -53,16 +54,13 @@ def configure_python(target, output, dynamic_loading, patches, message_handler):
         raise UserException(
                 "Unable to determine the Python version from the name of {0}.".format(py_src_dir))
 
+    check_version(py_version)
+
     py_major = py_version >> 16
     py_minor = (py_version >> 8) & 0xff
     py_patch = py_version & 0xff
 
     py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
-
-    # Sanity check the version number.
-    if py_version < 0x020700 or (py_version >= 0x030000 and py_version < 0x030300) or py_version >= 0x040000:
-        raise UserException(
-                "Python v{0} is not supported.".format(py_version_str))
 
     message_handler.progress_message(
             "Configuring {0} as Python v{1} for {2}".format(

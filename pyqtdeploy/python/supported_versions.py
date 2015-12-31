@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2015, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,12 +24,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.
-from .builder import Builder
-from .message_handler import MessageHandler
-from .packages import configure_package, get_supported_packages
-from .project import Project
-from .python import configure_python, install_python
-from .targets import get_supported_targets
-from .version import PYQTDEPLOY_RELEASE
-from .user_exception import UserException
+from ..user_exception import UserException
+
+
+def check_version(version):
+    """ Check that a version of Python is supported. """
+
+    py_major = version >> 16
+    py_minor = (version >> 8) & 0xff
+
+    if (py_major == 2 and py_minor >= 7) or (py_major == 3 and py_minor >= 3):
+        return
+
+    raise UserException(
+            "Python v{0}.{1} is not supported.".format(py_major, py_minor))

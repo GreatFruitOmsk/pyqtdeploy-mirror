@@ -25,4 +25,5 @@
 
 
 # Publish the sub-package's API.
-from .python import configure_python
+from .configure_python import configure_python
+from .install_python import install_python
