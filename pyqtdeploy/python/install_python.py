@@ -77,9 +77,15 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
             "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
                     install_path))
 
-    # The interpreter DLL.
-    bin_dir = os.path.join(sysroot, 'bin')
-    _create_dir(bin_dir, message_handler)
+    # The interpreter library and DLL.
+    lib_dir = os.path.join(sysroot, 'lib')
+    _create_dir(lib_dir, message_handler)
+
+    lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
+
+    _copy_file(install_path + 'libs\\' + lib_name,
+            os.path.join(lib_dir, lib_name), message_handler)
+
     if py_major == 3 and py_minor >= 5:
         dll_dir = install_path
 
@@ -91,17 +97,8 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
 
     dll_name = 'python{0}{1}.dll'.format(py_major, py_minor)
 
-    _copy_file(dll_dir + dll_name, os.path.join(bin_dir, dll_name),
+    _copy_file(dll_dir + dll_name, os.path.join(lib_dir, dll_name),
             message_handler)
-
-    # The interpreter library.
-    lib_dir = os.path.join(sysroot, 'lib')
-    _create_dir(lib_dir, message_handler)
-
-    lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
-
-    _copy_file(install_path + 'libs\\' + lib_name,
-            os.path.join(lib_dir, lib_name), message_handler)
 
     # The standard library.
     py_subdir = 'python{0}.{1}'.format(py_major, py_minor)

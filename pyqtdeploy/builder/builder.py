@@ -543,7 +543,7 @@ class Builder():
         if python_library != '':
             fi = QFileInfo(python_library)
 
-            lib_dir = fi.absolutePath()
+            py_lib_dir = fi.absolutePath()
             lib = fi.completeBaseName()
 
             # This is smart enough to translate the Python library as a UNIX .a
@@ -553,13 +553,15 @@ class Builder():
 
             if '.' in lib:
                 self._add_value_for_scopes(used_libs,
-                        '-L{0} -l{1}'.format(lib_dir, lib.replace('.', '')),
+                        '-L{0} -l{1}'.format(py_lib_dir, lib.replace('.', '')),
                         ['win32'])
                 self._add_value_for_scopes(used_libs,
-                        '-L{0} -l{1}'.format(lib_dir, lib), ['!win32'])
+                        '-L{0} -l{1}'.format(py_lib_dir, lib), ['!win32'])
             else:
                 self._add_value_for_scopes(used_libs,
-                        '-L{0} -l{1}'.format(lib_dir, lib))
+                        '-L{0} -l{1}'.format(py_lib_dir, lib))
+        else:
+            py_lib_dir = None
 
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
@@ -735,6 +737,11 @@ class Builder():
             if tail is not None:
                 f.write(tail)
 
+        # If we are using the platform Python on Windows then copy in the
+        # required DLLs if they can be found.
+        if 'win32' in project.python_use_platform and py_lib_dir is not None:
+            self._copy_windows_dlls(py_version, py_lib_dir, f)
+
         # Add the project independent post-configuration stuff.
         self._write_embedded_lib_file('post_configuration.pro', f)
 
@@ -746,6 +753,33 @@ class Builder():
 
         # All done.
         f.close()
+
+    def _copy_windows_dlls(self, py_version, py_lib_dir, f):
+        """ Generate additional qmake commands to install additional Windows
+        DLLs so that the application will be able to run.
+        """
+
+        py_dll = 'python{0}{1}.dll'.format(py_version >> 16,
+                (py_version >> 8) & 0xff)
+
+        dlls = [('PY', py_dll)]
+        if py_version >= 0x030500:
+            dlls.append(('VC', 'vcruntime140.dll'))
+
+        f.write('\nwin32 {')
+
+        for var_name, name in dlls:
+            f.write('\n')
+            f.write('    PDY_DLL_%s = %s/%s\n' % (var_name, py_lib_dir, name))
+            f.write('    exists($$PDY_DLL_%s) {\n' % var_name)
+            f.write('        CONFIG(debug, debug|release) {\n')
+            f.write('            QMAKE_POST_LINK += $$quote($(COPY_FILE) $$shell_path($$PDY_DLL_%s) $shell_path($$OUT_PWD/debug)))\n' % var_name)
+            f.write('        } else {\n')
+            f.write('            QMAKE_POST_LINK += $$quote($(COPY_FILE) $$shell_path($$PDY_DLL_%s) $shell_path($$OUT_PWD/release)))\n' % var_name)
+            f.write('        }\n')
+            f.write('    }\n')
+
+        f.write('}\n')
 
     def _write_embedded_lib_file(self, file_name, f):
         """ Write an embedded file from the lib directory. """
