@@ -538,7 +538,7 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
         """ The name of the host python executable including any required path.
         """
 
-        return self.host.sysroot + '\\bin\\python' + self.major_minor_version()
+        return self._get_windows_install_path() + 'python'
 
     @property
     def host_stdlib_dir(self):
@@ -555,6 +555,30 @@ class WindowsPythonInstallation(AbstractPythonInstallation):
         """
 
         return WINDOWS_SRC_DIR
+
+    def _get_windows_install_path(self):
+        """ Return the Windows install path. """
+
+        from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
+
+        major_minor = self.major_minor_version()
+
+        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
+                major_minor)
+
+        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+            try:
+                install_path = QueryValue(key, sub_key)
+            except OSError:
+                pass
+            else:
+                break
+        else:
+            raise Exception(
+                    "Unable to find an installation of Python v{0}.".format(
+                            major_minor))
+
+        return install_path
 
 
 class PosixPythonInstallation(AbstractPythonInstallation):

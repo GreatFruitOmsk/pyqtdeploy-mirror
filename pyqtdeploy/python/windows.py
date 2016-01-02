@@ -33,14 +33,14 @@ def get_windows_install_path(major, minor):
     a non-Windows platform.
     """
 
-    import winreg
+    from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
 
     sub_key = 'Software\\Python\\PythonCore\\{0}.{1}\\InstallPath'.format(
             major, minor)
 
-    for key in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+    for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
         try:
-            install_path = winreg.QueryValue(key, sub_key)
+            install_path = QueryValue(key, sub_key)
         except OSError:
             pass
         else:
