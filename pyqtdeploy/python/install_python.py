@@ -77,7 +77,7 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
             "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
                     install_path))
 
-    # The interpreter library and DLL.
+    # The interpreter library.
     lib_dir = os.path.join(sysroot, 'lib')
     _create_dir(lib_dir, message_handler)
 
@@ -86,18 +86,24 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
     _copy_file(install_path + 'libs\\' + lib_name,
             os.path.join(lib_dir, lib_name), message_handler)
 
+    # The DLLs and extension modules.
+    dlls_dir = _clean_dir(lib_dir, 'DLLs{0}.{1}'.format(py_major, py_minor),
+            message_handler)
+    _copy_dir(install_path + 'DLLs', dlls_dir, message_handler,
+            ignore=('*.ico', 'tcl*.dll', 'tk*.dll', '_tkinter.pyd'))
+
     if py_major == 3 and py_minor >= 5:
-        dll_dir = install_path
+        py_dll_dir = install_path
 
         vc_dll = 'vcruntime140.dll'
-        _copy_file(dll_dir + vc_dll, os.path.join(bin_dir, vc_dll),
+        _copy_file(py_dll_dir + vc_dll, os.path.join(dlls_dir, vc_dll),
                 message_handler)
     else:
-        dll_dir = 'C:\\Windows\\System32\\'
+        py_dll_dir = 'C:\\Windows\\System32\\'
 
-    dll_name = 'python{0}{1}.dll'.format(py_major, py_minor)
+    py_dll = 'python{0}{1}.dll'.format(py_major, py_minor)
 
-    _copy_file(dll_dir + dll_name, os.path.join(lib_dir, dll_name),
+    _copy_file(py_dll_dir + py_dll, os.path.join(dlls_dir, py_dll),
             message_handler)
 
     # The standard library.
