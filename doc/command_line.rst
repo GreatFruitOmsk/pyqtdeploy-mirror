@@ -44,6 +44,18 @@ The supported actions are:
     cases.  However you should check that they are appropriate for your
     particular case and modify them if necessary.
 
+.. cmdoption:: install
+
+    .. versionadded:: 1.2
+
+    This will compile (if necessary) and install a particular package for a
+    particular target platform.  It is assumed that the recommended directory
+    structure described in :ref:`ref-directory-structure` is being used.
+
+    At the moment only the ``python`` package for the ``win`` target is
+    supported.  It is assumed that you have installed Python using one of the
+    Windows installers from ``python.org``.
+
 .. cmdoption:: show-packages
 
     This will display a list of packages that :program:`pyqtdeploycli` can
@@ -125,7 +137,8 @@ The full set of command line options is:
 
 .. cmdoption:: --package PACKAGE
 
-    This is required by the :option:`configure` action to specify the package.
+    This is required by the :option:`configure` and :option:`install` actions
+    to specify the package.
 
 .. cmdoption:: --project FILE
 
@@ -163,14 +176,31 @@ The full set of command line options is:
     directory containing the target Python interpreter's standard library.  It
     overrides any value specified in the project file.
 
+.. cmdoption:: --sysroot
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`install` action this specifies the name of the
+    system image root directory as recommended in
+    :ref:`ref-directory-structure`.
+
+.. cmdoption:: --system-python VERSION
+
+    .. versionadded:: 1.2
+
+    When used with the :option:`install` action to install the ``python``
+    package this specifies the version number of Python to use.  Only the major
+    and minor version numbers need be specified (e.g. ``3.5``).
+
 .. cmdoption:: --target TARGET
 
-    This is used with the :option:`configure` action to specify the target
-    platform.  By default the host platform is used.  The full target consists
-    of the base target and an optional target variant (usually related to the
-    target's word size).  The supported base targets are ``linux``, ``win``,
-    ``osx``, ``ios`` and ``android``.  The :option:`show-targets` action will
-    list the supported targets including the target variants.
+    This is used with the :option:`configure` and :option:`install` actions to
+    specify the target platform.  By default the host platform is used.  The
+    full target consists of the base target and an optional target variant
+    (usually related to the target's word size).  The supported base targets
+    are ``linux``, ``win``, ``osx``, ``ios`` and ``android``.  The
+    :option:`show-targets` action will list the supported targets including the
+    target variants.
 
 .. cmdoption:: --quiet
 

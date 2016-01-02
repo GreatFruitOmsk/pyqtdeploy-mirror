@@ -86,15 +86,26 @@ Assuming your compiler is MSVC 2010 then you need to edit the file
 Python
 ------
 
-On Windows a static version of Python cannot dynamically import C/C++
-extension modules.  Therefore, if you need this functionality (perhaps because
-you need to use extension modules that cannot be built statically), you must
-use a dynamic build of Python.  If so then it is recommended that you use the
-Python DLL installed by the appropriate standard Windows binary package from
-``python.org``.  See also :ref:`ref-win-dynload`.
+Windows Targets
+...............
 
-To build a static version of Python, change to the Python source directory and
-run::
+On Windows it is strongly recommended that you do not use a static version of
+Python (see :ref:`ref-win-dynload`).  Instead you should install the
+appropriate version of Python using the installer from ``python.org``.  You
+should then use :program:`pyqtdeploycli` as follows to copy the relevant parts
+of the installation to the system root directory::
+
+    pyqtdeploycli --sysroot $SYSROOT --package python --system-python X.Y install
+
+``X.Y`` is the version number of Python you are using.  There is no need to
+specify the maintenance number.
+
+
+Other Targets
+.............
+
+To build a static version of Python for non-Windows targets, change to the
+Python source directory and run::
 
     pyqtdeploycli --package python --target TARGET configure
 
