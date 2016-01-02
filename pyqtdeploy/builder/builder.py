@@ -611,8 +611,9 @@ class Builder():
             self._add_value_for_scopes(used_includepath,
                     source_dir + '/Modules', source_scopes)
 
-            self._add_value_for_scopes(used_includepath, source_dir + '/PC',
-                    ['win32'])
+            if 'win32' not in project.python_use_platform:
+                self._add_value_for_scopes(used_includepath,
+                        source_dir + '/PC', ['win32'])
 
         # Handle any required external libraries.
         for required_lib in required_libraries:
