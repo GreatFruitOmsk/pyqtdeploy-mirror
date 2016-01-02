@@ -773,9 +773,9 @@ class Builder():
             f.write('    PDY_DLL_%s = %s/%s\n' % (var_name, py_lib_dir, name))
             f.write('    exists($$PDY_DLL_%s) {\n' % var_name)
             f.write('        CONFIG(debug, debug|release) {\n')
-            f.write('            QMAKE_POST_LINK += $$quote($(COPY_FILE) $$shell_path($$PDY_DLL_%s) $shell_path($$OUT_PWD/debug)))\n' % var_name)
+            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL_%s) $$shell_path($$OUT_PWD/debug) &\n' % var_name)
             f.write('        } else {\n')
-            f.write('            QMAKE_POST_LINK += $$quote($(COPY_FILE) $$shell_path($$PDY_DLL_%s) $shell_path($$OUT_PWD/release)))\n' % var_name)
+            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL_%s) $$shell_path($$OUT_PWD/release) &\n' % var_name)
             f.write('        }\n')
             f.write('    }\n')
 
