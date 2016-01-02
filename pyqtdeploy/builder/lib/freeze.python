@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,12 @@ def freeze_as_c(py_filename, c_filename, embedded_name):
 def _get_marshalled_code(py_filename, embedded_name):
     """ Convert a Python source file to a marshalled code object. """
 
-    source_file = open(py_filename, 'rb')
+    try:
+        source_file = open(py_filename, 'rb')
+    except Exception as e:
+        sys.stderr.write("%s: %s\n" % (py_filename, str(e)))
+        sys.exit(1)
+
     source = source_file.read()
     source_file.close()
 
@@ -77,7 +82,7 @@ def _get_marshalled_code(py_filename, embedded_name):
 # Parse the command line.
 if len(sys.argv) != 2:
     sys.stderr.write("Invalid command line\n")
-    sys.exit(1)
+    sys.exit(2)
 
 job_filename = sys.argv[1]
 

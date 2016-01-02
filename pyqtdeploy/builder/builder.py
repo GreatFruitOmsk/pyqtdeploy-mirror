@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ from ..file_utilities import (create_file, get_embedded_dir,
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         PLATFORM_SCOPES, pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
+from ..python import get_windows_install_path
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 

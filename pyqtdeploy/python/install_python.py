@@ -141,7 +141,7 @@ def _copy_file(src, dst, message_handler):
                 detail=str(e))
 
 
-def _copy_dir(src, dst, message_handler, ignore):
+def _copy_dir(src, dst, message_handler, ignore=None):
     """ Copy a directory and its contents. """
 
     message_handler.progress_message("Copying {0} to {1}".format(src, dst))
