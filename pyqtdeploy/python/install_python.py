@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ from ..file_utilities import parse_version
 from ..targets import normalised_target
 from ..user_exception import UserException
 from .supported_versions import check_version
+from .windows import get_windows_install_path
 
 
 def install_python(target, sysroot, system_python, message_handler):
@@ -71,36 +72,14 @@ def install_python(target, sysroot, system_python, message_handler):
 def _install_windows_system_python(py_major, py_minor, sysroot, message_handler):
     """ Install the Windows system Python. """
 
-    import winreg
-
-    sub_key = 'Software\\Python\\PythonCore\\{0}.{1}\\InstallPath'.format(
-            py_major, py_minor)
-
-    for key in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
-        try:
-            install_path = winreg.QueryValue(key, sub_key)
-        except OSError:
-            pass
-        else:
-            break
-    else:
-        raise UserException(
-                "Unable to find an installation of Python v{0}.{1}.".format(
-                        py_major, py_minor))
-
+    install_path = get_windows_install_path(py_major, py_minor)
     message_handler.progress_message(
             "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
                     install_path))
 
-    # The interpreter.
+    # The interpreter DLL.
     bin_dir = os.path.join(sysroot, 'bin')
     _create_dir(bin_dir, message_handler)
-    _copy_file(install_path + 'python.exe',
-            os.path.join(bin_dir,
-                    'python{0}.{1}.exe'.format(py_major, py_minor)),
-            message_handler)
-
-    # The interpreter DLL.
     if py_major == 3 and py_minor >= 5:
         dll_dir = install_path
 
@@ -128,7 +107,8 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
     py_subdir = 'python{0}.{1}'.format(py_major, py_minor)
 
     dst_dir = _clean_dir(lib_dir, py_subdir, message_handler)
-    _copy_dir(install_path + 'Lib', dst_dir, message_handler)
+    _copy_dir(install_path + 'Lib', dst_dir, message_handler,
+            ignore=('site-packages', '__pycache__', '*.pyc', '*.pyo'))
 
     # The header files.
     include_dir = os.path.join(sysroot, 'include')
@@ -161,13 +141,16 @@ def _copy_file(src, dst, message_handler):
                 detail=str(e))
 
 
-def _copy_dir(src, dst, message_handler):
+def _copy_dir(src, dst, message_handler, ignore):
     """ Copy a directory and its contents. """
 
     message_handler.progress_message("Copying {0} to {1}".format(src, dst))
 
+    if ignore is not None:
+        ignore = shutil.ignore_patterns(*ignore)
+
     try:
-        shutil.copytree(src, dst)
+        shutil.copytree(src, dst, ignore=ignore)
     except Exception as e:
         raise UserException("Unable to copy directory {0}.".format(src),
                 detail=str(e))

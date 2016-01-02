@@ -64,6 +64,8 @@ class Builder():
 
         project = self._project
 
+        py_major, py_minor, py_patch = project.python_target_version
+
         # Create a temporary directory which will be removed automatically when
         # this function's objects are garbage collected.
         temp_dir = QTemporaryDir()
@@ -118,10 +120,15 @@ class Builder():
                     project.python_target_include_dir)
 
         if interpreter is None:
-            # Note that we assume a relative filename is on PATH rather than
-            # being relative to the project file.
-            interpreter = os.path.expandvars(
-                    self._project.python_host_interpreter)
+            if project.python_host_interpreter != '':
+                # Note that we assume a relative filename is on PATH rather
+                # than being relative to the project file.
+                interpreter = os.path.expandvars(
+                        project.python_host_interpreter)
+            elif sys.platform == 'win32':
+                interpreter = get_windows_install_path(py_major, py_minor) + 'python'
+            else:
+                interpreter = 'python{0}.{1}'.format(py_major, py_minor)
 
         if python_library is None:
             python_library = project.path_from_user(
@@ -158,7 +165,6 @@ class Builder():
         # is in _bootstrap_external.py and _bootstrap.py is unchanged from the
         # original source.  However we continue to use a local copy of
         # _bootstrap.py for now in case the structure changes again.
-        py_major, py_minor, py_patch = project.python_target_version
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
         self._freeze_bootstrap('bootstrap', py_version, build_dir, temp_dir,

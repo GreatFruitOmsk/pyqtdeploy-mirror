@@ -480,9 +480,13 @@ The tab for defining the locations of various files and directories needed by
     can be executed by the deployed application.  (Of course if you are not
     cross-compiling the application then the host and target Python
     installations can be the same.)  On Windows any trailing version number
-    will be automatically stripped.  This makes in easier to create project
-    files that are portable across all platforms.  It can be overridden by the
-    :option:`--interpreter` command line option of :program:`pyqtdeploycli`.
+    will be automatically stripped.  This makes it easier to create project
+    files that are portable across all platforms.  If it is not specified then
+    :program:`pyqtdeploy` will use a platform-specific default.  On Windows it
+    will inspect the registry to try and find the required version of Python,
+    on other platforms it assumes that the required version is on
+    :envvar:`PATH`.  It can be overridden by the :option:`--interpreter`
+    command line option of :program:`pyqtdeploycli`.
 
 **Source directory**
     is used to specify the name of the directory containing the Python source
