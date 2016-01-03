@@ -66,4 +66,4 @@ def get_supported_python_version(idx):
 def get_latest_supported_python_version():
     """ Return the latest version. """
 
-    return _supported_versions[-1][0]
+    return _supported_versions[0][0]
