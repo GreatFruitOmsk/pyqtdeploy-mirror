@@ -165,7 +165,7 @@ The tab for defining the application source is shown below.
         file.  Also, whenever a file or directory name is entered,
         :program:`pyqtdeploy` allows the embedding of environment variables
         which will be expanded when necessary.  The :envvar:`PDY_PY_MAJOR`,
-        :envar:`PDY_PY_MINOR` and :envar:`PDY_PY_MICRO` pseudo-environment
+        :envvar:`PDY_PY_MINOR` and :envvar:`PDY_PY_MICRO` pseudo-environment
         variables can also be used which will be expanded to the relevant
         parts of the target Python version.
 
