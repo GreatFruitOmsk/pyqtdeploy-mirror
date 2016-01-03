@@ -144,10 +144,6 @@ class BuildPage(QWidget):
         # Check the prerequisites.  Note that we don't disable the button if
         # these are missing because (as they are spread across the GUI) the
         # user would have difficulty knowing what needed fixing.
-        if project.python_host_interpreter == '':
-            self._missing_prereq("host interpreter")
-            return
-
         if project.python_target_include_dir == '':
             self._missing_prereq("target Python include directory")
             return
