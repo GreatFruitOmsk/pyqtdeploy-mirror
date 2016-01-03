@@ -765,8 +765,10 @@ class Builder():
         DLLs so that the application will be able to run.
         """
 
-        dlls = ['python{0}{1}.dll'.format(py_version >> 16,
-                (py_version >> 8) & 0xff)]
+        py_major = py_version >> 16
+        py_minor = (py_version >> 8) & 0xff
+
+        dlls = ['python{0}{1}.dll'.format(py_major, py_minor)]
 
         if py_version >= 0x030500:
             dlls.append('vcruntime140.dll')
@@ -781,7 +783,7 @@ class Builder():
 
         for name in dlls:
             f.write('\n')
-            f.write('    PDY_DLL = %s/%s\n' % (py_lib_dir, name))
+            f.write('    PDY_DLL = %s/DLLs%d.%d/%s\n' % (py_lib_dir, py_major, py_minor, name))
             f.write('    exists($$PDY_DLL) {\n')
             f.write('        CONFIG(debug, debug|release) {\n')
             f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/debug) &\n')
