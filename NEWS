@@ -1,9 +1,15 @@
-v1.2 ??? ??? ???
+v1.2 ??? January 2016
+  - Added the install action and --sysroot and --system-python command line
+    options to pyqtdeploycli to copy Python from a standard Windows
+    installation.
   - Added the --disable-patches command line option to pyqtdeploycli to prevent
     the patching of the Python source code.
   - Added the --include-dir, --interpreter, --python-library, --source-dir and
     --standard-library-dir command line options to pyqtdeploycli to override
     values specified in the project file.
+  - Added the $PDY_PY_MAJOR, $PDY_PY_MINOR and $PDY_PY_MICRO pseudo-environment
+    variables that can be embedded in file and directory paths specified in the
+    Locations tab and are automatically expanded to the appropriate values.
   - The importer now supports the PEP 302 get_data(), get_code(), get_source()
     and is_package() optional import hooks.
   - Added support for Python v2.7.11, v3.4.4, v3.5.0 and v3.5.1.

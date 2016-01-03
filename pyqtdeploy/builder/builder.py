@@ -124,7 +124,7 @@ class Builder():
             if project.python_host_interpreter != '':
                 # Note that we assume a relative filename is on PATH rather
                 # than being relative to the project file.
-                interpreter = os.path.expandvars(
+                interpreter = project.expandvars(
                         project.python_host_interpreter)
             elif sys.platform == 'win32':
                 interpreter = get_windows_install_path(py_major, py_minor) + 'python'
@@ -744,7 +744,7 @@ class Builder():
 
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
-        if 'win32' in project.python_use_platform and py_lib_dir is not None:
+        if 'win32' in project.python_use_platform and used_dlls and py_lib_dir is not None:
             self._copy_windows_dlls(py_version, py_lib_dir, used_dlls['win32'],
                     f)
 

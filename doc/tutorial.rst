@@ -164,7 +164,10 @@ The tab for defining the application source is shown below.
         directory is in the same directory as the ``pyqtdeploy.pdy`` project
         file.  Also, whenever a file or directory name is entered,
         :program:`pyqtdeploy` allows the embedding of environment variables
-        which will be expanded when necessary.
+        which will be expanded when necessary.  The :envvar:`PDY_PY_MAJOR`,
+        :envar:`PDY_PY_MINOR` and :envar:`PDY_PY_MICRO` pseudo-environment
+        variables can also be used which will be expanded to the relevant
+        parts of the target Python version.
 
 **Entry Point**
     is used to specify the entry point of a :mod:`setuptools`-based

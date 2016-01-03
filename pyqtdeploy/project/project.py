@@ -103,11 +103,11 @@ class Project(QObject):
         self.pyqt_modules = []
         self.python_host_interpreter = ''
         self.python_use_platform = ['win32']
-        self.python_source_dir = ''
+        self.python_source_dir = '$SYSROOT/src/Python-$PDY_PY_MAJOR.$PDY_PY_MINOR.$PDY_PY_MICRO'
         self.python_ssl = False
-        self.python_target_include_dir = ''
-        self.python_target_library = ''
-        self.python_target_stdlib_dir = ''
+        self.python_target_include_dir = '$SYSROOT/include/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
+        self.python_target_library = '$SYSROOT/lib/libpython$PDY_PY_MAJOR.$PDY_PY_MINOR.a'
+        self.python_target_stdlib_dir = '$SYSROOT/lib/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
         self.python_target_version = get_latest_supported_python_version()
         self.qmake = ''
         self.qmake_configuration = ''
@@ -159,13 +159,32 @@ class Project(QObject):
 
         return self._fileinfo_from_user(name).completeBaseName()
 
+    def expandvars(self, path):
+        """ Call os.path.expandvars() after expanding some internal values. """
+
+        major, minor, micro = self.python_target_version
+        major = str(major)
+        minor = str(minor)
+        micro = str(micro)
+
+        path = path.replace('$PDY_PY_MAJOR', major)
+        path = path.replace('${PDY_PY_MAJOR}', major)
+
+        path = path.replace('$PDY_PY_MINOR', minor)
+        path = path.replace('${PDY_PY_MINOR}', minor)
+
+        path = path.replace('$PDY_PY_MICRO', micro)
+        path = path.replace('${PDY_PY_MICRO}', micro)
+
+        return os.path.expandvars(path)
+
     def _fileinfo_from_user(self, user_path):
         """ Convert the name of a file or directory specified by the user to a
         QFileInfo instance.  A user path may be relative to the name of the
         project and may contain environment variables.
         """
 
-        fi = QFileInfo(os.path.expandvars(user_path.strip()))
+        fi = QFileInfo(self.expandvars(user_path.strip()))
 
         if fi.isRelative():
             fi = QFileInfo(self._name.canonicalPath() + '/' + fi.filePath())
