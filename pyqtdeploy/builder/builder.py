@@ -467,6 +467,7 @@ class Builder():
         used_includepath = {}
         used_libs = {}
         used_inittab = {}
+        used_dlls = {}
 
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
@@ -610,6 +611,9 @@ class Builder():
                                 module_scopes)
                         self._add_value_for_scopes(used_libs, lib, scopes)
 
+                if module.pyd is not None:
+                    self._add_value_for_scopes(used_dlls, module, ['win32'])
+
             self._add_value_for_scopes(used_includepath,
                     source_dir + '/Modules', source_scopes)
 
@@ -685,6 +689,7 @@ class Builder():
         used_scopes.update(used_defines.keys())
         used_scopes.update(used_includepath.keys())
         used_scopes.update(used_libs.keys())
+        used_scopes.update(used_dlls.keys())
 
         # Write out grouped by scope.
         for scope in used_scopes:
@@ -740,7 +745,8 @@ class Builder():
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
         if 'win32' in project.python_use_platform and py_lib_dir is not None:
-            self._copy_windows_dlls(py_version, py_lib_dir, f)
+            self._copy_windows_dlls(py_version, py_lib_dir, used_dlls['win32'],
+                    f)
 
         # Add the project independent post-configuration stuff.
         self._write_embedded_lib_file('post_configuration.pro', f)
@@ -754,28 +760,33 @@ class Builder():
         # All done.
         f.close()
 
-    def _copy_windows_dlls(self, py_version, py_lib_dir, f):
+    def _copy_windows_dlls(self, py_version, py_lib_dir, modules, f):
         """ Generate additional qmake commands to install additional Windows
         DLLs so that the application will be able to run.
         """
 
-        py_dll = 'python{0}{1}.dll'.format(py_version >> 16,
-                (py_version >> 8) & 0xff)
+        dlls = ['python{0}{1}.dll'.format(py_version >> 16,
+                (py_version >> 8) & 0xff)]
 
-        dlls = [('PY', py_dll)]
         if py_version >= 0x030500:
-            dlls.append(('VC', 'vcruntime140.dll'))
+            dlls.append('vcruntime140.dll')
+
+        for module in modules:
+            dlls.append(module.pyd)
+
+            if module.dlls is not None:
+                dlls.extend(module.dlls)
 
         f.write('\nwin32 {')
 
-        for var_name, name in dlls:
+        for name in dlls:
             f.write('\n')
-            f.write('    PDY_DLL_%s = %s/%s\n' % (var_name, py_lib_dir, name))
-            f.write('    exists($$PDY_DLL_%s) {\n' % var_name)
+            f.write('    PDY_DLL = %s/%s\n' % (py_lib_dir, name))
+            f.write('    exists($$PDY_DLL) {\n')
             f.write('        CONFIG(debug, debug|release) {\n')
-            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL_%s) $$shell_path($$OUT_PWD/debug) &\n' % var_name)
+            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/debug) &\n')
             f.write('        } else {\n')
-            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL_%s) $$shell_path($$OUT_PWD/release) &\n' % var_name)
+            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/release) &\n')
             f.write('        }\n')
             f.write('    }\n')
 

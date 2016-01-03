@@ -36,7 +36,7 @@ PLATFORM_SCOPES = (('android', "Android", ()), ('linux-*', "Linux", ()),
 class StdlibModule:
     """ Encapsulate the meta-data for a module in the standard library. """
 
-    def __init__(self, internal, scope, deps, hidden_deps, core, builtin, defines, xlib, modules, source, libs, includepath):
+    def __init__(self, internal, scope, deps, hidden_deps, core, builtin, defines, xlib, modules, source, libs, includepath, pyd, dlls):
         """ Initialise the object. """
 
         # Set if the module is internal.
@@ -89,11 +89,19 @@ class StdlibModule:
         # directory to add to INCLUDEPATH.
         self.includepath = (includepath, ) if isinstance(includepath, str) else includepath
 
+        # Set if the extension modules is implemented as a .pyd file included
+        # in the Windows installer from python.org.
+        self.pyd = pyd
+
+        # The sequence of additional DLLs needed by the extension module and
+        # included in the Windows installer from python.org.
+        self.dlls = (dlls, ) if isinstance(dlls, str) else dlls
+
 
 class VersionedModule:
     """ Encapsulate the meta-data common to all types of module. """
 
-    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, builtin=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None):
+    def __init__(self, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, builtin=False, defines=None, xlib=None, modules=None, source=None, libs=None, includepath=None, pyd=None, dlls=None):
         """ Initialise the object. """
 
         # A meta-datum is uniquely identified by a range of version numbers.  A
@@ -112,7 +120,8 @@ class VersionedModule:
         self.max_version = self._expand_version(max_version, 255)
 
         self.module = StdlibModule(internal, scope, deps, hidden_deps, core,
-                builtin, defines, xlib, modules, source, libs, includepath)
+                builtin, defines, xlib, modules, source, libs, includepath,
+                pyd, dlls)
 
     @staticmethod
     def _expand_version(version, default):
@@ -132,13 +141,14 @@ class VersionedModule:
 class ExtensionModule(VersionedModule):
     """ Encapsulate the meta-data for a single extension module. """
 
-    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None):
+    def __init__(self, source, libs=None, includepath=None, min_version=None, version=None, max_version=None, internal=False, scope='', deps=(), hidden_deps=(), core=False, defines=None, xlib=None, pyd=None, dlls=None):
         """ Initialise the object. """
 
         super().__init__(min_version=min_version, version=version,
                 max_version=max_version, internal=internal, scope=scope,
                 deps=deps, hidden_deps=hidden_deps, core=core, defines=defines,
-                xlib=xlib, source=source, libs=libs, includepath=includepath)
+                xlib=xlib, source=source, libs=libs, includepath=includepath,
+                pyd=pyd, dlls=dlls)
 
 
 class CoreExtensionModule(ExtensionModule):
@@ -326,7 +336,8 @@ _metadata = {
                         'warnings', 'weakref')),
 
     'bz2': (
-        ExtensionModule(version=2, source='bz2module.c', xlib='bz2'),
+        ExtensionModule(version=2, source='bz2module.c', xlib='bz2',
+                pyd='bz2.pyd'),
         PythonModule(min_version=3, max_version=(3, 4),
                 deps=('_thread', '_bz2', 'io', 'warnings')),
         PythonModule(min_version=(3, 5),
@@ -2513,7 +2524,7 @@ _metadata = {
                 deps=('collections', 'heapq', 'threading', 'time'))),
 
     'select':
-        ExtensionModule(source='selectmodule.c'),
+        ExtensionModule(source='selectmodule.c', pyd='select.pyd'),
 
     'selectors':
         PythonModule(min_version=(3, 4),
@@ -2833,7 +2844,7 @@ _metadata = {
                         're', 'types')),
 
     'unicodedata':
-        ExtensionModule(source='unicodedata.c'),
+        ExtensionModule(source='unicodedata.c', pyd='unicodedata.pyd'),
 
     'urllib': (
         PythonModule(version=2,
@@ -2956,7 +2967,7 @@ _metadata = {
 
     'winsound':
         ExtensionModule(scope='win32', source='../PC/winsound.c',
-                libs='-lwinmm'),
+                libs='-lwinmm', pyd='winsound.pyd'),
 
     'wsgiref':
         PythonModule(
@@ -3452,11 +3463,11 @@ _metadata = {
 
     '_bsddb':
         ExtensionModule(version=2, internal=True, source='_bsddb.c',
-                xlib='bsddb'),
+                xlib='bsddb', pyd='_bsddb.pyd'),
 
     '_bz2':
         ExtensionModule(version=3, internal=True, source='_bz2module.c',
-                xlib='bz2'),
+                xlib='bz2', pyd='_bz2.pyd'),
 
     'cl':
         ExtensionModule(version=2, internal=True, source='clmodule.c'),
@@ -3553,7 +3564,8 @@ _metadata = {
                         'macx#_ctypes/darwin',
                         'macx#_ctypes/libffi_osx/include',
                         'win32#_ctypes/libffi_msvc'),
-                libs='linux-*#-lffi'),
+                libs='linux-*#-lffi',
+                pyd='_ctypes.pyd'),
 
     'ctypes._endian':
         PythonModule(internal=True, deps='ctypes'),
@@ -3629,12 +3641,13 @@ _metadata = {
                 source='_elementtree.c',
                 defines=('win32#COMPILED_FROM_DSP',
                         '!win32#HAVE_EXPAT_CONFIG_H', 'USE_PYEXPAT_CAPI'),
-                deps='pyexpat'),
+                deps='pyexpat', pyd='_elementtree.pyd'),
         ExtensionModule(version=3, internal=True,
                 source='_elementtree.c',
                 defines=('win32#COMPILED_FROM_DSP',
                         '!win32#HAVE_EXPAT_CONFIG_H', 'USE_PYEXPAT_CAPI'),
-                deps=('copy', 'pyexpat', 'xml.etree.ElementPath'))),
+                deps=('copy', 'pyexpat', 'xml.etree.ElementPath'),
+                pyd='_elementtree.pyd')),
 
     'email.base64mime': (
         PythonModule(version=2, internal=True,
@@ -3707,7 +3720,8 @@ _metadata = {
                 source='_gestalt.c'),
 
     '_hashlib':
-        ExtensionModule(internal=True, source='_hashopenssl.c', xlib='ssl'),
+        ExtensionModule(internal=True, source='_hashopenssl.c', xlib='ssl',
+                pyd='_hashlib.pyd'),
 
     '_heapq':
         ExtensionModule(internal=True, source='_heapqmodule.c'),
@@ -3771,7 +3785,7 @@ _metadata = {
 
     '_lzma':
         ExtensionModule(version=3, internal=True, source='_lzmamodule.c',
-                xlib='lzma'),
+                xlib='lzma', pyd='_lzma.pyd'),
 
     'markupbase':
         PythonModule(version=2, internal=True, deps='re'),
@@ -3790,7 +3804,7 @@ _metadata = {
 
     '_msi':
         ExtensionModule(internal=True, scope='win32', source='../PC/_msi.c',
-                libs=('-lfci', '-lmsi', '-lrpcrt4')),
+                libs=('-lfci', '-lmsi', '-lrpcrt4'), pyd='_msi.pyd'),
 
     '_multibytecodec':
         ExtensionModule(internal=True, source='cjkcodecs/multibytecodec.c'),
@@ -3803,11 +3817,13 @@ _metadata = {
                         '_multiprocessing/socket_connection.c',
                         'win32#_multiprocessing/win32_functions.c'),
                 libs=('win32#-lws2_32', 'linux-*#-lrt'),
-                includepath='_multiprocessing'),
+                includepath='_multiprocessing',
+                pyd='_multiprocessing.pyd'),
         ExtensionModule(version=3, internal=True,
                 source=('_multiprocessing/multiprocessing.c',
                         '_multiprocessing/semaphore.c'),
-                includepath='_multiprocessing')),
+                includepath='_multiprocessing',
+                pyd='_multiprocessing.pyd')),
 
     'multiprocessing.context':
         PythonModule(min_version=(3, 4), internal=True,
@@ -4066,7 +4082,8 @@ _metadata = {
                         'expat/xmltok.c', 'pyexpat.c'),
                 defines=('XML_STATIC', 'win32#COMPILED_FROM_DSP',
                         '!win32#HAVE_EXPAT_CONFIG_H'),
-                includepath='expat'),
+                includepath='expat',
+                pyd='pyexpat.pyd'),
 
     '_random':
         ExtensionModule(internal=True, source='_randommodule.c'),
@@ -4094,8 +4111,9 @@ _metadata = {
 
     '_socket': (
         ExtensionModule(version=2, internal=True,
-                source=('socketmodule.c', 'timemodule.c')),
-        ExtensionModule(version=3, internal=True, source='socketmodule.c')),
+                source=('socketmodule.c', 'timemodule.c'), pyd='_socket.pyd'),
+        ExtensionModule(version=3, internal=True, source='socketmodule.c',
+                pyd='_socket.pyd')),
 
     '_sqlite3':
         ExtensionModule(internal=True,
@@ -4106,7 +4124,8 @@ _metadata = {
                         '_sqlite/util.c'),
                 defines=('MODULE_NAME=\\\\\\"sqlite3\\\\\\"',
                         'SQLITE_OMIT_LOAD_EXTENSION'),
-                includepath='_sqlite', xlib='sqlite3'),
+                includepath='_sqlite', xlib='sqlite3', pyd='_sqlite3.pyd',
+                dlls='sqlite3.dll'),
 
     '_sre':
         CoreExtensionModule(internal=True),
@@ -4129,7 +4148,8 @@ _metadata = {
                 deps=('sre_constants', 'warnings'))),
 
     '_ssl':
-        ExtensionModule(internal=True, source='_ssl.c', xlib='ssl'),
+        ExtensionModule(internal=True, source='_ssl.c', xlib='ssl',
+                pyd='_ssl.pyd'),
 
     '_stat':
         CoreExtensionModule(min_version=(3, 4), internal=True),
