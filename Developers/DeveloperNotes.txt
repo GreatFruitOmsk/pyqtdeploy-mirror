@@ -228,3 +228,15 @@ To make the sysroot the default, run::
 
     rm /path/to/sysroot
     ln -s sysroot-ios-64 /path/to/sysroot
+
+
+Deploying the .app
+------------------
+
+Deployment is done using Xcode.  Make sure any code signing problems are
+resolved (ie. click on ``Fix issues`` in the ``Identity`` section if
+necessary).
+
+To deploy to a device, select::
+
+    Product -> Perform Action -> Run Without Building
