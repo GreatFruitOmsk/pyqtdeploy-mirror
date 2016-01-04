@@ -59,6 +59,7 @@ clean:
 	rm -f ChangeLog* MANIFEST pyqtdeploy/version.py
 	rm -rf build dist pyqtdeploy.egg-info
 	rm -rf doc/_build doc/html doc/doctrees
+	rm -rf demo/build
 	find . -depth -name __pycache__ -exec rm -rf {} \;
 
 pyqtdeploy/version.py:
