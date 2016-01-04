@@ -149,7 +149,7 @@ Configuring the Environment
 
 To configure the environment (assuming an OS/X host), run::
 
-    export ANDROID_NDK_ROOT=/path/to/android-ndk-r9d
+    export ANDROID_NDK_ROOT=/path/to/android-ndk-r10e
     export ANDROID_SDK_ROOT=/path/to/android-sdk-macosx
     export PATH=/path/to/apache-ant-x.y.z/bin:$PATH
 
@@ -212,3 +212,19 @@ run::
 
     $ANDROID_SDK_ROOT/platform-tools/adb kill-server
     $ANDROID_SDK_ROOT/platform-tools/adb start-server
+
+
+Deploying to iOS
+================
+
+Building a sysroot
+------------------
+
+To build a new sysroot, run::
+
+    build-sysroot.py --target ios-64 --clean --debug --all
+
+To make the sysroot the default, run::
+
+    rm /path/to/sysroot
+    ln -s sysroot-ios-64 /path/to/sysroot

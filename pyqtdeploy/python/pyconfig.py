@@ -941,8 +941,9 @@ pyconfig = (
     # Define to 1 if you have the <stdlib.h> header file.
     Config('HAVE_STDLIB_H', default=1),
 
-    # Define if you have stdatomic.h and atomic_int and _Atomic void* types work
-    Config('HAVE_STD_ATOMIC', android=1, linux=1),
+    # Define if you have stdatomic.h and atomic_int and _Atomic void* types
+    # work.  Note that Android ABI v4.9 has stdatomic.h but Qt uses v4.8.
+    Config('HAVE_STD_ATOMIC', linux=1),
 
     # Define to 1 if you have the `strdup' function.
     Config('HAVE_STRDUP', default=1),

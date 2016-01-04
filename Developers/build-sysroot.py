@@ -41,7 +41,8 @@ import zipfile
 
 
 QT_VERSION_NATIVE = '5.5.1'
-QT_VERSION_CROSS = '5.5.1'
+# Note that the Qt v5.5.1 installer for Andoid and iOS is broken.
+QT_VERSION_CROSS = '5.5.0'
 PY2_VERSION = '2.7.11'
 PY3_VERSION = '3.5.1'
 
