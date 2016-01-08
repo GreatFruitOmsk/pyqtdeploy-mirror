@@ -1,4 +1,4 @@
-v1.2 ??? January 2016
+v1.2 8th January 2016
   - Added the install action and --sysroot and --system-python command line
     options to pyqtdeploycli to copy Python from a standard Windows
     installation.
