@@ -457,15 +457,23 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
                 return NULL;
         }
 
-        PyObject *module_file = PyObject_CallFunction(open_file, "Os", qstring_to_str(filename), "rb");
-        if (!module_file)
+        py_filename = qstring_to_str(filename);
+        if (!py_filename)
             return NULL;
 
+        PyObject *module_file = PyObject_CallFunction(open_file, "Os", py_filename, "rb");
+        if (!module_file)
+        {
+            Py_DECREF(py_filename);
+            return NULL;
+        }
+
         PyObject *module = PyObject_CallFunction(load_module, "OOO(ssi)",
-                py_fqmn, module_file, qstring_to_str(filename),
-                extension_module_extension, "rb", 3);
+                py_fqmn, module_file, py_filename, extension_module_extension,
+                "rb", 3);
 
         Py_DECREF(module_file);
+        Py_DECREF(py_filename);
 
         return module;
     }
