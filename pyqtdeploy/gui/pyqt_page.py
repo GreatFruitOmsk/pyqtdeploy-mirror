@@ -232,7 +232,10 @@ class ModuleButton(QCheckBox):
         self._explicit = not self._explicit
         self._update_state()
 
-        self.explicitly_required_changed.emit(self.text(), self._explicit)
+        # Qt (on Linux) can insert shortcut characters into the text by itself.
+        module = self.text().replace('&', '')
+
+        self.explicitly_required_changed.emit(module, self._explicit)
 
     @property
     def explicitly_required(self):
