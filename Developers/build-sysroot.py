@@ -40,9 +40,9 @@ import tarfile
 import zipfile
 
 
-QT_VERSION_NATIVE = '5.5.1'
+QT_VERSION_NATIVE = '5.6.0'
 # Note that the Qt v5.5.1 installer for Andoid and iOS is broken.
-QT_VERSION_CROSS = '5.5.0'
+QT_VERSION_CROSS = '5.6.0'
 PY2_VERSION = '2.7.11'
 PY3_VERSION = '3.5.1'
 
@@ -257,7 +257,7 @@ class WindowsHost(AbstractHost):
         base name of the package (without an extension).
         """
 
-        return self.find_package(WINDOWS_SRC_DIR, 'PyQt-internal-*', '.tar.gz')
+        return self.find_package(WINDOWS_SRC_DIR, 'PyQt5_internal-*', '.tar.gz')
 
     @property
     def qt_configure(self):
@@ -350,7 +350,7 @@ class PosixHost(AbstractHost):
         self.run('./build.py', 'clean')
         self.run('./build.py', 'release')
 
-        return self.find_package(pyqt_dir, 'PyQt-internal-*', '.tar.gz')
+        return self.find_package(pyqt_dir, 'PyQt5_internal-*', '.tar.gz')
 
     @property
     def qt_configure(self):
