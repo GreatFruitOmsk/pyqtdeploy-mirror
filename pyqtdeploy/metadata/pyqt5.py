@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -124,16 +124,14 @@ pyqt5_metadata = {
     'QtWebChannel':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['webchannel']),
 
+    'QtWebEngineCore':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['webenginecore']),
+
     'QtWebEngineWidgets':
-        PyQt5Metadata(deps=['QtNetwork', 'QtWebChannel', 'QtWidgets'],
+        PyQt5Metadata(
+                deps=['QtNetwork', 'QtWebChannel', 'QtWebEngineCore',
+                        'QtWidgets'],
                 cpp11=True, qt5=['webenginewidgets']),
-
-    'QtWebKit':
-        PyQt5Metadata(deps=['QtGui', 'QtNetwork'], qt5=['webkit', 'network']),
-
-    'QtWebKitWidgets':
-        PyQt5Metadata(deps=['QtPrintSupport', 'QtWebKit', 'QtWidgets'],
-                qt5=['webkitwidgets']),
 
     'QtWebSockets':
         PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['websockets']),
@@ -154,11 +152,10 @@ pyqt5_metadata = {
         PyQt5Metadata(deps=['QtNetwork'], gui=False,
                 qt5=['xmlpatterns', 'network']),
 
-    'Enginio':
-        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['enginio']),
-
     'uic':
         PyQt5Metadata(deps=['QtWidgets']),
+
+    # Internal OpenGL modules.
 
     '_QOpenGLFunctions_2_0':
         PyQt5Metadata(group='opengl', deps=['QtGui']),
@@ -171,6 +168,8 @@ pyqt5_metadata = {
 
     '_QOpenGLFunctions_ES2':
         PyQt5Metadata(group='opengl', deps=['QtGui']),
+
+    # Add-on modules.
 
     'QtChart':
         PyQt5Metadata(group='addon', deps=['QtWidgets'],
@@ -186,4 +185,19 @@ pyqt5_metadata = {
     'Qsci':
         PyQt5Metadata(group='addon', deps=['QtWidgets'],
                 config5=['qscintilla2']),
+
+    # Deprecated modules.
+
+    'Enginio':
+        PyQt5Metadata(group='deprecated', deps=['QtNetwork'], gui=False,
+                qt5=['enginio']),
+
+    'QtWebKit':
+        PyQt5Metadata(group='deprecated', deps=['QtGui', 'QtNetwork'],
+                qt5=['webkit', 'network']),
+
+    'QtWebKitWidgets':
+        PyQt5Metadata(group='deprecated',
+                deps=['QtPrintSupport', 'QtWebKit', 'QtWidgets'],
+                qt5=['webkitwidgets']),
 }
