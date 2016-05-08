@@ -125,7 +125,7 @@ class SysRoot:
     def host_python_dir(self):
         """ The host Python directory. """
 
-        return os.path.join(self._sysroot, 'Python')
+        return os.path.join(self._sysroot, 'HostPython')
 
     @property
     def qt_dir(self):
@@ -185,19 +185,18 @@ else:
     main_target = 'linux'
 
 sys.stdout.write('%s-%s\\n' % (main_target, 8 * struct.calcsize('P')))
+sys.stdout.write('%s\\n' % sys.executable)
 """
 
-    def __init__(self, host):
-        """ Initialise the object. """
+    @property
+    def interpreter(self):
+        """ The name of the host Python interpreter. """
 
-        self.host = host
-        self._need_details = True
+        return self._interpreter
 
     @property
     def name(self):
         """ The name of the host Python. """
-
-        self._get_details()
 
         return self._name
 
@@ -205,31 +204,26 @@ sys.stdout.write('%s-%s\\n' % (main_target, 8 * struct.calcsize('P')))
     def version(self):
         """ The major.minor version of the host Python. """
 
-        self._get_details()
-
         return self._version
 
-    def _get_details(self):
-        """ Ensure that we have the details of the host installation. """
+    def get_configuration(self, interp):
+        """ Ensure that we have the configuration of the host installation. """
 
-        if self._need_details:
-            fd, introspect_script = tempfile.mkstemp(suffix='.py', text=True)
-            os.write(fd, self.INTROSPECT)
-            os.close(fd)
+        fd, introspect_script = tempfile.mkstemp(suffix='.py', text=True)
+        os.write(fd, self.INTROSPECT)
+        os.close(fd)
 
-            details = subprocess.check_output(
-                    (self.host.interpreter, introspect_script),
-                    universal_newlines=True)
-            os.remove(introspect_script)
+        details = subprocess.check_output((interp, introspect_script),
+                universal_newlines=True)
+        os.remove(introspect_script)
 
-            details = details.strip().split('\n')
-            if len(details) != 2:
-                fatal("Host Python script returned unexpected values")
+        details = details.strip().split('\n')
+        if len(details) != 3:
+            fatal("Host Python script returned unexpected values")
 
-            self._version = details[0]
-            self._name = details[1]
-
-            self._need_details = False
+        self._version = details[0]
+        self._name = details[1]
+        self._interpreter = details[2]
 
 
 class Host:
@@ -239,7 +233,7 @@ class Host:
         """ Initialise the object. """
 
         self.sysroot = SysRoot(sysroot)
-        self.python = HostPython(self)
+        self.python = HostPython()
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
@@ -404,13 +398,10 @@ def rmtree(dir_name):
 def make_directory(name):
     """ Ensure a directory exists. """
 
-    try:
-        os.mkdir(name)
-    except FileExistsError:
-        pass
+    os.makedirs(name, exist_ok=True)
 
 
-def make_symlink(src, dst):
+def make_symlink(root_dir, src, dst):
     """ Ensure a symbolic link exists. """
 
     dst_dir = os.path.dirname(dst)
@@ -418,9 +409,17 @@ def make_symlink(src, dst):
     make_directory(dst_dir)
 
     try:
-        os.symlink(os.path.relpath(src, dst_dir), dst)
-    except FileExistsError:
+        os.remove(dst)
+    except FileNotFoundError:
         pass
+
+    # If the source directory is within the same root as the destination then
+    # make the link relative.  This means that the root directory can be moved
+    # and the link will remain valid.
+    if os.path.commonpath((src, dst)).startswith(root_dir):
+        src = os.path.relpath(src, dst_dir)
+
+    os.symlink(src, dst)
 
 
 def build_qt(host, target, qt_dir):
@@ -449,7 +448,8 @@ def build_qt(host, target, qt_dir):
 
     # Create a symbolic link to qmake in a standard place in sysroot so that it
     # can be referred to in cross-target .pdy files.
-    make_symlink(os.path.join(qt_dir, 'bin', host.exe('qmake')), host.qmake)
+    make_symlink(str(host.sysroot),
+            os.path.join(qt_dir, 'bin', host.exe('qmake')), host.qmake)
 
 
 def build_host_python(host, use_system_python):
@@ -491,18 +491,14 @@ def build_host_python(host, use_system_python):
 
             interp = install_path + 'python.exe'
         else:
-            for d in os.environ.get('PATH', '').split(os.pathsep):
-                interp = os.path.join(d, 'python' + major_minor)
+            interp = 'python' + major_minor
 
-                if os.access(interp, os.X_OK):
-                    break
-            else:
-                fatal("Unable to find the Python v{} interpreter on PATH".format(
-                        major_minor))
+    host.python.get_configuration(interp)
 
-    # Create a symbolic link to the interpreter in a standard place in sysroot
-    # so that it can be referred to in cross-target .pdy files.
-    make_symlink(interp, host.interpreter)
+    # Create symbolic links to the interpreter and site-packages in a standard
+    # place in sysroot so that they can be referred to in cross-target .pdy
+    # files.
+    make_symlink(str(host.sysroot), host.python.interpreter, host.interpreter)
 
 
 def build_target_python(host, target, debug, enable_dynamic_loading):
