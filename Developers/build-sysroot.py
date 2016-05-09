@@ -283,7 +283,7 @@ class Host:
     def qmake(self):
         """ The name of the qmake executable including any path. """
 
-        return os.path.join(self.sysroot.qt_dir, 'bin', self.exe('qmake'))
+        return os.path.join(self.sysroot.bin_dir, self.exe('qmake'))
 
     @staticmethod
     def run(*args):
@@ -438,7 +438,8 @@ def build_qt(host, target, qt_dir):
         configure = 'configure.bat' if sys.platform == 'win32' else './configure'
 
         host.run(configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
-                '-static', '-release', '-nomake', 'examples')
+                '-static', '-release', '-nomake', 'examples', '-nomake',
+                'tools')
         host.run(host.make)
         host.run(host.make, 'install')
 
