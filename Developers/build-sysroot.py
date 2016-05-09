@@ -659,6 +659,8 @@ if args.clean:
 # platform from.
 if 'python' in packages:
     build_host_python(host, args.use_system_python)
+else:
+    host.python.get_configuration(host.interpreter)
 
 # Create a target instance now that we know the host.
 target = Target.factory(args.target, host)
