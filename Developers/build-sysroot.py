@@ -437,9 +437,14 @@ def build_qt(host, target, qt_dir):
         # TODO: On Windows Python v2 needs to be on PATH.  Also the GNU tools?
         configure = 'configure.bat' if sys.platform == 'win32' else './configure'
 
-        host.run(configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
+        args = [configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
                 '-static', '-release', '-nomake', 'examples', '-nomake',
-                'tools')
+                'tools']
+
+        if sys.platform.startswith('linux'):
+            args.append('-qt-xcb')
+
+        host.run(*args)
         host.run(host.make)
         host.run(host.make, 'install')
 
