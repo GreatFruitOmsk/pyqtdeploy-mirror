@@ -445,7 +445,12 @@ def build_qt(host, target, qt_dir):
                 '-static', '-release', '-nomake', 'examples', '-nomake',
                 'tools']
 
-        if sys.platform.startswith('linux'):
+        if sys.platform == 'win32':
+            # These cause compilation failures (although maybe only with static
+            # builds).
+            args.append('-skip')
+            args.append('qtimageformats')
+        elif sys.platform.startswith('linux'):
             args.append('-qt-xcb')
 
         host.run(*args)
