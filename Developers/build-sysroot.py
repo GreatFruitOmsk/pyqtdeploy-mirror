@@ -323,24 +323,6 @@ class WindowsHost(Host):
         return os.path.join(os.path.dirname(sys.executable), 'Scripts',
                 'pyqtdeploycli')
 
-    # TODO: Review everything below to see if it is still needed.
-
-    def build_configure(self):
-        """ Perform any host-specific pre-build checks and configuration.
-        Return a closure to be passed to qt_build_deconfigure().
-        """
-
-        dx_setenv = os.path.expandvars(
-                '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd')
-
-        if os.path.exists(dx_setenv):
-            self.run(dx_setenv)
-
-        old_path = os.environ['PATH']
-        os.environ['PATH'] = 'C:\\Python27;' + old_path
-
-        return (old_path, super_closure)
-
 
 class PosixHost(Host):
     """ The base class that encapsulates a POSIX based host platform. """
@@ -413,13 +395,17 @@ def make_symlink(root_dir, src, dst):
     except FileNotFoundError:
         pass
 
-    # If the source directory is within the same root as the destination then
-    # make the link relative.  This means that the root directory can be moved
-    # and the link will remain valid.
-    if os.path.commonpath((src, dst)).startswith(root_dir):
-        src = os.path.relpath(src, dst_dir)
+    if sys.platform == 'win32':
+        # Don't bother with symbolic link privileges on Windows.
+        shutil.copyfile(src, dst)
+    else:
+        # If the source directory is within the same root as the destination
+        # then make the link relative.  This means that the root directory can
+        # be moved and the link will remain valid.
+        if os.path.commonpath((src, dst)).startswith(root_dir):
+            src = os.path.relpath(src, dst_dir)
 
-    os.symlink(src, dst)
+        os.symlink(src, dst)
 
 
 def build_qt(host, target, qt_dir):
@@ -434,8 +420,26 @@ def build_qt(host, target, qt_dir):
         source = host.sysroot.find_source('qt-everywhere-*-src-*')
         host.sysroot.unpack_source(source)
 
-        # TODO: On Windows Python v2 needs to be on PATH.  Also the GNU tools?
-        configure = 'configure.bat' if sys.platform == 'win32' else './configure'
+        if sys.platform == 'win32':
+            configure = 'configure.bat'
+
+            dx_setenv = os.path.expandvars(
+                    '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd')
+
+            if os.path.exists(dx_setenv):
+                host.run(dx_setenv)
+
+            original_path = os.environ['PATH']
+            new_path = [original_path]
+
+            new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
+
+            new_path.insert(0, 'C:\\Python27')
+
+            os.environ['PATH'] = ';'.join(new_path)
+        else:
+            configure = './configure'
+            original_path = None
 
         args = [configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
                 '-static', '-release', '-nomake', 'examples', '-nomake',
@@ -447,6 +451,9 @@ def build_qt(host, target, qt_dir):
         host.run(*args)
         host.run(host.make)
         host.run(host.make, 'install')
+
+        if original_path is not None:
+            os.environ['PATH'] = original_path
 
         qt_dir = host.sysroot.qt_dir
     else:
@@ -474,36 +481,31 @@ def build_host_python(host, use_system_python):
         major_minor = '.'.join(source.split('-')[1].split('.')[:2])
         interp = os.path.join(host.sysroot.host_python_dir, 'bin',
                 'python' + major_minor)
-    else:
-        major_minor = '.'.join(use_system_python.split('.')[:2])
+    elif sys.platform == 'win32':
+        from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
 
-        if sys.platform == 'win32':
-            from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE,
-                    QueryValue)
+        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
+                use_system_python)
 
-            sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
-                    major_minor)
-
-            for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
-                try:
-                    install_path = QueryValue(key, sub_key)
-                except OSError:
-                    pass
-                else:
-                    break
+        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+            try:
+                install_path = QueryValue(key, sub_key)
+            except OSError:
+                pass
             else:
-                fatal("Unable to find an installation of Python v{}".format(
-                        major_minor))
-
-            interp = install_path + 'python.exe'
+                break
         else:
-            interp = 'python' + major_minor
+            fatal("Unable to find an installation of Python v{}".format(
+                    use_system_python))
+
+        interp = install_path + 'python.exe'
+    else:
+        interp = 'python' + use_system_python
 
     host.python.get_configuration(interp)
 
-    # Create symbolic links to the interpreter and site-packages in a standard
-    # place in sysroot so that they can be referred to in cross-target .pdy
-    # files.
+    # Create symbolic links to the interpreter in a standard place in sysroot
+    # so that they can be referred to in cross-target .pdy files.
     make_symlink(str(host.sysroot), host.python.interpreter, host.interpreter)
 
 
