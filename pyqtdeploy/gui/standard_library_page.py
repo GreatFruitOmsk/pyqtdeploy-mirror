@@ -222,11 +222,11 @@ class StandardLibraryPage(QSplitter):
         it = QTreeWidgetItemIterator(editor)
         itm = it.value()
         while itm is not None:
-            external = required_modules.get(itm._name)
+            explicit = required_modules.get(itm._name)
             expanded = False
-            if external is None:
+            if explicit is None:
                 state = Qt.Unchecked
-            elif external:
+            elif explicit:
                 state = Qt.Checked
                 expanded = True
             else:
