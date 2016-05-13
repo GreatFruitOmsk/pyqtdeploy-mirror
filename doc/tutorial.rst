@@ -338,7 +338,7 @@ application is shown below.
 
 **Package**
     is used to specify each of the target Python version's standard library
-    packages that is explicitly exported by the application.  Each package can
+    packages that is explicitly imported by the application.  Each package can
     be in one of three states:
 
     - *checked* meaning it is explicitly imported by the application
@@ -354,11 +354,9 @@ application is shown below.
     :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar` modules have
     been partially checked automatically.
 
-**Enable optional SSL support**
-    is used to specify if the application requires SSL support to be enabled.
-    Several packages in the Python standard library will enable SSL related
-    functionality if it is available - even if your application doesn't itself
-    import the :mod:`ssl` module.
+**Auto-(de)select all sub-packages**
+    is used to specify that, when a package is explicitly imported, all of its
+    sub-packages and modules are also automatically explicitly imported.
 
 **Use standard Python shared library**
     is used to specify, on a per-platform basis, if the standard Python shared
@@ -367,6 +365,12 @@ application is shown below.
     Python standard library that is implemented as C extension modules is
     implemented in the shared library.  The default is to enable this for
     Windows.  See also :ref:`ref-win-dynload`
+
+**Enable optional SSL support**
+    is used to specify if the application requires SSL support to be enabled.
+    Several packages in the Python standard library will enable SSL related
+    functionality if it is available - even if your application doesn't itself
+    import the :mod:`ssl` module.
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
