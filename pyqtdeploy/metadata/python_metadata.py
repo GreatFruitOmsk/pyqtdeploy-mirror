@@ -1438,7 +1438,7 @@ _metadata = {
     'encodings.iso2022_jp_ext':
         CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
 
-    'encodings.iso2022_jp_kr':
+    'encodings.iso2022_kr':
         CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
 
     'encodings.iso8859_1':
