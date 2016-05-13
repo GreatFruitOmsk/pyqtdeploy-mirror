@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QMessageBox, QTreeWidget,
 
 from ..project import QrcPackage
 from .filename_editor_delegate import FilenameEditorDelegate
-from .qrc_package_editor import QrcPackageEditor
+from .package_editor import PackageEditor
 
 
 class OtherPackagesPage(QWidget):
@@ -165,7 +165,7 @@ class OtherPackagesPage(QWidget):
         self.project.modified = True
 
 
-class _PackageDirectoryEditor(QrcPackageEditor):
+class _PackageDirectoryEditor(PackageEditor):
     """ A memory filesystem package editor for a package directory. """
 
     # The editor title.

@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,9 @@ from PyQt5.QtWidgets import (QGridLayout, QMessageBox, QPushButton,
 from ..project import QrcDirectory, QrcFile
 
 
-class QrcPackageEditor(QGridLayout):
-    """ A resource file system package editor.  Note that this is a QLayout and
-    not a QWidget.
+class PackageEditor(QGridLayout):
+    """ A Python package editor.  Note that this is a QLayout and not a
+    QWidget.
     """
 
     # Emitted when the package has changed.
