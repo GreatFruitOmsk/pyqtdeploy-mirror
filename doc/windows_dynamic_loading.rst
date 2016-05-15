@@ -3,6 +3,8 @@
 Windows and Dynamic Loading of Extension Modules
 ================================================
 
+.. program:: pyqtdeploycli
+
 If an application makes use of C/C++ extension modules that would normally be
 loaded dynamically by the Python interpreter library then you can often choose
 to build a static version of the extension module and link it directly with the

@@ -168,7 +168,7 @@ The full set of command line options is:
     directory containing the Python source code.  It overrides any value
     specified in the project file.
 
-.. cmdoption:: --standard-library-directory
+.. cmdoption:: --standard-library-dir
 
     .. versionadded:: 1.2
 

@@ -12,3 +12,4 @@ User Guide
     pdytools_module
     tutorial
     static_builds
+    build_sysroot

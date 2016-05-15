@@ -1,6 +1,8 @@
 Tutorial
 ========
 
+.. program:: pyqtdeploycli
+
 :program:`pyqtdeploy` is itself deployable and the root of the source package
 contains an appropriate ``pyqtdeploy.pdy`` project file.  In this section we
 use this as the basis of explaining :program:`pyqtdeploy`'s graphical user
