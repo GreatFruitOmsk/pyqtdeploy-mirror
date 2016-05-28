@@ -149,9 +149,18 @@ Configuring the Environment
 
 To configure the environment (assuming an OS/X host), run::
 
-    export ANDROID_NDK_ROOT=/path/to/android-ndk-r10e
+    export ANDROID_NDK_ROOT=/path/to/android-ndk-r11c
     export ANDROID_SDK_ROOT=/path/to/android-sdk-macosx
     export PATH=/path/to/apache-ant-x.y.z/bin:$PATH
+
+To use a specific Android API level (n) rather than the default 9, run::
+
+    export ANDROID_NDK_PLATFORM=android-n
+
+Qt and the Android NDK may not agree on the toolchain version to use.  To force
+Qt to use a particular version, run::
+
+    export ANDROID_NDK_TOOLCHAIN_VERSION=X.Y
 
 
 Building a sysroot

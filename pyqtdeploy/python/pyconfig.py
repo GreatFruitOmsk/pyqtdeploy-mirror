@@ -94,7 +94,7 @@ pyconfig = (
     Config('GETTIMEOFDAY_NO_TZ'),
 
     # Define to 1 if you have the `accept4' function.
-    Config('HAVE_ACCEPT4', android=1, linux=1),
+    Config('HAVE_ACCEPT4', android=1, api=12, linux=1),
 
     # Define to 1 if you have the `acosh' function.
     Config('HAVE_ACOSH', default=1),
@@ -197,7 +197,7 @@ pyconfig = (
     Config('HAVE_COPYSIGN', default=1),
 
     # Define to 1 if you have the `ctermid' function.
-    Config('HAVE_CTERMID', default=1, android=None),
+    Config('HAVE_CTERMID', default=1),
 
     # Define if you have the 'ctermid_r' function.
     Config('HAVE_CTERMID_R', ios=1, osx=1),
@@ -609,7 +609,7 @@ pyconfig = (
     Config('HAVE_LOG1P', default=1),
 
     # Define to 1 if you have the `log2' function.
-    Config('HAVE_LOG2', default=1, android=None),
+    Config('HAVE_LOG2', android=1, api=18, ios=1, linux=1, osx=1),
 
     # Define this if you have the type long double.
     Config('HAVE_LONG_DOUBLE', default=1),

@@ -107,8 +107,10 @@ Other Targets
 .............
 
 When targeting Android the default API level is 9.  In order to use a different
-API level (e.g. 18) then first set the :envar:`ANDROID_NDK_PLATFORM`
-environment variable to ``android-18``.
+API level (e.g. 18) then first set the :envvar:`ANDROID_NDK_PLATFORM`
+environment variable to ``android-18``.  It may also be necessary to set the
+:envvar:`ANDROID_NDK_TOOLCHAIN_VERSION` if Qt and the Android NDK disagree on
+which version of the toolchain to use.
 
 To build a static version of Python for non-Windows targets, change to the
 Python source directory and run::
