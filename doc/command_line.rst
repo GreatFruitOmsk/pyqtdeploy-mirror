@@ -82,7 +82,9 @@ The full set of command line options is:
 
     When used with the :option:`configure` action to configure the ``python``
     package for the ``android`` target this specifies the Android API level.
-    The default is ``9`` which is the default level used by Qt.
+    The default value is obtained from the value of the
+    :envvar:`ANDROID_NDK_PLATFORM` environment variable.  If this is not set
+    then ``9`` is used which is the default level used by Qt.
 
 .. cmdoption:: --disable-patches
 

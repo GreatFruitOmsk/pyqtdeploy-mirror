@@ -106,6 +106,10 @@ specify the maintenance number.
 Other Targets
 .............
 
+When targeting Android the default API level is 9.  In order to use a different
+API level (e.g. 18) then first set the :envar:`ANDROID_NDK_PLATFORM`
+environment variable to ``android-18``.
+
 To build a static version of Python for non-Windows targets, change to the
 Python source directory and run::
 

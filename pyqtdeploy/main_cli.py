@@ -32,6 +32,17 @@ import sys
 def main():
     """ The entry point for the setuptools generated CLI wrapper. """
 
+    # Get the default Android API level.
+    default_api = 9
+
+    parts = os.environ.get('ANDROID_NDK_PLATFORM', '').split('-')
+
+    if len(parts) == 2 and parts[0] == 'android':
+        try:
+            default_api = int(parts[1])
+        except ValueError:
+            pass
+
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
@@ -41,8 +52,8 @@ def main():
                     'show-targets', 'show-version'))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
-                    "(configure) [default: 9]",
-            metavar="LEVEL", type=int, default=9),
+                    "(configure) [default: {}]".format(default_api),
+            metavar="LEVEL", type=int, default=default_api),
     parser.add_argument('--disable-patches',
             help="disable the patching of the Python source code (configure)",
             action='store_true')
