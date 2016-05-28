@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QMessageBox, QTreeWidget,
 
 from ..project import QrcPackage
 from .filename_editor_delegate import FilenameEditorDelegate
-from .qrc_package_editor import QrcPackageEditor
+from .package_editor import PackageEditor
 
 
 class OtherPackagesPage(QWidget):
@@ -165,7 +165,7 @@ class OtherPackagesPage(QWidget):
         self.project.modified = True
 
 
-class _PackageDirectoryEditor(QrcPackageEditor):
+class _PackageDirectoryEditor(PackageEditor):
     """ A memory filesystem package editor for a package directory. """
 
     # The editor title.
@@ -187,7 +187,7 @@ class _PackageDirectoryEditor(QrcPackageEditor):
         project = self.project
         package = self.package
 
-        if package.name == '':
+        if package.name is None or package.name == '':
             QMessageBox.warning(self.parentWidget(), self.title,
                         "The name of the package directory has not been set.")
             return ''

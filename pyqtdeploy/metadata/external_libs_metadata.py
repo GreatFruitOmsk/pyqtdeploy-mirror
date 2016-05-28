@@ -51,7 +51,6 @@ external_libraries_metadata = (
     ExternalLibraryMetadata('ssl', '-lssl -lcrypto', "SSL encryption"),
     ExternalLibraryMetadata('bz2', '-lbz2', "bz2 compression"),
     ExternalLibraryMetadata('lzma', '-llzma', "LZMA compression"),
-    ExternalLibraryMetadata('zlib', '-lz', "zlib compression"),
     ExternalLibraryMetadata('bsddb', '-ldb', "BSD db database"),
     ExternalLibraryMetadata('dbm', '-lndbm', "dbm database"),
     ExternalLibraryMetadata('gdbm', '-lgdbm', "gdbm database"),

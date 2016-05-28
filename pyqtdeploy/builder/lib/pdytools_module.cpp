@@ -98,6 +98,9 @@ typedef struct _qrcimporter
 
     // The path that the importer handles.  It will be the name of a directory.
     QString *path;
+
+    // The component parts of the path.
+    QStringList *path_parts;
 } QrcImporter;
 
 
@@ -249,6 +252,10 @@ static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 
     ((QrcImporter *)self)->path = q_path;
 
+    ((QrcImporter *)self)->path_parts = new QStringList(
+            q_path->mid(2, q_path->length() - 3).split(QChar('/'),
+                    QString::SkipEmptyParts));
+
     return 0;
 }
 
@@ -260,6 +267,12 @@ static void qrcimporter_dealloc(PyObject *self)
     {
         delete ((QrcImporter *)self)->path;
         ((QrcImporter *)self)->path = 0;
+    }
+
+    if (((QrcImporter *)self)->path_parts)
+    {
+        delete ((QrcImporter *)self)->path_parts;
+        ((QrcImporter *)self)->path_parts = 0;
     }
 
     Py_TYPE(self)->tp_free(self);
@@ -457,15 +470,23 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
                 return NULL;
         }
 
-        PyObject *module_file = PyObject_CallFunction(open_file, "Os", qstring_to_str(filename), "rb");
-        if (!module_file)
+        py_filename = qstring_to_str(filename);
+        if (!py_filename)
             return NULL;
 
+        PyObject *module_file = PyObject_CallFunction(open_file, "Os", py_filename, "rb");
+        if (!module_file)
+        {
+            Py_DECREF(py_filename);
+            return NULL;
+        }
+
         PyObject *module = PyObject_CallFunction(load_module, "OOO(ssi)",
-                py_fqmn, module_file, qstring_to_str(filename),
-                extension_module_extension, "rb", 3);
+                py_fqmn, module_file, py_filename, extension_module_extension,
+                "rb", 3);
 
         Py_DECREF(module_file);
+        Py_DECREF(py_filename);
 
         return module;
     }
@@ -634,7 +655,14 @@ static PyObject *qrcimporter_get_data(PyObject *self, PyObject *args)
 static ModuleType find_module(QrcImporter *self, const QString &fqmn,
         QString &pathname, QString &filename)
 {
-    pathname = *self->path + fqmn.split(QChar('.')).last();
+    QStringList fqmn_parts = fqmn.split(QChar('.'));
+    QString fqmn_last = fqmn_parts.takeLast();
+
+    // Reject it if the path is clearly wrong.
+    if (*self->path_parts != fqmn_parts)
+        return ModuleNotFound;
+
+    pathname = *self->path + fqmn_last;
 
     // See if it is an ordinary module.
     filename = pathname + ".pyo";

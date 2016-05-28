@@ -278,7 +278,7 @@ class Builder():
                         if dst.endswith('.py'):
                             src = QDir.fromNativeSeparators(src)
                             dst = QDir.fromNativeSeparators(dst)
-                            rel_dst = dst[len(resources_dir) + 1:]
+                            rel_dst = dst[len(resources_dir) + 1:] + 'o'
 
                             self._freeze(job_writer, dst + 'o', src, rel_dst)
 

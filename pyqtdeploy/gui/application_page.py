@@ -32,7 +32,7 @@ from ..metadata import (get_supported_python_version,
         get_supported_python_version_index, get_supported_python_versions)
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
-from .qrc_package_editor import QrcPackageEditor
+from .package_editor import PackageEditor
 
 
 class ApplicationPage(QWidget):
@@ -240,7 +240,7 @@ class ApplicationPage(QWidget):
         self.project.modified = True
 
 
-class _ApplicationPackageEditor(QrcPackageEditor):
+class _ApplicationPackageEditor(PackageEditor):
     """ A memory filesystem package editor for the application package. """
 
     # The editor title.

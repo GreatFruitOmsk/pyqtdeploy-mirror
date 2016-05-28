@@ -288,6 +288,7 @@ typedef int pid_t;
 
 /* For Windows the Python core is in a DLL by default.  Test
 Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
+#define Py_NO_ENABLE_SHARED
 #if !defined(MS_NO_COREDLL) && !defined(Py_NO_ENABLE_SHARED)
 #	define Py_ENABLE_SHARED 1 /* standard symbol for shared library */
 #	define MS_COREDLL	/* deprecated old symbol */
@@ -547,7 +548,7 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 /* #define HAVE_CLOCK */
 
 /* Define when any dynamic module loading is enabled */
-#define HAVE_DYNAMIC_LOADING
+@PY_DYNAMIC_LOADING@ HAVE_DYNAMIC_LOADING
 
 /* Define if you have ftime.  */
 #ifndef MS_WINCE

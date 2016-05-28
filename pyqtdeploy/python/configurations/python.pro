@@ -291,6 +291,10 @@ win32 {
     greaterThan(PY_MAJOR_VERSION, 2) {
         MOD_SOURCES += \
             PC/winreg.c
+
+        greaterThan(PY_MINOR_VERSION, 4) {
+            PYTHON_SOURCES += PC/invalid_parameter_handler.c
+        }
     }
 } else {
     MOD_SOURCES += \

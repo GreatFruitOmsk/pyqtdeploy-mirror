@@ -390,9 +390,11 @@ static int append_path_dirs(PyObject *list, const char **path_dirs)
             path_dir = exec_dir.filePath(path_dir);
         }
 
-        // Convert to the native format.  (Note that we don't resolve symbolic
-        // links.)
-        path_dir = QDir::toNativeSeparators(QDir::cleanPath(path_dir));
+        // Convert to the native format unless it is a resource path.  (Note
+        // that we don't resolve symbolic links.)
+        path_dir = QDir::cleanPath(path_dir);
+        if (!path_dir.startsWith(QChar(':')))
+            path_dir = QDir::toNativeSeparators(path_dir);
 
         // Convert to a Python string.
         PyObject *py_path_dir;

@@ -79,6 +79,14 @@ class StandardLibraryPage(QSplitter):
 
         stdlib_layout.addWidget(self._stdlib_edit)
 
+        self._autoselect = QCheckBox("Auto-(de)select all sub-packages",
+                whatsThis="When this is checked (or unchecked) then, when a "
+                        "package is checked, all it's sub-packages and "
+                        "modules are automatically checked (or unchecked) as "
+                        "well.")
+
+        stdlib_layout.addWidget(self._autoselect)
+
         stdlib_pane.setLayout(stdlib_layout)
         self.addWidget(stdlib_pane)
 
@@ -222,11 +230,11 @@ class StandardLibraryPage(QSplitter):
         it = QTreeWidgetItemIterator(editor)
         itm = it.value()
         while itm is not None:
-            external = required_modules.get(itm._name)
+            explicit = required_modules.get(itm._name)
             expanded = False
-            if external is None:
+            if explicit is None:
                 state = Qt.Unchecked
-            elif external:
+            elif explicit:
                 state = Qt.Checked
                 expanded = True
             else:
@@ -315,12 +323,33 @@ class StandardLibraryPage(QSplitter):
         """ Invoked when a standard library module has changed. """
 
         project = self._project
-        name = itm._name
 
-        if name in project.standard_library:
-            project.standard_library.remove(name)
+        # Get all the names to add or remove.
+        names = []
+
+        if self._autoselect.checkState() == Qt.Checked:
+            def add_name(subitm):
+                names.append(subitm._name)
+
+                for i in range(subitm.childCount()):
+                    add_name(subitm.child(i))
+
+            add_name(itm)
         else:
-            project.standard_library.append(name)
+            names.append(itm._name)
+
+        if itm.checkState(col) == Qt.Checked:
+            # Add the names if they aren't already present.
+            for name in names:
+                if name not in project.standard_library:
+                    project.standard_library.append(name)
+        else:
+            # Remove the names if they are present.
+            for name in names:
+                try:
+                    project.standard_library.remove(name)
+                except ValueError:
+                    pass
 
         self._set_dependencies()
 

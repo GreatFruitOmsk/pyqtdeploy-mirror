@@ -1,6 +1,8 @@
 Building Static Packages
 ========================
 
+.. program:: pyqtdeploycli
+
 In this section we describe how to build static versions of the various
 packages that might be part of a deployment.  As this covers cross-compiling
 (specifically to support mobile platforms) we refer to *host* and *target*

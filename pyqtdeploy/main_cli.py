@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,10 @@ def main():
             help="the action to perform",
             choices=('build', 'configure', 'install', 'show-packages',
                     'show-targets', 'show-version'))
+    parser.add_argument('--android-api',
+            help="the Android API level to target when configuring Python "
+                    "(configure) [default: 13]",
+            metavar="LEVEL", type=int, default=13),
     parser.add_argument('--disable-patches',
             help="disable the patching of the Python source code (configure)",
             action='store_true')
@@ -154,7 +158,7 @@ def configure(args):
         message_handler = MessageHandler(args.quiet, args.verbose)
 
         try:
-            configure_python(args.target, args.output,
+            configure_python(args.target, args.output, args.android_api,
                     args.enable_dynamic_loading, not args.disable_patches,
                     message_handler)
         except UserException as e:

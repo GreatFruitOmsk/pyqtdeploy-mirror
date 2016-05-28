@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -111,6 +111,7 @@ class _PyQtVersionPage(QWidget):
         self._create_buttons(layout, "Imported Modules", 'base')
         self._create_buttons(layout, "Internal OpenGL Modules", 'opengl')
         self._create_buttons(layout, "Add-on Modules", 'addon')
+        self._create_buttons(layout, "Deprecated Modules", 'deprecated')
         layout.addStretch()
 
         self.setLayout(layout)
@@ -232,7 +233,10 @@ class ModuleButton(QCheckBox):
         self._explicit = not self._explicit
         self._update_state()
 
-        self.explicitly_required_changed.emit(self.text(), self._explicit)
+        # Qt (on Linux) can insert shortcut characters into the text by itself.
+        module = self.text().replace('&', '')
+
+        self.explicitly_required_changed.emit(module, self._explicit)
 
     @property
     def explicitly_required(self):

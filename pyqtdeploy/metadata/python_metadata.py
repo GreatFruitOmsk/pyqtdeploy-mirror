@@ -273,7 +273,8 @@ _metadata = {
                         'asyncio.streams', 'asyncio.subprocess',
                         'asyncio.tasks', 'asyncio.transports',
                         'asyncio.unix_events', 'asyncio.windows_events',
-                        'selectors')),
+                        'selectors'),
+                modules=()),
         PythonModule(version=(3, 4, 2),
                 deps=('asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.locks',
@@ -281,7 +282,8 @@ _metadata = {
                         'asyncio.streams', 'asyncio.subprocess',
                         'asyncio.tasks', 'asyncio.transports',
                         'asyncio.unix_events', 'asyncio.windows_events',
-                        'selectors')),
+                        'selectors'),
+                modules=()),
         PythonModule(min_version=(3, 4, 3),
                 deps=('asyncio.base_events', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.locks',
@@ -289,7 +291,8 @@ _metadata = {
                         'asyncio.streams', 'asyncio.subprocess',
                         'asyncio.tasks', 'asyncio.transports',
                         'asyncio.unix_events', 'asyncio.windows_events',
-                        'selectors'))),
+                        'selectors'),
+                modules=())),
 
     'atexit': (
         CorePythonModule(version=2),
@@ -448,7 +451,8 @@ _metadata = {
         PythonModule(version=3,
                 deps=('concurrent', 'concurrent.futures._base',
                         'concurrent.futures.process',
-                        'concurrent.futures.thread')),
+                        'concurrent.futures.thread'),
+                modules=()),
 
     'ConfigParser':
         PythonModule(version=2, deps=('collections', 're', 'UserDict')),
@@ -1434,7 +1438,7 @@ _metadata = {
     'encodings.iso2022_jp_ext':
         CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
 
-    'encodings.iso2022_jp_kr':
+    'encodings.iso2022_kr':
         CodecModule(deps=('_codecs_iso2022', '_multibytecodec')),
 
     'encodings.iso8859_1':
@@ -3133,7 +3137,13 @@ _metadata = {
         ExtensionModule(source='zipimport.c', deps='zlib'),
 
     'zlib':
-        ExtensionModule(source='zlibmodule.c', xlib='zlib'),
+        ExtensionModule(
+                source=('zlibmodule.c',
+                        'zlib/adler32.c', 'zlib/compress.c', 'zlib/crc32.c',
+                        'zlib/deflate.c', 'zlib/infback.c', 'zlib/inffast.c',
+                        'zlib/inflate.c', 'zlib/inftrees.c', 'zlib/trees.c',
+                        'zlib/uncompr.c', 'zlib/zutil.c'),
+                includepath='zlib'),
 
     # These are internal modules.
 

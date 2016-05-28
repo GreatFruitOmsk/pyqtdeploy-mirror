@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-# Build a sysroot containing Qt v5, Python v3 and the current SIP and PyQt5
-# previews.
+# Build a sysroot containing Qt v5, Python v2 or v3, SIP and PyQt5.
 
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,38 +29,247 @@
 
 
 import argparse
+import fnmatch
 import glob
 import os
 import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 import tarfile
 import zipfile
 
-
-QT_VERSION_NATIVE = '5.5.1'
-# Note that the Qt v5.5.1 installer for Andoid and iOS is broken.
-QT_VERSION_CROSS = '5.5.0'
-PY2_VERSION = '2.7.11'
-PY3_VERSION = '3.5.1'
 
 # The supported targets.
 TARGETS = ('android-32', 'ios-64', 'linux-32', 'linux-64', 'osx-64', 'win-32',
         'win-64')
 
-# Where the sources are kept on Windows.
-WINDOWS_SRC_DIR = 'C:\\src'
+
+class SysRoot:
+    """ Encapsulate the system root directory. """
+
+    def __init__(self, sysroot):
+        """ Initialise the object. """
+
+        if sysroot is None:
+            sysroot = os.getenv('SYSROOT')
+            if sysroot is None:
+                fatal("Specify a sysroot directory using the --sysroot option or setting the SYSROOT environment variable")
+
+        self._sysroot = os.path.abspath(sysroot)
+        if not os.path.isdir(self._sysroot):
+            fatal("The sysroot directory '{}' does not exist".format(
+                    self._sysroot))
+
+        if not os.path.isdir(self.src_dir):
+            fatal("The sysroot source directory '{}' does not exist".format(
+                    self.src_dir))
+
+    def __str__(self):
+        """ Return the string representation. """
+
+        return self._sysroot
+
+    @property
+    def bin_dir(self):
+        """ The executables directory. """
+
+        return os.path.join(self._sysroot, 'bin')
+
+    @property
+    def build_dir(self):
+        """ The build directory. """
+
+        return os.path.join(self._sysroot, 'build')
+
+    def clean(self):
+        """ Delete the contents of the sysroot directory except for the source
+        directory.
+        """
+
+        for entry in os.listdir(self._sysroot):
+            if entry != 'src':
+                entry_path = os.path.join(self._sysroot, entry)
+
+                if os.path.isdir(entry_path):
+                    shutil.rmtree(entry_path)
+                else:
+                    os.remove(entry_path)
+
+    def find_source(self, pattern, optional=False):
+        """ Return the source package that matches a pattern.  There must be no
+        more than one matching package.  If optional is set then the package is
+        optional.
+        """
+
+        sources = [fn for fn in os.listdir(self.src_dir)
+                if fnmatch.fnmatch(fn, pattern)]
+        nr_sources = len(sources)
+
+        if nr_sources == 1:
+            return sources[0]
+
+        if nr_sources == 0 and optional:
+            return None
+
+        package = pattern.split('-')[0]
+
+        if nr_sources > 1:
+            fatal("More than one source package was found for {}".format(
+                    package))
+
+        fatal("No source package was found for {}".format(package))
+
+    @property
+    def host_python_dir(self):
+        """ The host Python directory. """
+
+        return os.path.join(self._sysroot, 'HostPython')
+
+    @property
+    def qt_dir(self):
+        """ The Qt directory. """
+
+        return os.path.join(self._sysroot, 'Qt')
+
+    @property
+    def src_dir(self):
+        """ The source directory. """
+
+        return os.path.join(self._sysroot, 'src')
+
+    def unpack_source(self, source):
+        """ Unpack the source of a package and change to it's top-level
+        directory.
+        """
+
+        for ext in ('.zip', '.tar.gz', '.tar.xz', '.tar.bz2'):
+            if source.endswith(ext):
+                base_dir = source[:-len(ext)]
+                break
+        else:
+            fatal("'{}' has an unknown extension".format(source))
+
+        make_directory(self.build_dir)
+        os.chdir(self.build_dir)
+        rmtree(base_dir)
+
+        source_path = os.path.join(self.src_dir, source)
+
+        if tarfile.is_tarfile(source_path):
+            tarfile.open(source_path).extractall()
+        elif zipfile.is_zipfile(source_path):
+            zipfile.ZipFile(source_path).extractall()
+        else:
+            fatal("'{}' has an unknown format".format(source))
+
+        os.chdir(base_dir)
 
 
-class AbstractHost:
-    """ The abstract base class that encapsulates a host platform. """
+class HostPython:
+    """ Encapsulate the host Python installation. """
+
+    # The script to run to return the details of the host installation.
+    INTROSPECT = b"""
+import struct
+import sys
+
+sys.stdout.write('%d.%d\\n' % (sys.version_info[0], sys.version_info[1]))
+
+if sys.platform == 'darwin':
+    main_target = 'osx'
+elif sys.platform == 'win32':
+    main_target = 'win'
+else:
+    main_target = 'linux'
+
+sys.stdout.write('%s-%s\\n' % (main_target, 8 * struct.calcsize('P')))
+sys.stdout.write('%s\\n' % sys.executable)
+"""
+
+    @property
+    def interpreter(self):
+        """ The name of the host Python interpreter. """
+
+        return self._interpreter
+
+    @property
+    def name(self):
+        """ The name of the host Python. """
+
+        return self._name
+
+    @property
+    def version(self):
+        """ The major.minor version of the host Python. """
+
+        return self._version
+
+    def get_configuration(self, interp):
+        """ Ensure that we have the configuration of the host installation. """
+
+        fd, introspect_script = tempfile.mkstemp(suffix='.py', text=True)
+        os.write(fd, self.INTROSPECT)
+        os.close(fd)
+
+        details = subprocess.check_output((interp, introspect_script),
+                universal_newlines=True)
+        os.remove(introspect_script)
+
+        details = details.strip().split('\n')
+        if len(details) != 3:
+            fatal("Host Python script returned unexpected values")
+
+        self._version = details[0]
+        self._name = details[1]
+        self._interpreter = details[2]
+
+
+class Host:
+    """ Encapsulate a host platform. """
+
+    def __init__(self, sysroot):
+        """ Initialise the object. """
+
+        self.sysroot = SysRoot(sysroot)
+        self.python = HostPython()
+
+    def exe(self, name):
+        """ Convert a generic executable name to a host-specific version. """
+
+        return name
+
+    @staticmethod
+    def factory(sysroot):
+        """ Create an instance of the host platform. """
+
+        if sys.platform == 'darwin':
+            host = OSXHost(sysroot)
+        elif sys.platform == 'win32':
+            host = WindowsHost(sysroot)
+        else:
+            host = LinuxHost(sysroot)
+
+        return host
+
+    @property
+    def interpreter(self):
+        """ The name of the host Python executable including any path. """
+
+        return os.path.join(self.sysroot.bin_dir, self.exe('python'))
 
     @property
     def make(self):
         """ The name of the make executable including any required path. """
 
-        raise NotImplementedError
+        return 'make'
+
+    @property
+    def name(self):
+        """ The canonical name of the host. """
+
+        return self.python.name
 
     @property
     def pyqtdeploycli(self):
@@ -69,154 +277,13 @@ class AbstractHost:
         path.
         """
 
-        raise NotImplementedError
+        return 'pyqtdeploycli'
 
     @property
-    def pyqt_package(self):
-        """ The 2-tuple of the absolute path of the PyQt source file and the
-        base name of the package (without an extension).
-        """
+    def qmake(self):
+        """ The name of the qmake executable including any path. """
 
-        raise NotImplementedError
-
-    @property
-    def qt_configure(self):
-        """ The name of Qt's configure executable including any required path.
-        """
-
-        raise NotImplementedError
-
-    @property
-    def qt_cross_root_dir(self):
-        """ The absolute path of the directory containing the binary
-        cross-compiled Qt installation.
-        """
-
-        raise NotImplementedError
-
-    @property
-    def qt_package(self):
-        """ The 2-tuple of the absolute path of the Qt source file and the base
-        name of the package (without an extension).
-        """
-
-        license, ext = self.qt_package_detail
-        if license == 'commercial':
-            license = 'enterprise'
-
-        base_name = 'qt-everywhere-' + license + '-src-' + QT_VERSION_NATIVE
-
-        return (os.path.join(self.qt_src_dir, base_name + ext), base_name)
-
-    @property
-    def qt_package_detail(self):
-        """ The 2-tuple of the Qt license and file extension. """
-
-        raise NotImplementedError
-
-    @property
-    def qt_src_dir(self):
-        """ The absolute path of the directory containing the Qt source file.
-        """
-
-        raise NotImplementedError
-
-    @property
-    def sip(self):
-        """ The name of the sip executable including any required path. """
-
-        raise NotImplementedError
-
-    @property
-    def sip_package(self):
-        """ The 2-tuple of the absolute path of the SIP source file and the
-        base name of the package (without an extension).
-        """
-
-        raise NotImplementedError
-
-    @property
-    def supported_cross_targets(self):
-        """ The sequence of non-native targets that this host supports. """
-
-        return ()
-
-    @property
-    def sysroot(self):
-        """ The absolute path of the sysroot directory. """
-
-        return self._sysroot
-
-    @property
-    def sysroot_bin_dir(self):
-        """ The absolute path of the bin sub-directory of the sysroot
-        directory.
-        """
-
-        return os.path.join(self.sysroot, 'bin')
-
-    @property
-    def sysroot_src_dir(self):
-        """ The absolute path of the src sub-directory of the sysroot
-        directory.
-        """
-
-        return os.path.join(self.sysroot, 'src')
-
-    def __init__(self, target, sysroot_base, python_installation_factory):
-        """ Initialise the object. """
-
-        self.target = target
-        self._sysroot = sysroot_base + '-' + self.target
-
-        if self.target == get_native_target():
-            self.qt_builder = NativeQtBuilder(self)
-        elif self.target in self.supported_cross_targets:
-            self.qt_builder = CrossQtBuilder(self)
-        else:
-            fatal("this host does not support building Qt for the {0} target".format(self.target))
-
-        self.python2_installation = python_installation_factory(PY2_VERSION,
-                self)
-        self.python3_installation = python_installation_factory(PY3_VERSION,
-                self)
-
-    def build_configure(self):
-        """ Perform any host-specific pre-build checks and configuration.
-        Return a closure to be passed to build_deconfigure().
-        """
-
-        old_path = os.environ['PATH']
-        os.environ['PATH'] = os.path.join(self.sysroot,
-                'qt-' + self.qt_builder.qt_version, 'bin') + os.pathsep + old_path
-
-        return old_path
-
-    def build_deconfigure(self, closure):
-        """ Undo any host-specific post-build configuration. """
-
-        os.environ['PATH'] = closure
-
-    @staticmethod
-    def find_package(package_dir, pattern, extension):
-        """ Return a 2-tuple of the absolute path of a source file and the base
-        name of the package (without an extension).
-        """
-
-        full_pattern = os.path.join(package_dir, pattern + extension)
-        files = glob.glob(full_pattern)
-
-        if len(files) != 1:
-            if len(files) == 0:
-                raise Exception(
-                        "{0} didn't match any files".format(full_pattern))
-
-            raise Exception("{0} matched too many files".format(full_pattern))
-
-        package = files[0]
-        base_dir = os.path.basename(package)[:-len(extension)]
-
-        return (package, base_dir)
+        return os.path.join(self.sysroot.bin_dir, self.exe('qmake'))
 
     @staticmethod
     def run(*args):
@@ -224,15 +291,20 @@ class AbstractHost:
 
         subprocess.check_call(args)
 
+    @property
+    def sip(self):
+        """ The name of the sip executable including any required path. """
 
-class WindowsHost(AbstractHost):
+        return os.path.join(self.sysroot.bin_dir, self.exe('sip'))
+
+
+class WindowsHost(Host):
     """ The class that encapsulates a Windows host platform. """
 
-    def __init__(self, target):
-        """ Initialise the object. """
+    def exe(self, name):
+        """ Convert a generic executable name to a host-specific version. """
 
-        super().__init__(target=target, sysroot_base='C:\\sysroot',
-                python_installation_factory=WindowsPythonInstallation)
+        return name + '.exe'
 
     @property
     def make(self):
@@ -251,163 +323,9 @@ class WindowsHost(AbstractHost):
         return os.path.join(os.path.dirname(sys.executable), 'Scripts',
                 'pyqtdeploycli')
 
-    @property
-    def pyqt_package(self):
-        """ The 2-tuple of the absolute path of the PyQt source file and the
-        base name of the package (without an extension).
-        """
 
-        return self.find_package(WINDOWS_SRC_DIR, 'PyQt-internal-*', '.tar.gz')
-
-    @property
-    def qt_configure(self):
-        """ The name of Qt's configure executable including any required path.
-        """
-
-        return 'configure.bat'
-
-    @property
-    def qt_package_detail(self):
-        """ The 2-tuple of the Qt license and file extension. """
-
-        return ('opensource', '.zip')
-
-    @property
-    def qt_src_dir(self):
-        """ The absolute path of the directory containing the Qt source file.
-        """
-
-        return WINDOWS_SRC_DIR
-
-    @property
-    def sip(self):
-        """ The name of the sip executable including any required path. """
-
-        return self.sysroot_bin_dir + '\\sip.exe'
-
-    @property
-    def sip_package(self):
-        """ The 2-tuple of the absolute path of the SIP source file and the
-        base name of the package (without an extension).
-        """
-
-        return self.find_package(WINDOWS_SRC_DIR, 'sip-*', '.tar.gz')
-
-    def build_configure(self):
-        """ Perform any host-specific pre-build checks and configuration.
-        Return a closure to be passed to qt_build_deconfigure().
-        """
-
-        super_closure = super().build_configure()
-
-        dx_setenv = os.path.expandvars(
-                '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd')
-
-        if os.path.exists(dx_setenv):
-            self.run(dx_setenv)
-
-        old_path = os.environ['PATH']
-        os.environ['PATH'] = 'C:\\Python27;' + old_path
-
-        return (old_path, super_closure)
-
-    def build_deconfigure(self, closure):
-        """ Undo any host-specific post-build configuration. """
-
-        old_path, super_closure = closure
-
-        os.environ['PATH'] = old_path
-
-        super().build_deconfigure(super_closure)
-
-
-class PosixHost(AbstractHost):
-    """ The abstract base class that encapsulates a POSIX based host platform.
-    """
-
-    def __init__(self, target, python_installation_factory):
-        """ Initialise the object. """
-
-        super().__init__(target=target,
-                sysroot_base=os.path.expandvars('$HOME/usr/sysroot'),
-                python_installation_factory=python_installation_factory)
-
-    @property
-    def make(self):
-        """ The name of the make executable including any required path. """
-
-        return 'make'
-
-    @property
-    def pyqt_package(self):
-        """ The 2-tuple of the absolute path of the PyQt source file and the
-        base name of the package (without an extension).
-        """
-
-        pyqt_dir = os.path.expandvars('$HOME/hg/PyQt5')
-
-        os.chdir(pyqt_dir)
-        self.run('./build.py', 'clean')
-        self.run('./build.py', 'release')
-
-        return self.find_package(pyqt_dir, 'PyQt-internal-*', '.tar.gz')
-
-    @property
-    def qt_configure(self):
-        """ The name of Qt's configure executable including any required path.
-        """
-
-        return './configure'
-
-    @property
-    def qt_cross_root_dir(self):
-        """ The absolute path of the directory containing the binary
-        cross-compiled Qt installation.
-        """
-
-        return os.path.expandvars('$HOME/usr')
-
-    @property
-    def qt_package_detail(self):
-        """ The 2-tuple of the Qt license and file extension. """
-
-        return ('commercial', '.tar.gz')
-
-    @property
-    def sip(self):
-        """ The name of the sip executable including any required path. """
-
-        return self.sysroot_bin_dir + '/sip'
-
-    @property
-    def sip_package(self):
-        """ The 2-tuple of the absolute path of the SIP source file and the
-        base name of the package (without an extension).
-        """
-
-        sip_dir = os.path.expandvars('$HOME/hg/sip')
-
-        os.chdir(sip_dir)
-        self.run('./build.py', 'clean')
-        self.run('./build.py', 'release')
-
-        return self.find_package(sip_dir, 'sip-*', '.tar.gz')
-
-    @property
-    def supported_cross_targets(self):
-        """ The sequence of non-native targets that this host supports. """
-
-        return ('android-32', 'ios-64')
-
-
-class OSXHost(PosixHost):
-    """ The class that encapsulates an OS X host. """
-
-    def __init__(self, target):
-        """ Initialise the object. """
-
-        super().__init__(target=target,
-                python_installation_factory=OSXPythonInstallation)
+class PosixHost(Host):
+    """ The base class that encapsulates a POSIX based host platform. """
 
     @property
     def pyqtdeploycli(self):
@@ -417,299 +335,32 @@ class OSXHost(PosixHost):
 
         return 'pyqtdeploycli'
 
-    @property
-    def qt_src_dir(self):
-        """ The absolute path of the directory containing the Qt source file.
-        """
 
-        return os.path.expandvars('$HOME/Source/Qt')
+class OSXHost(PosixHost):
+    """ The class that encapsulates an OS X host. """
 
 
 class LinuxHost(PosixHost):
     """ The class that encapsulates a Linux host. """
 
-    def __init__(self, target):
+
+class Target:
+    """ Encapsulate a target platform. """
+
+    def __init__(self, name):
         """ Initialise the object. """
 
-        super().__init__(target=target,
-                python_installation_factory=LinuxPythonInstallation)
+        self.name = name
 
-    @property
-    def pyqtdeploycli(self):
-        """ The name of the pyqtdeploycli executable including any required
-        path.
-        """
+    @staticmethod
+    def factory(name, host):
+        """ Create an instance of the target platform. """
 
-        return os.path.expandvars('$HOME/usr/bin/pyqtdeploycli')
+        # If no target is specified then assume a native build.
+        if name is None:
+            name = host.name
 
-    @property
-    def qt_src_dir(self):
-        """ The absolute path of the directory containing the Qt source file.
-        """
-
-        return os.path.expandvars('$HOME/usr/src')
-
-
-class AbstractPythonInstallation:
-    """ The abstract base class that encapsulates a Python version. """
-
-    def __init__(self, version, host):
-        """ Initialise the object. """
-
-        self.version = version
-        self.host = host
-
-    @property
-    def host_include_dir(self):
-        """ The name of the directory containing the host Python include files.
-        """
-
-        raise NotImplementedError
-
-    @property
-    def host_library(self):
-        """ The name of the host Python library. """
-
-        raise NotImplementedError
-
-    @property
-    def host_python(self):
-        """ The name of the host python executable including any required path.
-        """
-
-        raise NotImplementedError
-
-    @property
-    def host_stdlib_dir(self):
-        """ The name of the directory containing the host Python standard
-        library.
-        """
-
-        raise NotImplementedError
-
-    def major_minor_version(self, dotted=True):
-        """ Return a string of the Python major and minor versions with an
-        optional separating dot.
-        """
-
-        major, minor, maint = self.version.split('.')
-        sep = '.' if dotted else ''
-
-        return major + sep + minor
-
-    @property
-    def package(self):
-        """ The 2-tuple of the absolute path of the Python source file and the
-        base name of the package (without an extension).
-        """
-
-        base_name = 'Python-' + self.version
-
-        return (os.path.join(self.src_dir, base_name + '.tar.xz'), base_name)
-
-    @property
-    def src_dir(self):
-        """ The absolute path of the directory containing the Python source
-        file.
-        """
-
-        raise NotImplementedError
-
-
-class WindowsPythonInstallation(AbstractPythonInstallation):
-    """ The class that encapsulates a Python installation for a Windows host.
-    Note that this assumes we have installed the system Python.
-    """
-
-    @property
-    def host_include_dir(self):
-        """ The name of the directory containing the host Python include files.
-        """
-
-        return self.host.sysroot + '\\include\\python' + self.major_minor_version()
-
-    @property
-    def host_library(self):
-        """ The name of the host Python library. """
-
-        return self.host.sysroot + '\\lib\\python' + self.major_minor_version(dotted=False) + '.lib'
-
-    @property
-    def host_python(self):
-        """ The name of the host python executable including any required path.
-        """
-
-        return self._get_windows_install_path() + 'python'
-
-    @property
-    def host_stdlib_dir(self):
-        """ The name of the directory containing the platform Python standard
-        library.
-        """
-
-        return self.host.sysroot + '\\lib\\python' + self.major_minor_version()
-
-    @property
-    def src_dir(self):
-        """ The absolute path of the directory containing the Python source
-        file.
-        """
-
-        return WINDOWS_SRC_DIR
-
-    def _get_windows_install_path(self):
-        """ Return the Windows install path. """
-
-        from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
-
-        major_minor = self.major_minor_version()
-
-        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
-                major_minor)
-
-        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
-            try:
-                install_path = QueryValue(key, sub_key)
-            except OSError:
-                pass
-            else:
-                break
-        else:
-            raise Exception(
-                    "Unable to find an installation of Python v{0}.".format(
-                            major_minor))
-
-        return install_path
-
-
-class PosixPythonInstallation(AbstractPythonInstallation):
-    """ The abstract base class that encapsulates a Python installation for a
-    POSIX based host platform.
-    """
-
-
-class OSXPythonInstallation(PosixPythonInstallation):
-    """ The class that encapsulates a Python installation for an OS X host. """
-
-    @property
-    def host_python(self):
-        """ The name of the host python executable including any required path.
-        """
-
-        return 'python3' if self.version.startswith('3') else 'python'
-
-    @property
-    def src_dir(self):
-        """ The absolute path of the directory containing the Python source
-        file.
-        """
-
-        return os.path.expandvars('$HOME/Source/Python')
-
-
-class LinuxPythonInstallation(PosixPythonInstallation):
-    """ The class that encapsulates a Python installation for a Linux host. """
-
-    @property
-    def host_python(self):
-        """ The name of the host python executable including any required path.
-        """
-
-        return os.path.expandvars('$HOME/usr/bin/python3' if self.version.startswith('3') else '$HOME/usr/bin/python')
-
-    @property
-    def src_dir(self):
-        """ The absolute path of the directory containing the Python source
-        file.
-        """
-
-        return os.path.expandvars('$HOME/usr/src')
-
-
-class AbstractQtBuilder:
-    """ The abstract base class that encapsulates a Qt builder. """
-
-    @property
-    def qt_version(self):
-        """ The Qt version number. """
-
-        raise NotImplementedError
-
-    def __init__(self, host):
-        """ Initialise the object. """
-
-        self.host = host
-
-    def build(self):
-        """ Build Qt. """
-
-        raise NotImplementedError
-
-
-class NativeQtBuilder(AbstractQtBuilder):
-    """ The class that encapsulates a Qt builder for a native target. """
-
-    @property
-    def qt_version(self):
-        """ The Qt version number. """
-
-        return QT_VERSION_NATIVE
-
-    def build(self):
-        """ Build Qt. """
-
-        host = self.host
-
-        license, _ = host.qt_package_detail
-
-        get_package_source(host, host.qt_package)
-
-        host.run(host.qt_configure, '-prefix',
-                os.path.join(host.sysroot,
-                        'qt-' + QT_VERSION_NATIVE), '-' + license,
-                '-confirm-license', '-static', '-release', '-nomake',
-                'examples')
-        host.run(host.make)
-        host.run(host.make, 'install')
-
-        remove_current_dir()
-
-
-class CrossQtBuilder(AbstractQtBuilder):
-    """ The class that encapsulates a Qt builder for a cross-compiled target.
-    """
-
-    # Map the target to the corresponding sub-directory in the Qt binary.
-    TARGET_DIR_MAP = {
-            'android-32':   'android_armv7',
-            'ios-64':       'ios'}
-
-    @property
-    def qt_version(self):
-        """ The Qt version number. """
-
-        return QT_VERSION_CROSS
-
-    def build(self):
-        """ Build Qt. """
-
-        host = self.host
-
-        # For cross-compiling we use the Qt binary installation.
-        cross_root = host.qt_cross_root_dir
-        target_root = os.path.join(cross_root, 'Qt' + QT_VERSION_CROSS,
-                '.'.join(QT_VERSION_CROSS.split('.')[:2]))
-        target_subdir = self.TARGET_DIR_MAP[host.target]
-        target_dir = os.path.join(target_root, target_subdir)
-
-        sysroot_qt_dir = os.path.join(host.sysroot, 'qt-' + QT_VERSION_CROSS)
-
-        try:
-            os.remove(sysroot_qt_dir)
-        except FileNotFoundError:
-            pass
-
-        os.symlink(target_dir, sysroot_qt_dir, target_is_directory=True)
+        return Target(name)
 
 
 def fatal(message):
@@ -726,86 +377,161 @@ def rmtree(dir_name):
     shutil.rmtree(dir_name, ignore_errors=True)
 
 
-def unpack(package):
-    """ Unpack a package into the current directory. """
+def make_directory(name):
+    """ Ensure a directory exists. """
 
-    if tarfile.is_tarfile(package):
-        tarfile.open(package).extractall()
-    elif zipfile.is_zipfile(package):
-        zipfile.ZipFile(package).extractall()
-    else:
-        raise Exception("{0} has an unknown format".format(package))
+    os.makedirs(name, exist_ok=True)
 
 
-def get_native_target():
-    """ Return the native target platform. """
+def make_symlink(root_dir, src, dst):
+    """ Ensure a symbolic link exists. """
 
-    if sys.platform == 'darwin':
-        main_target = 'osx'
-    elif sys.platform == 'win32':
-        main_target = 'win'
-    else:
-        main_target = 'linux'
+    dst_dir = os.path.dirname(dst)
 
-    return '{0}-{1}'.format(main_target, 8 * struct.calcsize('P'))
+    make_directory(dst_dir)
 
-
-def get_host(target):
-    """ Return the host platform. """
-
-    if sys.platform == 'darwin':
-        host = OSXHost(target)
-    elif sys.platform == 'win32':
-        host = WindowsHost(target)
-    else:
-        host = LinuxHost(target)
-
-    return host
-
-
-def get_package_source(host, package):
-    """ Extract the source of a package and change to it's top-level directory.
-    """
-
-    package_src, base_dir = package
-    os.chdir(host.sysroot_src_dir)
-    rmtree(base_dir)
-    unpack(package_src)
-    os.chdir(base_dir)
-
-
-def remove_current_dir():
-    """ Remove the current directory. """
-
-    cwd = os.getcwd()
-    os.chdir('..')
-    rmtree(cwd)
-
-
-def clean_sysroot(host):
-    """ Create a clean sysroot. """
-
-    rmtree(host.sysroot)
-    os.makedirs(host.sysroot_src_dir)
-
-
-def build_qt(host):
-    """ Build Qt. """
-
-    host.qt_builder.build()
-
-
-def build_python(host, python_installation, debug, enable_dynamic_loading):
-    """ Build a Python that optionally supports dynamic loading. """
+    try:
+        os.remove(dst)
+    except FileNotFoundError:
+        pass
 
     if sys.platform == 'win32':
-        host.run(host.pyqtdeploycli,
-                '--sysroot', host.sysroot,
-                '--package', 'python',
-                '--system-python', python_installation.major_minor_version(),
-                'install')
+        # Don't bother with symbolic link privileges on Windows.
+        shutil.copyfile(src, dst)
     else:
-        get_package_source(host, python_installation.package)
+        # If the source directory is within the same root as the destination
+        # then make the link relative.  This means that the root directory can
+        # be moved and the link will remain valid.
+        if os.path.commonpath((src, dst)).startswith(root_dir):
+            src = os.path.relpath(src, dst_dir)
+
+        os.symlink(src, dst)
+
+
+def build_qt(host, target, qt_dir):
+    """ Build Qt. """
+
+    # See if we need to build a target Qt installation from source.
+    if qt_dir is None:
+        # We don't support cross-compiling Qt.
+        if target.name != host.name:
+            fatal("Cross compiling Qt is not supported. Use the --qt option to specify a pre-compiled Qt installation")
+
+        source = host.sysroot.find_source('qt-everywhere-*-src-*')
+        host.sysroot.unpack_source(source)
+
+        if sys.platform == 'win32':
+            configure = 'configure.bat'
+
+            dx_setenv = os.path.expandvars(
+                    '%DXSDK_DIR%\\Utilities\\bin\\dx_setenv.cmd')
+
+            if os.path.exists(dx_setenv):
+                host.run(dx_setenv)
+
+            original_path = os.environ['PATH']
+            new_path = [original_path]
+
+            new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
+
+            new_path.insert(0, 'C:\\Python27')
+
+            os.environ['PATH'] = ';'.join(new_path)
+        else:
+            configure = './configure'
+            original_path = None
+
+        args = [configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
+                '-static', '-release', '-nomake', 'examples', '-nomake',
+                'tools']
+
+        if sys.platform == 'win32':
+            # These cause compilation failures (although maybe only with static
+            # builds).
+            args.append('-skip')
+            args.append('qtimageformats')
+        elif sys.platform.startswith('linux'):
+            args.append('-qt-xcb')
+
+        host.run(*args)
+        host.run(host.make)
+        host.run(host.make, 'install')
+
+        if original_path is not None:
+            os.environ['PATH'] = original_path
+
+        qt_dir = host.sysroot.qt_dir
+    else:
+        qt_dir = os.path.abspath(qt_dir)
+
+    # Create a symbolic link to qmake in a standard place in sysroot so that it
+    # can be referred to in cross-target .pdy files.
+    make_symlink(str(host.sysroot),
+            os.path.join(qt_dir, 'bin', host.exe('qmake')), host.qmake)
+
+
+def build_host_python(host, use_system_python):
+    """ Build (or install) a host Python. """
+
+    if use_system_python is None:
+        if sys.platform == 'win32':
+            fatal("Building the host Python from source on Windows is not supported")
+
+        source = host.sysroot.find_source('Python-*')
+        host.sysroot.unpack_source(source)
+        host.run('./configure', '--prefix', host.sysroot.host_python_dir)
+        host.run(host.make)
+        host.run(host.make, 'install')
+
+        major_minor = '.'.join(source.split('-')[1].split('.')[:2])
+        interp = os.path.join(host.sysroot.host_python_dir, 'bin',
+                'python' + major_minor)
+    elif sys.platform == 'win32':
+        from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
+
+        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
+                use_system_python)
+
+        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+            try:
+                install_path = QueryValue(key, sub_key)
+            except OSError:
+                pass
+            else:
+                break
+        else:
+            fatal("Unable to find an installation of Python v{}".format(
+                    use_system_python))
+
+        interp = install_path + 'python.exe'
+    else:
+        interp = 'python' + use_system_python
+
+    host.python.get_configuration(interp)
+
+    # Create symbolic links to the interpreter in a standard place in sysroot
+    # so that they can be referred to in cross-target .pdy files.
+    make_symlink(str(host.sysroot), host.python.interpreter, host.interpreter)
+
+
+def build_target_python(host, target, debug, enable_dynamic_loading):
+    """ Build a target Python that optionally supports dynamic loading. """
+
+    pattern = 'Python-{}.*'.format(host.python.version)
+    source = host.sysroot.find_source(pattern, optional=True)
+
+    if source is None:
+        if sys.platform == 'win32':
+            # TODO: Move the install function from pyqtdeploycli to here.
+            host.run(host.pyqtdeploycli,
+                    '--sysroot', str(host.sysroot),
+                    '--package', 'python',
+                    '--system-python', host.python.version,
+                    'install')
+        else:
+            fatal("Using the system Python as the target on Non-Windows is not supported")
+    else:
+        host.sysroot.unpack_source(source)
 
         pyqtdeploycli_args = [host.pyqtdeploycli]
 
@@ -813,13 +539,13 @@ def build_python(host, python_installation, debug, enable_dynamic_loading):
             pyqtdeploycli_args.append('--enable-dynamic-loading')
 
         pyqtdeploycli_args.extend(
-                ['--package', 'python', '--target', host.target, 'configure'])
+                ['--package', 'python', '--target', target.name, 'configure'])
 
         # Note that we do not remove the source directory as it may be needed
         # by the generated code.
         host.run(*pyqtdeploycli_args)
 
-        qmake_args = ['qmake', 'SYSROOT=' + host.sysroot]
+        qmake_args = [host.qmake, 'SYSROOT=' + str(host.sysroot)]
         if debug:
             qmake_args.append('CONFIG+=debug')
 
@@ -829,61 +555,71 @@ def build_python(host, python_installation, debug, enable_dynamic_loading):
         host.run(host.make, 'install')
 
 
-def build_sip_code_generator(host, python_installation):
-    """ Build the host-specific code generator. """
+def build_sip_code_generator(source, host):
+    """ Build a host code generator. """
 
-    get_package_source(host, host.sip_package)
+    host.sysroot.unpack_source(source)
 
-    host.run(python_installation.host_python, 'configure.py', '--bindir',
-            host.sysroot_bin_dir)
+    host.run(host.interpreter, 'configure.py', '--bindir',
+            host.sysroot.bin_dir)
     os.chdir('sipgen')
     host.run(host.make)
     host.run(host.make, 'install')
     os.chdir('..')
 
-    remove_current_dir()
 
+def build_sip_module(source, host, target, debug):
+    """ Build a target static sip module. """
 
-def build_sip_module(host, python_installation, debug):
-    """ Build a static SIP module. """
+    host.sysroot.unpack_source(source)
 
-    get_package_source(host, host.sip_package)
-
-    configuration = 'sip-' + host.target + '.cfg'
+    configuration = 'sip-' + target.name + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'sip', '--output', configuration,
-            '--target', host.target, 'configure')
+            '--target', target.name, 'configure')
 
-    args = [python_installation.host_python, 'configure.py', '--static',
-            '--sysroot', host.sysroot, '--no-tools', '--use-qmake',
-            '--configuration', configuration]
+    args = [host.interpreter, 'configure.py', '--static', '--sysroot',
+            str(host.sysroot), '--no-tools', '--use-qmake', '--configuration',
+            configuration]
 
     if debug:
         args.append('--debug')
 
     host.run(*args)
 
-    host.run('qmake')
+    host.run(host.qmake)
     host.run(host.make)
     host.run(host.make, 'install')
 
-    remove_current_dir()
+
+def build_sip(host, target, debug):
+    """ Build sip. """
+
+    source = host.sysroot.find_source('sip-*')
+    build_sip_code_generator(source, host)
+    build_sip_module(source, host, target, debug)
 
 
-def build_pyqt(host, python_installation, debug):
-    """ Build a static PyQt5. """
+def build_pyqt5(host, target, debug):
+    """ Build a target static PyQt5. """
 
-    get_package_source(host, host.pyqt_package)
+    source = host.sysroot.find_source('PyQt5_*')
+    host.sysroot.unpack_source(source)
 
-    configuration = 'pyqt-' + host.target + '.cfg'
+    license_path = os.path.join(host.sysroot.src_dir, 'pyqt-commercial.sip')
+    if os.path.isfile(license_path):
+        shutil.copy(license_path, 'sip')
+
+    configuration = 'pyqt-' + target.name + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'pyqt5', '--output',
-            configuration, '--target', host.target, 'configure')
+            configuration, '--target', target.name, 'configure')
 
-    args = [python_installation.host_python, 'configure.py', '--static',
-            '--sysroot', host.sysroot, '--no-tools', '--no-qsci-api',
-            '--no-designer-plugin', '--no-qml-plugin', '--configuration',
-            configuration, '--sip', host.sip, '--confirm-license', '-c', '-j2']
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-tools',
+            '--no-qsci-api', '--no-designer-plugin', '--no-qml-plugin',
+            '--configuration', configuration, '--sip', host.sip,
+            '--confirm-license', '-c', '-j2']
 
     if debug:
         args.append('--debug')
@@ -892,67 +628,63 @@ def build_pyqt(host, python_installation, debug):
 
     host.run(host.make)
     host.run(host.make, 'install')
-
-    remove_current_dir()
 
 
 # The different packages in the order that they should be built.
-all_packages = ('qt', 'python2', 'python3', 'sip', 'pyqt')
+all_packages = ('qt', 'python', 'sip', 'pyqt5')
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
-
-native_target = get_native_target()
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--all', help="build all packages", action='store_true')
 group.add_argument('--build', help="the packages to build", nargs='+',
         choices=all_packages)
-parser.add_argument('--clean',
-        help="clean the sysroot directory before building",
-        action='store_true')
-parser.add_argument('--debug',
-        help="build the debug versions of packages where possible",
-        action='store_true')
-parser.add_argument('--enable-dynamic-loading',
-        help="build Python with dynamic loading enabled", action='store_true')
-parser.add_argument('--target',
-        help="the target platform [default: {0}]".format(native_target),
-        choices=TARGETS, default=native_target)
+parser.add_argument('--clean', action='store_true',
+        help="clean the sysroot directory before building")
+parser.add_argument('--debug', action='store_true',
+        help="build the debug versions of packages where possible")
+parser.add_argument('--enable-dynamic-loading', action='store_true',
+        help="build Python with dynamic loading enabled")
+parser.add_argument('--qt', metavar='DIR',
+        help="the pre-compiled Qt installation to 'build'")
+parser.add_argument('--sysroot', metavar='DIR',
+        help="the sysroot directory")
+parser.add_argument('--target', choices=TARGETS,
+        help="the target platform [default: native]")
+parser.add_argument('--use-system-python', metavar='VERSION',
+        help="use the system Python version installation to 'build'")
 
 args = parser.parse_args()
 
-# Configure the host.
-host = get_host(args.target)
+# Create a host instance.
+host = Host.factory(args.sysroot)
 
 # Determine the packages to build.
 packages = all_packages if args.all else args.build
 
 # Do the builds.
 if args.clean:
-    clean_sysroot(host)
+    host.sysroot.clean()
 
-closure = host.build_configure()
+# We build the host Python as soon as possble as that is where we get the host
+# platform from.
+if 'python' in packages:
+    build_host_python(host, args.use_system_python)
+else:
+    host.python.get_configuration(host.interpreter)
+
+# Create a target instance now that we know the host.
+target = Target.factory(args.target, host)
 
 if 'qt' in packages:
-    build_qt(host)
+    build_qt(host, target, args.qt)
 
-if 'python2' in packages:
-    build_python(host, host.python2_installation, args.debug,
-            args.enable_dynamic_loading)
-
-if 'python3' in packages:
-    build_python(host, host.python3_installation, args.debug,
-            args.enable_dynamic_loading)
+if 'python' in packages:
+    build_target_python(host, target, args.debug, args.enable_dynamic_loading)
 
 if 'sip' in packages:
-    build_sip_code_generator(host, host.python3_installation)
+    build_sip(host, target, args.debug)
 
-    build_sip_module(host, host.python2_installation, args.debug)
-    build_sip_module(host, host.python3_installation, args.debug)
-
-if 'pyqt' in packages:
-    build_pyqt(host, host.python2_installation, args.debug)
-    build_pyqt(host, host.python3_installation, args.debug)
-
-host.build_deconfigure(closure)
+if 'pyqt5' in packages:
+    build_pyqt5(host, target, args.debug)
