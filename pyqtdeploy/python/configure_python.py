@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ from .pyconfig import generate_pyconfig_h
 from .supported_versions import check_version
 
 
-def configure_python(target, output, dynamic_loading, patches, message_handler):
+def configure_python(target, output, api, dynamic_loading, patches, message_handler):
     """ Configure a Python source directory for a particular target. """
 
     # Validate the target.
@@ -119,7 +119,7 @@ def configure_python(target, output, dynamic_loading, patches, message_handler):
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
 
-        generate_pyconfig_h(pyconfig_h_dst_file, target, dynamic_loading)
+        generate_pyconfig_h(pyconfig_h_dst_file, target, api, dynamic_loading)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')

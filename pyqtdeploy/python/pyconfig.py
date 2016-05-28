@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,37 +30,44 @@ from ..file_utilities import create_file
 class Config:
     """ Encapsulate a configuration value defined in pyconfig.h. """
 
-    def __init__(self, name, py_major=0, default=None, **targets):
+    def __init__(self, name, py_major=0, default=None, api=1, **targets):
         """ Define the value allowing target-specific overrides. """
 
         self.name = name
         self.py_major = py_major
         self._default = default
+        self._api = api
         self._targets = targets
 
-    def value(self, target):
-        """ Get the value for a target. """
+    def value(self, target, android_api):
+        """ Get the value for a target.  A value of None means the
+        configuration value is omitted.
+        """
 
         # Convert the target to a valid Python name.
         target = target.replace('-', '_')
 
         # Try the specific target variant.
         try:
-            return self._targets[target]
+            value = self._targets[target]
         except KeyError:
-            pass
+            # Try the main target if there was a variant.
+            target_parts = target.split('_', maxsplit=1)
 
-        # Try the main target if there was a variant.
-        target_parts = target.split('_', maxsplit=1)
+            if len(target_parts) != 1:
+                target = target_parts[0]
+                try:
+                    value = self._targets[target]
+                except KeyError:
+                    # Return the default.
+                    return self._default
 
-        if len(target_parts) != 1:
-            try:
-                return self._targets[target_parts[0]]
-            except KeyError:
-                pass
+        # Return the default value if the targetted Android version is earlier
+        # than the one for which the value is defined.
+        if target == 'android' and android_api < self._api:
+            return self._default
 
-        # Return the default.
-        return self._default
+        return value
 
 
 # The configuration values for all supported versions of Python.
@@ -1501,7 +1508,7 @@ pyconfig = (
 )
 
 
-def generate_pyconfig_h(pyconfig_h_name, target, dynamic_loading):
+def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading):
     """ Create the pyconfig.h file for a specific target variant. """
 
     pyconfig_h = create_file(pyconfig_h_name)
@@ -1526,7 +1533,7 @@ def generate_pyconfig_h(pyconfig_h_name, target, dynamic_loading):
                 pyconfig_h.write(
                         '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
 
-        value = config.value(target)
+        value = config.value(target, android_api)
 
         if value is None:
             # We provide an commented out #define to make it easier to modify

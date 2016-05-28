@@ -76,6 +76,15 @@ The full set of command line options is:
 
     This will display a summary of the command line actions and options.
 
+.. cmdoption:: --android-api LEVEL
+
+    .. versionadded:: 1.3
+
+    When used with the :option:`configure` action to configure the ``python``
+    package for the ``android`` target this specifies the Android API level.
+    The default is ``13``, i.e. Android v3.2, which is the minimum level
+    supported by Qt.
+
 .. cmdoption:: --disable-patches
 
     .. versionadded:: 1.2
