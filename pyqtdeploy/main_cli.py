@@ -41,8 +41,8 @@ def main():
                     'show-targets', 'show-version'))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
-                    "(configure) [default: 10]",
-            metavar="LEVEL", type=int, default=10),
+                    "(configure) [default: 9]",
+            metavar="LEVEL", type=int, default=9),
     parser.add_argument('--disable-patches',
             help="disable the patching of the Python source code (configure)",
             action='store_true')
