@@ -1,3 +1,17 @@
+v1.3 ??? June 2016
+  - The Build tab can now specify a timeout for build processes to override the
+    default of 30 seconds.
+  - The Standard Library tab now has a checkbox to specify that sub-packages
+    should be automatically selected.
+  - Added the --android-api command line option to pyqtdeploycli to specify the
+    Android API level to use when configuring the Python package.  The default
+    API level is extracted from the ANDROID_NDK_PLATFORM environment variable.
+    If that is not set then 9 is used.
+  - Added support for PyQt v5.6.
+  - Added support for Qt v5.6.0.
+  - The experimental build-sysroot.py script has been re-written and
+    documented.
+
 v1.2.1 13th March 2016
   - A bug fix only release.
 
