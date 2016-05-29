@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -106,6 +106,13 @@ class BuildPage(QWidget):
                         "memory.",
                 minimum=1)
         options_layout.addWidget(self._resources_edit, 2, 1)
+        options_layout.addWidget(QLabel("Timeout"), 3, 0)
+        self._timeout_edit = QSpinBox(
+                whatsThis="The number of seconds to wait for build processes "
+                        "to run before timing out.",
+                minimum=1)
+        self._timeout_edit.setValue(30)
+        options_layout.addWidget(self._timeout_edit, 3, 1)
 
         options.setLayout(options_layout)
         layout.addWidget(options, 2, 1)
@@ -178,6 +185,8 @@ class BuildPage(QWidget):
 
         logger.status_message("Code generation succeeded.")
 
+        timeout = self._timeout_edit.value() * 1000
+
         if self._run_qmake_button.checkState() != Qt.Unchecked:
             qmake = os.path.expandvars(project.qmake)
 
@@ -188,7 +197,8 @@ class BuildPage(QWidget):
                 logger.status_message("Running qmake...")
 
                 try:
-                    builder.run([qmake], "qmake failed.", in_build_dir=True)
+                    builder.run([qmake], "qmake failed.", in_build_dir=True,
+                            timeout=timeout)
                 except UserException as e:
                     logger.user_exception(e)
                     handle_user_exception(e, self.label, self)
@@ -203,7 +213,7 @@ class BuildPage(QWidget):
 
             try:
                 builder.run([make], "{0} failed.".format(make),
-                        in_build_dir=True)
+                        in_build_dir=True, timeout=timeout)
             except UserException as e:
                 logger.user_exception(e)
                 handle_user_exception(e, self.label, self)

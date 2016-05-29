@@ -1252,7 +1252,7 @@ static struct _inittab %s[] = {
 
         self.run(argv, "Unable to freeze files")
 
-    def run(self, argv, error_message, in_build_dir=False):
+    def run(self, argv, error_message, in_build_dir=False, timeout=30000):
         """ Execute a command and capture the output. """
 
         if in_build_dir:
@@ -1284,7 +1284,7 @@ static struct _inittab %s[] = {
                 lambda: stderr_output.append(process.readAllStandardError()))
 
         process.start(argv[0], argv[1:])
-        finished = process.waitForFinished()
+        finished = process.waitForFinished(timeout)
 
         if saved_cwd is not None:
             os.chdir(saved_cwd)
