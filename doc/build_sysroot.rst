@@ -36,9 +36,7 @@ copy the Qt source package to the ``src`` directory.
 ---------------------------
 
 :program:`build-sysroot.py` will build and install Qt, Python, sip and PyQt5 as
-specified using command line options.
-
-The supported actions are:
+specified using command line options:
 
 .. cmdoption:: --h, --help
 
@@ -54,7 +52,7 @@ The supported actions are:
     This will build one or more of the individual packages in the order
     specified on the command line.  You need to allow for the interdependencies
     between the builds.  For example, if you have updated the source package
-    sip then you should rebuild sip and PyQt5.
+    for sip then you should rebuild sip and PyQt5.
 
 .. cmdoption:: --clean
 

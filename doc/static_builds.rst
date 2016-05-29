@@ -75,8 +75,8 @@ If you wish to statically link the Windows C Library then you need to modify
 the :program:`qmake` configuration for your compiler before running
 ``configure``.
 
-Assuming your compiler is MSVC 2010 then you need to edit the file
-``mkspecs\win32-msvc2010\qmake.conf`` in the Qt source directory as follows:
+Assuming your compiler is MSVC 2015 then you need to edit the file
+``mkspecs\win32-msvc2015\qmake.conf`` in the Qt source directory as follows:
 
 - remove ``embed_manifest_dll`` and ``embed_manifest_exe`` from the ``CONFIG``
   entry

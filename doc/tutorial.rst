@@ -575,6 +575,10 @@ The main area of the tab shows the output of the various stages of the build.
     lack of heap space.  If you run into this problem then try increasing the
     the number of resource files generated.
 
+**Timeout**
+    specifies the number of seconds that the build processes are allowed to run
+    for before being timed out.
+
 **Run qmake**
     is clicked to specify that :program:`qmake` will be run after generating
     the application code.  If this is disabled the later build steps will be
