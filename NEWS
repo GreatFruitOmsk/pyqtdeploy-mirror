@@ -1,4 +1,4 @@
-v1.3 ??? June 2016
+v1.3 14th June 2016
   - The Build tab can now specify a timeout for build processes to override the
     default of 30 seconds.
   - The Standard Library tab now has a checkbox to specify that sub-packages
