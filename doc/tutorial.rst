@@ -430,7 +430,7 @@ those that are part of the Python standard library or PyQt) that will be
 statically linked into the application.
 
 These extension modules may already have been built, but this tab can also be
-used to compile them source.  You would only normally do this for simple
+used to compile them from source.  You would only normally do this for simple
 extension modules typically made up of a single source file.
 
 **Name**
