@@ -617,9 +617,9 @@ def build_pyqt5(host, target, debug):
 
     args = [host.interpreter, 'configure.py', '--static', '--qmake',
             host.qmake, '--sysroot', str(host.sysroot), '--no-tools',
-            '--no-qsci-api', '--no-designer-plugin', '--no-qml-plugin',
-            '--configuration', configuration, '--sip', host.sip,
-            '--confirm-license', '-c', '-j2']
+            '--no-qsci-api', '--no-designer-plugin', '--no-python-dbus',
+            '--no-qml-plugin', '--configuration', configuration, '--sip',
+            host.sip, '--confirm-license', '-c', '-j2']
 
     if debug:
         args.append('--debug')
