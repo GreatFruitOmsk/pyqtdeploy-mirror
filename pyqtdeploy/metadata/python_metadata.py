@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2016, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -3179,6 +3179,13 @@ _metadata = {
                         'heapq', 'inspect', 'itertools', 'logging', 'os',
                         'socket', 'subprocess', 'threading', 'time',
                         'traceback', 'warnings')),
+        PythonModule(version=(3, 4, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.tasks', 'collections', 'concurrent.futures',
+                        'functools', 'heapq', 'inspect', 'ipaddress',
+                        'itertools', 'logging', 'os', 'socket', 'subprocess',
+                        'threading', 'time', 'traceback', 'warnings')),
         PythonModule(version=(3, 5, 0), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
@@ -4371,5 +4378,6 @@ if __name__ == '__main__':
     check_version(3, 4, 2)
     check_version(3, 4, 3)
     check_version(3, 4, 4)
+    check_version(3, 4, 5)
     check_version(3, 5, 0)
     check_version(3, 5, 1)
