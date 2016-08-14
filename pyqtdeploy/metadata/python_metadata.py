@@ -2097,9 +2097,13 @@ _metadata = {
                         'importlib.machinery', 'marshal', 'os', 'types',
                         'struct', 'warnings'))),
 
-    'msilib':
-        PythonModule(scope='win32',
+    'msilib': (
+        PythonModule(max_version=(2, 7, 11), scope='win32',
                 deps=('_msi', 'os', 're', 'string', 'tempfile')),
+        PythonModule(min_version=(2, 7, 12), max_version=2, scope='win32',
+                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
+        PythonModule(min_version=3, scope='win32',
+                deps=('_msi', 'os', 're', 'string', 'tempfile'))),
 
     'msvcrt': (
         ExtensionModule(max_version=(3, 4), scope='win32',
@@ -2652,10 +2656,14 @@ _metadata = {
         PythonModule(max_version=(2, 7, 8),
                 deps=('base64', 'errno', 'socket', '_ssl', 'textwrap',
                         'time')),
-        PythonModule(min_version=(2, 7, 9), max_version=2,
+        PythonModule(min_version=(2, 7, 9), max_version=(2, 7, 11),
                 deps=('base64', 'calendar', 'collections', 'contextlib',
                         'errno', 'os', 're', 'socket', '_ssl', 'textwrap',
                         'time')),
+        PythonModule(min_version=(2, 7, 12), max_version=2,
+                deps=('base64', 'calendar', 'collections', 'contextlib',
+                        'errno', 'os', 're', 'socket', '_ssl', 'textwrap',
+                        'time', 'warnings')),
         PythonModule(version=(3, 3),
                 deps=('base64', 'errno', 're', 'socket', '_ssl', 'textwrap',
                         'time', 'traceback')),
@@ -4372,6 +4380,7 @@ if __name__ == '__main__':
     check_version(2, 7, 9)
     check_version(2, 7, 10)
     check_version(2, 7, 11)
+    check_version(2, 7, 12)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 1)

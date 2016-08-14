@@ -790,6 +790,7 @@ pyconfig = (
 
     # Define if you have readline 4.0
     Config('HAVE_RL_PRE_INPUT_HOOK', default=1, android=None),
+    Config('HAVE_RL_RESIZE_TERMINAL', default=1, android=None),
 
     # Define to 1 if you have the `round' function.
     Config('HAVE_ROUND', default=1),

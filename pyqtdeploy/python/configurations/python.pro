@@ -51,6 +51,14 @@ OBJECTS_DIR = .obj
 
 DEFINES += NDEBUG Py_BUILD_CORE
 
+# These are needed by getpath.c but the actual values don't matter too much as
+# the path is set properly elsewhere.
+DEFINES += VERSION=\\\"$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
+DEFINES += VPATH=\\\".\\\"
+DEFINES += PREFIX=\\\"/\\\"
+DEFINES += EXEC_PREFIX=\\\"/\\\"
+DEFINES += PYTHONPATH=\\\"/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
+
 INCLUDEPATH += . Include
 
 win32 {
