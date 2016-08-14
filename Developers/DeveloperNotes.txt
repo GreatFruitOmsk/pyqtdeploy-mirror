@@ -88,6 +88,13 @@ For Python v3, check if ``Lib/importlib/_bootstrap.py`` has any changes and
 update the builder's version if necessary.
 
 
+supported_python_versions.py
+............................
+
+Update the object describing supported versions if the new version required
+version-specific changes to the meta-data.
+
+
 Qt
 --
 

@@ -299,8 +299,10 @@ _metadata = {
         ExtensionModule(version=(3, 3), source='atexitmodule.c'),
         CoreExtensionModule(min_version=(3, 4))),
 
-    'audioop':
-        ExtensionModule(source='audioop.c'),
+    'audioop': (
+        ExtensionModule(max_version=(3, 5, 1), source='audioop.c'),
+        ExtensionModule(min_version=(3, 5, 2), source='audioop.c',
+                libs='linux-*#-lm')),
 
     'base64': (
         PythonModule(max_version=(2, 7, 10),
@@ -2102,8 +2104,10 @@ _metadata = {
                 deps=('_msi', 'os', 're', 'string', 'tempfile')),
         PythonModule(min_version=(2, 7, 12), max_version=2, scope='win32',
                 deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
-        PythonModule(min_version=3, scope='win32',
-                deps=('_msi', 'os', 're', 'string', 'tempfile'))),
+        PythonModule(min_version=3, max_version=(3, 5, 1), scope='win32',
+                deps=('_msi', 'os', 're', 'string', 'tempfile')),
+        PythonModule(min_version=(3, 5, 2), scope='win32',
+                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile'))),
 
     'msvcrt': (
         ExtensionModule(max_version=(3, 4), scope='win32',
@@ -2670,10 +2674,14 @@ _metadata = {
         PythonModule(version=(3, 4),
                 deps=('base64', 'collections', 'enum', 'errno', 'os', 're',
                         'socket', '_ssl', 'textwrap', 'time')),
-        PythonModule(min_version=(3, 5),
+        PythonModule(min_version=(3, 5, 0), max_version=(3, 5, 1),
                 deps=('base64', 'calendar', 'collections', 'enum', 'errno',
                         'ipaddress', 'os', 're', 'socket', '_ssl', 'textwrap',
-                        'time'))),
+                        'time')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('base64', 'calendar', 'collections', 'enum', 'errno',
+                        'ipaddress', 'os', 're', 'socket', '_ssl', 'textwrap',
+                        'time', 'warnings'))),
 
     'stat': (
         PythonModule(version=2),
@@ -2686,8 +2694,11 @@ _metadata = {
         PythonModule(min_version=(3, 4, 4), max_version=(3, 4),
                 deps=('collections', 'decimal', 'fractions', 'itertools',
                         'math')),
-        PythonModule(min_version=(3, 5),
-                deps=('collections', 'decimal', 'fractions', 'math'))),
+        PythonModule(min_version=(3, 5, 0), max_version=(3, 5, 1),
+                deps=('collections', 'decimal', 'fractions', 'math')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('collections', 'decimal', 'fractions', 'itertools',
+                        'math'))),
 
     'statvfs':
         PythonModule(version=2, deps='warnings'),
@@ -2850,10 +2861,13 @@ _metadata = {
         PythonModule(min_version=(3, 5),
                 deps=('collections.abc', 'functools'))),
 
-    'typing':
-        PythonModule(min_version=(3, 5),
+    'typing': (
+        PythonModule(min_version=(3, 5, 0), max_version=(3, 5, 1),
                 deps=('abc', 'collections', 'collections.abc', 'functools',
                         're', 'types')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('abc', 'collections', 'collections.abc', 'contextlib',
+                        'functools', 're', 'types'))),
 
     'unicodedata':
         ExtensionModule(source='unicodedata.c', pyd='unicodedata.pyd'),
@@ -2875,8 +2889,8 @@ _metadata = {
     'urllib.parse':
         PythonModule(version=3, deps=('urllib', 'collections', 're')),
 
-    'urllib.request':
-        PythonModule(version=3,
+    'urllib.request': (
+        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
                 deps=('urllib', 'base64', 'bisect', 'collections',
                         'contextlib', 'email', 'email.utils', 'fnmatch',
                         'ftplib', 'getpass', 'hashlib', 'http.client',
@@ -2884,6 +2898,15 @@ _metadata = {
                         'os', 'posixpath', 're', '_scproxy', 'socket', '?ssl',
                         'tempfile', 'time', 'urllib.error', 'urllib.parse',
                         'urllib.response', 'warnings', 'winreg')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('urllib', 'base64', 'bisect', 'collections',
+                        'contextlib', 'email', 'email.utils', 'fnmatch',
+                        'ftplib', 'getpass', 'hashlib', 'http.client',
+                        'http.cookiejar', 'io', 'mimetypes', 'nturl2path',
+                        'os', 'posixpath', 're', '_scproxy', 'socket', '?ssl',
+                        'string', 'tempfile', 'time', 'urllib.error',
+                        'urllib.parse', 'urllib.response', 'warnings',
+                        'winreg'))),
 
     'urllib.response': (
         PythonModule(version=(3, 3), deps='urllib'),
@@ -2991,9 +3014,12 @@ _metadata = {
         PythonModule(version=2,
                 deps=('wsgiref', 'os', 'time', 'traceback', 'types',
                         'wsgiref.headers', 'wsgiref.util')),
-        PythonModule(version=3,
+        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
                 deps=('wsgiref', 'os', 'time', 'traceback', 'wsgiref.headers',
-                        'wsgiref.util'))),
+                        'wsgiref.util')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('wsgiref', 'os', 'time', 'traceback', 'warnings',
+                        'wsgiref.headers', 'wsgiref.util'))),
 
     'wsgiref.headers': (
         PythonModule(version=2, deps=('wsgiref', 're', 'types')),
@@ -3003,9 +3029,12 @@ _metadata = {
         PythonModule(version=2,
                 deps=('wsgiref', 'BaseHTTPServer', 'urllib',
                         'wsgiref.handlers')),
-        PythonModule(version=3,
+        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
                 deps=('wsgiref', 'http.server', 'platform', 'urllib.parse',
-                        'wsgiref.handlers'))),
+                        'wsgiref.handlers')),
+        PythonModule(min_version=(3, 5, 2),
+                deps=('wsgiref', 'http.server', 'io', 'platform',
+                        'urllib.parse', 'wsgiref.handlers'))),
 
     'wsgiref.util': (
         PythonModule(version=2, deps=('wsgiref', 'posixpath', 'urllib')),
@@ -3368,10 +3397,15 @@ _metadata = {
                 deps=('asyncio', 'asyncio.coroutines', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'asyncio.protocols',
                         'socket')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 1),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
-                        'asyncio.protocols', 'socket'))),
+                        'asyncio.protocols', 'socket')),
+        PythonModule(min_version=(3, 5, 2), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.log', 'asyncio.protocols',
+                        'socket'))),
 
     'asyncio.subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3628,8 +3662,11 @@ _metadata = {
         ExtensionModule(internal=True, scope='!win32',
                 source='_curses_panel.c', xlib='panel'),
 
-    '_datetime':
-        ExtensionModule(version=3, internal=True, source='_datetimemodule.c'),
+    '_datetime': (
+        ExtensionModule(min_version=3, max_version=(3, 5, 1), internal=True,
+                source='_datetimemodule.c'),
+        ExtensionModule(min_version=(3, 5, 2), internal=True,
+                source='_datetimemodule.c', libs='linux-*#-lm')),
 
     '_dbm':
         ExtensionModule(version=3, internal=True, source='_dbmmodule.c',
@@ -4390,3 +4427,4 @@ if __name__ == '__main__':
     check_version(3, 4, 5)
     check_version(3, 5, 0)
     check_version(3, 5, 1)
+    check_version(3, 5, 2)

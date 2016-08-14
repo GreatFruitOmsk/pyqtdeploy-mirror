@@ -602,6 +602,9 @@ pyconfig = (
     # Define to 1 if you have the <linux/tipc.h> header file.
     Config('HAVE_LINUX_TIPC_H', android=1, linux=1),
 
+    # Define to 1 if you have the <linux/random.h> header file.
+    Config('HAVE_LINUX_RANDOM_H', linux=1),
+
     # Define to 1 if you have the `lockf' function.
     Config('HAVE_LOCKF', ios=1, linux=1, osx=1),
 
