@@ -186,7 +186,7 @@ class Project(QObject):
 
         fi = QFileInfo(self.expandvars(user_path.strip()))
 
-        if fi.isRelative():
+        if fi.isRelative() and self._name is not None:
             fi = QFileInfo(self._name.canonicalPath() + '/' + fi.filePath())
 
         return fi
