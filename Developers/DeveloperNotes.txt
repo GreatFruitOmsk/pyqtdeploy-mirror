@@ -148,6 +148,32 @@ PyQtDataVisualization
 There should be nothing to do.
 
 
+Testing
+=======
+
+Create fully populated sysroots (ie. using ``--clean`` and ``--all``) as
+follows:
+
+- OS X using the opensource Qt source
+
+- Android (OS X host) using the commercial Qt from the on-line installer (ie.
+  using ``--qt``) and using ``--debug``
+
+- iOS (OS X host) using the commercial Qt from the on-line installer (ie. using
+  ``--qt``) and using ``--debug``
+
+- Linux using the opensource Qt from the on-line installer (ie. using
+  ``--qt``)
+
+- Windows 64-bit using the opensource Qt from the on-line installer (ie. using
+  ``--qt``) using the system Python installation (ie. using
+  ``--use-system-python``)
+
+- Windows 32-bit using the opensource Qt from the on-line installer (ie. using
+  ``--qt``) using the system Python installation (ie. using
+  ``--use-system-python``)
+
+
 Deploying to Android
 ====================
 

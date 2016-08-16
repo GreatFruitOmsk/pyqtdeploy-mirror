@@ -234,6 +234,7 @@ class Host:
 
         self.sysroot = SysRoot(sysroot)
         self.python = HostPython()
+        self._qt_version = None
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
@@ -285,11 +286,32 @@ class Host:
 
         return os.path.join(self.sysroot.bin_dir, self.exe('qmake'))
 
+    @property
+    def qt_version(self):
+        """ The Qt version as a string. """
+
+        if self._qt_version is None:
+            self._qt_version = self.run(self.qmake, '-query', 'QT_VERSION',
+                    capture=True)
+
+        return self._qt_version
+
     @staticmethod
-    def run(*args):
+    def run(*args, capture=False):
         """ Run a command. """
 
+        if capture:
+            try:
+                stdout = subprocess.check_output(args, universal_newlines=True,
+                        stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as e:
+                fatal("Execution failed: ", e.stderr)
+
+            return stdout.strip()
+
         subprocess.check_call(args)
+
+        return None
 
     @property
     def sip(self):
@@ -441,9 +463,11 @@ def build_qt(host, target, qt_dir):
             configure = './configure'
             original_path = None
 
-        args = [configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
-                '-static', '-release', '-nomake', 'examples', '-nomake',
-                'tools']
+        license = '-opensource' if '-opensource-' in source else '-commercial'
+
+        args = [configure, '-prefix', host.sysroot.qt_dir, license,
+                '-confirm-license', '-static', '-release', '-nomake',
+                'examples', '-nomake', 'tools']
 
         if sys.platform == 'win32':
             # These cause compilation failures (although maybe only with static
@@ -529,7 +553,7 @@ def build_target_python(host, target, debug, enable_dynamic_loading):
                     '--system-python', host.python.version,
                     'install')
         else:
-            fatal("Using the system Python as the target on Non-Windows is not supported")
+            fatal("Using the system Python as the target on non-Windows is not supported")
     else:
         host.sysroot.unpack_source(source)
 
@@ -579,8 +603,8 @@ def build_sip_module(source, host, target, debug):
             '--target', target.name, 'configure')
 
     args = [host.interpreter, 'configure.py', '--static', '--sysroot',
-            str(host.sysroot), '--no-tools', '--use-qmake', '--configuration',
-            configuration]
+            str(host.sysroot), '--no-pyi', '--no-tools', '--use-qmake',
+            '--configuration', configuration]
 
     if debug:
         args.append('--debug')
@@ -610,7 +634,7 @@ def build_pyqt5(host, target, debug):
     if os.path.isfile(license_path):
         shutil.copy(license_path, 'sip')
 
-    configuration = 'pyqt-' + target.name + '.cfg'
+    configuration = 'pyqt5-' + target.name + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'pyqt5', '--output',
             configuration, '--target', target.name, 'configure')
@@ -618,8 +642,119 @@ def build_pyqt5(host, target, debug):
     args = [host.interpreter, 'configure.py', '--static', '--qmake',
             host.qmake, '--sysroot', str(host.sysroot), '--no-tools',
             '--no-qsci-api', '--no-designer-plugin', '--no-python-dbus',
-            '--no-qml-plugin', '--configuration', configuration, '--sip',
-            host.sip, '--confirm-license', '-c', '-j2']
+            '--no-qml-plugin', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '--confirm-license', '-c', '-j2']
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtchart(host, target, debug):
+    """ Build a target static PyQtChart. """
+
+    source = host.sysroot.find_source('PyQtChart_*')
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtchart-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtchart', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtchart-version', host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtdatavisualization(host, target, debug):
+    """ Build a target static PyQtDataVisualization. """
+
+    source = host.sysroot.find_source('PyQtDataVisualization_*')
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtdatavisualization-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtdatavisualization',
+            '--output', configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtdatavisualization-version',
+            host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtpurchasing(host, target, debug):
+    """ Build a target static PyQtPurchasing. """
+
+    source = host.sysroot.find_source('PyQtPurchasing_*')
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtpurchasing-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtpurchasing', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtpurchasing-version', host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_qscintilla(host, target, debug):
+    """ Build a target static QScintilla. """
+
+    source = host.sysroot.find_source('QScintilla_*')
+    host.sysroot.unpack_source(source)
+
+    # Build the static C++ library.
+    os.chdir('Qt4Qt5')
+    host.run(host.qmake, 'CONFIG+=staticlib')
+    host.run(host.make)
+    host.run(host.make, 'install')
+    os.chdir('..')
+
+    # Build the static Python bindings.
+    os.chdir('Python')
+
+    configuration = 'qscintilla-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'qscintilla', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--pyqt', 'PyQt5']
 
     if debug:
         args.append('--debug')
@@ -631,7 +766,8 @@ def build_pyqt5(host, target, debug):
 
 
 # The different packages in the order that they should be built.
-all_packages = ('qt', 'python', 'sip', 'pyqt5')
+all_packages = ('qt', 'python', 'sip', 'pyqt5', 'pyqtchart',
+        'pyqtdatavisualization', 'pyqtpurchasing', 'qscintilla')
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
@@ -688,3 +824,15 @@ if 'sip' in packages:
 
 if 'pyqt5' in packages:
     build_pyqt5(host, target, args.debug)
+
+if 'pyqtchart' in packages:
+    build_pyqtchart(host, target, args.debug)
+
+if 'pyqtdatavisualization' in packages:
+    build_pyqtdatavisualization(host, target, args.debug)
+
+if 'pyqtpurchasing' in packages:
+    build_pyqtpurchasing(host, target, args.debug)
+
+if 'qscintilla' in packages:
+    build_qscintilla(host, target, args.debug)
