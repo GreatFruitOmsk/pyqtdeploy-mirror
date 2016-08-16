@@ -17,11 +17,12 @@ automated support for the task.  In the meantime the Mercurial repository
 contains a Python script called `build-sysroot.py
 <https://www.riverbankcomputing.com/hg/pyqtdeploy/file/tip/Developers/build-sysroot.py>`_
 which can be used to create a basic system root directory containing a Qt
-installation, host and target Python installations and static versions of sip
-and PyQt5.  The script requires Python v3.5 or later and runs on Windows, OS X
-and Linux.  It is a work-in-progress and completely unsupported and its name
-and command line interface *will* change.  If you choose to use it then it is
-recommended that you maintain your own copy.
+installation, host and target Python installations and static versions of sip,
+PyQt5, PyQtChart, PyQtDataVisualization, PyQtPurchasing and QScintilla.  The
+script requires Python v3.5 or later and runs on Windows, OS X and Linux.  It
+is a work-in-progress and completely unsupported and its name and command line
+interface *will* change.  If you choose to use it then it is recommended that
+you maintain your own copy.
 
 The first step is to create the system root directory itself.  This will be
 refered to as ``sysroot`` from now on.  You should then create a sub-directory
@@ -35,8 +36,9 @@ copy the Qt source package to the ``src`` directory.
 :program:`build-sysroot.py`
 ---------------------------
 
-:program:`build-sysroot.py` will build and install Qt, Python, sip and PyQt5 as
-specified using command line options:
+:program:`build-sysroot.py` will build and install Qt, Python, sip, PyQt5,
+PyQtChart, PyQtDataVisualization, PyQtPurchasing and QScintilla as specified
+using command line options:
 
 .. cmdoption:: --h, --help
 
@@ -44,15 +46,19 @@ specified using command line options:
 
 .. cmdoption:: --all
 
-    This will build each of Qt, Python, sip and PyQt5 in that order.  The order
-    is important as there are interdependencies between the individual builds.
+    This will build each of Qt, Python, sip, PyQt5, PyQtChart,
+    PyQtDataVisualization, PyQtPurchasing and QScintilla in that order.  The
+    order is important as there are interdependencies between the individual
+    builds.
 
-.. cmdoption:: --build {qt, python, sip, pyqt5} [{qt, python, sip, pyqt5} ...]
+.. cmdoption:: --build package [package ...]
 
     This will build one or more of the individual packages in the order
-    specified on the command line.  You need to allow for the interdependencies
-    between the builds.  For example, if you have updated the source package
-    for sip then you should rebuild sip and PyQt5.
+    specified on the command line.  *package* is either ``qt``, ``python``,
+    ``sip``, ``pyqt5``, ``pyqtchart``, ``pyqtdatavisualization``,
+    ``pyqtpurchasing`` or ``qscintilla``.  You need to allow for the
+    interdependencies between the builds.  For example, if you have updated the
+    source package for sip then you should rebuild sip and PyQt5.
 
 .. cmdoption:: --clean
 

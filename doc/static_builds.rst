@@ -176,7 +176,7 @@ QScintilla
 To build a static version of the QScintilla library, change to the QScintilla
 source directory and run::
 
-    cd Qt4/Qt5
+    cd Qt4Qt5
     qmake CONFIG+=staticlib
     make
     make install
@@ -190,35 +190,22 @@ source directory and run::
     make
     make install
 
-The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
-substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
-
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
 
 
 Qt Charts
 ---------
 
-To build a static version of the Qt Charts library, change to the Qt Charts
-source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
-
 To build a static version of the Python bindings, change to the PyQtChart
 source directory and run::
 
     pyqtdeploycli --package pyqtchart --target TARGET configure
-    python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
+    python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtchart-TARGET.cfg
     make
     make install
 
 Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Charts
 installation.
-
-The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
-substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -226,13 +213,6 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 
 Qt Data Visualization
 ---------------------
-
-To build a static version of the Qt Data Visualization library, change to the
-Qt Data Visualization source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
 
 To build a static version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
@@ -251,13 +231,6 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 
 Qt Purchasing
 -------------
-
-To build a static version of the Qt Purchasing library, change to the Qt
-Purchasing source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
 
 To build a static version of the Python bindings, change to the PyQtPurchasing
 source directory and run::
