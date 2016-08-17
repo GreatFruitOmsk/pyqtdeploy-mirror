@@ -490,8 +490,18 @@ def build_qt(host, target, qt_dir):
 
     # Create a symbolic link to qmake in a standard place in sysroot so that it
     # can be referred to in cross-target .pdy files.
+    qt_bin_dir = os.path.join(qt_dir, 'bin')
+
     make_symlink(str(host.sysroot),
-            os.path.join(qt_dir, 'bin', host.exe('qmake')), host.qmake)
+            os.path.join(qt_bin_dir, host.exe('qmake')), host.qmake)
+
+    # Do the same for androiddeployqt if it exists for user build scripts.
+    androiddeployqt = host.exe('androiddeployqt')
+    androiddeployqt_path = os.path.join(qt_bin_dir, androiddeployqt)
+
+    if os.path.isfile(androiddeployqt_path):
+        make_symlink(str(host.sysroot), androiddeployqt_path,
+                os.path.join(host.sysroot.bin_dir, androiddeployqt))
 
 
 def build_host_python(host, use_system_python):
