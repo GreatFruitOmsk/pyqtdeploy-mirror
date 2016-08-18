@@ -183,7 +183,7 @@ pyqt5_metadata = {
         PyQt5Metadata(group='addon', deps=['QtCore'], qt5=['purchasing']),
 
     'Qsci':
-        PyQt5Metadata(group='addon', deps=['QtWidgets'],
+        PyQt5Metadata(group='addon', deps=['QtPrintSupport', 'QtWidgets'],
                 config5=['qscintilla2']),
 
     # Deprecated modules.
