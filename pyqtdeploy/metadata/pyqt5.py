@@ -172,8 +172,9 @@ pyqt5_metadata = {
     # Add-on modules.
 
     'QtChart':
-        PyQt5Metadata(group='addon', deps=['QtWidgets'],
-                config5=['qtcommercialchart']),
+        # Note that config5 was 'qtcommercialchart' prior to Qt v5.7.0.  We
+        # choose to ignore backwards compatibility.
+        PyQt5Metadata(group='addon', deps=['QtWidgets'], qt5=['charts']),
 
     'QtDataVisualization':
         PyQt5Metadata(group='addon', deps=['QtGui'],
