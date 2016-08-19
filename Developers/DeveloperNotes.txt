@@ -151,19 +151,36 @@ There should be nothing to do.
 Testing
 =======
 
-Create fully populated sysroots (ie. using ``--clean`` and ``--all``) as
-follows:
+The following builds a reasonable variety of sysroots for all supported
+platforms.
 
-- OS X using the opensource Qt source
+OS X
+----
 
-- Android (OS X host) using the commercial Qt from the on-line installer (ie.
-  using ``--qt``) and using ``--debug``
+Using the opensource Qt source package and the GPL versions of all packages::
 
-- iOS (OS X host) using the commercial Qt from the on-line installer (ie. using
-  ``--qt``) and using ``--debug``
+    python3 build-sysroot.py --clean --all --sysroot /path/to/sysroot-osx-64
+
+Using the commercial Qt from the on-line installer and the commercial versions
+of all packages::
+
+    python3 build-sysroot.py --clean --all --debug --qt /path/to/X.Y/android_armv7 --target android-32 --sysroot /path/to/sysroot-android-32
+
+Using the commercial Qt from the on-line installer and the commercial versions
+of all packages::
+
+    python3 build-sysroot.py --clean --all --debug --qt /path/to/X.Y/ios --target ios-64 --sysroot /path/to/sysroot-ios-64
+
+
+Linux
+-----
 
 - Linux using the opensource Qt from the on-line installer (ie. using
   ``--qt``)
+
+
+Windows
+-------
 
 - Windows 64-bit using the opensource Qt from the on-line installer (ie. using
   ``--qt``) using the system Python installation (ie. using
@@ -228,7 +245,7 @@ Once the application has been built (i.e. after running ``make``) then run::
 
 To create a debug .apk, run::
 
-    /path/to/Qtx.y.x/x.y/android_arm7/bin/androiddeployqt \
+    /path/to/X.Y/android_arm7/bin/androiddeployqt \
             --input android-lib*.so-deployment-settings.json \
             --output deploy
 

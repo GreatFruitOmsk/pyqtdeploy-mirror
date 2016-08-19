@@ -121,7 +121,7 @@ following values should be used in the **Locations** tab.
     ``$SYSROOT/lib/python$PDY_PY_MAJOR.$PDY_PY_MINOR``
 
 **Build directory**
-    ``$SYSROOT/build``
+    ``build``
 
 **qmake**
     ``$SYSROOT/bin/qmake``
