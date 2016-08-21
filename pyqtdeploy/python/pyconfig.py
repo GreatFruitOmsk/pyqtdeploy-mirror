@@ -197,7 +197,7 @@ pyconfig = (
     Config('HAVE_COPYSIGN', default=1),
 
     # Define to 1 if you have the `ctermid' function.
-    Config('HAVE_CTERMID', default=1),
+    Config('HAVE_CTERMID', default=1, android=None),
 
     # Define if you have the 'ctermid_r' function.
     Config('HAVE_CTERMID_R', ios=1, osx=1),
@@ -1197,7 +1197,7 @@ pyconfig = (
     Config('HAVE_UTIME_H', default=1),
 
     # Define to 1 if you have the `wait3' function.
-    Config('HAVE_WAIT3', default=1),
+    Config('HAVE_WAIT3', default=1, android=None),
 
     # Define to 1 if you have the `wait4' function.
     Config('HAVE_WAIT4', default=1),
