@@ -41,7 +41,6 @@ try:
 except ImportError:
     pass
 
-import PyQt5.Qsci
 try:
     import PyQt5.Qsci
     optional_products.append("QScintilla")
