@@ -65,17 +65,22 @@ def install_python(target, sysroot, system_python, message_handler):
             "Installing Python v{0}.{1} for {2} in {3}".format(
                     py_major, py_minor, target, sysroot))
 
-    _install_windows_system_python(py_major, py_minor, sysroot,
-            message_handler)
+    # Create the version used in the registry.
+    reg_version = '{}.{}'.format(py_major, py_minor)
+    if py_major == 3 and py_minor >= 5 and target.endswith('-32'):
+        reg_version += '-32'
 
-
-def _install_windows_system_python(py_major, py_minor, sysroot, message_handler):
-    """ Install the Windows system Python. """
-
-    install_path = get_windows_install_path(py_major, py_minor)
+    install_path = get_windows_install_path(reg_version)
     message_handler.progress_message(
             "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
                     install_path))
+
+    _install_windows_system_python(py_major, py_minor, install_path, sysroot,
+            message_handler)
+
+
+def _install_windows_system_python(py_major, py_minor, install_path, sysroot, message_handler):
+    """ Install the Windows system Python. """
 
     # The interpreter library.
     lib_dir = os.path.join(sysroot, 'lib')

@@ -504,7 +504,7 @@ def build_qt(host, target, qt_dir):
                 os.path.join(host.sysroot.bin_dir, androiddeployqt))
 
 
-def build_host_python(host, use_system_python):
+def build_host_python(host, target_name, use_system_python):
     """ Build (or install) a host Python. """
 
     if use_system_python is None:
@@ -523,10 +523,22 @@ def build_host_python(host, use_system_python):
     elif sys.platform == 'win32':
         from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
 
-        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
-                use_system_python)
+        py_major, py_minor = use_system_python.split('.')
+        reg_version = use_system_python
+        if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
+            reg_version += '-32'
 
-        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+        sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
+                reg_version)
+        sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
+                reg_version)
+
+        queries = (
+            (HKEY_CURRENT_USER, sub_key_user),
+            (HKEY_LOCAL_MACHINE, sub_key_user),
+            (HKEY_LOCAL_MACHINE, sub_key_all_users))
+
+        for key, sub_key in queries:
             try:
                 install_path = QueryValue(key, sub_key)
             except OSError:
@@ -535,9 +547,15 @@ def build_host_python(host, use_system_python):
                 break
         else:
             fatal("Unable to find an installation of Python v{}".format(
-                    use_system_python))
+                    reg_version))
 
         interp = install_path + 'python.exe'
+
+        # Copy the DLL.  The .exe will get copied later.
+        dll = 'python' + py_major + py_minor + '.dll'
+        make_directory(host.sysroot.bin_dir)
+        shutil.copyfile(os.path.join(install_path, dll),
+                os.path.join(host.sysroot.bin_dir, dll))
     else:
         interp = 'python' + use_system_python
 
@@ -558,6 +576,7 @@ def build_target_python(host, target, debug, enable_dynamic_loading):
         if sys.platform == 'win32':
             # TODO: Move the install function from pyqtdeploycli to here.
             host.run(host.pyqtdeploycli,
+                    '--target', target.name,
                     '--sysroot', str(host.sysroot),
                     '--package', 'python',
                     '--system-python', host.python.version,
@@ -816,7 +835,7 @@ if args.clean:
 # We build the host Python as soon as possble as that is where we get the host
 # platform from.
 if 'python' in packages:
-    build_host_python(host, args.use_system_python)
+    build_host_python(host, args.target, args.use_system_python)
 else:
     host.python.get_configuration(host.interpreter)
 
