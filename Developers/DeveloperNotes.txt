@@ -175,20 +175,24 @@ of all packages::
 Linux
 -----
 
-- Linux using the opensource Qt from the on-line installer (ie. using
-  ``--qt``)
+Using the opensource Qt from the on-line installer and the GPL versions of all
+packages::
+
+    python3 build-sysroot.py --clean --all --qt /path/to/X.Y/gcc_64 --sysroot /path/to/sysroot-linux-64
 
 
 Windows
 -------
 
-- Windows 64-bit using the opensource Qt from the on-line installer (ie. using
-  ``--qt``) using the system Python installation (ie. using
-  ``--use-system-python``)
+Note that the following assumes that both the 32 and 64-bit versions of Python
+are installed but only the 64-bit version is on PATH.
 
-- Windows 32-bit using the opensource Qt from the on-line installer (ie. using
-  ``--qt``) using the system Python installation (ie. using
-  ``--use-system-python``)
+Using the opensource Qt from the on-line installer and the GPL versions of all
+packages::
+
+    python build-sysroot.py --clean --all --qt /path/to/X.Y/msvc2015_64 --target win-64 --sysroot /path/to/sysroot-win-64 --use-system-python M.N
+
+    python build-sysroot.py --clean --all --qt /path/to/X.Y/msvc2015 --target win-32 --sysroot /path/to/sysroot-win-32 --use-system-python M.N
 
 
 Deploying to Android
