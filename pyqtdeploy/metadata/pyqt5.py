@@ -124,6 +124,9 @@ pyqt5_metadata = {
     'QtWebChannel':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['webchannel']),
 
+    'QtWebEngine':
+        PyQt5Metadata(deps=['QtWebEngineCore'], gui=False, qt5=['webengine']),
+
     'QtWebEngineCore':
         PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['webenginecore']),
 
