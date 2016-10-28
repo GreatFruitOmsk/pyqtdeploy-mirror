@@ -75,14 +75,19 @@ If you wish to statically link the Windows C Library then you need to modify
 the :program:`qmake` configuration for your compiler before running
 ``configure``.
 
-Assuming your compiler is MSVC 2015 then you need to edit the file
-``mkspecs\win32-msvc2015\qmake.conf`` in the Qt source directory as follows:
+Assuming your compiler is MSVC then you need to edit the file
+``qtbase\mkspecs\common\msvc-desktop.conf`` in the Qt source directory as
+follows:
 
 - remove ``embed_manifest_dll`` and ``embed_manifest_exe`` from the ``CONFIG``
   entry
 
 - change all occurrences of ``-MD`` and ``-MDd`` with ``-MT`` and ``-MTd``
   respectively.
+
+If that file does not exist (i.e. for older versions of Qt) then (assuming your
+compiler is MSVC 2015) then you need to edit the file
+``qtbase\\mkspecs\win32-msvc2015\qmake.conf`` instead.
 
 
 Python
