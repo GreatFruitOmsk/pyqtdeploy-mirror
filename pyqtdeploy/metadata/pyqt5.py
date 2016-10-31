@@ -174,6 +174,21 @@ pyqt5_metadata = {
 
     # Add-on modules.
 
+    'Qt3DCore':
+        PyQt5Metadata(group='addon', deps=['QtGui'], qt5=['3dcore']),
+
+    'Qt3DExtras':
+        PyQt5Metadata(group='addon', deps=['Qt3DRender'], qt5=['3dextras']),
+
+    'Qt3DInput':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3dinput']),
+
+    'Qt3DLogic':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3dlogic']),
+
+    'Qt3DRender':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3drender']),
+
     'QtChart':
         # Note that config5 was 'qtcommercialchart' prior to Qt v5.7.0.  We
         # choose to ignore backwards compatibility.

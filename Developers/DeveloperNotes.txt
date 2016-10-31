@@ -118,8 +118,8 @@ section ``[Qt 5.x]``.  If the release supports a new Python module for an
 existing Qt library then update the existing section.
 
 Consider if the ``pyqt_disabled_features`` entry needs updating.  If so then
-also update the QScintilla, PyQtChart and PyQtDataVisualization configuration
-files.
+also update the QScintilla, PyQt3D, PyQtChart, PyQtDataVisualization and
+PyQtPurchasing configuration files.
 
 Add the new modules to the metadata defined in ``pyqt5.py``
 
