@@ -198,6 +198,21 @@ source directory and run::
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
 
 
+Qt3D
+----
+
+To build a static version of the Python bindings, change to the PyQt3D source
+directory and run::
+
+    pyqtdeploycli --package pyqt3d --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqt3d-TARGET.cfg
+    make
+    make install
+
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
+[#iphone]_.
+
+
 Qt Charts
 ---------
 
@@ -205,12 +220,9 @@ To build a static version of the Python bindings, change to the PyQtChart
 source directory and run::
 
     pyqtdeploycli --package pyqtchart --target TARGET configure
-    python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtchart-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtchart-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Charts
-installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -223,12 +235,9 @@ To build a static version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
     pyqtdeploycli --package pyqtdatavisualization --target TARGET configure
-    python configure.py --qtdatavisualization-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Data
-Visualization installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -241,12 +250,9 @@ To build a static version of the Python bindings, change to the PyQtPurchasing
 source directory and run::
 
     pyqtdeploycli --package pyqtpurchasing --target TARGET configure
-    python configure.py --qtpurchasing-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Purchasing
-installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
