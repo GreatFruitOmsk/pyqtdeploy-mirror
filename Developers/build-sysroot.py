@@ -459,6 +459,21 @@ def build_qt(host, target, qt_dir):
             new_path.insert(0, 'C:\\Python27')
 
             os.environ['PATH'] = ';'.join(new_path)
+
+            # Patch the mkspec to statically link the MSVC runtime.  This is
+            # the current location (which was changed very recently).
+            conf_name = os.path.join('qtbase', 'mkspecs', 'common',
+                    'msvc-desktop.conf')
+
+            conf_file = open(conf_name, 'rt')
+            conf = conf_file.read()
+            conf_file.close()
+
+            conf = conf.replace(' embed_manifest_dll', '').replace(' embed_manifest_exe', '').replace('-MD', '-MT')
+
+            conf_file = open(conf_name, 'wt')
+            conf_file.write(conf)
+            conf_file.close()
         else:
             configure = './configure'
             original_path = None
