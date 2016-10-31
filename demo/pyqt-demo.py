@@ -24,6 +24,12 @@ except ImportError:
 optional_products = []
 
 try:
+    import PyQt5.Qt3DCore
+    optional_products.append("PyQt3D")
+except ImportError:
+    pass
+
+try:
     import PyQt5.QtChart
     optional_products.append("PyQtChart")
 except ImportError:
