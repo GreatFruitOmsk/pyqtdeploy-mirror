@@ -430,7 +430,7 @@ def make_symlink(root_dir, src, dst):
         os.symlink(src, dst)
 
 
-def build_qt(host, target, qt_dir):
+def build_qt(host, target, qt_dir, static_msvc_runtime):
     """ Build Qt. """
 
     # See if we need to build a target Qt installation from source.
@@ -460,20 +460,21 @@ def build_qt(host, target, qt_dir):
 
             os.environ['PATH'] = ';'.join(new_path)
 
-            # Patch the mkspec to statically link the MSVC runtime.  This is
-            # the current location (which was changed very recently).
-            conf_name = os.path.join('qtbase', 'mkspecs', 'common',
-                    'msvc-desktop.conf')
+            if static_msvc_runtime:
+                # Patch the mkspec to statically link the MSVC runtime.  This
+                # is the current location (which was changed very recently).
+                conf_name = os.path.join('qtbase', 'mkspecs', 'common',
+                        'msvc-desktop.conf')
 
-            conf_file = open(conf_name, 'rt')
-            conf = conf_file.read()
-            conf_file.close()
+                conf_file = open(conf_name, 'rt')
+                conf = conf_file.read()
+                conf_file.close()
 
-            conf = conf.replace(' embed_manifest_dll', '').replace(' embed_manifest_exe', '').replace('-MD', '-MT')
+                conf = conf.replace(' embed_manifest_dll', '').replace(' embed_manifest_exe', '').replace('-MD', '-MT')
 
-            conf_file = open(conf_name, 'wt')
-            conf_file.write(conf)
-            conf_file.close()
+                conf_file = open(conf_name, 'wt')
+                conf_file.write(conf)
+                conf_file.close()
         else:
             configure = './configure'
             original_path = None
@@ -828,6 +829,8 @@ parser.add_argument('--enable-dynamic-loading', action='store_true',
         help="build Python with dynamic loading enabled")
 parser.add_argument('--qt', metavar='DIR',
         help="the pre-compiled Qt installation to 'build'")
+parser.add_argument('--static-msvc-runtime', action='store_true',
+        help="build Qt with a static MSVC runtime")
 parser.add_argument('--sysroot', metavar='DIR',
         help="the sysroot directory")
 parser.add_argument('--target', choices=TARGETS,
@@ -858,7 +861,7 @@ else:
 target = Target.factory(args.target, host)
 
 if 'qt' in packages:
-    build_qt(host, target, args.qt)
+    build_qt(host, target, args.qt, args.static_msvc_runtime)
 
 if 'python' in packages:
     build_target_python(host, target, args.debug, args.enable_dynamic_loading)
