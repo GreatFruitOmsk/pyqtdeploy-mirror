@@ -174,9 +174,10 @@ class BuildPage(QWidget):
             opt = 0
 
         nr_resources = self._resources_edit.value()
+        timeout = self._timeout_edit.value()
 
         try:
-            builder.build(opt, nr_resources,
+            builder.build(opt, nr_resources, timeout,
                     clean=bool(self._clean_button.checkState()))
         except UserException as e:
             logger.user_exception(e)
@@ -184,8 +185,6 @@ class BuildPage(QWidget):
             return
 
         logger.status_message("Code generation succeeded.")
-
-        timeout = self._timeout_edit.value() * 1000
 
         if self._run_qmake_button.checkState() != Qt.Unchecked:
             qmake = os.path.expandvars(project.qmake)
