@@ -973,7 +973,7 @@ pyconfig = (
     Config('HAVE_STRLCPY', ios=1, osx=1),
 
     # Define to 1 if you have the <stropts.h> header file.
-    Config('HAVE_STROPTS_H', linux=1),
+    Config('HAVE_STROPTS_H'),
 
     # Define to 1 if `st_birthtime' is a member of `struct stat'.
     Config('HAVE_STRUCT_STAT_ST_BIRTHTIME', ios=1, osx=1),
