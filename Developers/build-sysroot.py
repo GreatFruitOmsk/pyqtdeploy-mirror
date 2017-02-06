@@ -541,7 +541,12 @@ def build_host_python(host, target_name, use_system_python):
 
         py_major, py_minor = use_system_python.split('.')
         reg_version = use_system_python
-        if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
+
+        # It is assumed (ie. not checked) that the new scheme wa introduced
+        # with Python v3.5 rather than v3.0.
+        new_scheme = (int(py_major) == 3 and int(py_minor) >= 5)
+
+        if new_scheme and target_name.endswith('-32'):
             reg_version += '-32'
 
         sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
@@ -557,6 +562,7 @@ def build_host_python(host, target_name, use_system_python):
         for key, sub_key in queries:
             try:
                 install_path = QueryValue(key, sub_key)
+                current_user = (key == HKEY_CURRENT_USER)
             except OSError:
                 pass
             else:
@@ -568,9 +574,15 @@ def build_host_python(host, target_name, use_system_python):
         interp = install_path + 'python.exe'
 
         # Copy the DLL.  The .exe will get copied later.
+        if new_scheme or current_user:
+            dll_path = install_path
+        else:
+            dll_path = 'C:\\Windows\\SysWOW64\\'
+
         dll = 'python' + py_major + py_minor + '.dll'
+
         make_directory(host.sysroot.bin_dir)
-        shutil.copyfile(os.path.join(install_path, dll),
+        shutil.copyfile(dll_path + dll,
                 os.path.join(host.sysroot.bin_dir, dll))
     else:
         interp = 'python' + use_system_python
