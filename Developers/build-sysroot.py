@@ -541,12 +541,7 @@ def build_host_python(host, target_name, use_system_python):
 
         py_major, py_minor = use_system_python.split('.')
         reg_version = use_system_python
-
-        # It is assumed (ie. not checked) that the new scheme wa introduced
-        # with Python v3.5 rather than v3.0.
-        new_scheme = (int(py_major) == 3 and int(py_minor) >= 5)
-
-        if new_scheme and target_name.endswith('-32'):
+        if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
             reg_version += '-32'
 
         sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
@@ -562,7 +557,6 @@ def build_host_python(host, target_name, use_system_python):
         for key, sub_key in queries:
             try:
                 install_path = QueryValue(key, sub_key)
-                current_user = (key == HKEY_CURRENT_USER)
             except OSError:
                 pass
             else:
@@ -574,15 +568,9 @@ def build_host_python(host, target_name, use_system_python):
         interp = install_path + 'python.exe'
 
         # Copy the DLL.  The .exe will get copied later.
-        if new_scheme or current_user:
-            dll_path = install_path
-        else:
-            dll_path = 'C:\\Windows\\SysWOW64\\'
-
         dll = 'python' + py_major + py_minor + '.dll'
-
         make_directory(host.sysroot.bin_dir)
-        shutil.copyfile(dll_path + dll,
+        shutil.copyfile(os.path.join(install_path, dll),
                 os.path.join(host.sysroot.bin_dir, dll))
     else:
         interp = 'python' + use_system_python
@@ -711,6 +699,31 @@ def build_pyqt5(host, target, debug):
     host.run(host.make, 'install')
 
 
+def build_pyqt3d(host, target, debug):
+    """ Build a target static PyQt3D. """
+
+    source = host.sysroot.find_source('PyQt3D_*')
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqt3d-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqt3d', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c']
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
 def build_pyqtchart(host, target, debug):
     """ Build a target static PyQtChart. """
 
@@ -823,7 +836,7 @@ def build_qscintilla(host, target, debug):
 
 
 # The different packages in the order that they should be built.
-all_packages = ('qt', 'python', 'sip', 'pyqt5', 'pyqtchart',
+all_packages = ('qt', 'python', 'sip', 'pyqt5', 'pyqt3d', 'pyqtchart',
         'pyqtdatavisualization', 'pyqtpurchasing', 'qscintilla')
 
 # Parse the command line.
@@ -883,6 +896,9 @@ if 'sip' in packages:
 
 if 'pyqt5' in packages:
     build_pyqt5(host, target, args.debug)
+
+if 'pyqt3d' in packages:
+    build_pyqt3d(host, target, args.debug)
 
 if 'pyqtchart' in packages:
     build_pyqtchart(host, target, args.debug)
