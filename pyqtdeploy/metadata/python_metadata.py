@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -348,8 +348,11 @@ _metadata = {
         PythonModule(min_version=(3, 5),
                 deps=('_compression', '_thread', '_bz2', 'io', 'warnings'))),
 
-    'calendar':
-        PythonModule(deps=('datetime', 'locale')),
+    'calendar': (
+        PythonModule(max_version=(3, 5, 2),
+                deps=('datetime', 'locale')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('datetime', 'itertools', 'locale'))),
 
     'cgi': (
         PythonModule(version=2,
@@ -524,10 +527,14 @@ _metadata = {
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld', 'errno',
                         'importlib.machinery', 'os', 're', 'struct',
                         'subprocess', 'tempfile')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld',
                         'importlib.machinery', 'os', 're', 'struct',
-                        'subprocess', 'tempfile'))),
+                        'subprocess', 'tempfile')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('ctypes', 'ctypes.macholib.dyld', 'importlib.machinery',
+                        'os', 're', 'shutil', 'struct', 'subprocess',
+                        'tempfile'))),
 
     'ctypes.wintypes':
         PythonModule(deps='ctypes', scope='win32'),
@@ -935,10 +942,14 @@ _metadata = {
                 deps=('distutils.dep_util', 'distutils.errors',
                         'distutils.log', 'errno', 'os', 'stat')),
 
-    'distutils.filelist':
-        PythonModule(
+    'distutils.filelist': (
+        PythonModule(max_version=(3, 5, 2),
                 deps=('distutils.debug', 'distutils.errors', 'distutils.log',
                         'distutils.util', 'fnmatch', 'os', 're', 'stat')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('distutils.debug', 'distutils.errors', 'distutils.log',
+                        'distutils.util', 'fnmatch', 'functools', 'os',
+                        're'))),
 
     'distutils.log':
         PythonModule(),
@@ -1165,9 +1176,13 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('email', 'email.headerregistry', 'email._policybase',
                         'email.utils')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
                 deps=('email', 'email.contentmanager', 'email.headerregistry',
-                        'email._policybase', 'email.utils'))),
+                        'email._policybase', 'email.utils')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('email', 'email.contentmanager', 'email.headerregistry',
+                        'email._policybase', 'email.utils', 're'))),
+
     'email.utils': (
         PythonModule(version=2,
                 deps=('email', 'base64', 'email.encoders', 'email._parseaddr',
@@ -1710,9 +1725,11 @@ _metadata = {
                         'token', 'tokenize')),
         PythonModule(min_version=(3, 4, 6), max_version=(3, 4),
                 deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct')),
-        PythonModule(min_version=(3, 5),
+        PythonModule(min_version=(3, 5), max_version=(3, 5, 2),
                 deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
-                        'token', 'tokenize'))),
+                        'token', 'tokenize')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct'))),
 
     'glob':
         PythonModule(deps=('fnmatch', 'os', 're')),
@@ -2055,8 +2072,9 @@ _metadata = {
                         'email.generator', 'email.message', 'errno', 'fcntl',
                         'io', 'os', 'socket', 'time', 'warnings'))),
 
-    'mailcap':
-        PythonModule(deps='os'),
+    'mailcap': (
+        PythonModule(max_version=(3, 5, 2), deps='os'),
+        PythonModule(min_version=(3, 5, 3), deps=('os', 'warnings'))),
 
     'marshal':
         CoreExtensionModule(),
@@ -2350,10 +2368,13 @@ _metadata = {
         PythonModule(version=(3, 5, 0),
                 deps=('collections', 'os', 'plistlib', 're', 'socket',
                         'struct', 'subprocess', 'warnings', 'winreg')),
-        PythonModule(min_version=(3, 5, 1),
+        PythonModule(min_version=(3, 5, 1), max_version=(3, 5, 2),
                 deps=('collections', 'ctypes', 'ctypes.wintypes', 'os',
                         'plistlib', 're', 'socket', 'struct', 'subprocess',
-                        'warnings', 'winreg'))),
+                        'warnings', 'winreg')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('collections', 'os', 'plistlib', 're', 'socket',
+                        'struct', 'subprocess', 'warnings', 'winreg'))),
 
     'plistlib': (
         PythonModule(version=2,
@@ -2536,9 +2557,12 @@ _metadata = {
         PythonModule(version=2, deps=('imp', 'pkgutil')),
         PythonModule(version=(3, 3),
                 deps=('imp', 'importlib.machinery', 'os', 'pkgutil')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
                 deps=('importlib.machinery', 'importlib.util', 'pkgutil',
-                        'types'))),
+                        'types')),
+        PythonModule(min_version=(3, 5, 3),
+                deps=('importlib.machinery', 'importlib.util', 'pkgutil',
+                        'types', 'warnings'))),
 
     'sched': (
         PythonModule(version=2, deps=('collections', 'heapq')),
@@ -3240,13 +3264,21 @@ _metadata = {
                         'heapq', 'inspect', 'logging', 'os', 'socket',
                         'subprocess', 'threading', 'time', 'traceback',
                         'warnings')),
-        PythonModule(min_version=(3, 5, 1), internal=True,
+        PythonModule(min_version=(3, 5, 1), max_version=(3, 5, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.tasks', 'collections', 'concurrent.futures',
                         'heapq', 'inspect', 'itertools', 'logging', 'os',
                         'socket', 'subprocess', 'threading', 'time',
-                        'traceback', 'warnings'))),
+                        'traceback', 'warnings')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.tasks', 'collections', 'concurrent.futures',
+                        'heapq', 'inspect', 'itertools', 'logging', 'os',
+                        'socket', 'subprocess', 'threading', 'time',
+                        'traceback', 'warnings', 'weakref'))),
 
     'asyncio.base_subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3262,9 +3294,15 @@ _metadata = {
                         'asyncio.log', 'asyncio.protocols',
                         'asyncio.transports', 'collections', 'subprocess',
                         'warnings')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.futures', 'asyncio.log', 'asyncio.protocols',
+                        'asyncio.transports', 'collections', 'subprocess',
+                        'warnings')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.log', 'asyncio.protocols',
                         'asyncio.transports', 'collections', 'subprocess',
                         'warnings'))),
 
@@ -3355,10 +3393,15 @@ _metadata = {
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.locks', 'asyncio.tasks', 'collections',
                         'heapq')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.locks',
-                        'collections', 'heapq'))),
+                        'collections', 'heapq')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.locks', 'collections',
+                        'heapq'))),
 
     'asyncio.selector_events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3379,23 +3422,37 @@ _metadata = {
                         'asyncio.transports', 'collections', 'errno',
                         'functools', 'selectors', 'socket', '?ssl',
                         'warnings')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
                         'asyncio.constants', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.sslproto', 'asyncio.transports',
                         'collections', 'errno', 'functools', 'selectors',
-                        'socket', '?ssl', 'warnings'))),
+                        'socket', '?ssl', 'warnings')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
+                        'asyncio.constants', 'asyncio.coroutines',
+                        'asyncio.events', 'asyncio.futures', 'asyncio.log',
+                        'asyncio.sslproto', 'asyncio.transports',
+                        'collections', 'errno', 'functools', 'selectors',
+                        'socket', '?ssl', 'warnings', 'weakref'))),
 
     'asyncio.sslproto': (
         PythonModule(version=(3, 4, 3), internal=True,
                 deps=('asyncio', 'asyncio.log', 'asyncio.protocols',
                         'asyncio.transports', 'collections', '?ssl',
                         'warnings')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 2),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.log',
                         'asyncio.protocols', 'asyncio.transports',
-                        'collections', '?ssl', 'warnings'))),
+                        'collections', '?ssl', 'warnings')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('asyncio', 'asyncio.base_events', 'asyncio.compat',
+                        'asyncio.log', 'asyncio.protocols',
+                        'asyncio.transports', 'collections', '?ssl',
+                        'warnings'))),
 
     'asyncio.streams': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3738,9 +3795,12 @@ _metadata = {
         PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('email', 'email.errors', 'email.message',
                         'email._policybase', 're')),
-        PythonModule(min_version=(3, 5), internal=True,
+        PythonModule(min_version=(3, 5), max_version=(3, 5, 2), internal=True,
                 deps=('email', 'collections', 'email.errors', 'email.message',
-                        'email._policybase', 're'))),
+                        'email._policybase', 're')),
+        PythonModule(min_version=(3, 5, 3), internal=True,
+                deps=('email', 'collections', 'email.errors', 'email.message',
+                        'email._policybase', 'io', 're'))),
 
     'email._header_value_parser': (
         PythonModule(min_version=3, max_version=(3, 4, 3), internal=True,
@@ -4440,3 +4500,4 @@ if __name__ == '__main__':
     check_version(3, 5, 0)
     check_version(3, 5, 1)
     check_version(3, 5, 2)
+    check_version(3, 5, 3)
