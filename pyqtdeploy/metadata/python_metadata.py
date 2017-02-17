@@ -1703,9 +1703,14 @@ _metadata = {
         PythonModule(max_version=(2, 7, 12),
                 deps=('copy', 'cStringIO', 'errno', 'locale', 'os', 're',
                         'struct', 'token', 'tokenize')),
-        PythonModule(version=(2, 7, 13),
+        PythonModule(min_version=(2, 7, 13), max_version=(2, 7),
                 deps=('copy', 'errno', 'locale', 'os', 're', 'struct')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 4, 5),
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
+                        'token', 'tokenize')),
+        PythonModule(min_version=(3, 4, 6), max_version=(3, 4),
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct')),
+        PythonModule(min_version=(3, 5),
                 deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
                         'token', 'tokenize'))),
 
@@ -3221,7 +3226,7 @@ _metadata = {
                         'heapq', 'inspect', 'itertools', 'logging', 'os',
                         'socket', 'subprocess', 'threading', 'time',
                         'traceback', 'warnings')),
-        PythonModule(version=(3, 4, 5), internal=True,
+        PythonModule(min_version=(3, 4, 5), max_version=(3, 4), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.log',
                         'asyncio.tasks', 'collections', 'concurrent.futures',
@@ -4431,6 +4436,7 @@ if __name__ == '__main__':
     check_version(3, 4, 3)
     check_version(3, 4, 4)
     check_version(3, 4, 5)
+    check_version(3, 4, 6)
     check_version(3, 5, 0)
     check_version(3, 5, 1)
     check_version(3, 5, 2)
