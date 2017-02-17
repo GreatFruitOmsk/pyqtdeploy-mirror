@@ -136,6 +136,12 @@ QScintilla
 There should be nothing to do.
 
 
+PyQt3D
+------
+
+There should be nothing to do.
+
+
 PyQtChart
 ---------
 
