@@ -514,9 +514,12 @@ _metadata = {
                 modules=('ctypes.util', 'ctypes.wintypes')),
 
     'ctypes.util': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 12),
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'tempfile')),
+        PythonModule(version=(2, 7, 13),
+                deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
+                        're', 'struct', 'subprocess', 'tempfile')),
         PythonModule(version=(3, 3),
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld', 'errno',
                         'importlib.machinery', 'os', 're', 'struct',
@@ -1697,9 +1700,11 @@ _metadata = {
                         'warnings'))),
 
     'gettext': (
-        PythonModule(version=2,
+        PythonModule(max_version=(2, 7, 12),
                 deps=('copy', 'cStringIO', 'errno', 'locale', 'os', 're',
                         'struct', 'token', 'tokenize')),
+        PythonModule(version=(2, 7, 13),
+                deps=('copy', 'errno', 'locale', 'os', 're', 'struct')),
         PythonModule(version=3,
                 deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
                         'token', 'tokenize'))),
@@ -4418,6 +4423,7 @@ if __name__ == '__main__':
     check_version(2, 7, 10)
     check_version(2, 7, 11)
     check_version(2, 7, 12)
+    check_version(2, 7, 13)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 1)
