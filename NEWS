@@ -1,4 +1,6 @@
 v1.3.2 ??? ??? 2016
+  - Added support for Python v2.7.13, v3.4.6, v3.5.3 and v3.6.0.
+  - The default Android API level is now 21 (i.e. Android v5.0).
   - Added the --timeout command line option to pyqtdeploycli.
 
 v1.3.1 30th August 2016

@@ -32,8 +32,9 @@ import sys
 def main():
     """ The entry point for the setuptools generated CLI wrapper. """
 
-    # Get the default Android API level.
-    default_api = 9
+    # Get the default Android API level.  This is the level that Python v3.6.0
+    # targets.
+    default_api = 21
 
     parts = os.environ.get('ANDROID_NDK_PLATFORM', '').split('-')
 

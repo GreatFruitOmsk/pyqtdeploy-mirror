@@ -116,6 +116,10 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
             except FileNotFoundError:
                 pass
     else:
+        if target == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
+            raise UserException(
+                    "Python v3.6.0 and later requires Android API level 21 or later")
+
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
 

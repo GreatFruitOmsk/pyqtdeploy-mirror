@@ -1749,9 +1749,12 @@ _metadata = {
         PythonModule(version=2,
                 deps=('binascii', '?_hashlib', '!_md5', '!_sha', '!_sha256',
                         '!_sha512', 'struct')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('?_hashlib', '!_md5', '!_sha1', '!_sha256',
-                        '!_sha512'))),
+                        '!_sha512')),
+        PythonModule(min_version=(3, 6),
+                deps=('?_hashlib', '!_md5', '!_sha1', '!_sha256',
+                        '!_sha512', '!_blake2', '!_sha3'))),
 
     'heapq': (
         PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),
@@ -3224,6 +3227,10 @@ _metadata = {
     '_ast':
         CoreExtensionModule(internal=True),
 
+    '_asyncio':
+        ExtensionModule(min_version=(3, 6), internal=True,
+                source='_asynciomodule.c'),
+
     'asyncio.base_events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
@@ -3576,6 +3583,15 @@ _metadata = {
 
     '_bisect':
         ExtensionModule(internal=True, source='_bisectmodule.c'),
+
+    '_blake2':
+        # Note that we don't enable BLAKE2_USE_SSE because we don't have a way
+        # of detecting and specifying x86_64 (although it wouldn't be too
+        # difficult to do).
+        ExtensionModule(min_version=(3, 6), internal=True,
+                source=('_blake2/blake2module.c', '_blake2/blake2b_impl.c',
+                        '_blake2/blake2c_impl.c'),
+                includepath='_blake2'),
 
     '_bootlocale':
         PythonModule(min_version=(3, 4), internal=True, deps='_locale'),
@@ -4232,6 +4248,10 @@ _metadata = {
     '_sha1':
         ExtensionModule(version=3, internal=True, source='sha1module.c'),
 
+    '_sha3':
+        ExtensionModule(min_version=(3, 6), internal=True,
+                includepath='_sha3', source='sha3module.c'),
+
     '_sha256':
         ExtensionModule(internal=True, source='sha256module.c'),
 
@@ -4501,3 +4521,4 @@ if __name__ == '__main__':
     check_version(3, 5, 1)
     check_version(3, 5, 2)
     check_version(3, 5, 3)
+    check_version(3, 6, 0)

@@ -81,11 +81,11 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 ``python.pro``.
 
 
-_bootstrap.py
-.............
+_bootstrap_external.py
+......................
 
-For Python v3, check if ``Lib/importlib/_bootstrap.py`` has any changes and
-update the builder's version if necessary.
+For Python v3, check if ``Lib/importlib/_bootstrap_external.py`` has any
+changes and update the builder's version if necessary.
 
 
 supported_python_versions.py
@@ -216,6 +216,8 @@ To configure the environment (assuming an OS/X host), run::
 To use a specific Android API level (n) rather than the default 9, run::
 
     export ANDROID_NDK_PLATFORM=android-n
+
+For Python v3.6.0 and later it must be set to 21 as a minimum.
 
 Qt and the Android NDK may not agree on the toolchain version to use.  To force
 Qt to use a particular version, run::

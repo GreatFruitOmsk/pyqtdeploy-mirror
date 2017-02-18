@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -184,6 +184,9 @@ pyconfig = (
     # Define to 1 if you have the `clock_gettime' function.
     Config('HAVE_CLOCK_GETTIME', android=1, linux=1),
 
+    # Define to 1 if you have the `clock_settime' function.
+    Config('HAVE_CLOCK_SETTIME', android=1, linux=1),
+
     # Define if the C compiler supports computed gotos.
     Config('HAVE_COMPUTED_GOTOS', default=1),
 
@@ -224,6 +227,27 @@ pyconfig = (
     # Define to 1 if you have the declaration of `isnan'.
     Config('HAVE_DECL_ISNAN', default=1),
     Config('HAVE_ISNAN', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_DEEPBIND'.
+    Config('HAVE_DECL_RTLD_DEEPBIND', linux=1),
+
+	# Define to 1 if you have the declaration of `RTLD_GLOBAL'.
+    Config('HAVE_DECL_RTLD_GLOBAL', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_LAZY'.
+    Config('HAVE_DECL_RTLD_LAZY', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_LOCAL'.
+    Config('HAVE_DECL_RTLD_LOCAL', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_NODELETE'.
+    Config('HAVE_DECL_RTLD_NODELETE', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_NOLOAD'.
+    Config('HAVE_DECL_RTLD_NOLOAD', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_NOW'.
+    Config('HAVE_DECL_RTLD_NOW', default=1),
 
     # Define to 1 if you have the declaration of `tzname'.
     Config('HAVE_DECL_TZNAME'),
@@ -918,6 +942,9 @@ pyconfig = (
     # Define to 1 if you have the `snprintf' function.
     Config('HAVE_SNPRINTF', default=1),
 
+    # Define to 1 if you have the sockaddr_alg structure.
+    Config('HAVE_SOCKADDR_ALG', linux=1),
+
     # Define if sockaddr has sa_len member
     Config('HAVE_SOCKADDR_SA_LEN', ios=1, osx=1),
 
@@ -974,6 +1001,12 @@ pyconfig = (
 
     # Define to 1 if you have the <stropts.h> header file.
     Config('HAVE_STROPTS_H'),
+
+    # Define to 1 if `pw_gecos' is a member of `struct passwd'.
+    Config('HAVE_STRUCT_PASSWD_PW_GECOS', default=1),
+
+    # Define to 1 if `pw_passwd' is a member of `struct passwd'.
+    Config('HAVE_STRUCT_PASSWD_PW_PASSWD', default=1),
 
     # Define to 1 if `st_birthtime' is a member of `struct stat'.
     Config('HAVE_STRUCT_STAT_ST_BIRTHTIME', ios=1, osx=1),
@@ -1502,8 +1535,9 @@ pyconfig = (
     # Define to empty if the keyword does not work.
     Config('volatile'),
 
-    # The following are non-standard additions required by Android.  They are
-    # chosen so that the default (i.e. #undef) is correct for everything else.
+    # The following are non-standard additions required by Android prior to
+    # Python v3.6.0.  They are chosen so that the default (i.e. #undef) is
+    # correct for everything else.
     Config('HAVE_BROKEN_GECOS', android=1),
     Config('HAVE_BROKEN_GETGRENT', android=1),
     Config('HAVE_BROKEN_LOCALECONV', android=1),
@@ -1521,6 +1555,9 @@ def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading):
 #define Py_PYCONFIG_H
 
 ''')
+
+    if target == 'android':
+        pyconfig_h.write('#define ANDROID_API_LEVEL {0}\n'.format(android_api))
 
     if dynamic_loading:
         pyconfig_h.write('#define HAVE_DYNAMIC_LOADING 1\n')

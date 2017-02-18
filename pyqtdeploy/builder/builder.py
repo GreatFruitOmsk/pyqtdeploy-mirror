@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -164,16 +164,9 @@ class Builder():
 
         # Freeze the bootstrap.  Note that from Python v3.5 the modified part
         # is in _bootstrap_external.py and _bootstrap.py is unchanged from the
-        # original source.  However we continue to use a local copy of
-        # _bootstrap.py for now in case the structure changes again.
+        # original source.
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
-
-        self._freeze_bootstrap('bootstrap', py_version, build_dir, temp_dir,
-                job_writer)
-
-        if py_version >= 0x030500:
-            self._freeze_bootstrap('bootstrap_external', py_version, build_dir,
-                    temp_dir, job_writer)
+        self._freeze_bootstrap(py_version, build_dir, temp_dir, job_writer)
 
         # Freeze any main application script.
         if project.application_script != '':
@@ -207,11 +200,13 @@ class Builder():
 
         self._run_freeze(freeze, interpreter, job_filename, opt, timeout)
 
-    def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
+    def _freeze_bootstrap(self, py_version, build_dir, temp_dir, job_writer):
         """ Freeze a version dependent bootstrap script. """
 
+        name = 'bootstrap_external' if py_version >= 0x030500 else 'bootstrap'
+
         bootstrap_src = get_embedded_file_for_version(py_version, __file__,
-                'lib', name)
+                'lib', 'bootstrap')
         bootstrap = self._copy_lib_file(bootstrap_src, temp_dir.path(),
                 dst_file_name=name + '.py')
         self._freeze(job_writer, build_dir + '/frozen_' + name + '.h',
