@@ -256,8 +256,9 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('asyncore', 'collections', 'socket')),
         PythonModule(version=(3, 4), deps=('asyncore', 'collections')),
-        PythonModule(min_version=(3, 5),
-                deps=('asyncore', 'collections', 'warnings'))),
+        PythonModule(version=(3, 5),
+                deps=('asyncore', 'collections', 'warnings')),
+        PythonModule(min_version=(3, 6), deps=('asyncore', 'collections'))),
 
     'asyncore': (
         PythonModule(max_version=(3, 4),
@@ -345,8 +346,11 @@ _metadata = {
                 pyd='bz2.pyd'),
         PythonModule(min_version=3, max_version=(3, 4),
                 deps=('_thread', '_bz2', 'io', 'warnings')),
-        PythonModule(min_version=(3, 5),
-                deps=('_compression', '_thread', '_bz2', 'io', 'warnings'))),
+        PythonModule(version=(3, 5),
+                deps=('_compression', '_thread', '_bz2', 'io', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('_compression', '_thread', '_bz2', 'io', 'os',
+                        'warnings'))),
 
     'calendar': (
         PythonModule(max_version=(3, 5, 2),
@@ -469,7 +473,10 @@ _metadata = {
 
     'contextlib': (
         PythonModule(version=2, deps=('functools', 'warnings')),
-        PythonModule(version=3, deps=('collections', 'functools'))),
+        PythonModule(min_version=3, max_version=(3, 5),
+                deps=('collections', 'functools')),
+        PythonModule(min_version=(3, 6),
+                deps=('abc', 'collections', 'functools'))),
 
     'Cookie':
         PythonModule(version=2,
@@ -510,7 +517,10 @@ _metadata = {
 
     'csv': (
         PythonModule(version=2, deps=('cStringIO', '_csv', 'functools', 're')),
-        PythonModule(version=3, deps=('_csv', 'io', 're'))),
+        PythonModule(min_version=3, max_version=(3, 5),
+                deps=('_csv', 'io', 're')),
+        PythonModule(min_version=(3, 6),
+                deps=('collections', '_csv', 'io', 're'))),
 
     'ctypes':
         PythonModule(deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
@@ -574,8 +584,10 @@ _metadata = {
     'dbm.dumb': (
         PythonModule(min_version=3, max_version=(3, 4, 3),
                 deps=('dbm', 'collections', 'io', 'os')),
-        PythonModule(min_version=(3, 4, 4),
-                deps=('dbm', 'ast', 'collections', 'io', 'os'))),
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5),
+                deps=('dbm', 'ast', 'collections', 'io', 'os')),
+        PythonModule(min_version=(3, 6),
+                deps=('dbm', 'ast', 'collections', 'io', 'os', 'warnings'))),
 
     'dbm.gnu':
         PythonModule(version=3, scope='!win32', deps=('dbm', '_gdbm')),
@@ -837,10 +849,14 @@ _metadata = {
         PythonModule(version=2,
                 deps=('distutils.core', 'distutils.log', 'getpass', 'urllib2',
                         'urlparse', 'warnings')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('distutils.core', 'distutils.errors', 'distutils.log',
                         'getpass', 'io', 'os', 'string', 'urllib.parse',
-                        'urllib.request', 'warnings'))),
+                        'urllib.request', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('distutils.core', 'distutils.errors', 'distutils.log',
+                        'getpass', 'io', 'urllib.parse', 'urllib.request',
+                        'warnings'))),
 
     'distutils.command.sdist': (
         PythonModule(version=2,
@@ -850,14 +866,21 @@ _metadata = {
                         'distutils.file_util', 'distutils.filelist',
                         'distutils.log', 'distutils.text_file',
                         'distutils.util', 'glob', 'os', 'string', 'warnings')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('distutils.archive_util', 'distutils.core',
                         'distutils.dep_util', 'distutils.dir_util',
                         'distutils.errors', 'distutils.fancy_getopt',
                         'distutils.file_util', 'distutils.filelist',
                         'distutils.log', 'distutils.text_file',
                         'distutils.util', 'glob', 'os', 'string', 'types',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('distutils.archive_util', 'distutils.core',
+                        'distutils.dep_util', 'distutils.dir_util',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.file_util', 'distutils.filelist',
+                        'distutils.log', 'distutils.text_file',
+                        'distutils.util', 'glob', 'os', 'types', 'warnings'))),
 
     'distutils.command.upload': (
         PythonModule(version=2,
@@ -985,7 +1008,8 @@ _metadata = {
 
     'distutils.text_file': (
         PythonModule(version=2),
-        PythonModule(version=3, deps=('io', 'os'))),
+        PythonModule(min_version=3, max_version=(3, 5), deps=('io', 'os')),
+        PythonModule(min_version=(3, 6), deps='io')),
 
     'distutils.unixccompiler': (
         PythonModule(version=2,
@@ -1004,12 +1028,18 @@ _metadata = {
                         'distutils.log', 'distutils.spawn',
                         'distutils.sysconfig', 'os', '_osx_support', 'pwd',
                         'py_compile', 're', 'string', 'tempfile')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('distutils.dep_util', 'distutils.errors',
                         'distutils.log', 'distutils.spawn',
                         'distutils.sysconfig', 'importlib.util', 'os',
                         '_osx_support', 'pwd', 'py_compile', 're', 'string',
-                        'tempfile'))),
+                        'tempfile')),
+        PythonModule(min_version=(3, 6),
+                deps=('distutils.dep_util', 'distutils.errors',
+                        'distutils.log', 'distutils.spawn',
+                        'distutils.sysconfig', 'importlib.util', 'os',
+                        '_osx_support', 'pwd', 'py_compile', 're', 'string',
+                        'subprocess', 'tempfile'))),
 
     'distutils.version': (
         PythonModule(version=2, deps=('re', 'string', 'types')),
@@ -3287,6 +3317,10 @@ _metadata = {
                         'socket', 'subprocess', 'threading', 'time',
                         'traceback', 'warnings', 'weakref'))),
 
+    'asyncio.base_futures':
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('asyncio', 'asyncio.events', 'collections', 'reprlib')),
+
     'asyncio.base_subprocess': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
                 internal=True,
@@ -3313,6 +3347,11 @@ _metadata = {
                         'asyncio.transports', 'collections', 'subprocess',
                         'warnings'))),
 
+    'asyncio.base_tasks':
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('asyncio', 'asyncio.base_futures', 'asyncio.coroutines',
+                        'linecache', 'traceback')),
+
     'asyncio.compat':
         PythonModule(min_version=(3, 4, 4), internal=True, deps='asyncio'),
 
@@ -3325,9 +3364,14 @@ _metadata = {
                 deps=('asyncio', 'asyncio.events', 'asyncio.futures',
                         'asyncio.log', 'functools', 'inspect', 'opcode', 'os',
                         'traceback', 'types')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.events',
                         'asyncio.futures', 'asyncio.log', 'collections.abc',
+                        'functools', 'inspect', 'opcode', 'os', 'traceback',
+                        'types')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('asyncio', 'asyncio.base_futures', 'asyncio.compat',
+                        'asyncio.events', 'asyncio.log', 'collections.abc',
                         'functools', 'inspect', 'opcode', 'os', 'traceback',
                         'types'))),
 
@@ -3353,10 +3397,14 @@ _metadata = {
                 internal=True,
                 deps=('asyncio', 'asyncio.events', 'concurrent.futures._base',
                         'logging', 'reprlib', 'traceback')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.events',
                         'concurrent.futures._base', 'logging', 'reprlib',
-                        'traceback'))),
+                        'traceback')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('asyncio', 'asyncio.base_futures', 'asyncio.compat',
+                        'asyncio.events', '_asyncio', 'concurrent.futures',
+                        'logging', 'traceback'))),
 
     'asyncio.locks': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3511,12 +3559,18 @@ _metadata = {
                         'asyncio.futures', 'asyncio.queues', 'asyncio.tasks',
                         'concurrent.futures', 'functools', 'inspect',
                         'linecache', 'traceback', 'weakref')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'asyncio.coroutines',
                         'asyncio.events', 'asyncio.futures', 'asyncio.queues',
                         'asyncio.tasks', 'concurrent.futures', 'functools',
                         'inspect', 'linecache', 'traceback', 'warnings',
-                        'weakref'))),
+                        'weakref')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('asyncio', 'asyncio.base_tasks', 'asyncio.compat',
+                        'asyncio.coroutines', 'asyncio.events',
+                        'asyncio.futures', 'asyncio.queues', 'asyncio.tasks',
+                        '_asyncio', 'concurrent.futures', 'functools',
+                        'inspect', 'warnings', 'weakref'))),
 
     'asyncio.transports': (
         PythonModule(min_version=(3, 4), max_version=(3, 4, 3), internal=True,
