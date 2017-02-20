@@ -3070,7 +3070,11 @@ _metadata = {
 
     'urllib.response': (
         PythonModule(version=(3, 3), deps='urllib'),
-        PythonModule(min_version=(3, 4), deps=('urllib', 'tempfile'))),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
+                deps=('urllib', 'tempfile', 'urllib.parse', 'urllib.request')),
+        PythonModule(min_version=(3, 6),
+                deps=('urllib', 'collections', 'tempfile', 'urllib.parse',
+                        'urllib.request'))),
 
     'urllib.robotparser':
         PythonModule(version=3,
@@ -3192,9 +3196,12 @@ _metadata = {
         PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
                 deps=('wsgiref', 'http.server', 'platform', 'urllib.parse',
                         'wsgiref.handlers')),
-        PythonModule(min_version=(3, 5, 2),
+        PythonModule(min_version=(3, 5, 2), max_version=(3, 5),
                 deps=('wsgiref', 'http.server', 'io', 'platform',
-                        'urllib.parse', 'wsgiref.handlers'))),
+                        'urllib.parse', 'wsgiref.handlers')),
+        PythonModule(min_version=(3, 6),
+                deps=('wsgiref', 'http.server', 'platform', 'urllib.parse',
+                        'wsgiref.handlers'))),
 
     'wsgiref.util': (
         PythonModule(version=2, deps=('wsgiref', 'posixpath', 'urllib')),
@@ -3249,10 +3256,14 @@ _metadata = {
         PythonModule(version=2,
                 deps=('xml.etree', 're', 'warnings', 'xml.etree.ElementPath',
                         'xml.parsers.expat')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('xml.etree', 'contextlib', '_elementtree', 'io',
                         'locale', 're', 'warnings', 'xml.etree.ElementPath',
-                        'xml.parsers.expat'))),
+                        'xml.parsers.expat')),
+        PythonModule(min_version=(3, 6),
+                deps=('xml.etree', 'collections', 'contextlib', '_elementtree',
+                        'io', 'locale', 're', 'warnings',
+                        'xml.etree.ElementPath', 'xml.parsers.expat'))),
 
     'xml.parsers':
         PythonModule(deps='xml', modules='xml.parsers.expat'),
@@ -3292,11 +3303,15 @@ _metadata = {
     'xmlrpc':
         PythonModule(version=3, modules=('xmlrpc.client', 'xmlrpc.server')),
 
-    'xmlrpc.client':
-        PythonModule(version=3,
+    'xmlrpc.client': (
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('xmlrpc', 'base64', 'datetime', 'errno', 'http.client',
                         'io', 'socket', 'time', 'urllib.parse',
                         'xml.parsers.expat')),
+        PythonModule(min_version=(3, 6),
+                deps=('xmlrpc', 'base64', 'datetime', 'decimal', 'errno',
+                        'http.client', 'io', 'socket', 'time', 'urllib.parse',
+                        'xml.parsers.expat'))),
 
     'xmlrpc.server':
         PythonModule(version=3,
