@@ -2257,9 +2257,16 @@ _metadata = {
                         'multiprocessing.reduction', 'multiprocessing.util',
                         'os', 'pickle', 'select', 'socket', 'struct',
                         'tempfile', 'time', '_winapi', 'xmlrpc.client')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('multiprocessing', 'hmac', 'io', 'itertools',
                         '_multiprocessing', 'multiprocessing.reduction',
+                        'multiprocessing.resource_sharer',
+                        'multiprocessing.util', 'os', 'selectors', 'socket',
+                        'struct', 'tempfile', 'time', '_winapi',
+                        'xmlrpc.client')),
+        PythonModule(min_version=(3, 6),
+                deps=('multiprocessing', 'hmac', 'io', 'itertools',
+                        '_multiprocessing', 'multiprocessing.context',
                         'multiprocessing.resource_sharer',
                         'multiprocessing.util', 'os', 'selectors', 'socket',
                         'struct', 'tempfile', 'time', '_winapi',
@@ -2289,12 +2296,17 @@ _metadata = {
                 deps=('multiprocessing', 'array', 'copyreg',
                         'multiprocessing.forking', 'multiprocessing.process',
                         'queue', 'threading', 'time', 'traceback')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('multiprocessing', 'array', 'multiprocessing.connection',
                         'multiprocessing.context', 'multiprocessing.pool',
                         'multiprocessing.process', 'multiprocessing.reduction',
                         'multiprocessing.util', 'queue', 'threading', 'time',
-                        'traceback'))),
+                        'traceback')),
+        PythonModule(min_version=(3, 6),
+                deps=('multiprocessing', 'array', 'multiprocessing.connection',
+                        'multiprocessing.context', 'multiprocessing.pool',
+                        'multiprocessing.process', 'multiprocessing.util',
+                        'queue', 'threading', 'time', 'traceback'))),
 
     'multiprocessing.pool': (
         PythonModule(version=2,
@@ -2314,10 +2326,13 @@ _metadata = {
         PythonModule(max_version=(3, 3),
                 deps=('multiprocessing', 'ctypes', 'multiprocessing.forking',
                         'multiprocessing.heap', 'weakref')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('multiprocessing', 'ctypes', 'multiprocessing.context',
                         'multiprocessing.heap', 'multiprocessing.reduction',
-                        'weakref'))),
+                        'weakref')),
+        PythonModule(min_version=(3, 6),
+                deps=('multiprocessing', 'ctypes', 'multiprocessing.context',
+                        'multiprocessing.heap', 'weakref'))),
 
     'mutex':
         PythonModule(version=2, deps=('collections', 'warnings')),
@@ -2355,8 +2370,12 @@ _metadata = {
         PythonModule(version=2,
                 deps=('copy_reg', 'errno', 'nt', 'ntpath', 'posix',
                         'posixpath', 'subprocess', 'warnings')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('collections', 'copyreg', 'errno', 'io', 'nt',
+                        'ntpath', 'posix', 'posixpath', 'stat', 'subprocess',
+                        'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('abc', 'collections', 'copyreg', 'errno', 'io', 'nt',
                         'ntpath', 'posix', 'posixpath', 'stat', 'subprocess',
                         'warnings'))),
 
@@ -2389,9 +2408,13 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('codecs', '_compat_pickle', 'copyreg', 'io', 'marshal',
                         '_pickle', 're', 'struct', 'types')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('codecs', '_compat_pickle', 'copyreg', 'io', 'itertools',
-                        'marshal', '_pickle', 're', 'struct', 'types'))),
+                        'marshal', '_pickle', 're', 'struct', 'types')),
+        PythonModule(min_version=(3, 6),
+                deps=('codecs', '_compat_pickle', 'copyreg', 'functools', 'io',
+                        'itertools', 'marshal', '_pickle', 're', 'struct',
+                        'types'))),
 
     'pickletools': (
         PythonModule(version=2, deps=('cStringIO', 'pickle', 're', 'struct')),
@@ -2410,10 +2433,14 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('imp', 'importlib', 'inspect', 'marshal', 'os', 'types',
                         'warnings')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('functools', 'importlib', 'importlib.machinery',
                         'importlib.util', 'inspect', 'marshal', 'os', 'types',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('collections', 'functools', 'importlib',
+                        'importlib.machinery', 'importlib.util', 'inspect',
+                        'marshal', 'os', 'types', 'warnings'))),
 
     'platform': (
         PythonModule(max_version=(2, 7, 10),
@@ -2464,8 +2491,11 @@ _metadata = {
     'poplib': (
         PythonModule(max_version=(3, 3),
                 deps=('hashlib', 're', 'socket', '?ssl')),
-        PythonModule(min_version=(3, 4),
-                deps=('errno', 'hashlib', 're', 'socket', '?ssl'))),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
+                deps=('errno', 'hashlib', 're', 'socket', '?ssl')),
+        PythonModule(min_version=(3, 6),
+                deps=('errno', 'hashlib', 're', 'socket', '?ssl',
+                        'warnings'))),
 
     'posix':
         CoreExtensionModule(scope='!win32'),
@@ -2512,9 +2542,11 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('importlib', 'io', 'operator', 'os', 'token',
                         'tokenize')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('importlib.util', 'io', 'operator', 'os', 'token',
-                        'tokenize'))),
+                        'tokenize')),
+        PythonModule(min_version=(3, 6),
+                deps=('importlib.util', 'io', 'token', 'tokenize'))),
 
     'pydoc': (
         PythonModule(version=2,
@@ -2580,9 +2612,12 @@ _metadata = {
         PythonModule(version=(3, 3),
                 deps=('collections', 'hashlib', 'math', 'os', '_random',
                         'time', 'types', 'warnings')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('_collections_abc', 'hashlib', 'math', 'os', '_random',
-                        'time', 'types', 'warnings'))),
+                        'time', 'types', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('bisect', '_collections_abc', 'hashlib', 'itertools',
+                        'math', 'os', '_random', 'types', 'warnings'))),
 
     're': (
         PythonModule(max_version=(2, 7, 8),
@@ -2596,9 +2631,12 @@ _metadata = {
                         'sre_parse')),
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 2),
                 deps=('copyreg', 'sre_compile', 'sre_constants', 'sre_parse')),
-        PythonModule(min_version=(3, 4, 3),
+        PythonModule(min_version=(3, 4, 3), max_version=(3, 5),
                 deps=('copyreg', '_locale', 'sre_compile', 'sre_constants',
-                        'sre_parse'))),
+                        'sre_parse')),
+        PythonModule(min_version=(3, 6),
+                deps=('copyreg', 'enum', 'functools', '_locale', 'sre_compile',
+                        'sre_constants', 'sre_parse'))),
 
     'readline':
         ExtensionModule(scope='!win32', source='readline.c', xlib='readline'),
@@ -2638,6 +2676,10 @@ _metadata = {
         PythonModule(version=2, deps=('collections', 'heapq')),
         PythonModule(version=3,
                 deps=('collections', 'heapq', 'threading', 'time'))),
+
+    'secrets':
+        PythonModule(min_version=(3, 6),
+                deps=('base64', 'binascii', 'hmac', 'os', 'random')),
 
     'select':
         ExtensionModule(source='selectmodule.c', pyd='select.pyd'),
@@ -2710,10 +2752,14 @@ _metadata = {
                 deps=('base64', 'copy', 'email.base64mime', 'email.generator',
                         'email.message', 'email.utils', 'hmac', 'io', 're',
                         'socket', '?ssl')),
-        PythonModule(min_version=(3, 5),
+        PythonModule(version=(3, 5),
                 deps=('base64', 'copy', 'datetime', 'email.base64mime',
                         'email.generator', 'email.message', 'email.utils',
-                        'hmac', 'io', 're', 'socket', '?ssl'))),
+                        'hmac', 'io', 're', 'socket', '?ssl')),
+        PythonModule(min_version=(3, 6),
+                deps=('base64', 'copy', 'datetime', 'email.base64mime',
+                        'email.generator', 'email.message', 'email.utils',
+                        'hmac', 'io', 're', 'socket', '?ssl', 'warnings'))),
 
     'sndhdr': (
         PythonModule(max_version=(3, 3), deps='aifc'),
@@ -2800,9 +2846,12 @@ _metadata = {
                         'math')),
         PythonModule(min_version=(3, 5, 0), max_version=(3, 5, 1),
                 deps=('collections', 'decimal', 'fractions', 'math')),
-        PythonModule(min_version=(3, 5, 2),
+        PythonModule(min_version=(3, 5, 2), max_version=(3, 5),
                 deps=('collections', 'decimal', 'fractions', 'itertools',
-                        'math'))),
+                        'math')),
+        PythonModule(min_version=(3, 6),
+                deps=('bisect', 'collections', 'decimal', 'fractions',
+                        'itertools', 'math', 'numbers'))),
 
     'statvfs':
         PythonModule(version=2, deps='warnings'),
@@ -2829,9 +2878,12 @@ _metadata = {
                         '_sysconfigdata')),
         PythonModule(version=(3, 3),
                 deps=('os', '_osx_support', 'pprint', '_sysconfigdata')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('os', '_osx_support', 'pprint', 're', '_sysconfigdata',
-                        'types', 'warnings'))),
+                        'types', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('os', '_osx_support', 'pprint', 're', 'types',
+                        'warnings'))),
 
     'subprocess': (
         PythonModule(version=2,
@@ -2940,10 +2992,14 @@ _metadata = {
         PythonModule(version=2,
                 deps=('cPickle', 'dis', 'gc', 'inspect', 'linecache', 'os',
                         're', 'threading', 'time', 'token', 'tokenize')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('dis', 'gc', 'inspect', 'linecache', 'os', 'pickle',
                         're', 'threading', 'time', 'token', 'tokenize',
-                        'warnings'))),
+                        'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('argparse', 'dis', 'gc', 'inspect', 'linecache', 'os',
+                        'pickle', 're', 'threading', 'time', 'token',
+                        'tokenize'))),
 
     'traceback': (
         PythonModule(version=2, deps=('linecache', 'types')),
@@ -4064,8 +4120,8 @@ _metadata = {
                 includepath='_multiprocessing',
                 pyd='_multiprocessing.pyd')),
 
-    'multiprocessing.context':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.context': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.forkserver',
                         'multiprocessing.managers', 'multiprocessing.pool',
@@ -4073,12 +4129,23 @@ _metadata = {
                         'multiprocessing.popen_forkserver',
                         'multiprocessing.popen_spawn_posix',
                         'multiprocessing.popen_spawn_win32',
-                        'multiprocessing.process',
-                        'multiprocessing.queues',
+                        'multiprocessing.process', 'multiprocessing.queues',
                         'multiprocessing.sharedctypes',
-                        'multiprocessing.spawn',
-                        'multiprocessing.synchronize',
+                        'multiprocessing.spawn', 'multiprocessing.synchronize',
                         'multiprocessing.util', 'os', 'threading')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.forkserver',
+                        'multiprocessing.managers', 'multiprocessing.pool',
+                        'multiprocessing.popen_fork',
+                        'multiprocessing.popen_forkserver',
+                        'multiprocessing.popen_spawn_posix',
+                        'multiprocessing.popen_spawn_win32',
+                        'multiprocessing.process', 'multiprocessing.queues',
+                        'multiprocessing.reduction',
+                        'multiprocessing.sharedctypes',
+                        'multiprocessing.spawn', 'multiprocessing.synchronize',
+                        'multiprocessing.util', 'os', 'threading'))),
 
     'multiprocessing.dummy.connection': (
         PythonModule(version=2, internal=True,
@@ -4099,14 +4166,21 @@ _metadata = {
                         'msvcrt', 'os', 'pickle', 'signal', '_thread', 'time',
                         '_winapi'))),
 
-    'multiprocessing.forkserver':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.forkserver': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'errno', 'multiprocessing.connection',
                         'multiprocessing.process', 'multiprocessing.reduction',
                         'multiprocessing.semaphore_tracker',
                         'multiprocessing.spawn', 'multiprocessing.util', 'os',
                         'selectors', 'signal', 'socket', 'struct',
                         'threading')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'errno', 'multiprocessing.connection',
+                        'multiprocessing.context', 'multiprocessing.process',
+                        'multiprocessing.semaphore_tracker',
+                        'multiprocessing.spawn', 'multiprocessing.util', 'os',
+                        'selectors', 'signal', 'socket', 'struct',
+                        'threading'))),
 
     'multiprocessing.heap': (
         PythonModule(version=2, internal=True,
@@ -4119,10 +4193,14 @@ _metadata = {
                         '_multiprocessing', 'multiprocessing.forking',
                         'multiprocessing.util', 'mmap', 'tempfile', 'os',
                         'threading', '_winapi')),
-        PythonModule(min_version=(3, 4), internal=True,
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'bisect', 'multiprocessing.context',
                         'multiprocessing.reduction', 'multiprocessing.util',
-                        'mmap', 'tempfile', 'os', 'threading', '_winapi'))),
+                        'mmap', 'tempfile', 'os', 'threading', '_winapi')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'bisect', 'multiprocessing.context',
+                        'multiprocessing.util', 'mmap', 'tempfile', 'os',
+                        'threading', '_winapi'))),
 
     'multiprocessing.popen_fork': (
         PythonModule(version=(3, 4), internal=True,
@@ -4132,8 +4210,8 @@ _metadata = {
                 deps=('multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.util', 'os', 'signal'))),
 
-    'multiprocessing.popen_forkserver':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.popen_forkserver': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'io', 'multiprocessing.connection',
                         'multiprocessing.context',
                         'multiprocessing.forkserver',
@@ -4141,21 +4219,38 @@ _metadata = {
                         'multiprocessing.reduction',
                         'multiprocessing.spawn', 'multiprocessing.util',
                         'os')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'io', 'multiprocessing.connection',
+                        'multiprocessing.context',
+                        'multiprocessing.forkserver',
+                        'multiprocessing.popen_fork', 'multiprocessing.spawn',
+                        'multiprocessing.util', 'os'))),
 
-    'multiprocessing.popen_spawn_posix':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.popen_spawn_posix': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'io', 'multiprocessing.context',
                         'multiprocessing.popen_fork',
                         'multiprocessing.reduction',
                         'multiprocessing.semaphore_tracker',
                         'multiprocessing.spawn',
                         'multiprocessing.util', 'os')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'io', 'multiprocessing.context',
+                        'multiprocessing.popen_fork',
+                        'multiprocessing.semaphore_tracker',
+                        'multiprocessing.spawn', 'multiprocessing.util',
+                        'os'))),
 
-    'multiprocessing.popen_spawn_win32':
-        PythonModule(min_version=(3, 4), internal=True, scope='win32',
+    'multiprocessing.popen_spawn_win32': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
+                internal=True, scope='win32',
                 deps=('multiprocessing', 'msvcrt', 'multiprocessing.context',
                         'multiprocessing.reduction', 'multiprocessing.spawn',
                         'multiprocessing.util', 'os', 'signal', '_winapi')),
+        PythonModule(min_version=(3, 6), internal=True, scope='win32',
+                deps=('multiprocessing', 'msvcrt', 'multiprocessing.context',
+                        'multiprocessing.spawn', 'multiprocessing.util', 'os',
+                        'signal', '_winapi'))),
 
     'multiprocessing.process': (
         PythonModule(version=2, internal=True,
@@ -4191,10 +4286,17 @@ _metadata = {
                         'multiprocessing.context', 'multiprocessing.reduction',
                         'multiprocessing.util', 'os', 'queue', 'threading',
                         'time', 'traceback', 'weakref')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'collections', 'errno',
                         '_multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.context', 'multiprocessing.reduction',
+                        'multiprocessing.synchronize', 'multiprocessing.util',
+                        'os', 'queue', 'threading', 'time', 'traceback',
+                        'weakref')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'collections', 'errno',
+                        '_multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.context',
                         'multiprocessing.synchronize', 'multiprocessing.util',
                         'os', 'queue', 'threading', 'time', 'traceback',
                         'weakref'))),
@@ -4210,18 +4312,28 @@ _metadata = {
                 deps=('multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.util', 'os', 'signal', 'socket',
                         'struct', 'threading', 'traceback', '_winapi')),
-        PythonModule(min_version=(3, 4), internal=True,
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'array', 'copyreg', 'functools', 'io',
                         'multiprocessing.context',
                         'multiprocessing.resource_sharer', 'os', 'pickle',
+                        'socket', '_winapi')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'abc', 'array', 'copyreg',
+                        'functools', 'io', 'multiprocessing.context',
+                        'multiprocessing.resource_sharer', 'os', 'pickle',
                         'socket', '_winapi'))),
 
-    'multiprocessing.resource_sharer':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.resource_sharer': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'multiprocessing.connection',
                         'multiprocessing.process', 'multiprocessing.reduction',
                         'multiprocessing.util', 'os', 'signal', 'socket',
                         'threading')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'multiprocessing.connection',
+                        'multiprocessing.context', 'multiprocessing.process',
+                        'multiprocessing.util', 'os', 'signal', 'socket',
+                        'threading'))),
 
     'multiprocessing.semaphore_tracker':
         PythonModule(min_version=(3, 4), internal=True,
@@ -4229,13 +4341,18 @@ _metadata = {
                         'multiprocessing.spawn', 'multiprocessing.util', 'os',
                         'signal', 'threading', 'warnings')),
 
-    'multiprocessing.spawn':
-        PythonModule(min_version=(3, 4), internal=True,
+    'multiprocessing.spawn': (
+        PythonModule(min_version=(3, 4), max_version=(3, 5), internal=True,
                 deps=('multiprocessing', 'msvcrt', 'multiprocessing.process',
                         'multiprocessing.reduction',
                         'multiprocessing.semaphore_tracker',
                         'multiprocessing.util', 'os', 'pickle', 'runpy',
                         'types')),
+        PythonModule(min_version=(3, 6), internal=True,
+                deps=('multiprocessing', 'msvcrt', 'multiprocessing.context',
+                        'multiprocessing.process',
+                        'multiprocessing.semaphore_tracker',
+                        'multiprocessing.util', 'os', 'runpy', 'types'))),
 
     'multiprocessing.synchronize': (
         PythonModule(version=2, internal=True,
@@ -4429,7 +4546,7 @@ _metadata = {
         CoreExtensionModule(internal=True),
 
     '_sysconfigdata':
-        PythonModule(internal=True),
+        PythonModule(max_version=(3, 5), internal=True),
 
     '_tracemalloc':
         CoreExtensionModule(min_version=(3, 4), internal=True),
