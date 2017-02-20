@@ -529,13 +529,27 @@ def build_host_python(host, target_name, use_system_python):
 
         source = host.sysroot.find_source('Python-*')
         host.sysroot.unpack_source(source)
-        host.run('./configure', '--prefix', host.sysroot.host_python_dir)
+
+        py_version = source.split('-')[1].split('.')
+
+        # ensurepip was added in Python v2.7.9 and v3.4.0.
+        ensure_pip = False
+        if py_version[0] == '2':
+            if py_version[2] >= '9':
+                ensure_pip = True
+        elif py_version[1] >= '4':
+            ensure_pip = True
+
+        configure = ['./configure', '--prefix', host.sysroot.host_python_dir]
+        if ensure_pip:
+            configure.append('--with-ensurepip=no')
+
+        host.run(*configure)
         host.run(host.make)
         host.run(host.make, 'install')
 
-        major_minor = '.'.join(source.split('-')[1].split('.')[:2])
         interp = os.path.join(host.sysroot.host_python_dir, 'bin',
-                'python' + major_minor)
+                'python' + '.'.join(py_version[:2]))
     elif sys.platform == 'win32':
         from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
 
