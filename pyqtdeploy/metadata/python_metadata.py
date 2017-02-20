@@ -207,6 +207,50 @@ class CodecModule(PythonModule):
                 max_version=max_version, scope=scope, deps=all_deps, core=core)
 
 
+# The encodings modules.
+_encodings_modules = (
+    'encodings.ascii', 'encodings.base64_codec', 'encodings.big5',
+    'encodings.big5hkscs', 'encodings.bz2_codec', 'encodings.charmap',
+    'encodings.cp037', 'encodings.cp1006', 'encodings.cp1026',
+    'encodings.cp1125', 'encodings.cp1140', 'encodings.cp1250',
+    'encodings.cp1251', 'encodings.cp1252', 'encodings.cp1253',
+    'encodings.cp1254', 'encodings.cp1255', 'encodings.cp1256',
+    'encodings.cp1257', 'encodings.cp1258', 'encodings.cp273',
+    'encodings.cp424', 'encodings.cp437', 'encodings.cp500',
+    'encodings.cp65001', 'encodings.cp720', 'encodings.cp737',
+    'encodings.cp775', 'encodings.cp850', 'encodings.cp852',
+    'encodings.cp855', 'encodings.cp856', 'encodings.cp857', 'encodings.cp858',
+    'encodings.cp860', 'encodings.cp861', 'encodings.cp862', 'encodings.cp863',
+    'encodings.cp864', 'encodings.cp865', 'encodings.cp866', 'encodings.cp869',
+    'encodings.cp874', 'encodings.cp875', 'encodings.cp932', 'encodings.cp949',
+    'encodings.cp950', 'encodings.euc_jis_2004', 'encodings.euc_jisx0213',
+    'encodings.euc_jp', 'encodings.euc_kr', 'encodings.gb18030',
+    'encodings.gb2312', 'encodings.gbk', 'encodings.hex_codec',
+    'encodings.hp_roman8', 'encodings.hz', 'encodings.idna',
+    'encodings.iso2022_jp', 'encodings.iso2022_jp_1', 'encodings.iso2022_jp_2',
+    'encodings.iso2022_jp_2004', 'encodings.iso2022_jp_3',
+    'encodings.iso2022_jp_ext', 'encodings.iso2022_jp_kr',
+    'encodings.iso8859_1', 'encodings.iso8859_10', 'encodings.iso8859_11',
+    'encodings.iso8859_13', 'encodings.iso8859_14', 'encodings.iso8859_15',
+    'encodings.iso8859_16', 'encodings.iso8859_2', 'encodings.iso8859_3',
+    'encodings.iso8859_4', 'encodings.iso8859_5', 'encodings.iso8859_6',
+    'encodings.iso8859_7', 'encodings.iso8859_8', 'encodings.iso8859_9',
+    'encodings.johab', 'encodings.koi8_r', 'encodings.koi8_t',
+    'encodings.koi8_u', 'encodings.kz1048', 'encodings.latin_1',
+    'encodings.mac_arabic', 'encodings.mac_centeuro', 'encodings.mac_croatian',
+    'encodings.mac_cyrillic', 'encodings.mac_farsi', 'encodings.mac_greek',
+    'encodings.mac_iceland', 'encodings.mac_latin2', 'encodings.mac_roman',
+    'encodings.mac_romanian', 'encodings.mac_turkish', 'encodings.mbcs',
+    'encodings.palmos', 'encodings.ptcp154', 'encodings.punycode',
+    'encodings.quopri_codec', 'encodings.raw_unicode_escape',
+    'encodings.rot_13', 'encodings.shift_jis', 'encodings.shift_jis_2004',
+    'encodings.shift_jisx0213', 'encodings.tis_620', 'encodings.undefined',
+    'encodings.unicode_escape', 'encodings.unicode_internal',
+    'encodings.utf_16', 'encodings.utf_16_be', 'encodings.utf_16_le',
+    'encodings.utf_32', 'encodings.utf_32_be', 'encodings.utf_32_le',
+    'encodings.utf_7', 'encodings.utf_8', 'encodings.utf_8_sig',
+    'encodings.uu_codec', 'encodings.zlib_codec')
+
 # The meta-data for each module.
 _metadata = {
     # These are the public modules.
@@ -1136,11 +1180,16 @@ _metadata = {
                         'email.errors', 'email.generator', 'email.iterators',
                         'email.policy', 'email._policybase', 'email.utils',
                         'io', 'quopri', 're', 'uu')),
-        PythonModule(min_version=(3, 4, 2),
+        PythonModule(min_version=(3, 4, 2), max_version=(3, 5),
                 deps=('email', 'email.charset', 'email._encoded_words',
                         'email.errors', 'email.generator', 'email.iterators',
                         'email.policy', 'email._policybase', 'email.utils',
-                        'io', 'quopri', 're', 'uu', 'warnings'))),
+                        'io', 'quopri', 're', 'uu', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('email', 'email.charset', 'email._encoded_words',
+                        'email.errors', 'email.generator', 'email.iterators',
+                        'email.policy', 'email._policybase', 'email.utils',
+                        'io', 'quopri', 're', 'uu'))),
 
     'email.mime':
         PythonModule(deps='email',
@@ -1162,8 +1211,10 @@ _metadata = {
                 deps=('email.mime', 'email.encoders',
                         'email.mime.nonmultipart', 'io', 'sndhdr'))),
 
-    'email.mime.base':
-        PythonModule(deps=('email.mime', 'email.message')),
+    'email.mime.base': (
+        PythonModule(max_version=(3, 5), deps=('email.mime', 'email.message')),
+        PythonModule(min_version=(3, 6),
+                deps=('email.mime', 'email.message', 'email.policy'))),
 
     'email.mime.image':
         PythonModule(
@@ -1209,9 +1260,13 @@ _metadata = {
         PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
                 deps=('email', 'email.contentmanager', 'email.headerregistry',
                         'email._policybase', 'email.utils')),
-        PythonModule(min_version=(3, 5, 3),
+        PythonModule(min_version=(3, 5, 3), max_version=(3, 5),
                 deps=('email', 'email.contentmanager', 'email.headerregistry',
-                        'email._policybase', 'email.utils', 're'))),
+                        'email._policybase', 'email.utils', 're')),
+        PythonModule(min_version=(3, 6),
+                deps=('email', 'email.contentmanager', 'email.headerregistry',
+                        'email.message', 'email._policybase', 'email.utils',
+                        're'))),
 
     'email.utils': (
         PythonModule(version=2,
@@ -1228,69 +1283,12 @@ _metadata = {
                         'os', 'random', 're', 'socket', 'time',
                         'urllib.parse'))),
 
-    'encodings':
-        PythonModule(deps=('codecs', 'encodings.aliases'),
-                modules=('encodings.ascii', 'encodings.base64_codec',
-                        'encodings.big5', 'encodings.big5hkscs',
-                        'encodings.bz2_codec', 'encodings.charmap',
-                        'encodings.cp037', 'encodings.cp1006',
-                        'encodings.cp1026', 'encodings.cp1125',
-                        'encodings.cp1140', 'encodings.cp1250',
-                        'encodings.cp1251', 'encodings.cp1252',
-                        'encodings.cp1253', 'encodings.cp1254',
-                        'encodings.cp1255', 'encodings.cp1256',
-                        'encodings.cp1257', 'encodings.cp1258',
-                        'encodings.cp273', 'encodings.cp424',
-                        'encodings.cp437', 'encodings.cp500',
-                        'encodings.cp65001', 'encodings.cp720',
-                        'encodings.cp737', 'encodings.cp775',
-                        'encodings.cp850', 'encodings.cp852',
-                        'encodings.cp855', 'encodings.cp856',
-                        'encodings.cp857', 'encodings.cp858',
-                        'encodings.cp860', 'encodings.cp861',
-                        'encodings.cp862', 'encodings.cp863',
-                        'encodings.cp864', 'encodings.cp865',
-                        'encodings.cp866', 'encodings.cp869',
-                        'encodings.cp874', 'encodings.cp875',
-                        'encodings.cp932', 'encodings.cp949',
-                        'encodings.cp950', 'encodings.euc_jis_2004',
-                        'encodings.euc_jisx0213', 'encodings.euc_jp',
-                        'encodings.euc_kr', 'encodings.gb18030',
-                        'encodings.gb2312', 'encodings.gbk',
-                        'encodings.hex_codec', 'encodings.hp_roman8',
-                        'encodings.hz', 'encodings.idna',
-                        'encodings.iso2022_jp', 'encodings.iso2022_jp_1',
-                        'encodings.iso2022_jp_2', 'encodings.iso2022_jp_2004',
-                        'encodings.iso2022_jp_3', 'encodings.iso2022_jp_ext',
-                        'encodings.iso2022_jp_kr', 'encodings.iso8859_1',
-                        'encodings.iso8859_10', 'encodings.iso8859_11',
-                        'encodings.iso8859_13', 'encodings.iso8859_14',
-                        'encodings.iso8859_15', 'encodings.iso8859_16',
-                        'encodings.iso8859_2', 'encodings.iso8859_3',
-                        'encodings.iso8859_4', 'encodings.iso8859_5',
-                        'encodings.iso8859_6', 'encodings.iso8859_7',
-                        'encodings.iso8859_8', 'encodings.iso8859_9',
-                        'encodings.johab', 'encodings.koi8_r',
-                        'encodings.koi8_t', 'encodings.koi8_u',
-                        'encodings.kz1048', 'encodings.latin_1',
-                        'encodings.mac_arabic', 'encodings.mac_centeuro',
-                        'encodings.mac_croatian', 'encodings.mac_cyrillic',
-                        'encodings.mac_farsi', 'encodings.mac_greek',
-                        'encodings.mac_iceland', 'encodings.mac_latin2',
-                        'encodings.mac_roman', 'encodings.mac_romanian',
-                        'encodings.mac_turkish', 'encodings.mbcs',
-                        'encodings.palmos', 'encodings.ptcp154',
-                        'encodings.punycode', 'encodings.quopri_codec',
-                        'encodings.raw_unicode_escape', 'encodings.rot_13',
-                        'encodings.shift_jis', 'encodings.shift_jis_2004',
-                        'encodings.shift_jisx0213', 'encodings.tis_620',
-                        'encodings.undefined', 'encodings.unicode_escape',
-                        'encodings.unicode_internal', 'encodings.utf_16',
-                        'encodings.utf_16_be', 'encodings.utf_16_le',
-                        'encodings.utf_32', 'encodings.utf_32_be',
-                        'encodings.utf_32_le', 'encodings.utf_7',
-                        'encodings.utf_8', 'encodings.utf_8_sig',
-                        'encodings.uu_codec', 'encodings.zlib_codec')),
+    'encodings': (
+        PythonModule(max_version=(3, 5), deps=('codecs', 'encodings.aliases'),
+                modules=_encodings_modules),
+        PythonModule(min_version=(3, 6),
+                deps=('_bootlocale', 'codecs', 'encodings.aliases'),
+                modules=_encodings_modules + ('encodings.oem', ))),
 
     'encodings.ascii': (
         CodecModule(version=2),
@@ -1592,6 +1590,9 @@ _metadata = {
         CodecModule(version=2, scope='win32'),
         CodecModule(version=3, scope='win32', core=True)),
 
+    'encodings.oem':
+        CodecModule(min_version=(3, 6), scope='win32', deps=('codecs')),
+
     'encodings.palmos':
         CodecModule(),
 
@@ -1667,8 +1668,11 @@ _metadata = {
     'encodings.zlib_codec':
         CodecModule(deps='zlib'),
 
-    'enum':
-        PythonModule(version=3, deps=('collections', 'types')),
+    'enum': (
+        PythonModule(min_version=3, max_version=(3, 5),
+                deps=('collections', 'types')),
+        PythonModule(min_version=(3, 6),
+                deps=('_collections', 'functools', 'operator', 'types'))),
 
     'errno':
         CoreExtensionModule(),
@@ -1713,16 +1717,21 @@ _metadata = {
     'ftplib': (
         PythonModule(max_version=(3, 3),
                 deps=('os', 're', 'socket', '?ssl')),
-        PythonModule(min_version=(3, 4),
-                deps=('os', 're', 'socket', '?ssl', 'warnings'))),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
+                deps=('os', 're', 'socket', '?ssl', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('re', 'socket', '?ssl', 'warnings'))),
 
     'functools': (
         PythonModule(version=2, deps='_functools'),
         PythonModule(version=(3, 3),
                 deps=('collections', '_functools', '_thread')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('abc', 'collections', '_functools', '_thread', 'types',
-                        'weakref'))),
+                        'weakref')),
+        PythonModule(min_version=(3, 6),
+                deps=('abc', 'collections', '_functools', 'reprlib', '_thread',
+                        'types', 'weakref'))),
 
     'future_builtins':
         ExtensionModule(version=2, source='future_builtins.c'),
@@ -1847,9 +1856,13 @@ _metadata = {
         PythonModule(min_version=(3, 4), max_version=(3, 4, 3),
                 deps=('http', 'collections', 'email.message', 'email.parser',
                         'io', 'os', 'socket', '?ssl', 'urllib.parse')),
-        PythonModule(min_version=(3, 4, 4),
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5),
                 deps=('http', 'collections', 'email.message', 'email.parser',
-                        'io', 'os', 're', 'socket', '?ssl', 'urllib.parse'))),
+                        'io', 'os', 're', 'socket', '?ssl', 'urllib.parse')),
+        PythonModule(min_version=(3, 6),
+                deps=('http', 'collections', 'email.message', 'email.parser',
+                        'io', 'os', 're', 'socket', '?ssl', 'urllib.parse',
+                        'warnings'))),
 
     'http.cookiejar':
         PythonModule(version=3,
@@ -1870,11 +1883,17 @@ _metadata = {
                         'io', 'mimetypes', 'os', 'posixpath', 'pwd', 'select',
                         'shutil', 'socket', 'socketserver', 'subprocess',
                         'time', 'urllib.parse')),
-        PythonModule(min_version=(3, 4),
+        PythonModule(min_version=(3, 4), max_version=(3, 5),
                 deps=('http', 'argparse', 'base64', 'binascii', 'copy', 'html',
                         'http.client', 'io', 'mimetypes', 'os', 'posixpath',
                         'pwd', 'select', 'shutil', 'socket', 'socketserver',
-                        'subprocess', 'time', 'urllib.parse'))),
+                        'subprocess', 'time', 'urllib.parse')),
+        PythonModule(min_version=(3, 6),
+                deps=('http', 'argparse', 'base64', 'binascii', 'copy',
+                        'email.utils', 'html', 'http.client', 'io',
+                        'mimetypes', 'os', 'posixpath', 'pwd', 'select',
+                        'shutil', 'socket', 'socketserver', 'subprocess',
+                        'time', 'urllib.parse'))),
 
     'httplib': (
         PythonModule(max_version=(2, 7, 9),
@@ -1891,12 +1910,18 @@ _metadata = {
         PythonModule(version=2,
                 deps=('binascii', 'errno', 'hmac', 'random', 're', 'socket',
                         '?ssl', 'subprocess', 'time')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 5),
                 deps=('binascii', 'calendar', 'datetime', 'errno', 'hmac',
                         'io', 'random', 're', 'socket', '?ssl', 'subprocess',
-                        'time'))),
-    'imghdr':
-        PythonModule(),
+                        'time')),
+        PythonModule(min_version=(3, 6),
+                deps=('binascii', 'calendar', 'datetime', 'errno', 'hmac',
+                        'io', 'random', 're', 'socket', '?ssl', 'subprocess',
+                        'time', 'warnings'))),
+
+    'imghdr': (
+        PythonModule(max_version=(3, 5)),
+        PythonModule(min_version=(3, 6), deps='os')),
 
     'imp': (
         CoreExtensionModule(version=2),
@@ -1978,9 +2003,14 @@ _metadata = {
                         'importlib.machinery', 'itertools', 'linecache',
                         'operator', 'os', 're', 'token', 'tokenize', 'types',
                         'warnings')),
-        PythonModule(min_version=(3, 5),
+        PythonModule(version=(3, 5),
                 deps=('ast', 'collections', 'collections.abc', 'dis', 'enum',
                         'functools', 'imp', 'importlib.machinery', 'itertools',
+                        'linecache', 'operator', 'os', 're', 'token',
+                        'tokenize', 'types', 'warnings')),
+        PythonModule(min_version=(3, 6),
+                deps=('ast', 'collections', 'collections.abc', 'dis', 'enum',
+                        'functools', 'importlib.machinery', 'itertools',
                         'linecache', 'operator', 'os', 're', 'token',
                         'tokenize', 'types', 'warnings'))),
 
@@ -1995,8 +2025,11 @@ _metadata = {
         ExtensionModule(version=2, source='itertoolsmodule.c'),
         CoreExtensionModule(version=3)),
 
-    'json':
-        PythonModule(deps=('json.decoder', 'json.encoder'), modules=()),
+    'json': (
+        PythonModule(max_version=(3, 5),
+                deps=('json.decoder', 'json.encoder'), modules=()),
+        PythonModule(min_version=(3, 6),
+                deps=('codecs', 'json.decoder', 'json.encoder'), modules=())),
 
     'keyword':
         PythonModule(),
@@ -2083,8 +2116,10 @@ _metadata = {
 
     'lzma': (
         PythonModule(min_version=3, max_version=(3, 4), deps=('io', '_lzma')),
-        PythonModule(min_version=(3, 5),
-                deps=('_compression', 'io', '_lzma'))),
+        PythonModule(version=(3, 5),
+                deps=('_compression', 'io', '_lzma')),
+        PythonModule(min_version=(3, 6),
+                deps=('_compression', 'io', '_lzma', 'os'))),
 
     'MacOS':
         ExtensionModule(version=2, scope='macx',
@@ -2167,8 +2202,10 @@ _metadata = {
                 deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
         PythonModule(min_version=3, max_version=(3, 5, 1), scope='win32',
                 deps=('_msi', 'os', 're', 'string', 'tempfile')),
-        PythonModule(min_version=(3, 5, 2), scope='win32',
-                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile'))),
+        PythonModule(min_version=(3, 5, 2), max_version=(3, 5), scope='win32',
+                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
+        PythonModule(min_version=(3, 6), scope='win32',
+                deps=('_msi', 'fnmatch', 'os', 're', 'string', 'tempfile'))),
 
     'msvcrt': (
         ExtensionModule(max_version=(3, 4), scope='win32',
