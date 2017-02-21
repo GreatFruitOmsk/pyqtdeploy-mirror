@@ -3752,7 +3752,7 @@ _metadata = {
         # difficult to do).
         ExtensionModule(min_version=(3, 6), internal=True,
                 source=('_blake2/blake2module.c', '_blake2/blake2b_impl.c',
-                        '_blake2/blake2c_impl.c'),
+                        '_blake2/blake2s_impl.c'),
                 includepath='_blake2'),
 
     '_bootlocale':
@@ -4473,7 +4473,7 @@ _metadata = {
 
     '_sha3':
         ExtensionModule(min_version=(3, 6), internal=True,
-                includepath='_sha3', source='sha3module.c'),
+                includepath='_sha3', source='_sha3/sha3module.c'),
 
     '_sha256':
         ExtensionModule(internal=True, source='sha256module.c'),
