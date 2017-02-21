@@ -241,7 +241,7 @@ pyconfig = (
     Config('HAVE_DECL_RTLD_LOCAL', default=1),
 
 	# Define to 1 if you have the declaration of `RTLD_NODELETE'.
-    Config('HAVE_DECL_RTLD_NODELETE', default=1),
+    Config('HAVE_DECL_RTLD_NODELETE', default=1, android=None),
 
 	# Define to 1 if you have the declaration of `RTLD_NOLOAD'.
     Config('HAVE_DECL_RTLD_NOLOAD', default=1),
@@ -1003,7 +1003,7 @@ pyconfig = (
     Config('HAVE_STROPTS_H'),
 
     # Define to 1 if `pw_gecos' is a member of `struct passwd'.
-    Config('HAVE_STRUCT_PASSWD_PW_GECOS', default=1),
+    Config('HAVE_STRUCT_PASSWD_PW_GECOS', default=1, android=None),
 
     # Define to 1 if `pw_passwd' is a member of `struct passwd'.
     Config('HAVE_STRUCT_PASSWD_PW_PASSWD', default=1),
