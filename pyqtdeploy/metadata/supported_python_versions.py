@@ -26,7 +26,7 @@
 
 # The supported versions.
 _supported_versions = (
-    ((3, 5, 3), "3.6.0 and later"),
+    ((3, 6, 0), "3.6.0 and later"),
     ((3, 5, 3), "3.5.3"),
     ((3, 5, 2), "3.5.2"),
     ((3, 5, 1), "3.5.1"),
