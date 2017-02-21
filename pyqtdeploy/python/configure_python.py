@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -68,8 +68,9 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
 
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
-    # Patch with the most appropriate diff.  Only Android needs patches.
-    if patches and target.startswith('android'):
+    # Patch with the most appropriate diff.  Only Android needs patches and
+    # only for Python earlier than v3.6.0.
+    if patches and target.startswith('android') and (py_major, py_minor) < (3, 6):
         python_diff_src_file = _get_file_for_version(py_version, 'patches')
 
         # I'm too lazy to generate patches for all old versions.
