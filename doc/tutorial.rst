@@ -372,7 +372,8 @@ application is shown below.
     is used to specify if the application requires SSL support to be enabled.
     Several packages in the Python standard library will enable SSL related
     functionality if it is available - even if your application doesn't itself
-    import the :mod:`ssl` module.
+    import the :mod:`ssl` module.  Note that you still have to provide
+    appropriately compiled SSL libraries and header files.
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
