@@ -67,7 +67,11 @@ win32 {
     QMAKE_CFLAGS_RELEASE = -O3
     QMAKE_CFLAGS += -fwrapv
 
-    !greaterThan(PY_MAJOR_VERSION, 2) {
+    greaterThan(PY_MAJOR_VERSION, 2) {
+        greaterThan(PY_MINOR_VERSION, 5) {
+            QMAKE_CFLAGS += -std=c99
+        }
+    } else {
         QMAKE_CFLAGS += -fno-strict-aliasing
     }
 }
