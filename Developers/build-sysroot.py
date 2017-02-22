@@ -555,7 +555,7 @@ def build_host_python(host, target_name, use_system_python):
 
         py_major, py_minor = use_system_python.split('.')
         reg_version = use_system_python
-        if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
+        if int(py_major) == 3 and int(py_minor) >= 5 and target_name is not None and target_name.endswith('-32'):
             reg_version += '-32'
 
         sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
