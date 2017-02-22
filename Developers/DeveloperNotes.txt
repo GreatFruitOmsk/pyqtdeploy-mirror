@@ -197,6 +197,8 @@ packages::
 
     python build-sysroot.py --clean --all --qt /path/to/X.Y/msvc2015 --target win-32 --sysroot /path/to/sysroot-win-32 --use-system-python M.N
 
+Note that the appropriate Qt bin directory needs to be on PATH.
+
 
 Deploying to Android
 ====================
