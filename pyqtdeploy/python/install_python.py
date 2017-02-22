@@ -91,6 +91,12 @@ def _install_windows_system_python(py_major, py_minor, install_path, sysroot, me
     _copy_file(install_path + 'libs\\' + lib_name,
             os.path.join(lib_dir, lib_name), message_handler)
 
+    if py_major >= 3 and py_minor >= 4:
+        lib_name = 'python{0}.lib'.format(py_major)
+
+        _copy_file(install_path + 'libs\\' + lib_name,
+                os.path.join(lib_dir, lib_name), message_handler)
+
     # The DLLs and extension modules.
     dlls_dir = _clean_dir(lib_dir, 'DLLs{0}.{1}'.format(py_major, py_minor),
             message_handler)
