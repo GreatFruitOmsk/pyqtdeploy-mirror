@@ -22,6 +22,8 @@ Python
 Patches
 .......
 
+Note that this is only necessary for versions of Python prior to v3.6.0.
+
 Change to the source directory of the new Python version and run::
 
     pyqtdeploycli --package python --target android-32 configure
@@ -166,11 +168,6 @@ OS X
 Using the opensource Qt source package and the GPL versions of all packages::
 
     python3 build-sysroot.py --clean --all --sysroot /path/to/sysroot-osx-64
-
-Using the commercial Qt from the on-line installer and the commercial versions
-of all packages::
-
-    python3 build-sysroot.py --clean --all --debug --qt /path/to/X.Y/android_armv7 --target android-32 --sysroot /path/to/sysroot-android-32
 
 Using the commercial Qt from the on-line installer and the commercial versions
 of all packages::

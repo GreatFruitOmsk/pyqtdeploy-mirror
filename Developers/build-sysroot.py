@@ -822,9 +822,15 @@ def build_qscintilla(host, target, debug):
 
     # Build the static C++ library.
     os.chdir('Qt4Qt5')
-    host.run(host.qmake, 'CONFIG+=staticlib')
+
+    config = 'staticlib'
+    if debug:
+        config += ' debug'
+
+    host.run(host.qmake, 'CONFIG+=' + config)
     host.run(host.make)
     host.run(host.make, 'install')
+
     os.chdir('..')
 
     # Build the static Python bindings.
