@@ -430,16 +430,27 @@ def make_symlink(root_dir, src, dst):
         os.symlink(src, dst)
 
 
-def build_qt(host, target, qt_dir, static_msvc_runtime):
+def check_sdk(sdk):
+    """ Check that an SDK has been specified. """
+
+    if sdk is None:
+        fatal("A valid SDK hasn't been specified")
+
+
+def build_qt(host, target, optional, qt_dir, static_msvc_runtime):
     """ Build Qt. """
 
     # See if we need to build a target Qt installation from source.
     if qt_dir is None:
+        source = host.sysroot.find_source('qt-everywhere-*-src-*',
+                optional=optional)
+        if source is None:
+            return
+
         # We don't support cross-compiling Qt.
         if target.name != host.name:
             fatal("Cross compiling Qt is not supported. Use the --qt option to specify a pre-compiled Qt installation")
 
-        source = host.sysroot.find_source('qt-everywhere-*-src-*')
         host.sysroot.unpack_source(source)
 
         if sys.platform == 'win32':
@@ -520,14 +531,17 @@ def build_qt(host, target, qt_dir, static_msvc_runtime):
                 os.path.join(host.sysroot.bin_dir, androiddeployqt))
 
 
-def build_host_python(host, target_name, use_system_python):
+def build_host_python(host, target_name, optional, use_system_python):
     """ Build (or install) a host Python. """
 
     if use_system_python is None:
         if sys.platform == 'win32':
             fatal("Building the host Python from source on Windows is not supported")
 
-        source = host.sysroot.find_source('Python-*')
+        source = host.sysroot.find_source('Python-*', optional=optional)
+        if source is None:
+            return
+
         host.sysroot.unpack_source(source)
 
         py_version = source.split('-')[1].split('.')
@@ -675,18 +689,24 @@ def build_sip_module(source, host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_sip(host, target, debug):
+def build_sip(host, target, optional, debug):
     """ Build sip. """
 
-    source = host.sysroot.find_source('sip-*')
+    source = host.sysroot.find_source('sip-*', optional=optional)
+    if source is None:
+        return
+
     build_sip_code_generator(source, host)
     build_sip_module(source, host, target, debug)
 
 
-def build_pyqt5(host, target, debug):
+def build_pyqt5(host, target, optional, debug):
     """ Build a target static PyQt5. """
 
-    source = host.sysroot.find_source('PyQt5_*')
+    source = host.sysroot.find_source('PyQt5_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     license_path = os.path.join(host.sysroot.src_dir, 'pyqt-commercial.sip')
@@ -713,10 +733,13 @@ def build_pyqt5(host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_pyqt3d(host, target, debug):
+def build_pyqt3d(host, target, optional, debug):
     """ Build a target static PyQt3D. """
 
-    source = host.sysroot.find_source('PyQt3D_*')
+    source = host.sysroot.find_source('PyQt3D_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     configuration = 'pyqt3d-' + target.name + '.cfg'
@@ -738,10 +761,13 @@ def build_pyqt3d(host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_pyqtchart(host, target, debug):
+def build_pyqtchart(host, target, optional, debug):
     """ Build a target static PyQtChart. """
 
-    source = host.sysroot.find_source('PyQtChart_*')
+    source = host.sysroot.find_source('PyQtChart_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     configuration = 'pyqtchart-' + target.name + '.cfg'
@@ -763,10 +789,14 @@ def build_pyqtchart(host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_pyqtdatavisualization(host, target, debug):
+def build_pyqtdatavisualization(host, target, optional, debug):
     """ Build a target static PyQtDataVisualization. """
 
-    source = host.sysroot.find_source('PyQtDataVisualization_*')
+    source = host.sysroot.find_source('PyQtDataVisualization_*',
+            optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     configuration = 'pyqtdatavisualization-' + target.name + '.cfg'
@@ -789,10 +819,13 @@ def build_pyqtdatavisualization(host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_pyqtpurchasing(host, target, debug):
+def build_pyqtpurchasing(host, target, optional, debug):
     """ Build a target static PyQtPurchasing. """
 
-    source = host.sysroot.find_source('PyQtPurchasing_*')
+    source = host.sysroot.find_source('PyQtPurchasing_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     configuration = 'pyqtpurchasing-' + target.name + '.cfg'
@@ -814,10 +847,13 @@ def build_pyqtpurchasing(host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_qscintilla(host, target, debug):
+def build_qscintilla(host, target, optional, debug):
     """ Build a target static QScintilla. """
 
-    source = host.sysroot.find_source('QScintilla_*')
+    source = host.sysroot.find_source('QScintilla_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     # Build the static C++ library.
@@ -855,9 +891,66 @@ def build_qscintilla(host, target, debug):
     host.run(host.make, 'install')
 
 
+def build_openssl(host, target, optional, sdk):
+    """ Build OpenSSL. """
+
+    source = host.sysroot.find_source('openssl-*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    # TODO: Need to decide what to do about --openssldir.
+    common_options = (
+        'no-krb5',
+        'no-idea',
+        'no-mdc2',
+        'no-rc5',
+        'no-zlib',
+        'enable-tlsext',
+        'no-ssl2',
+        'no-ssl3',
+        'no-ssl3-method',
+        '--prefix=' + str(host.sysroot),
+    )
+
+    if target.name == 'osx-64':
+        build_openssl_osx(host, sdk, common_options)
+    else:
+        fatal("Building OpenSSL for {} is not yet supported".format(target.name))
+
+
+def build_openssl_osx(host, sdk, common_options):
+    """ Build OpenSSL for osx-64. """
+
+    # Make sure we have an SDK.
+    check_sdk(sdk)
+
+    # Find and apply the Python patch.
+    patches = glob.glob('../Python-*/Mac/BuildScript/openssl*.patch')
+
+    if len(patches) < 1:
+        fatal("Unable to find the OpenSSL patch in the Python source tree")
+
+    if len(patches) > 1:
+        fatal("Found additional OpenSSL patches in the Python source tree")
+
+    host.run('patch', '-p1', '-i', patches[0])
+
+    # Configure, build and install.
+    args = ['perl', 'Configure',
+            'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
+    args.extend(common_options)
+
+    host.run(*args)
+    host.run(host.make, 'depend', 'OSX_SDK=' + sdk)
+    host.run(host.make, 'all', 'OSX_SDK=' + sdk)
+    host.run(host.make, 'install_sw', 'OSX_SDK=' + sdk)
+
+
 # The different packages in the order that they should be built.
-all_packages = ('qt', 'python', 'sip', 'pyqt5', 'pyqt3d', 'pyqtchart',
-        'pyqtdatavisualization', 'pyqtpurchasing', 'qscintilla')
+all_packages = ('openssl', 'qt', 'python', 'sip', 'pyqt5', 'pyqt3d',
+        'pyqtchart', 'pyqtdatavisualization', 'pyqtpurchasing', 'qscintilla')
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
@@ -874,6 +967,8 @@ parser.add_argument('--enable-dynamic-loading', action='store_true',
         help="build Python with dynamic loading enabled")
 parser.add_argument('--qt', metavar='DIR',
         help="the pre-compiled Qt installation to 'build'")
+parser.add_argument('--sdk',
+        help="the SDK to use for Apple targets")
 parser.add_argument('--static-msvc-runtime', action='store_true',
         help="build Qt with a static MSVC runtime")
 parser.add_argument('--sysroot', metavar='DIR',
@@ -891,6 +986,37 @@ host = Host.factory(args.sysroot)
 # Determine the packages to build.
 packages = all_packages if args.all else args.build
 
+# Find an SDK to use.
+if args.sdk and '/' in args.sdk:
+    # The user specified an explicit path so use it.
+    sdk = args.sdk
+    if not os.path.isdir(sdk):
+        sdk = None
+else:
+    # TODO: The candidate directories should be target specific and we need to
+    # decide how to handle iPhoneSimulator vs. iPhone.
+    sdk_dirs = (
+        '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
+        '/Developer/SDKs'
+    )
+
+    for sdk_dir in sdk_dirs:
+        if os.path.isdir(sdk_dir):
+            if args.sdk:
+                sdk = os.path.join(sdk_dir, args.sdk)
+            else:
+                # Use the latest SDK we find.
+                sdks = glob.glob(sdk_dir + '/MacOSX*.sdk')
+                if len(sdks) == 0:
+                    sdk = None
+                else:
+                    sdks.sort()
+                    sdk = sdks[-1]
+
+            break
+    else:
+        sdk = None
+
 # Do the builds.
 if args.clean:
     host.sysroot.clean()
@@ -898,36 +1024,39 @@ if args.clean:
 # We build the host Python as soon as possble as that is where we get the host
 # platform from.
 if 'python' in packages:
-    build_host_python(host, args.target, args.use_system_python)
+    build_host_python(host, args.all, args.target, args.use_system_python)
 else:
     host.python.get_configuration(host.interpreter)
 
 # Create a target instance now that we know the host.
 target = Target.factory(args.target, host)
 
+if 'openssl' in packages:
+    build_openssl(host, target, args.all, sdk)
+
 if 'qt' in packages:
-    build_qt(host, target, args.qt, args.static_msvc_runtime)
+    build_qt(host, target, args.all, args.qt, args.static_msvc_runtime)
 
 if 'python' in packages:
     build_target_python(host, target, args.debug, args.enable_dynamic_loading)
 
 if 'sip' in packages:
-    build_sip(host, target, args.debug)
+    build_sip(host, target, args.all, args.debug)
 
 if 'pyqt5' in packages:
-    build_pyqt5(host, target, args.debug)
+    build_pyqt5(host, target, args.all, args.debug)
 
 if 'pyqt3d' in packages:
-    build_pyqt3d(host, target, args.debug)
+    build_pyqt3d(host, target, args.all, args.debug)
 
 if 'pyqtchart' in packages:
-    build_pyqtchart(host, target, args.debug)
+    build_pyqtchart(host, target, args.all, args.debug)
 
 if 'pyqtdatavisualization' in packages:
-    build_pyqtdatavisualization(host, target, args.debug)
+    build_pyqtdatavisualization(host, target, args.all, args.debug)
 
 if 'pyqtpurchasing' in packages:
-    build_pyqtpurchasing(host, target, args.debug)
+    build_pyqtpurchasing(host, target, args.all, args.debug)
 
 if 'qscintilla' in packages:
-    build_qscintilla(host, target, args.debug)
+    build_qscintilla(host, target, args.all, args.debug)
