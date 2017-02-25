@@ -916,6 +916,8 @@ def build_openssl(host, target, optional, sdk):
 
     if target.name == 'osx-64':
         build_openssl_osx(host, sdk, common_options)
+    elif target.name in ('win-32', 'win-64'):
+        build_openssl_win(host, target, common_options)
     else:
         fatal("Building OpenSSL for {} is not yet supported".format(target.name))
 
@@ -946,6 +948,27 @@ def build_openssl_osx(host, sdk, common_options):
     host.run(host.make, 'depend', 'OSX_SDK=' + sdk)
     host.run(host.make, 'all', 'OSX_SDK=' + sdk)
     host.run(host.make, 'install_sw', 'OSX_SDK=' + sdk)
+
+
+def build_openssl_win(host, target, common_options):
+    """ Build OpenSSL for win-*. """
+
+    # Set the architecture-specific values.
+    if target.name.endswith('-64'):
+        compiler = 'VC-WIN64A'
+        post_config = 'ms\\do_win64a'
+    else:
+        compiler = 'VC-WIN32'
+        post_config = 'ms\\do_nasm'
+
+    # Configure, build and install.
+    args = ['perl', 'Configure', compiler]
+    args.extend(common_options)
+
+    host.run(*args)
+    host.run(post_config)
+    host.run(host.make, '-f', 'ms\\nt.mak')
+    host.run(host.make, '-f', 'ms\\nt.mak', 'install_sw')
 
 
 # The different packages in the order that they should be built.
