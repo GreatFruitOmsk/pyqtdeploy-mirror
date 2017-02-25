@@ -62,10 +62,10 @@ class Config:
                     # Return the default.
                     return self._default
 
-        # Return the default value if the targetted Android version is earlier
-        # than the one for which the value is defined.
+        # Return None if the targetted Android version is earlier than the one
+        # for which the value is defined.
         if target == 'android' and android_api < self._api:
-            return self._default
+            return None
 
         return value
 
@@ -94,7 +94,7 @@ pyconfig = (
     Config('GETTIMEOFDAY_NO_TZ'),
 
     # Define to 1 if you have the `accept4' function.
-    Config('HAVE_ACCEPT4', android=1, api=12, linux=1),
+    Config('HAVE_ACCEPT4', android=1, api=21, linux=1),
 
     # Define to 1 if you have the `acosh' function.
     Config('HAVE_ACOSH', default=1),
@@ -376,7 +376,7 @@ pyconfig = (
     Config('HAVE_FTELLO', default=1),
 
     # Define to 1 if you have the `ftime' function.
-    Config('HAVE_FTIME', default=1),
+    Config('HAVE_FTIME', default=1, android=None),
 
     # Define to 1 if you have the `ftruncate' function.
     Config('HAVE_FTRUNCATE', default=1),
@@ -488,7 +488,7 @@ pyconfig = (
     Config('HAVE_GETRESUID', android=1, linux=1),
 
     # Define to 1 if you have the `getsid' function.
-    Config('HAVE_GETSID', default=1, android=None),
+    Config('HAVE_GETSID', default=1, android=1),
 
     # Define to 1 if you have the `getspent' function.
     Config('HAVE_GETSPENT', android=1, linux=1),
@@ -654,7 +654,7 @@ pyconfig = (
     Config('HAVE_MAKEDEV', default=1),
 
     # Define to 1 if you have the `mbrtowc' function.
-    Config('HAVE_MBRTOWC', default=1, android=None),
+    Config('HAVE_MBRTOWC', default=1, android=1, api=21),
 
     # Define to 1 if you have the `memmove' function.
     Config('HAVE_MEMMOVE', default=1),
