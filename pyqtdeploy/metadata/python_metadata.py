@@ -2344,7 +2344,8 @@ _metadata = {
         PythonModule(version=2, deps=('types', 'warnings')),
 
     'nis':
-        ExtensionModule(scope='!win32', source='nismodule.c', libs='-lnsl'),
+        ExtensionModule(scope='!win32', source='nismodule.c',
+                libs='linux-*#-lnsl'),
 
     'nntplib': (
         PythonModule(version=2, deps=('netrc', 're', 'socket')),
