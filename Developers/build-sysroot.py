@@ -956,10 +956,10 @@ def build_openssl_win(host, target, common_options):
     # Set the architecture-specific values.
     if target.name.endswith('-64'):
         compiler = 'VC-WIN64A'
-        post_config = 'ms\\do_win64a'
+        post_config = 'ms\\do_win64a.bat'
     else:
         compiler = 'VC-WIN32'
-        post_config = 'ms\\do_nasm'
+        post_config = 'ms\\do_nasm.bat'
 
     # Configure, build and install.
     args = ['perl', 'Configure', compiler]
@@ -968,7 +968,7 @@ def build_openssl_win(host, target, common_options):
     host.run(*args)
     host.run(post_config)
     host.run(host.make, '-f', 'ms\\nt.mak')
-    host.run(host.make, '-f', 'ms\\nt.mak', 'install_sw')
+    host.run(host.make, '-f', 'ms\\nt.mak', 'install')
 
 
 # The different packages in the order that they should be built.
