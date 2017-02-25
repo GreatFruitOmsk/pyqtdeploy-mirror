@@ -4592,17 +4592,21 @@ _metadata = {
     'xml.dom.minicompat':
         PythonModule(internal=True, deps='xml.dom'),
 
+    'xml.dom.NodeFilter':
+        PythonModule(internal=True),
+
     'xml.dom.xmlbuilder': (
         PythonModule(version=2, internal=True,
                 deps=('xml.dom', 'copy', 'posixpath', 'urllib2', 'urlparse',
-                        'xml.dom.expatbuilder')),
+                        'xml.dom.expatbuilder', 'xml.dom.NodeFilter')),
         PythonModule(min_version=3, max_version=(3, 4), internal=True,
                 deps=('xml.dom', 'copy', 'posixpath', 'urllib.parse',
-                        'urllib.request', 'xml.dom.expatbuilder')),
+                        'urllib.request', 'xml.dom.expatbuilder',
+                        'xml.dom.NodeFilter')),
         PythonModule(min_version=(3, 5), internal=True,
                 deps=('xml.dom', 'copy', 'posixpath', 'urllib.parse',
-                        'urllib.request', 'warnings',
-                        'xml.dom.expatbuilder'))),
+                        'urllib.request', 'warnings', 'xml.dom.expatbuilder',
+                        'xml.dom.NodeFilter'))),
 
     'xml.etree.ElementPath':
         PythonModule(internal=True, deps=('xml.etree', 're')),
