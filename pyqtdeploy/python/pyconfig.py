@@ -488,7 +488,7 @@ pyconfig = (
     Config('HAVE_GETRESUID', android=1, linux=1),
 
     # Define to 1 if you have the `getsid' function.
-    Config('HAVE_GETSID', default=1, android=1),
+    Config('HAVE_GETSID', default=1, android=1, api=21),
 
     # Define to 1 if you have the `getspent' function.
     Config('HAVE_GETSPENT', android=1, linux=1),
