@@ -63,7 +63,7 @@ setup(
         long_description=long_description,
         author='Riverbank Computing Limited',
         author_email='info@riverbankcomputing.com',
-        url='http://www.riverbankcomputing.com/software/pyqtdeploy/',
+        url='https://www.riverbankcomputing.com/software/pyqtdeploy/',
         license='BSD',
         platforms=['X11', 'OS/X', 'Windows'],
         packages=find_packages(),
