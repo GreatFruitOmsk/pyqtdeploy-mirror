@@ -49,6 +49,14 @@ You must specify these yourself.  However it does understand the
 inter-dependencies within the standard library, so you only need to specify
 those packages that your application explicitly imports.
 
+.. note::
+
+    Creating a single executable (particularly one with no external
+    dependencies) from a complex Python application (particularly one that uses
+    external C extension modules) is not a simple task.  It requires experience
+    of C code, compilers, build systems and the ability to debug associated
+    problems.  You have been warned!
+
 
 Author
 ------
