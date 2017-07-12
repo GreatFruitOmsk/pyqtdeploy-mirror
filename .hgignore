@@ -1,10 +1,7 @@
 syntax: glob
 .DS_Store
 *.pyc
-build
-ChangeLog*
-dist
-doc/_build
 pyqtdeploy.egg-info
 pyqtdeploy/version.py
 VERSION
+demo/build

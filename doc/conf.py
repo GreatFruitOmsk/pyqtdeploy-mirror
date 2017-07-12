@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pyqtdeploy'
-copyright = '2016, Riverbank Computing Limited'
+copyright = '2017, Riverbank Computing Limited'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -70,7 +70,7 @@ version = release.split('-')[0]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['html']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

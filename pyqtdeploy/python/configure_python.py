@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -68,8 +68,9 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
 
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
-    # Patch with the most appropriate diff.  Only Android needs patches.
-    if patches and target.startswith('android'):
+    # Patch with the most appropriate diff.  Only Android needs patches and
+    # only for Python earlier than v3.6.0.
+    if patches and target.startswith('android') and (py_major, py_minor) < (3, 6):
         python_diff_src_file = _get_file_for_version(py_version, 'patches')
 
         # I'm too lazy to generate patches for all old versions.
@@ -116,6 +117,10 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
             except FileNotFoundError:
                 pass
     else:
+        if target == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
+            raise UserException(
+                    "Python v3.6.0 and later requires Android API level 21 or later")
+
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
 

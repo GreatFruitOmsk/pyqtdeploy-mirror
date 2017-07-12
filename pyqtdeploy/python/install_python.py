@@ -65,17 +65,22 @@ def install_python(target, sysroot, system_python, message_handler):
             "Installing Python v{0}.{1} for {2} in {3}".format(
                     py_major, py_minor, target, sysroot))
 
-    _install_windows_system_python(py_major, py_minor, sysroot,
-            message_handler)
+    # Create the version used in the registry.
+    reg_version = '{}.{}'.format(py_major, py_minor)
+    if py_major == 3 and py_minor >= 5 and target.endswith('-32'):
+        reg_version += '-32'
 
-
-def _install_windows_system_python(py_major, py_minor, sysroot, message_handler):
-    """ Install the Windows system Python. """
-
-    install_path = get_windows_install_path(py_major, py_minor)
+    install_path = get_windows_install_path(reg_version)
     message_handler.progress_message(
             "Found Python v{0}.{1} at {2}".format(py_major, py_minor,
                     install_path))
+
+    _install_windows_system_python(py_major, py_minor, install_path, sysroot,
+            message_handler)
+
+
+def _install_windows_system_python(py_major, py_minor, install_path, sysroot, message_handler):
+    """ Install the Windows system Python. """
 
     # The interpreter library.
     lib_dir = os.path.join(sysroot, 'lib')
@@ -86,11 +91,19 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
     _copy_file(install_path + 'libs\\' + lib_name,
             os.path.join(lib_dir, lib_name), message_handler)
 
+    if py_major >= 3 and py_minor >= 4:
+        lib_name = 'python{0}.lib'.format(py_major)
+
+        _copy_file(install_path + 'libs\\' + lib_name,
+                os.path.join(lib_dir, lib_name), message_handler)
+
     # The DLLs and extension modules.
     dlls_dir = _clean_dir(lib_dir, 'DLLs{0}.{1}'.format(py_major, py_minor),
             message_handler)
     _copy_dir(install_path + 'DLLs', dlls_dir, message_handler,
             ignore=('*.ico', 'tcl*.dll', 'tk*.dll', '_tkinter.pyd'))
+
+    py_dll = 'python{0}{1}.dll'.format(py_major, py_minor)
 
     if py_major == 3 and py_minor >= 5:
         py_dll_dir = install_path
@@ -99,9 +112,14 @@ def _install_windows_system_python(py_major, py_minor, sysroot, message_handler)
         _copy_file(py_dll_dir + vc_dll, os.path.join(dlls_dir, vc_dll),
                 message_handler)
     else:
+        # Check for an installation for all users on 32 bit Windows.
         py_dll_dir = 'C:\\Windows\\System32\\'
-
-    py_dll = 'python{0}{1}.dll'.format(py_major, py_minor)
+        if not os.path.isfile(py_dll_dir + py_dll):
+            # Check for an installation for all users on 64 bit Windows.
+            py_dll_dir = 'C:\\Windows\\SysWOW64\\'
+            if not os.path.isfile(py_dll_dir + py_dll):
+                # Assume it is an installation for the current user.
+                py_dll_dir = install_path
 
     _copy_file(py_dll_dir + py_dll, os.path.join(dlls_dir, py_dll),
             message_handler)

@@ -51,6 +51,14 @@ OBJECTS_DIR = .obj
 
 DEFINES += NDEBUG Py_BUILD_CORE
 
+# These are needed by getpath.c but the actual values don't matter too much as
+# the path is set properly elsewhere.
+DEFINES += VERSION=\\\"$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
+DEFINES += VPATH=\\\".\\\"
+DEFINES += PREFIX=\\\"/\\\"
+DEFINES += EXEC_PREFIX=\\\"/\\\"
+DEFINES += PYTHONPATH=\\\"/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
+
 INCLUDEPATH += . Include
 
 win32 {
@@ -59,7 +67,11 @@ win32 {
     QMAKE_CFLAGS_RELEASE = -O3
     QMAKE_CFLAGS += -fwrapv
 
-    !greaterThan(PY_MAJOR_VERSION, 2) {
+    greaterThan(PY_MAJOR_VERSION, 2) {
+        greaterThan(PY_MINOR_VERSION, 5) {
+            QMAKE_CFLAGS += -std=c99
+        }
+    } else {
         QMAKE_CFLAGS += -fno-strict-aliasing
     }
 }

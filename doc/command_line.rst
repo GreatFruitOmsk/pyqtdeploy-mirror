@@ -212,6 +212,14 @@ The full set of command line options is:
     :option:`show-targets` action will list the supported targets including the
     target variants.
 
+.. cmdoption:: --timeout SECONDS
+
+    .. versionadded:: 1.3.2
+
+    When used with the :option:`build` action this specifies the number of
+    seconds to wait for build processes to run before timing out.  The default
+    value is 30.
+
 .. cmdoption:: --quiet
 
     This is used with the :option:`build` action to specify that progress

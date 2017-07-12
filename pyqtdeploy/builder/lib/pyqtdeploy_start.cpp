@@ -1,4 +1,4 @@
-// Copyright (c) 2015, Riverbank Computing Limited
+// Copyright (c) 2017, Riverbank Computing Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -217,7 +217,7 @@ int pyqtdeploy_start(int argc, char **argv,
 #endif
 
     // Set sys.frozen.
-    if (PySys_SetObject("frozen", Py_True) < 0)
+    if (PySys_SetObject(CONST_CAST("frozen"), Py_True) < 0)
         return handle_exception();
 
     // Initialise the directory containing the executable.

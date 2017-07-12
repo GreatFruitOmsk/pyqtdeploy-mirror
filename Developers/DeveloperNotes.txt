@@ -22,6 +22,8 @@ Python
 Patches
 .......
 
+Note that this is only necessary for versions of Python prior to v3.6.0.
+
 Change to the source directory of the new Python version and run::
 
     pyqtdeploycli --package python --target android-32 configure
@@ -81,11 +83,18 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 ``python.pro``.
 
 
-_bootstrap.py
-.............
+_bootstrap_external.py
+......................
 
-For Python v3, check if ``Lib/importlib/_bootstrap.py`` has any changes and
-update the builder's version if necessary.
+For Python v3, check if ``Lib/importlib/_bootstrap_external.py`` has any
+changes and update the builder's version if necessary.
+
+
+supported_python_versions.py
+............................
+
+Update the object describing supported versions if the new version required
+version-specific changes to the meta-data.
 
 
 Qt
@@ -111,8 +120,8 @@ section ``[Qt 5.x]``.  If the release supports a new Python module for an
 existing Qt library then update the existing section.
 
 Consider if the ``pyqt_disabled_features`` entry needs updating.  If so then
-also update the QScintilla, PyQtChart and PyQtDataVisualization configuration
-files.
+also update the QScintilla, PyQt3D, PyQtChart, PyQtDataVisualization and
+PyQtPurchasing configuration files.
 
 Add the new modules to the metadata defined in ``pyqt5.py``
 
@@ -129,6 +138,12 @@ QScintilla
 There should be nothing to do.
 
 
+PyQt3D
+------
+
+There should be nothing to do.
+
+
 PyQtChart
 ---------
 
@@ -139,6 +154,50 @@ PyQtDataVisualization
 ---------------------
 
 There should be nothing to do.
+
+
+Testing
+=======
+
+The following builds a reasonable variety of sysroots for all supported
+platforms.
+
+OS X
+----
+
+Using the opensource Qt source package and the GPL versions of all packages::
+
+    python3 build-sysroot.py --clean --all --sysroot /path/to/sysroot-osx-64
+
+Using the commercial Qt from the on-line installer and the commercial versions
+of all packages::
+
+    python3 build-sysroot.py --clean --all --debug --qt /path/to/X.Y/ios --target ios-64 --sysroot /path/to/sysroot-ios-64
+
+
+Linux
+-----
+
+Using the opensource Qt from the on-line installer and the GPL versions of all
+packages::
+
+    python3 build-sysroot.py --clean --all --qt /path/to/X.Y/gcc_64 --sysroot /path/to/sysroot-linux-64
+
+
+Windows
+-------
+
+Note that the following assumes that both the 32 and 64-bit versions of Python
+are installed but only the 64-bit version is on PATH.
+
+Using the opensource Qt from the on-line installer and the GPL versions of all
+packages::
+
+    python build-sysroot.py --clean --all --qt /path/to/X.Y/msvc2015_64 --target win-64 --sysroot /path/to/sysroot-win-64 --use-system-python M.N
+
+    python build-sysroot.py --clean --all --qt /path/to/X.Y/msvc2015 --target win-32 --sysroot /path/to/sysroot-win-32 --use-system-python M.N
+
+Note that the appropriate Qt bin directory needs to be on PATH.
 
 
 Deploying to Android
@@ -156,6 +215,8 @@ To configure the environment (assuming an OS/X host), run::
 To use a specific Android API level (n) rather than the default 9, run::
 
     export ANDROID_NDK_PLATFORM=android-n
+
+For Python v3.6.0 and later it must be set to 21 as a minimum.
 
 Qt and the Android NDK may not agree on the toolchain version to use.  To force
 Qt to use a particular version, run::
@@ -195,7 +256,7 @@ Once the application has been built (i.e. after running ``make``) then run::
 
 To create a debug .apk, run::
 
-    /path/to/Qtx.y.x/x.y/android_arm7/bin/androiddeployqt \
+    /path/to/X.Y/android_arm7/bin/androiddeployqt \
             --input android-lib*.so-deployment-settings.json \
             --output deploy
 

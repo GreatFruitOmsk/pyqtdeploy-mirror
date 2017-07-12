@@ -124,6 +124,9 @@ pyqt5_metadata = {
     'QtWebChannel':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['webchannel']),
 
+    'QtWebEngine':
+        PyQt5Metadata(deps=['QtWebEngineCore'], gui=False, qt5=['webengine']),
+
     'QtWebEngineCore':
         PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['webenginecore']),
 
@@ -171,9 +174,25 @@ pyqt5_metadata = {
 
     # Add-on modules.
 
+    'Qt3DCore':
+        PyQt5Metadata(group='addon', deps=['QtGui'], qt5=['3dcore']),
+
+    'Qt3DExtras':
+        PyQt5Metadata(group='addon', deps=['Qt3DRender'], qt5=['3dextras']),
+
+    'Qt3DInput':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3dinput']),
+
+    'Qt3DLogic':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3dlogic']),
+
+    'Qt3DRender':
+        PyQt5Metadata(group='addon', deps=['Qt3DCore'], qt5=['3drender']),
+
     'QtChart':
-        PyQt5Metadata(group='addon', deps=['QtWidgets'],
-                config5=['qtcommercialchart']),
+        # Note that config5 was 'qtcommercialchart' prior to Qt v5.7.0.  We
+        # choose to ignore backwards compatibility.
+        PyQt5Metadata(group='addon', deps=['QtWidgets'], qt5=['charts']),
 
     'QtDataVisualization':
         PyQt5Metadata(group='addon', deps=['QtGui'],
@@ -183,7 +202,7 @@ pyqt5_metadata = {
         PyQt5Metadata(group='addon', deps=['QtCore'], qt5=['purchasing']),
 
     'Qsci':
-        PyQt5Metadata(group='addon', deps=['QtWidgets'],
+        PyQt5Metadata(group='addon', deps=['QtPrintSupport', 'QtWidgets'],
                 config5=['qscintilla2']),
 
     # Deprecated modules.

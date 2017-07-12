@@ -20,6 +20,40 @@ except ImportError:
     pdy_hexversion = 0
 
 
+# Try and import the optional products.
+optional_products = []
+
+try:
+    import PyQt5.Qt3DCore
+    optional_products.append("PyQt3D")
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtChart
+    optional_products.append("PyQtChart")
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtDataVisualization
+    optional_products.append("PyQtDataVisualization")
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtPurchasing
+    optional_products.append("PyQtPurchasing")
+except ImportError:
+    pass
+
+try:
+    import PyQt5.Qsci
+    optional_products.append("QScintilla")
+except ImportError:
+    pass
+
+
 class View(QTreeView):
     """ A read-only view for displaying a model. """
 
@@ -52,6 +86,9 @@ class Model(QStandardItemModel):
         self.add_value("sys.path", str(sys.path))
         self.add_value("sys.path_hooks", str(sys.path_hooks))
         self.add_value("sys.meta_path", str(sys.meta_path))
+
+        for product in optional_products:
+            self.add_value(product, "imported")
 
     def add_value(self, name, value):
         """ Add a name/value pair to the model. """

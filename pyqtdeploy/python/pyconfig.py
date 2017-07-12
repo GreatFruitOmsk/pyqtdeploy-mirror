@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,10 +62,10 @@ class Config:
                     # Return the default.
                     return self._default
 
-        # Return the default value if the targetted Android version is earlier
-        # than the one for which the value is defined.
+        # Return None if the targetted Android version is earlier than the one
+        # for which the value is defined.
         if target == 'android' and android_api < self._api:
-            return self._default
+            return None
 
         return value
 
@@ -94,7 +94,7 @@ pyconfig = (
     Config('GETTIMEOFDAY_NO_TZ'),
 
     # Define to 1 if you have the `accept4' function.
-    Config('HAVE_ACCEPT4', android=1, api=12, linux=1),
+    Config('HAVE_ACCEPT4', android=1, api=21, linux=1),
 
     # Define to 1 if you have the `acosh' function.
     Config('HAVE_ACOSH', default=1),
@@ -184,6 +184,9 @@ pyconfig = (
     # Define to 1 if you have the `clock_gettime' function.
     Config('HAVE_CLOCK_GETTIME', android=1, linux=1),
 
+    # Define to 1 if you have the `clock_settime' function.
+    Config('HAVE_CLOCK_SETTIME', android=1, linux=1),
+
     # Define if the C compiler supports computed gotos.
     Config('HAVE_COMPUTED_GOTOS', default=1),
 
@@ -197,7 +200,7 @@ pyconfig = (
     Config('HAVE_COPYSIGN', default=1),
 
     # Define to 1 if you have the `ctermid' function.
-    Config('HAVE_CTERMID', default=1),
+    Config('HAVE_CTERMID', default=1, android=None),
 
     # Define if you have the 'ctermid_r' function.
     Config('HAVE_CTERMID_R', ios=1, osx=1),
@@ -224,6 +227,27 @@ pyconfig = (
     # Define to 1 if you have the declaration of `isnan'.
     Config('HAVE_DECL_ISNAN', default=1),
     Config('HAVE_ISNAN', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_DEEPBIND'.
+    Config('HAVE_DECL_RTLD_DEEPBIND', linux=1),
+
+	# Define to 1 if you have the declaration of `RTLD_GLOBAL'.
+    Config('HAVE_DECL_RTLD_GLOBAL', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_LAZY'.
+    Config('HAVE_DECL_RTLD_LAZY', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_LOCAL'.
+    Config('HAVE_DECL_RTLD_LOCAL', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_NODELETE'.
+    Config('HAVE_DECL_RTLD_NODELETE', default=1, android=None),
+
+	# Define to 1 if you have the declaration of `RTLD_NOLOAD'.
+    Config('HAVE_DECL_RTLD_NOLOAD', default=1),
+
+	# Define to 1 if you have the declaration of `RTLD_NOW'.
+    Config('HAVE_DECL_RTLD_NOW', default=1),
 
     # Define to 1 if you have the declaration of `tzname'.
     Config('HAVE_DECL_TZNAME'),
@@ -352,7 +376,7 @@ pyconfig = (
     Config('HAVE_FTELLO', default=1),
 
     # Define to 1 if you have the `ftime' function.
-    Config('HAVE_FTIME', default=1),
+    Config('HAVE_FTIME', default=1, android=None),
 
     # Define to 1 if you have the `ftruncate' function.
     Config('HAVE_FTRUNCATE', default=1),
@@ -464,7 +488,7 @@ pyconfig = (
     Config('HAVE_GETRESUID', android=1, linux=1),
 
     # Define to 1 if you have the `getsid' function.
-    Config('HAVE_GETSID', default=1, android=None),
+    Config('HAVE_GETSID', default=1, android=1, api=21),
 
     # Define to 1 if you have the `getspent' function.
     Config('HAVE_GETSPENT', android=1, linux=1),
@@ -602,6 +626,9 @@ pyconfig = (
     # Define to 1 if you have the <linux/tipc.h> header file.
     Config('HAVE_LINUX_TIPC_H', android=1, linux=1),
 
+    # Define to 1 if you have the <linux/random.h> header file.
+    Config('HAVE_LINUX_RANDOM_H', linux=1),
+
     # Define to 1 if you have the `lockf' function.
     Config('HAVE_LOCKF', ios=1, linux=1, osx=1),
 
@@ -627,7 +654,7 @@ pyconfig = (
     Config('HAVE_MAKEDEV', default=1),
 
     # Define to 1 if you have the `mbrtowc' function.
-    Config('HAVE_MBRTOWC', default=1, android=None),
+    Config('HAVE_MBRTOWC', default=1, android=1, api=21),
 
     # Define to 1 if you have the `memmove' function.
     Config('HAVE_MEMMOVE', default=1),
@@ -790,6 +817,7 @@ pyconfig = (
 
     # Define if you have readline 4.0
     Config('HAVE_RL_PRE_INPUT_HOOK', default=1, android=None),
+    Config('HAVE_RL_RESIZE_TERMINAL', default=1, android=None),
 
     # Define to 1 if you have the `round' function.
     Config('HAVE_ROUND', default=1),
@@ -914,6 +942,9 @@ pyconfig = (
     # Define to 1 if you have the `snprintf' function.
     Config('HAVE_SNPRINTF', default=1),
 
+    # Define to 1 if you have the sockaddr_alg structure.
+    Config('HAVE_SOCKADDR_ALG', linux=1),
+
     # Define if sockaddr has sa_len member
     Config('HAVE_SOCKADDR_SA_LEN', ios=1, osx=1),
 
@@ -969,7 +1000,13 @@ pyconfig = (
     Config('HAVE_STRLCPY', ios=1, osx=1),
 
     # Define to 1 if you have the <stropts.h> header file.
-    Config('HAVE_STROPTS_H', linux=1),
+    Config('HAVE_STROPTS_H'),
+
+    # Define to 1 if `pw_gecos' is a member of `struct passwd'.
+    Config('HAVE_STRUCT_PASSWD_PW_GECOS', default=1, android=None),
+
+    # Define to 1 if `pw_passwd' is a member of `struct passwd'.
+    Config('HAVE_STRUCT_PASSWD_PW_PASSWD', default=1),
 
     # Define to 1 if `st_birthtime' is a member of `struct stat'.
     Config('HAVE_STRUCT_STAT_ST_BIRTHTIME', ios=1, osx=1),
@@ -1193,7 +1230,7 @@ pyconfig = (
     Config('HAVE_UTIME_H', default=1),
 
     # Define to 1 if you have the `wait3' function.
-    Config('HAVE_WAIT3', default=1),
+    Config('HAVE_WAIT3', default=1, android=None),
 
     # Define to 1 if you have the `wait4' function.
     Config('HAVE_WAIT4', default=1),
@@ -1498,8 +1535,9 @@ pyconfig = (
     # Define to empty if the keyword does not work.
     Config('volatile'),
 
-    # The following are non-standard additions required by Android.  They are
-    # chosen so that the default (i.e. #undef) is correct for everything else.
+    # The following are non-standard additions required by Android prior to
+    # Python v3.6.0.  They are chosen so that the default (i.e. #undef) is
+    # correct for everything else.
     Config('HAVE_BROKEN_GECOS', android=1),
     Config('HAVE_BROKEN_GETGRENT', android=1),
     Config('HAVE_BROKEN_LOCALECONV', android=1),
@@ -1517,6 +1555,9 @@ def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading):
 #define Py_PYCONFIG_H
 
 ''')
+
+    if target == 'android':
+        pyconfig_h.write('#define ANDROID_API_LEVEL {0}\n'.format(android_api))
 
     if dynamic_loading:
         pyconfig_h.write('#define HAVE_DYNAMIC_LOADING 1\n')

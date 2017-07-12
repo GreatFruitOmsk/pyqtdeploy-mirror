@@ -32,8 +32,9 @@ import sys
 def main():
     """ The entry point for the setuptools generated CLI wrapper. """
 
-    # Get the default Android API level.
-    default_api = 9
+    # Get the default Android API level.  This is the level that Python v3.6.0
+    # targets.
+    default_api = 21
 
     parts = os.environ.get('ANDROID_NDK_PLATFORM', '').split('-')
 
@@ -97,6 +98,10 @@ def main():
     parser.add_argument('--target',
             help="the target platform (configure, install)",
             metavar="TARGET")
+    parser.add_argument('--timeout',
+            help="the number of seconds to wait for build processes to run "
+                    "before timing out (build)",
+            metavar="SECONDS", type=int, default=30)
     parser.add_argument('--quiet', help="disable progress messages (build)",
             action='store_true')
     parser.add_argument('--verbose',
@@ -145,8 +150,9 @@ def build(args):
 
     try:
         builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.opt, args.resources, build_dir=args.output,
-                include_dir=args.include_dir, interpreter=args.interpreter,
+        builder.build(args.opt, args.resources, args.timeout,
+                build_dir=args.output, include_dir=args.include_dir,
+                interpreter=args.interpreter,
                 python_library=args.python_library, source_dir=args.source_dir,
                 standard_library_dir=args.standard_library_dir)
     except UserException as e:

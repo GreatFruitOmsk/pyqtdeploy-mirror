@@ -372,7 +372,8 @@ application is shown below.
     is used to specify if the application requires SSL support to be enabled.
     Several packages in the Python standard library will enable SSL related
     functionality if it is available - even if your application doesn't itself
-    import the :mod:`ssl` module.
+    import the :mod:`ssl` module.  Note that you still have to provide
+    appropriately compiled SSL libraries and header files.
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
@@ -430,7 +431,7 @@ those that are part of the Python standard library or PyQt) that will be
 statically linked into the application.
 
 These extension modules may already have been built, but this tab can also be
-used to compile them source.  You would only normally do this for simple
+used to compile them from source.  You would only normally do this for simple
 extension modules typically made up of a single source file.
 
 **Name**

@@ -75,14 +75,19 @@ If you wish to statically link the Windows C Library then you need to modify
 the :program:`qmake` configuration for your compiler before running
 ``configure``.
 
-Assuming your compiler is MSVC 2015 then you need to edit the file
-``mkspecs\win32-msvc2015\qmake.conf`` in the Qt source directory as follows:
+Assuming your compiler is MSVC then you need to edit the file
+``qtbase\mkspecs\common\msvc-desktop.conf`` in the Qt source directory as
+follows:
 
 - remove ``embed_manifest_dll`` and ``embed_manifest_exe`` from the ``CONFIG``
   entry
 
 - change all occurrences of ``-MD`` and ``-MDd`` with ``-MT`` and ``-MTd``
   respectively.
+
+If that file does not exist (i.e. for older versions of Qt) then (assuming your
+compiler is MSVC 2015) then you need to edit the file
+``qtbase\\mkspecs\win32-msvc2015\qmake.conf`` instead.
 
 
 Python
@@ -106,11 +111,12 @@ specify the maintenance number.
 Other Targets
 .............
 
-When targeting Android the default API level is 9.  In order to use a different
-API level (e.g. 18) then first set the :envvar:`ANDROID_NDK_PLATFORM`
-environment variable to ``android-18``.  It may also be necessary to set the
-:envvar:`ANDROID_NDK_TOOLCHAIN_VERSION` if Qt and the Android NDK disagree on
-which version of the toolchain to use.
+When targeting Android the default API level is 21.  In order to use a
+different API level (e.g. 18) then first set the :envvar:`ANDROID_NDK_PLATFORM`
+environment variable to ``android-18``.
+
+It may also be necessary to set the :envvar:`ANDROID_NDK_TOOLCHAIN_VERSION` if
+Qt and the Android NDK disagree on which version of the toolchain to use.
 
 To build a static version of Python for non-Windows targets, change to the
 Python source directory and run::
@@ -176,7 +182,7 @@ QScintilla
 To build a static version of the QScintilla library, change to the QScintilla
 source directory and run::
 
-    cd Qt4/Qt5
+    cd Qt4Qt5
     qmake CONFIG+=staticlib
     make
     make install
@@ -190,35 +196,34 @@ source directory and run::
     make
     make install
 
-The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
-substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
-
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_ and [#iphone]_.
+
+
+Qt3D
+----
+
+To build a static version of the Python bindings, change to the PyQt3D source
+directory and run::
+
+    pyqtdeploycli --package pyqt3d --target TARGET configure
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqt3d-TARGET.cfg
+    make
+    make install
+
+See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
+[#iphone]_.
 
 
 Qt Charts
 ---------
 
-To build a static version of the Qt Charts library, change to the Qt Charts
-source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
-
 To build a static version of the Python bindings, change to the PyQtChart
 source directory and run::
 
     pyqtdeploycli --package pyqtchart --target TARGET configure
-    python configure.py --qtchart-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --pyqt=PyQt5 --configuration=pyqtchart-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtchart-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Charts
-installation.
-
-The above assumes that you are using PyQt5.  If you are using PyQt4 then simply
-substitute ``PyQt4`` for ``PyQt5`` in the appropriate places.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -227,23 +232,13 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 Qt Data Visualization
 ---------------------
 
-To build a static version of the Qt Data Visualization library, change to the
-Qt Data Visualization source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
-
 To build a static version of the Python bindings, change to the
 PyQtDataVisualization source directory and run::
 
     pyqtdeploycli --package pyqtdatavisualization --target TARGET configure
-    python configure.py --qtdatavisualization-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtdatavisualization-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Data
-Visualization installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.
@@ -252,23 +247,13 @@ See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 Qt Purchasing
 -------------
 
-To build a static version of the Qt Purchasing library, change to the Qt
-Purchasing source directory and run::
-
-    qmake "CONFIG+=release staticlib"
-    make
-    make install
-
 To build a static version of the Python bindings, change to the PyQtPurchasing
 source directory and run::
 
     pyqtdeploycli --package pyqtpurchasing --target TARGET configure
-    python configure.py --qtpurchasing-version=X.Y.Z --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
+    python configure.py --static --sysroot=$SYSROOT --no-sip-files --no-qsci-api --configuration=pyqtpurchasing-TARGET.cfg
     make
     make install
-
-Make sure that you specify a value of ``X.Y.Z`` that matches your Qt Purchasing
-installation.
 
 See notes [#target]_, [#docstrings]_, [#qmake]_, [#sip]_, [#qtbug39300]_ and
 [#iphone]_.

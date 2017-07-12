@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ class Builder():
         self._project = project
         self._message_handler = message_handler
 
-    def build(self, opt, nr_resources, build_dir=None, clean=False, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
+    def build(self, opt, nr_resources, timeout, build_dir=None, clean=False, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -164,8 +164,9 @@ class Builder():
 
         # Freeze the bootstrap.  Note that from Python v3.5 the modified part
         # is in _bootstrap_external.py and _bootstrap.py is unchanged from the
-        # original source.  However we continue to use a local copy of
-        # _bootstrap.py for now in case the structure changes again.
+        # original source.  We continue to use a local copy of _bootstrap.py
+        # as it still needs to be frozen and we don't want to depend on an
+        # external source.
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
         self._freeze_bootstrap('bootstrap', py_version, build_dir, temp_dir,
@@ -205,7 +206,7 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 temp_dir.path(), dst_file_name='freeze.py')
 
-        self._run_freeze(freeze, interpreter, job_filename, opt)
+        self._run_freeze(freeze, interpreter, job_filename, opt, timeout)
 
     def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
         """ Freeze a version dependent bootstrap script. """
@@ -1228,7 +1229,7 @@ static struct _inittab %s[] = {
 
         job_writer.writerow([out_file, in_file, name, conversion])
 
-    def _run_freeze(self, freeze, interpreter, job_filename, opt):
+    def _run_freeze(self, freeze, interpreter, job_filename, opt, timeout):
         """ Run the accumlated freeze jobs. """
 
         # On Windows the interpreter name is simply 'python'.  So in order to
@@ -1250,10 +1251,12 @@ static struct _inittab %s[] = {
         argv.append(freeze)
         argv.append(job_filename)
 
-        self.run(argv, "Unable to freeze files")
+        self.run(argv, "Unable to freeze files", timeout=timeout)
 
-    def run(self, argv, error_message, in_build_dir=False, timeout=30000):
+    def run(self, argv, error_message, in_build_dir=False, timeout=None):
         """ Execute a command and capture the output. """
+
+        timeout = -1 if timeout is None else timeout * 1000
 
         if in_build_dir:
             project = self._project

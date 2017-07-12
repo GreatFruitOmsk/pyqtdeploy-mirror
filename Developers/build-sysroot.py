@@ -234,6 +234,7 @@ class Host:
 
         self.sysroot = SysRoot(sysroot)
         self.python = HostPython()
+        self._qt_version = None
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
@@ -285,11 +286,32 @@ class Host:
 
         return os.path.join(self.sysroot.bin_dir, self.exe('qmake'))
 
+    @property
+    def qt_version(self):
+        """ The Qt version as a string. """
+
+        if self._qt_version is None:
+            self._qt_version = self.run(self.qmake, '-query', 'QT_VERSION',
+                    capture=True)
+
+        return self._qt_version
+
     @staticmethod
-    def run(*args):
+    def run(*args, capture=False):
         """ Run a command. """
 
+        if capture:
+            try:
+                stdout = subprocess.check_output(args, universal_newlines=True,
+                        stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as e:
+                fatal("Execution failed: ", e.stderr)
+
+            return stdout.strip()
+
         subprocess.check_call(args)
+
+        return None
 
     @property
     def sip(self):
@@ -408,16 +430,27 @@ def make_symlink(root_dir, src, dst):
         os.symlink(src, dst)
 
 
-def build_qt(host, target, qt_dir):
+def check_sdk(sdk):
+    """ Check that an SDK has been specified. """
+
+    if sdk is None:
+        fatal("A valid SDK hasn't been specified")
+
+
+def build_qt(host, target, optional, qt_dir, static_msvc_runtime):
     """ Build Qt. """
 
     # See if we need to build a target Qt installation from source.
     if qt_dir is None:
+        source = host.sysroot.find_source('qt-everywhere-*-src-*',
+                optional=optional)
+        if source is None:
+            return
+
         # We don't support cross-compiling Qt.
         if target.name != host.name:
             fatal("Cross compiling Qt is not supported. Use the --qt option to specify a pre-compiled Qt installation")
 
-        source = host.sysroot.find_source('qt-everywhere-*-src-*')
         host.sysroot.unpack_source(source)
 
         if sys.platform == 'win32':
@@ -437,13 +470,31 @@ def build_qt(host, target, qt_dir):
             new_path.insert(0, 'C:\\Python27')
 
             os.environ['PATH'] = ';'.join(new_path)
+
+            if static_msvc_runtime:
+                # Patch the mkspec to statically link the MSVC runtime.  This
+                # is the current location (which was changed very recently).
+                conf_name = os.path.join('qtbase', 'mkspecs', 'common',
+                        'msvc-desktop.conf')
+
+                conf_file = open(conf_name, 'rt')
+                conf = conf_file.read()
+                conf_file.close()
+
+                conf = conf.replace(' embed_manifest_dll', '').replace(' embed_manifest_exe', '').replace('-MD', '-MT')
+
+                conf_file = open(conf_name, 'wt')
+                conf_file.write(conf)
+                conf_file.close()
         else:
             configure = './configure'
             original_path = None
 
-        args = [configure, '-prefix', host.sysroot.qt_dir, '-confirm-license',
-                '-static', '-release', '-nomake', 'examples', '-nomake',
-                'tools']
+        license = '-opensource' if '-opensource-' in source else '-commercial'
+
+        args = [configure, '-prefix', host.sysroot.qt_dir, license,
+                '-confirm-license', '-static', '-release', '-nomake',
+                'examples', '-nomake', 'tools']
 
         if sys.platform == 'win32':
             # These cause compilation failures (although maybe only with static
@@ -466,33 +517,72 @@ def build_qt(host, target, qt_dir):
 
     # Create a symbolic link to qmake in a standard place in sysroot so that it
     # can be referred to in cross-target .pdy files.
+    qt_bin_dir = os.path.join(qt_dir, 'bin')
+
     make_symlink(str(host.sysroot),
-            os.path.join(qt_dir, 'bin', host.exe('qmake')), host.qmake)
+            os.path.join(qt_bin_dir, host.exe('qmake')), host.qmake)
+
+    # Do the same for androiddeployqt if it exists for user build scripts.
+    androiddeployqt = host.exe('androiddeployqt')
+    androiddeployqt_path = os.path.join(qt_bin_dir, androiddeployqt)
+
+    if os.path.isfile(androiddeployqt_path):
+        make_symlink(str(host.sysroot), androiddeployqt_path,
+                os.path.join(host.sysroot.bin_dir, androiddeployqt))
 
 
-def build_host_python(host, use_system_python):
+def build_host_python(host, target_name, optional, use_system_python):
     """ Build (or install) a host Python. """
 
     if use_system_python is None:
         if sys.platform == 'win32':
             fatal("Building the host Python from source on Windows is not supported")
 
-        source = host.sysroot.find_source('Python-*')
+        source = host.sysroot.find_source('Python-*', optional=optional)
+        if source is None:
+            return
+
         host.sysroot.unpack_source(source)
-        host.run('./configure', '--prefix', host.sysroot.host_python_dir)
+
+        py_version = source.split('-')[1].split('.')
+
+        # ensurepip was added in Python v2.7.9 and v3.4.0.
+        ensure_pip = False
+        if py_version[0] == '2':
+            if py_version[2] >= '9':
+                ensure_pip = True
+        elif py_version[1] >= '4':
+            ensure_pip = True
+
+        configure = ['./configure', '--prefix', host.sysroot.host_python_dir]
+        if ensure_pip:
+            configure.append('--with-ensurepip=no')
+
+        host.run(*configure)
         host.run(host.make)
         host.run(host.make, 'install')
 
-        major_minor = '.'.join(source.split('-')[1].split('.')[:2])
         interp = os.path.join(host.sysroot.host_python_dir, 'bin',
-                'python' + major_minor)
+                'python' + '.'.join(py_version[:2]))
     elif sys.platform == 'win32':
         from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
 
-        sub_key = 'Software\\Python\\PythonCore\\{0}\\InstallPath'.format(
-                use_system_python)
+        py_major, py_minor = use_system_python.split('.')
+        reg_version = use_system_python
+        if int(py_major) == 3 and int(py_minor) >= 5 and target_name is not None and target_name.endswith('-32'):
+            reg_version += '-32'
 
-        for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+        sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
+                reg_version)
+        sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
+                reg_version)
+
+        queries = (
+            (HKEY_CURRENT_USER, sub_key_user),
+            (HKEY_LOCAL_MACHINE, sub_key_user),
+            (HKEY_LOCAL_MACHINE, sub_key_all_users))
+
+        for key, sub_key in queries:
             try:
                 install_path = QueryValue(key, sub_key)
             except OSError:
@@ -501,9 +591,15 @@ def build_host_python(host, use_system_python):
                 break
         else:
             fatal("Unable to find an installation of Python v{}".format(
-                    use_system_python))
+                    reg_version))
 
         interp = install_path + 'python.exe'
+
+        # Copy the DLL.  The .exe will get copied later.
+        dll = 'python' + py_major + py_minor + '.dll'
+        make_directory(host.sysroot.bin_dir)
+        shutil.copyfile(os.path.join(install_path, dll),
+                os.path.join(host.sysroot.bin_dir, dll))
     else:
         interp = 'python' + use_system_python
 
@@ -524,12 +620,13 @@ def build_target_python(host, target, debug, enable_dynamic_loading):
         if sys.platform == 'win32':
             # TODO: Move the install function from pyqtdeploycli to here.
             host.run(host.pyqtdeploycli,
+                    '--target', target.name,
                     '--sysroot', str(host.sysroot),
                     '--package', 'python',
                     '--system-python', host.python.version,
                     'install')
         else:
-            fatal("Using the system Python as the target on Non-Windows is not supported")
+            fatal("Using the system Python as the target on non-Windows is not supported")
     else:
         host.sysroot.unpack_source(source)
 
@@ -579,8 +676,8 @@ def build_sip_module(source, host, target, debug):
             '--target', target.name, 'configure')
 
     args = [host.interpreter, 'configure.py', '--static', '--sysroot',
-            str(host.sysroot), '--no-tools', '--use-qmake', '--configuration',
-            configuration]
+            str(host.sysroot), '--no-pyi', '--no-tools', '--use-qmake',
+            '--configuration', configuration]
 
     if debug:
         args.append('--debug')
@@ -592,34 +689,40 @@ def build_sip_module(source, host, target, debug):
     host.run(host.make, 'install')
 
 
-def build_sip(host, target, debug):
+def build_sip(host, target, optional, debug):
     """ Build sip. """
 
-    source = host.sysroot.find_source('sip-*')
+    source = host.sysroot.find_source('sip-*', optional=optional)
+    if source is None:
+        return
+
     build_sip_code_generator(source, host)
     build_sip_module(source, host, target, debug)
 
 
-def build_pyqt5(host, target, debug):
+def build_pyqt5(host, target, optional, debug):
     """ Build a target static PyQt5. """
 
-    source = host.sysroot.find_source('PyQt5_*')
+    source = host.sysroot.find_source('PyQt5_*', optional=optional)
+    if source is None:
+        return
+
     host.sysroot.unpack_source(source)
 
     license_path = os.path.join(host.sysroot.src_dir, 'pyqt-commercial.sip')
     if os.path.isfile(license_path):
         shutil.copy(license_path, 'sip')
 
-    configuration = 'pyqt-' + target.name + '.cfg'
+    configuration = 'pyqt5-' + target.name + '.cfg'
 
     host.run(host.pyqtdeploycli, '--package', 'pyqt5', '--output',
             configuration, '--target', target.name, 'configure')
 
     args = [host.interpreter, 'configure.py', '--static', '--qmake',
             host.qmake, '--sysroot', str(host.sysroot), '--no-tools',
-            '--no-qsci-api', '--no-designer-plugin', '--no-qml-plugin',
-            '--configuration', configuration, '--sip', host.sip,
-            '--confirm-license', '-c', '-j2']
+            '--no-qsci-api', '--no-designer-plugin', '--no-python-dbus',
+            '--no-qml-plugin', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '--confirm-license', '-c', '-j2']
 
     if debug:
         args.append('--debug')
@@ -630,8 +733,247 @@ def build_pyqt5(host, target, debug):
     host.run(host.make, 'install')
 
 
+def build_pyqt3d(host, target, optional, debug):
+    """ Build a target static PyQt3D. """
+
+    source = host.sysroot.find_source('PyQt3D_*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqt3d-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqt3d', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c']
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtchart(host, target, optional, debug):
+    """ Build a target static PyQtChart. """
+
+    source = host.sysroot.find_source('PyQtChart_*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtchart-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtchart', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtchart-version', host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtdatavisualization(host, target, optional, debug):
+    """ Build a target static PyQtDataVisualization. """
+
+    source = host.sysroot.find_source('PyQtDataVisualization_*',
+            optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtdatavisualization-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtdatavisualization',
+            '--output', configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtdatavisualization-version',
+            host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_pyqtpurchasing(host, target, optional, debug):
+    """ Build a target static PyQtPurchasing. """
+
+    source = host.sysroot.find_source('PyQtPurchasing_*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    configuration = 'pyqtpurchasing-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'pyqtpurchasing', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--qtpurchasing-version', host.qt_version]
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_qscintilla(host, target, optional, debug):
+    """ Build a target static QScintilla. """
+
+    source = host.sysroot.find_source('QScintilla_*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    # Build the static C++ library.
+    os.chdir('Qt4Qt5')
+
+    config = 'staticlib'
+    if debug:
+        config += ' debug'
+
+    host.run(host.qmake, 'CONFIG+=' + config)
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+    os.chdir('..')
+
+    # Build the static Python bindings.
+    os.chdir('Python')
+
+    configuration = 'qscintilla-' + target.name + '.cfg'
+
+    host.run(host.pyqtdeploycli, '--package', 'qscintilla', '--output',
+            configuration, '--target', target.name, 'configure')
+
+    args = [host.interpreter, 'configure.py', '--static', '--qmake',
+            host.qmake, '--sysroot', str(host.sysroot), '--no-qsci-api',
+            '--no-sip-files', '--no-stubs', '--configuration', configuration,
+            '--sip', host.sip, '-c', '--pyqt', 'PyQt5']
+
+    if debug:
+        args.append('--debug')
+
+    host.run(*args)
+
+    host.run(host.make)
+    host.run(host.make, 'install')
+
+
+def build_openssl(host, target, optional, sdk):
+    """ Build OpenSSL. """
+
+    source = host.sysroot.find_source('openssl-*', optional=optional)
+    if source is None:
+        return
+
+    host.sysroot.unpack_source(source)
+
+    # TODO: Need to decide what to do about --openssldir.
+    common_options = (
+        'no-krb5',
+        'no-idea',
+        'no-mdc2',
+        'no-rc5',
+        'no-zlib',
+        'enable-tlsext',
+        'no-ssl2',
+        'no-ssl3',
+        'no-ssl3-method',
+        '--prefix=' + str(host.sysroot),
+    )
+
+    if target.name == 'osx-64':
+        build_openssl_osx(host, sdk, common_options)
+    elif target.name in ('win-32', 'win-64'):
+        build_openssl_win(host, target, common_options)
+    else:
+        fatal("Building OpenSSL for {} is not yet supported".format(target.name))
+
+
+def build_openssl_osx(host, sdk, common_options):
+    """ Build OpenSSL for osx-64. """
+
+    # Make sure we have an SDK.
+    check_sdk(sdk)
+
+    # Find and apply the Python patch.
+    patches = glob.glob('../Python-*/Mac/BuildScript/openssl*.patch')
+
+    if len(patches) < 1:
+        fatal("Unable to find the OpenSSL patch in the Python source tree")
+
+    if len(patches) > 1:
+        fatal("Found additional OpenSSL patches in the Python source tree")
+
+    host.run('patch', '-p1', '-i', patches[0])
+
+    # Configure, build and install.
+    args = ['perl', 'Configure',
+            'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
+    args.extend(common_options)
+
+    host.run(*args)
+    host.run(host.make, 'depend', 'OSX_SDK=' + sdk)
+    host.run(host.make, 'all', 'OSX_SDK=' + sdk)
+    host.run(host.make, 'install_sw', 'OSX_SDK=' + sdk)
+
+
+def build_openssl_win(host, target, common_options):
+    """ Build OpenSSL for win-*. """
+
+    # Set the architecture-specific values.
+    if target.name.endswith('-64'):
+        compiler = 'VC-WIN64A'
+        post_config = 'ms\\do_win64a.bat'
+    else:
+        compiler = 'VC-WIN32'
+        post_config = 'ms\\do_nasm.bat'
+
+    # Configure, build and install.
+    args = ['perl', 'Configure', compiler]
+    args.extend(common_options)
+
+    host.run(*args)
+    host.run(post_config)
+    host.run(host.make, '-f', 'ms\\nt.mak')
+    host.run(host.make, '-f', 'ms\\nt.mak', 'install')
+
+
 # The different packages in the order that they should be built.
-all_packages = ('qt', 'python', 'sip', 'pyqt5')
+all_packages = ('openssl', 'qt', 'python', 'sip', 'pyqt5', 'pyqt3d',
+        'pyqtchart', 'pyqtdatavisualization', 'pyqtpurchasing', 'qscintilla')
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
@@ -648,6 +990,10 @@ parser.add_argument('--enable-dynamic-loading', action='store_true',
         help="build Python with dynamic loading enabled")
 parser.add_argument('--qt', metavar='DIR',
         help="the pre-compiled Qt installation to 'build'")
+parser.add_argument('--sdk',
+        help="the SDK to use for Apple targets")
+parser.add_argument('--static-msvc-runtime', action='store_true',
+        help="build Qt with a static MSVC runtime")
 parser.add_argument('--sysroot', metavar='DIR',
         help="the sysroot directory")
 parser.add_argument('--target', choices=TARGETS,
@@ -663,6 +1009,37 @@ host = Host.factory(args.sysroot)
 # Determine the packages to build.
 packages = all_packages if args.all else args.build
 
+# Find an SDK to use.
+if args.sdk and '/' in args.sdk:
+    # The user specified an explicit path so use it.
+    sdk = args.sdk
+    if not os.path.isdir(sdk):
+        sdk = None
+else:
+    # TODO: The candidate directories should be target specific and we need to
+    # decide how to handle iPhoneSimulator vs. iPhone.
+    sdk_dirs = (
+        '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
+        '/Developer/SDKs'
+    )
+
+    for sdk_dir in sdk_dirs:
+        if os.path.isdir(sdk_dir):
+            if args.sdk:
+                sdk = os.path.join(sdk_dir, args.sdk)
+            else:
+                # Use the latest SDK we find.
+                sdks = glob.glob(sdk_dir + '/MacOSX*.sdk')
+                if len(sdks) == 0:
+                    sdk = None
+                else:
+                    sdks.sort()
+                    sdk = sdks[-1]
+
+            break
+    else:
+        sdk = None
+
 # Do the builds.
 if args.clean:
     host.sysroot.clean()
@@ -670,21 +1047,39 @@ if args.clean:
 # We build the host Python as soon as possble as that is where we get the host
 # platform from.
 if 'python' in packages:
-    build_host_python(host, args.use_system_python)
+    build_host_python(host, args.all, args.target, args.use_system_python)
 else:
     host.python.get_configuration(host.interpreter)
 
 # Create a target instance now that we know the host.
 target = Target.factory(args.target, host)
 
+if 'openssl' in packages:
+    build_openssl(host, target, args.all, sdk)
+
 if 'qt' in packages:
-    build_qt(host, target, args.qt)
+    build_qt(host, target, args.all, args.qt, args.static_msvc_runtime)
 
 if 'python' in packages:
     build_target_python(host, target, args.debug, args.enable_dynamic_loading)
 
 if 'sip' in packages:
-    build_sip(host, target, args.debug)
+    build_sip(host, target, args.all, args.debug)
 
 if 'pyqt5' in packages:
-    build_pyqt5(host, target, args.debug)
+    build_pyqt5(host, target, args.all, args.debug)
+
+if 'pyqt3d' in packages:
+    build_pyqt3d(host, target, args.all, args.debug)
+
+if 'pyqtchart' in packages:
+    build_pyqtchart(host, target, args.all, args.debug)
+
+if 'pyqtdatavisualization' in packages:
+    build_pyqtdatavisualization(host, target, args.all, args.debug)
+
+if 'pyqtpurchasing' in packages:
+    build_pyqtpurchasing(host, target, args.all, args.debug)
+
+if 'qscintilla' in packages:
+    build_qscintilla(host, target, args.all, args.debug)

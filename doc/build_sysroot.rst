@@ -17,11 +17,12 @@ automated support for the task.  In the meantime the Mercurial repository
 contains a Python script called `build-sysroot.py
 <https://www.riverbankcomputing.com/hg/pyqtdeploy/file/tip/Developers/build-sysroot.py>`_
 which can be used to create a basic system root directory containing a Qt
-installation, host and target Python installations and static versions of sip
-and PyQt5.  The script requires Python v3.5 or later and runs on Windows, OS X
-and Linux.  It is a work-in-progress and completely unsupported and its name
-and command line interface *will* change.  If you choose to use it then it is
-recommended that you maintain your own copy.
+installation, host and target Python installations and static versions of
+OpenSSL, sip, PyQt5, PyQt3D, PyQtChart, PyQtDataVisualization, PyQtPurchasing
+and QScintilla.  The script itself requires Python v3.5 or later and runs on
+Windows, OS X and Linux.  It is a work-in-progress and completely unsupported
+and its name and command line interface *will* change.  If you choose to use it
+then it is recommended that you maintain your own copy.
 
 The first step is to create the system root directory itself.  This will be
 refered to as ``sysroot`` from now on.  You should then create a sub-directory
@@ -35,8 +36,9 @@ copy the Qt source package to the ``src`` directory.
 :program:`build-sysroot.py`
 ---------------------------
 
-:program:`build-sysroot.py` will build and install Qt, Python, sip and PyQt5 as
-specified using command line options:
+:program:`build-sysroot.py` will build and install OpenSSL, Qt, Python, sip,
+PyQt5, PyQt3D, PyQtChart, PyQtDataVisualization, PyQtPurchasing and QScintilla
+as specified using command line options:
 
 .. cmdoption:: --h, --help
 
@@ -44,15 +46,20 @@ specified using command line options:
 
 .. cmdoption:: --all
 
-    This will build each of Qt, Python, sip and PyQt5 in that order.  The order
-    is important as there are interdependencies between the individual builds.
+    This will build each of OpenSSL, Qt, Python, sip, PyQt5, PyQt3D, PyQtChart,
+    PyQtDataVisualization, PyQtPurchasing and QScintilla in that order.  The
+    order is important as there are interdependencies between the individual
+    builds.
 
-.. cmdoption:: --build {qt, python, sip, pyqt5} [{qt, python, sip, pyqt5} ...]
+.. cmdoption:: --build package [package ...]
 
     This will build one or more of the individual packages in the order
-    specified on the command line.  You need to allow for the interdependencies
-    between the builds.  For example, if you have updated the source package
-    for sip then you should rebuild sip and PyQt5.
+    specified on the command line.  *package* is either ``openssl``, ``qt``,
+    ``python``, ``sip``, ``pyqt5``, ``pyqt3d``, ``pyqtchart``,
+    ``pyqtdatavisualization``, ``pyqtpurchasing`` or ``qscintilla``.  You need
+    to allow for the interdependencies between the builds.  For example, if you
+    have updated the source package for sip then you should rebuild sip and
+    PyQt5.
 
 .. cmdoption:: --clean
 
@@ -73,6 +80,12 @@ specified using command line options:
     This specifies a directory containing an existing Qt installation which is
     used instead of building Qt from source.  However, you must still use the
     :option:`--build` option.
+
+.. cmdoption:: --sdk SDK
+
+    This specifies the name of the SDK to use when building for Apple-based
+    targets.  By default the latest SDK found for the MacOSX platform will be
+    used.
 
 .. cmdoption:: --sysroot DIR
 
@@ -115,7 +128,7 @@ following values should be used in the **Locations** tab.
     ``$SYSROOT/lib/python$PDY_PY_MAJOR.$PDY_PY_MINOR``
 
 **Build directory**
-    ``$SYSROOT/build``
+    ``build``
 
 **qmake**
     ``$SYSROOT/bin/qmake``

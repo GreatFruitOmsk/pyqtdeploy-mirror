@@ -6,7 +6,6 @@ User Guide
 
     introduction
     command_line
-    development_version
     windows_dynamic_loading
     pyrcc
     pdytools_module

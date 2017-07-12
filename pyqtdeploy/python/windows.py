@@ -27,7 +27,7 @@
 from ..user_exception import UserException
 
 
-def get_windows_install_path(major, minor):
+def get_windows_install_path(reg_version):
     """ Return the name of the directory containing the root of the Python
     installation directory for a particular version.  It must not be called on
     a non-Windows platform.
@@ -35,10 +35,17 @@ def get_windows_install_path(major, minor):
 
     from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
 
-    sub_key = 'Software\\Python\\PythonCore\\{0}.{1}\\InstallPath'.format(
-            major, minor)
+    sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
+            reg_version)
+    sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
+            reg_version)
 
-    for key in (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE):
+    queries = (
+        (HKEY_CURRENT_USER, sub_key_user),
+        (HKEY_LOCAL_MACHINE, sub_key_user),
+        (HKEY_LOCAL_MACHINE, sub_key_all_users))
+
+    for key, sub_key in queries:
         try:
             install_path = QueryValue(key, sub_key)
         except OSError:
@@ -47,7 +54,7 @@ def get_windows_install_path(major, minor):
             break
     else:
         raise UserException(
-                "Unable to find an installation of Python v{0}.{1}.".format(
-                        major, minor))
+                "Unable to find an installation of Python v{}.".format(
+                        reg_version))
 
     return install_path

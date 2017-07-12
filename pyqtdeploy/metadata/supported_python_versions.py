@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,14 +26,21 @@
 
 # The supported versions.
 _supported_versions = (
-    ((3, 5, 1), "3.5.1 and later"),
+    ((3, 6, 0), "3.6.0 and later"),
+    ((3, 5, 3), "3.5.3"),
+    ((3, 5, 2), "3.5.2"),
+    ((3, 5, 1), "3.5.1"),
     ((3, 5, 0), "3.5.0"),
+    ((3, 4, 6), "3.4.6"),
+    ((3, 4, 5), "3.4.5"),
     ((3, 4, 4), "3.4.4"),
     ((3, 4, 3), "3.4.3"),
     ((3, 4, 2), "3.4.2"),
     ((3, 4, 1), "3.4.1"),
     ((3, 4, 0), "3.4.0"),
     ((3, 3, 0), "3.3.x"),
+    ((2, 7, 13), "2.7.13"),
+    ((2, 7, 12), "2.7.12"),
     ((2, 7, 11), "2.7.11"),
     ((2, 7, 10), "2.7.10"),
     ((2, 7, 9), "2.7.9"),
