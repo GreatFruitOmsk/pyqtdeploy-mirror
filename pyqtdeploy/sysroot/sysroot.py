@@ -24,16 +24,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.  These are for the tools.
-from .builder import Builder
-from .message_handler import MessageHandler
-from .packages import configure_package, get_supported_packages
-from .project import Project
-from .python import configure_python, install_python
-from .sysroot import Sysroot
-from .targets import get_supported_targets
-from .version import PYQTDEPLOY_RELEASE
-from .user_exception import UserException
+class Sysroot():
+    """ Encapsulate a target-specific system root directory. """
 
+    def __init__(self, sysroot_dir, sysroot_json, target, message_handler):
+        """ Initialise the builder for a project. """
 
-# These are for the package plugins.
+        super().__init__()
+
+        self._message_handler = message_handler
+
+    def build(self):
+        """ Build the system root directory.  Raise a UserException if there is
+        an error.
+        """
+
+        print("Building sysroot")
+
+    def build_package(self, package):
+        """ Build a single package in an existing system root directory.  Raise
+        a UserException if there is an error.
+        """
+
+        print("Building {} package".format(package))

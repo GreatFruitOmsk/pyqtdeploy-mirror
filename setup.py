@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,10 @@ setup(
                                      'configurations/*/*.*']
         },
         entry_points={
-            'console_scripts':  ['pyqtdeploycli = pyqtdeploy.main_cli:main'],
-            'gui_scripts':      ['pyqtdeploy = pyqtdeploy.main_gui:main']
+            'console_scripts': [
+                'pyqtdeploycli = pyqtdeploy.pyqtdeploycli_main:main',
+                'pyqtdeploysysroot = pyqtdeploy.pyqtdeploysysroot_main:main'],
+            'gui_scripts': [
+                'pyqtdeploy = pyqtdeploy.pyqtdeploy_main:main']
         }
      )

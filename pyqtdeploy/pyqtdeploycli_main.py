@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ import sys
 
 
 def main():
-    """ The entry point for the setuptools generated CLI wrapper. """
+    """ The entry point for the setuptools generated pyqtdeploycli wrapper. """
 
     # Get the default Android API level.  This is the level that Python v3.6.0
     # targets.
@@ -54,7 +54,7 @@ def main():
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
                     "(configure) [default: {}]".format(default_api),
-            metavar="LEVEL", type=int, default=default_api),
+            metavar="LEVEL", type=int, default=default_api)
     parser.add_argument('--disable-patches',
             help="disable the patching of the Python source code (configure)",
             action='store_true')

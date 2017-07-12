@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ import sys
 
 
 def main():
-    """ The entry point for the setuptools generated GUI wrapper. """
+    """ The entry point for the setuptools generated pyqtdeploy wrapper. """
 
     # Parse the command line.
     parser = argparse.ArgumentParser()
