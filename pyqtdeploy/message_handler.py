@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,10 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
+
+import os
+import sys
 
 
 class MessageHandler:
@@ -56,3 +60,18 @@ class MessageHandler:
         """
 
         print(message)
+
+    @classmethod
+    def error(cls, message):
+        """ Handle an error message. """
+
+        print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
+                file=sys.stderr)
+
+    def exception(self, e):
+        """ Handle an exception. """
+
+        if self.verbose and e.detail != '':
+            self.error("{0}: {1}".format(e.text, e.detail))
+        else:
+            self.error(e.text)

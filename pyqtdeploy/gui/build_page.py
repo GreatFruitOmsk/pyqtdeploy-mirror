@@ -180,7 +180,7 @@ class BuildPage(QWidget):
             builder.build(opt, nr_resources, timeout,
                     clean=bool(self._clean_button.checkState()))
         except UserException as e:
-            logger.user_exception(e)
+            logger.exception(e)
             handle_user_exception(e, self.label, self)
             return
 
@@ -199,7 +199,7 @@ class BuildPage(QWidget):
                     builder.run([qmake], "qmake failed.", in_build_dir=True,
                             timeout=timeout)
                 except UserException as e:
-                    logger.user_exception(e)
+                    logger.exception(e)
                     handle_user_exception(e, self.label, self)
                     return
 
@@ -214,7 +214,7 @@ class BuildPage(QWidget):
                 builder.run([make], "{0} failed.".format(make),
                         in_build_dir=True, timeout=timeout)
             except UserException as e:
-                logger.user_exception(e)
+                logger.exception(e)
                 handle_user_exception(e, self.label, self)
                 return
 
@@ -237,7 +237,7 @@ class BuildPage(QWidget):
             try:
                 builder.run([application], "{0} failed.".format(application))
             except UserException as e:
-                logger.user_exception(e)
+                logger.exception(e)
                 handle_user_exception(e, self.label, self)
                 return
 
@@ -313,8 +313,8 @@ class LoggingMessageHandler(MessageHandler):
 
         self._append_text(message, self._status_format)
 
-    def user_exception(self, e):
-        """ Add a user exception to the viewer. """
+    def exception(self, e):
+        """ Reimplemented to add a user exception to the viewer. """
 
         self._append_text(e.text, self._error_format)
 

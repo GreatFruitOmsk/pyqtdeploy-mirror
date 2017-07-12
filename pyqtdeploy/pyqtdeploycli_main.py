@@ -26,7 +26,8 @@
 
 import argparse
 import os
-import sys
+
+from . import MessageHandler, UserException
 
 
 def main():
@@ -111,18 +112,20 @@ def main():
     args = parser.parse_args()
 
     # Handle the specific actions.
+    message_handler = MessageHandler(args.quiet, args.verbose)
+
     if args.action == 'build':
-        rc = build(args)
+        rc = build(args, message_handler)
     elif args.action == 'configure':
-        rc = configure(args)
+        rc = configure(args, message_handler)
     elif args.action == 'install':
-        rc = install(args)
+        rc = install(args, message_handler)
     elif args.action == 'show-packages':
-        rc = show_packages(args)
+        rc = show_packages(args, message_handler)
     elif args.action == 'show-targets':
-        rc = show_targets(args)
+        rc = show_targets(args, message_handler)
     elif args.action == 'show-version':
-        rc = show_version(args)
+        rc = show_version(args, message_handler)
     else:
         # This should never happen.
         rc = 1
@@ -130,23 +133,19 @@ def main():
     return rc
 
 
-def build(args):
+def build(args, message_handler):
     """ Perform the build action. """
 
     if args.project is None:
-        missing_argument('--project')
+        missing_argument('--project', message_handler)
         return 2
 
     if args.resources < 1:
-        print(
-                "{0}: error: argument --resources: number must be at least 1".format(
-                        os.path.basename(sys.argv[0])),
-                file=sys.stderr)
+        message_handler.error(
+                "error: argument --resources: number must be at least 1")
         return 2
 
-    from . import Builder, MessageHandler, Project, UserException
-
-    message_handler = MessageHandler(args.quiet, args.verbose)
+    from . import Builder, Project
 
     try:
         builder = Builder(Project.load(args.project), message_handler)
@@ -156,44 +155,42 @@ def build(args):
                 python_library=args.python_library, source_dir=args.source_dir,
                 standard_library_dir=args.standard_library_dir)
     except UserException as e:
-        handle_exception(e, args.verbose)
+        message_handler.exception(e)
         return 1
 
     return 0
 
 
-def configure(args):
+def configure(args, message_handler):
     """ Perform the configure action. """
 
     if args.package is None:
-        missing_argument('--package')
+        missing_argument('--package', message_handler)
         return 2
 
     if args.package == 'python':
-        from . import configure_python, MessageHandler, UserException
-
-        message_handler = MessageHandler(args.quiet, args.verbose)
+        from . import configure_python
 
         try:
             configure_python(args.target, args.output, args.android_api,
                     args.enable_dynamic_loading, not args.disable_patches,
                     message_handler)
         except UserException as e:
-            handle_exception(e, args.verbose)
+            message_handler.exception(e)
             return 1
     else:
-        from . import configure_package, UserException
+        from . import configure_package
 
         try:
             configure_package(args.package, args.target, args.output)
         except UserException as e:
-            handle_exception(e, args.verbose)
+            message_handler.exception(e)
             return 1
 
     return 0
 
 
-def install(args):
+def install(args, message_handler):
     """ Perform the install action. """
 
     # Note that the intent is to support the installation of all supported
@@ -201,96 +198,80 @@ def install(args):
     # Windows version of Python installed from the official installers.
 
     if args.package is None:
-        missing_argument('--package')
+        missing_argument('--package', message_handler)
         return 2
 
     if args.sysroot is None:
-        missing_argument('--sysroot')
+        missing_argument('--sysroot', message_handler)
         return 2
 
     if args.package == 'python':
-        from . import install_python, MessageHandler, UserException
-
-        message_handler = MessageHandler(args.quiet, args.verbose)
+        from . import install_python
 
         try:
             install_python(args.target, args.sysroot, args.system_python,
                     message_handler)
         except UserException as e:
-            handle_exception(e, args.verbose)
+            message_handler.exception(e)
             return 1
     else:
-        error("install only supports the python package at the moment.")
+        message_handler.error(
+                "install only supports the python package at the moment.")
         return 1
 
     return 0
 
 
-def show_packages(args):
+def show_packages(args, message_handler):
     """ Perform the show-packages action. """
 
-    from . import get_supported_packages, UserException
+    from . import get_supported_packages
 
     try:
         packages = get_supported_packages()
     except UserException as e:
-        handle_exception(e, args.verbose)
+        message_handler.exception(e, args.verbose)
         return 1
 
-    show(packages)
+    show(packages, message_handler)
 
     return 0
 
 
-def show_targets(args):
+def show_targets(args, message_handler):
     """ Perform the show-targets action. """
 
-    from . import get_supported_targets, UserException
+    from . import get_supported_targets
 
     try:
         targets = get_supported_targets()
     except UserException as e:
-        handle_exception(e, args.verbose)
+        message_handler.exception(e, args.verbose)
         return 1
 
-    show(targets)
+    show(targets, message_handler)
 
     return 0
 
 
-def show_version(args):
+def show_version(args, message_handler):
     """ Perform the show-version action. """
 
     from . import PYQTDEPLOY_RELEASE
 
-    print(PYQTDEPLOY_RELEASE)
+    message_handler.message(PYQTDEPLOY_RELEASE)
 
 
-def show(items):
+def show(items, message_handler):
     """ Show an unsorted list of items on stdout. """
 
     for item in sorted(items):
-        print(item)
+        message_handler.message(item)
 
 
-def missing_argument(name):
+def missing_argument(name, message_handler):
     """ Tell the user about a missing argument. """
 
     # Mimic the argparse message.
-    error("error: the following arguments are required: {0}".format(name))
-
-
-def handle_exception(e, verbose):
-    """ Tell the user about an exception. """
-
-    if verbose and e.detail != '':
-        error("{0}: {1}".format(e.text, e.detail))
-    else:
-        error(e.text)
-
-
-def error(message):
-    """ Tell the user about an error. """
-
-    print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
-            file=sys.stderr)
+    message_handler.error(
+            "error: the following arguments are required: {0}".format(name))

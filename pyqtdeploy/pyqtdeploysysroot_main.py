@@ -25,7 +25,6 @@
 
 
 import argparse
-import sys
 
 from . import MessageHandler, PYQTDEPLOY_RELEASE, Sysroot, UserException
 
@@ -111,23 +110,7 @@ def main():
             for package in packages:
                 sysroot.build_package(package)
     except UserException as e:
-        handle_exception(e, args.verbose)
+        message_handler.exception(e)
         return 1
 
     return 0
-
-
-def handle_exception(e, verbose):
-    """ Tell the user about an exception. """
-
-    if verbose and e.detail != '':
-        error("{0}: {1}".format(e.text, e.detail))
-    else:
-        error(e.text)
-
-
-def error(message):
-    """ Tell the user about an error. """
-
-    print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
-            file=sys.stderr)
