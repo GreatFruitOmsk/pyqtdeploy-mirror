@@ -24,17 +24,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.  These are for the tools.
-from .builder import Builder
-from .message_handler import MessageHandler
-from .packages import configure_package, get_supported_packages
-from .project import Project
-from .python import configure_python, install_python
-from .sysroot import Sysroot
-from .targets import get_supported_targets
-from .version import PYQTDEPLOY_RELEASE
-from .user_exception import UserException
+from .abstract_package import PackageOption
 
 
-# These are for the package plugins.
-from .sysroot import AbstractPackage, PackageOption, SourcePackageMixin
+class SourcePackageMixin:
+    """ A mixin for a package built from source. """
+
+    # The package-specific options.
+    options = [
+        PackageOption('source', str, required=True,
+                help="The source archive to build the package from."),
+    ]

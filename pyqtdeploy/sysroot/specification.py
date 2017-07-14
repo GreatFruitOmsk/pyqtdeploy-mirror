@@ -156,7 +156,8 @@ class Specification:
 
             if value is None:
                 if option.required:
-                    self._parse_error("no '{}' specified".format(option.name),
+                    self._parse_error(
+                            "'{}' has not been specified".format(option.name),
                             spec_file, context)
 
                 # Create a default value.
