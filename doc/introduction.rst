@@ -13,7 +13,7 @@ required when deploying to iOS.  However there is nothing to stop you using
 shared versions of any of these components in order to reduce the size of the
 application, but at the cost of increasing the complexity of the deployment.
 
-:program:`pyqtdeploy` itself requires PyQt5 and Python v3.2 or later.
+:program:`pyqtdeploy` itself requires PyQt5 and Python v3.5 or later.
 
 :program:`pyqtdeploy` works by taking the individual modules of a PyQt
 application, freezing them, and then placing them in a Qt resource file that is

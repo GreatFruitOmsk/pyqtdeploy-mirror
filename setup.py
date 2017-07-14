@@ -28,8 +28,8 @@ import os
 import sys
 
 # Check the version of Python as early as possible.
-if sys.hexversion < 0x03020000:
-    sys.stderr.write("pyqtdeploy requires Python v3.2 or later\n")
+if sys.hexversion < 0x03050000:
+    sys.stderr.write("pyqtdeploy requires Python v3.5 or later\n")
     sys.exit(1)
 
 
