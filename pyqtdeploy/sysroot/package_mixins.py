@@ -33,5 +33,5 @@ class SourcePackageMixin:
     # The package-specific options.
     options = [
         PackageOption('source', str, required=True,
-                help="The source archive to build the package from."),
+                help="A pattern to identify source archive to build the package from."),
     ]

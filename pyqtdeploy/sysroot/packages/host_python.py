@@ -35,7 +35,7 @@ class HostPythonPackage(AbstractPackage):
         PackageOption('installed_version', str,
                 help="The version number of the existing host Python installation to use. If it is not specified then the host Python installation will be built from source."),
         PackageOption('source', str,
-                help="The source archive to build the host Python installation from if an existing installation is not to be used."),
+                help="A pattern to identify the source archive to build the host Python installation from if an existing installation is not to be used."),
     ]
 
     def build(self, message_handler):

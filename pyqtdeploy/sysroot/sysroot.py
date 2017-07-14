@@ -24,6 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
+import shutil
+
+from ..targets import normalised_target
 from ..user_exception import UserException
 from .specification import Specification
 
@@ -31,11 +35,16 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, target, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, target_name, message_handler):
         """ Initialise the object. """
 
-        self._message_handler = message_handler
+        if not sysroot_dir:
+            sysroot_dir = 'sysroot-' + normalised_target(target_name)
+
+        self._sysroot_dir = os.path.abspath(sysroot_dir)
+
         self._specification = Specification(sysroot_json, plugin_path)
+        self._message_handler = message_handler
 
     def build_packages(self, package_names):
         """ Build a sequence of packages.  If no names are given then create
@@ -46,20 +55,22 @@ class Sysroot:
         if package_names:
             packages = self._packages_from_names(package_names)
         else:
-            # Create a new directory.
-            # TODO
-
             packages = self._specification.packages
+            self._create_empty_dir(self._sysroot_dir)
 
         # Create a new build directory.
-        # TODO
+        build_dir = os.path.join(self._sysroot_dir, 'build')
+        self._create_empty_dir(build_dir)
+        cwd = os.getcwd()
+        os.chdir(build_dir)
 
         # Build the packages.
         for package in packages:
             package.build(self._message_handler)
 
         # Remove the build directory.
-        # TODO
+        os.chdir(cwd)
+        self._delete_dir(build_dir)
 
     def show_options(self, package_names):
         """ Show the options for a sequence of packages.  If no names are given
@@ -88,3 +99,34 @@ class Sysroot:
                 raise UserException("unkown package '{}'".format(name))
 
         return packages
+
+    def _create_empty_dir(self, name):
+        """ Create an empty directory. """
+
+        # Delete any existing one.
+        if os.path.exists(name):
+            if os.path.isdir(name):
+                self._delete_dir(name)
+            else:
+                raise UserException(
+                        "{} already exists but is not a directory".format(
+                                name))
+
+        self._message_handler.progress_message("Creating {}".format(name))
+
+        try:
+            os.mkdir(name)
+        except Exception as e:
+            raise UserException("unable to create {}".format(name),
+                    detail=str(e))
+
+    def _delete_dir(self, name):
+        """ Delete an existng directory. """
+
+        self._message_handler.progress_message("Deleting {}".format(name))
+
+        try:
+            shutil.rmtree(name)
+        except Exception as e:
+            raise UserException("unable to delete {}".format(name),
+                    detail=str(e))

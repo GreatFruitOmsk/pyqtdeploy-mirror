@@ -26,6 +26,7 @@
 
 import importlib
 import json
+import shutil
 
 from collections import OrderedDict
 
@@ -227,7 +228,7 @@ class Specification:
         self._show_row(ulines, widths, message_handler)
 
         # Calculate the room available for the description column.
-        avail = 80
+        avail, _ = shutil.get_terminal_size()
         for w in widths[:-1]:
             avail -= 2 + w
 
