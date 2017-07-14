@@ -37,22 +37,54 @@ class Sysroot:
         self._message_handler = message_handler
         self._specification = Specification(sysroot_json, plugin_path)
 
-    def build(self):
-        """ Build the system root directory.  Raise a UserException if there is
-        an error.
+    def build_packages(self, package_names):
+        """ Build a sequence of packages.  If no names are given then create
+        the system image root directory and build everything.  Raise a
+        UserException if there is an error.
         """
 
-        for package in self._specification.packages:
+        if package_names:
+            packages = self._packages_from_names(package_names)
+        else:
+            # Create a new directory.
+            # TODO
+
+            packages = self._specification.packages
+
+        # Create a new build directory.
+        # TODO
+
+        # Build the packages.
+        for package in packages:
             package.build(self._message_handler)
 
-    def build_package(self, package_name):
-        """ Build a single package in an existing system root directory.  Raise
-        a UserException if there is an error.
+        # Remove the build directory.
+        # TODO
+
+    def show_options(self, package_names):
+        """ Show the options for a sequence of packages.  If no names are given
+        then show the options of all packages.  Raise a UserException if there
+        is an error.
         """
 
-        for package in self._specification.packages:
-            if package.name == package_name:
-                package.build(self._message_handler)
-                break
+        if package_names:
+            packages = self._packages_from_names(package_names)
         else:
-            raise UserException("unkown package '{}'".format(package_name))
+            packages = self._specification.packages
+
+        self._specification.show_options(packages, self._message_handler)
+
+    def _packages_from_names(self, package_names):
+        """ Return a sequence of packages from a sequence of names. """
+
+        packages = []
+
+        for name in package_names:
+            for package in self._specification.packages:
+                if package.name == name:
+                    packages.append(package)
+                    break
+            else:
+                raise UserException("unkown package '{}'".format(name))
+
+        return packages

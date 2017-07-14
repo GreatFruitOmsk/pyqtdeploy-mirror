@@ -56,6 +56,9 @@ def main():
     #        help="the optimisation level where 0 is none, 1 is no asserts, 2 "
     #                "is no asserts or docstrings (build) [default: 2]",
     #        metavar="LEVEL", type=int, choices=range(3), default=2),
+    parser.add_argument('--options',
+            help="show the options available for the packages",
+            action='store_true')
     #parser.add_argument('--output',
     #        help="the name of the output file or directory (configure, build)",
     #        metavar="OUTPUT")
@@ -106,12 +109,10 @@ def main():
         sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
                 args.target, message_handler)
 
-        packages = args.package
-        if packages is None:
-            sysroot.build()
+        if args.options:
+            sysroot.show_options(args.package)
         else:
-            for package in packages:
-                sysroot.build_package(package)
+            sysroot.build_packages(args.package)
     except UserException as e:
         message_handler.exception(e)
         return 1

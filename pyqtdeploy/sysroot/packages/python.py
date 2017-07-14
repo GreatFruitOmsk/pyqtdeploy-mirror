@@ -24,11 +24,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from ... import AbstractPackage
+from ... import AbstractPackage, PackageOption
 
 
 class PythonPackage(AbstractPackage):
     """ The Python package. """
+
+    # The package-specific options.
+    options = [
+        PackageOption('installed_python_version', str,
+                help="The version number of the existing host Python installation to use. If it is not specified then the host Python installation will be built from source."),
+    ]
 
     def build(self, message_handler):
         """ Build the package. """

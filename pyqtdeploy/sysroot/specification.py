@@ -27,6 +27,8 @@
 import importlib
 import json
 
+from collections import OrderedDict
+
 from ..user_exception import UserException
 from .abstract_package import AbstractPackage
 
@@ -163,7 +165,11 @@ class Specification:
                 self._bad_type(option.name, spec_file, context)
 
             setattr(target, option.name, value)
-            del json_array[option.name]
+
+            try:
+                del json_array[option.name]
+            except KeyError:
+                pass
 
     def _bad_type(self, name, spec_file, context=None):
         """ Raise an exception when an option name has the wrong type. """
@@ -181,3 +187,110 @@ class Specification:
             exception = "{}: {}".format(spec_file, message)
 
         raise UserException(exception)
+
+    def show_options(self, packages, message_handler):
+        """ Show the options for a sequence of packages. """
+
+        headings = ("Package", "Option", "Type", "Required?", "Description")
+        widths = [len(h) for h in headings]
+        options = OrderedDict()
+
+        # Collect the options for each package while working out the required
+        # column widths.
+        for package in packages:
+            name_len = len(package.name)
+            if widths[0] < name_len:
+                widths[0] = name_len
+
+            # Allow sub-classes to override super-classes.
+            package_options = OrderedDict()
+
+            for cls in type(package).__mro__:
+                for option in cls.__dict__.get('options', []):
+                    if option.name not in package_options:
+                        package_options[option.name] = option
+
+                        name_len = len(option.name)
+                        if widths[1] < name_len:
+                            widths[1] = name_len
+
+                if cls is AbstractPackage:
+                    break
+
+            options[package.name] = package_options
+
+        # Display the formatted options.
+        self._show_row(headings, widths, message_handler)
+
+        ulines = ['-' * len(h) for h in headings]
+        self._show_row(ulines, widths, message_handler)
+
+        # Calculate the room available for the description column.
+        avail = 80
+        for w in widths[:-1]:
+            avail -= 2 + w
+
+        avail = max(avail, widths[-1])
+
+        for package_name, package_options in options.items():
+            package_col = package_name
+
+            for option_name, option in package_options.items():
+                row = [package_col, option_name]
+
+                if option.type is int:
+                    type_name = 'int'
+                elif option.type is str:
+                    type_name = 'str'
+                elif option.type is bool:
+                    type_name = 'bool'
+                elif option.type is list:
+                    type_name = 'list'
+                elif option.type is dict:
+                    type_name = 'dict'
+                else:
+                    type_name = "???"
+
+                row.append(type_name)
+
+                row.append("yes" if option.required else "no")
+
+                row.append('')
+                line = ''
+                for word in option.help.split():
+                    if len(line) + len(word) < avail:
+                        # There is room for the word on this line.
+                        if line:
+                            line += ' ' + word
+                        else:
+                            line = word
+                    else:
+                        if line:
+                            # Show what we have so far.
+                            row[-1] = line
+                            line = word
+                        else:
+                            # The word is too long so truncate it.
+                            row[-1] = word[:avail]
+
+                        self._show_row(row, widths, message_handler)
+
+                        # Make the row blank for the next word.
+                        row = [''] * len(headings)
+
+                if line:
+                    # The last line.
+                    row[-1] = line
+                    self._show_row(row, widths, message_handler)
+
+                # Don't repeat the package name.
+                package_col = ''
+
+    @staticmethod
+    def _show_row(columns, widths, message_handler):
+        """ Show one row of the options table. """
+
+        row = ['{:{width}}'.format(columns[i], width=w) 
+                for i, w in enumerate(widths)]
+
+        message_handler.message('  '.join(row))
