@@ -22,37 +22,3 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-
-from ..user_exception import UserException
-from .specification import Specification
-
-
-class Sysroot:
-    """ Encapsulate a target-specific system root directory. """
-
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, target, message_handler):
-        """ Initialise the object. """
-
-        self._message_handler = message_handler
-        self._specification = Specification(sysroot_json, plugin_path)
-
-    def build(self):
-        """ Build the system root directory.  Raise a UserException if there is
-        an error.
-        """
-
-        for package in self._specification.packages:
-            package.build(self._message_handler)
-
-    def build_package(self, package_name):
-        """ Build a single package in an existing system root directory.  Raise
-        a UserException if there is an error.
-        """
-
-        for package in self._specification.packages:
-            if package.name == package_name:
-                package.build(self._message_handler)
-                break
-        else:
-            raise UserException("unkown package '{}'".format(package_name))

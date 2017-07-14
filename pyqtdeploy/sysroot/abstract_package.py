@@ -24,35 +24,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from ..user_exception import UserException
-from .specification import Specification
+from abc import ABC, abstractmethod
 
 
-class Sysroot:
-    """ Encapsulate a target-specific system root directory. """
+class PackageOption:
+    """ Encapsulate an option for the package in the specification file. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, target, message_handler):
+    def __init__(name, type, required=False):
         """ Initialise the object. """
 
-        self._message_handler = message_handler
-        self._specification = Specification(sysroot_json, plugin_path)
+        self.name = name
+        self.type = type
+        self.required = required
 
-    def build(self):
-        """ Build the system root directory.  Raise a UserException if there is
-        an error.
-        """
 
-        for package in self._specification.packages:
-            package.build(self._message_handler)
+class AbstractPackage(ABC):
+    """ The base class for the implementation of a package plugin. """
 
-    def build_package(self, package_name):
-        """ Build a single package in an existing system root directory.  Raise
-        a UserException if there is an error.
-        """
+    # A sequence of PackageOption instances describing the options that can be
+    # specified for the package in the specification file.  These are made
+    # available as attributes of the plugin instance.
+    options = []
 
-        for package in self._specification.packages:
-            if package.name == package_name:
-                package.build(self._message_handler)
-                break
-        else:
-            raise UserException("unkown package '{}'".format(package_name))
+    @abstractmethod
+    def build(self, message_handler):
+        """ Build the package. """

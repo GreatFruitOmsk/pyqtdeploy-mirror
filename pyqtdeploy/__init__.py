@@ -37,3 +37,4 @@ from .user_exception import UserException
 
 
 # These are for the package plugins.
+from .sysroot import AbstractPackage, PackageOption

@@ -61,6 +61,9 @@ def main():
     #        metavar="OUTPUT")
     parser.add_argument('--package', help="the package name to build",
             metavar="PACKAGE", action='append')
+    parser.add_argument('--plugin-path',
+            help="the directories searched for package plugins",
+            metavar="PATH")
     #parser.add_argument('--project', help="the project file (build)",
     #        metavar="FILE")
     #parser.add_argument('--python-library',
@@ -100,8 +103,8 @@ def main():
     message_handler = MessageHandler(args.quiet, args.verbose)
 
     try:
-        sysroot = Sysroot(args.sysroot, args.json, args.target,
-                message_handler)
+        sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
+                args.target, message_handler)
 
         packages = args.package
         if packages is None:
