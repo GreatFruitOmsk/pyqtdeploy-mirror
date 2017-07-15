@@ -31,6 +31,6 @@ class PythonPackage(SourcePackageMixin, AbstractPackage):
     """ The Python package. """
 
     def build(self, sysroot):
-        """ Build the package. """
+        """ Build Python for the target. """
 
         sysroot.progress("Building {}".format(self.name))

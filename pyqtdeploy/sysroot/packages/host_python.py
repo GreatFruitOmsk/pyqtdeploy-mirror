@@ -42,21 +42,23 @@ class HostPythonPackage(AbstractPackage):
     ]
 
     def build(self, sysroot):
-        """ Build the package. """
+        """ Build Python for the host. """
 
         if self.installed_version:
+            sysroot.progress(
+                    "Installing the existing Python v{} as the host Python".format(self.installed_version))
+
             if self.source:
                 raise UserException(
                         "the 'installed_version' and 'source' options cannot both be specified")
-
-            sysroot.progress(
-                    "Installing the existing Python v{} as the host Python".format(self.installed_version))
 
             if sys.platform == 'win32':
                 interpreter = self._install_existing_windows_version(sysroot)
             else:
                 interpreter = self._install_existing_version(sysroot)
         else:
+            sysroot.progress("Building the host Python")
+
             if not self.source:
                 raise UserException(
                         "either the 'installed_version' or 'source' option must be specified")
@@ -65,7 +67,6 @@ class HostPythonPackage(AbstractPackage):
                 raise UserException(
                         "building the host Python from source on Windows is not supported")
 
-            sysroot.progress("Building the host Python")
             interpreter = self._build_from_source(sysroot)
 
         # Create symbolic links to the interpreter in a standard place in
@@ -78,7 +79,8 @@ class HostPythonPackage(AbstractPackage):
         """
 
         # Unpack the source and extract the version number.
-        package_name = sysroot.unpack_source(self.source)
+        archive = sysroot.find_file(self.source)
+        package_name = sysroot.unpack_archive(archive)
         py_version = package_name.split('-')[1].split('.')
 
         # ensurepip was added in Python v2.7.9 and v3.4.0.
@@ -146,11 +148,4 @@ class HostPythonPackage(AbstractPackage):
         the absolute pathname of the interpreter.
         """ 
 
-        exe = 'python' + self.installed_version
-
-        interpreter = sysroot.find_exe(exe)
-        if interpreter is None:
-            raise UserException(
-                    "unable to find a {} executable on PATH".format(exe))
-
-        return interpreter
+        return sysroot.find_exe('python' + self.installed_version)

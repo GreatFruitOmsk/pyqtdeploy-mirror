@@ -43,8 +43,10 @@ class Sysroot:
     def __init__(self, sysroot_dir, sysroot_json, plugin_path, sources_dir, target_name, message_handler):
         """ Initialise the object. """
 
+        self.target_name = normalised_target(target_name)
+
         if not sysroot_dir:
-            sysroot_dir = 'sysroot-' + normalised_target(target_name)
+            sysroot_dir = 'sysroot-' + self.target_name
 
         self._sysroot_dir = os.path.abspath(sysroot_dir)
         self._build_dir = os.path.join(self._sysroot_dir, 'build')
@@ -71,6 +73,7 @@ class Sysroot:
         # Create a new build directory.
         self._create_empty_dir(self._build_dir)
         cwd = os.getcwd()
+        os.chdir(self._build_dir)
 
         # Build the packages.
         for package in packages:
@@ -144,19 +147,41 @@ class Sysroot:
     ###########################################################################
 
     def find_exe(self, exe):
-        """ Return the absolute pathname of an executable located on PATH, or
-        None if it wasn't found.
-        """
+        """ Return the absolute pathname of an executable located on PATH. """
 
-        exe = self._host.exe(exe)
+        host_exe = self._host.exe(exe)
 
         for d in os.environ.get('PATH', '').split(os.pathsep):
-            exe_path = os.path.join(d, exe)
+            exe_path = os.path.join(d, host_exe)
 
             if os.access(exe_path, os.X_OK):
                 return exe_path
 
-        return None
+        raise UserException("'{}' must be installed on PATH".format(exe))
+
+    def find_file(self, pattern):
+        """ Find the the file that matches a pattern.  There must be exactly
+        one matching file.  The files must be found in the directory specified
+        by the --sources command line option.  If this is not specified then
+        the directory containing the JSON specification file is used.  The
+        absolute pathname of the file is returned.
+        """
+
+        files = [fn for fn in os.listdir(self._sources_dir)
+                if fnmatch.fnmatch(fn, pattern)]
+        nr_files = len(files)
+
+        if nr_files == 0:
+            raise UserException(
+                    "no file found matching '{}' in {}".format(pattern,
+                            self._sources_dir))
+
+        if nr_files > 1:
+            raise UserException(
+                    "multiple files found matching '{}' in {}".format(pattern,
+                            self._sources_dir))
+
+        return os.path.join(self._sources_dir, files[0])
 
     @property
     def host_bin_dir(self):
@@ -228,36 +253,15 @@ class Sysroot:
 
         os.symlink(src, dst)
 
-    def unpack_source(self, pattern):
-        """ Find the the source archive that matches a pattern.  There must be
-        exacly one matching archive.  The source archives must be found in the
-        directory specified by the --sources command line option.  If this is
-        not specified then the directory containing the JSON specification file
-        is used.  The archive is unpacked and it's top level directory becomes
-        the current directory.
+    def unpack_archive(self, archive, chdir=True):
+        """ An archive is unpacked in the current directory.  If requested its
+        top level directory becomes the current directory.  The name of the
+        directory (not it's pathname) is returned.
         """
 
-        # Get the name of the source archive.
-        sources = [fn for fn in os.listdir(self._sources_dir)
-                if fnmatch.fnmatch(fn, pattern)]
-        nr_sources = len(sources)
-
-        if nr_sources == 0:
-            raise UserException(
-                    "no source archive found in {} for '{}'".format(
-                            self._sources_dir, pattern))
-
-        if nr_sources > 1:
-            raise UserException(
-                    "multiple source archives found in {} for '{}'".format(
-                            self._sources_dir, pattern))
-
-        source = sources[0]
-
         # Unpack the archive.
-        archive = os.path.join(self._sources_dir, source)
         try:
-            shutil.unpack_archive(archive, self._build_dir)
+            shutil.unpack_archive(archive)
         except Exception as e:
             raise UserException("unable to unpack {}".format(archive),
                     detail=str(e))
@@ -275,16 +279,16 @@ class Sysroot:
                 break
         else:
             # This should never happen if we have got this far.
-            raise UserException("'{}' has an unknown extension".format(source))
+            raise UserException("'{}' has an unknown extension".format(archive))
 
         # Validate the assumption by checking the expected directory exists.
-        archive_path = os.path.join(self._build_dir, archive_dir)
-        if not os.path.isdir(archive_path):
+        if not os.path.isdir(archive_dir):
             raise UserException(
                     "unpacking {} did not create a directory called '{}' as expected".format(archive, archive_dir))
 
-        # Change to the extracted directory.
-        os.chdir(archive_path)
+        # Change to the extracted directory if required.
+        if chdir:
+            os.chdir(archive_dir)
 
         # Return the directory name which the package plugin will often use to
         # extract version information.

@@ -1,0 +1,129 @@
+# Copyright (c) 2017, Riverbank Computing Limited
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+
+import sys
+
+from ... import (AbstractPackage, PackageOption, SourcePackageMixin,
+        UserException)
+
+
+class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
+    """ The OpenSSL package. """
+
+    # The package-specific options.
+    options = [
+        PackageOption('python_source', str,
+                help="A pattern to identify the archive of the Python source containing patches to build OpenSSL on macOS."),
+    ]
+
+    def build(self, sysroot):
+        """ Build OpenSSL for the target. """
+
+        sysroot.progress("Building OpenSSL")
+
+		# Unpack the source.
+        archive = sysroot.find_file('openssl-*')
+        sysroot.unpack_archive(archive)
+
+        # TODO: Need to decide what to do about --openssldir.
+        common_options = (
+            'no-krb5',
+            'no-idea',
+            'no-mdc2',
+            'no-rc5',
+            'no-zlib',
+            'enable-tlsext',
+            'no-ssl2',
+            'no-ssl3',
+            'no-ssl3-method',
+            '--prefix=' + sysroot.sysroot_dir,
+        )
+
+        if sys.platform == 'darwin' and sysroot.target_name == 'osx-64':
+            self._build_osx(sysroot, common_options)
+        elif sys.platform == 'win32' and sysroot.target_name in ('win-32', 'win-64'):
+            self._build_win(sysroot, common_options)
+        else:
+            raise UserException(
+                    "building OpenSSL for {} is not yet supported".format(
+                            sysroot.target_name))
+
+    def _build_osx(self, sysroot, common_options):
+        """ Build OpenSSL for osx-64. """
+
+        # Check pre-requisites.
+        sysroot.find_exe('patch')
+
+        # Make sure we have an SDK.
+        # TODO
+        check_sdk(sdk)
+
+        # Find and apply the Python patch.
+        # TODO
+        patches = glob.glob('../Python-*/Mac/BuildScript/openssl*.patch')
+
+        if len(patches) < 1:
+            raise UserException(
+                    "unable to find an OpenSSL patch in the Python source tree")
+
+        if len(patches) > 1:
+            raise UserException(
+                    "found multiple OpenSSL patches in the Python source tree")
+
+        sysroot.run('patch', '-p1', '-i', patches[0])
+
+        # Configure, build and install.
+        args = ['perl', 'Configure',
+                'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
+        args.extend(common_options)
+
+        sysroot.run(*args)
+        sysroot.run(sysroot.make, 'depend', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.make, 'all', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.make, 'install_sw', 'OSX_SDK=' + sdk)
+
+    def _build_win(self, sysroot, common_options):
+        """ Build OpenSSL for win-*. """
+
+        # Check pre-requisites.
+        sysroot.find_exe('perl')
+
+        # Set the architecture-specific values.
+        if sysroot.target_name.endswith('-64'):
+            compiler = 'VC-WIN64A'
+            post_config = 'ms\\do_win64a.bat'
+        else:
+            compiler = 'VC-WIN32'
+            post_config = 'ms\\do_nasm.bat'
+
+        # Configure, build and install.
+        args = ['perl', 'Configure', compiler]
+        args.extend(common_options)
+
+        sysroot.run(*args)
+        sysroot.run(post_config)
+        sysroot.run(sysroot.make, '-f', 'ms\\nt.mak')
+        sysroot.run(sysroot.make, '-f', 'ms\\nt.mak', 'install')
