@@ -33,8 +33,11 @@ from .python import configure_python, install_python
 from .sysroot import Sysroot
 from .targets import get_supported_targets
 from .version import PYQTDEPLOY_RELEASE
-from .user_exception import UserException
 
 
 # These are for the package plugins.
 from .sysroot import AbstractPackage, PackageOption, SourcePackageMixin
+
+
+# These are used by both.
+from .user_exception import UserException

@@ -30,7 +30,7 @@ from ... import AbstractPackage, SourcePackageMixin
 class PythonPackage(SourcePackageMixin, AbstractPackage):
     """ The Python package. """
 
-    def build(self, message_handler):
+    def build(self, sysroot):
         """ Build the package. """
 
-        message_handler.progress_message("Building {}".format(self.name))
+        sysroot.progress("Building {}".format(self.name))

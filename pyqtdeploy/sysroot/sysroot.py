@@ -24,27 +24,36 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import fnmatch
 import os
 import shutil
+import subprocess
+import sys
 
 from ..targets import normalised_target
 from ..user_exception import UserException
+
+from .hosts import Host
 from .specification import Specification
 
 
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, target_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, sources_dir, target_name, message_handler):
         """ Initialise the object. """
 
         if not sysroot_dir:
             sysroot_dir = 'sysroot-' + normalised_target(target_name)
 
         self._sysroot_dir = os.path.abspath(sysroot_dir)
+        self._build_dir = os.path.join(self._sysroot_dir, 'build')
 
+        self._host = Host.factory()
         self._specification = Specification(sysroot_json, plugin_path)
         self._message_handler = message_handler
+
+        self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
 
     def build_packages(self, package_names):
         """ Build a sequence of packages.  If no names are given then create
@@ -57,20 +66,19 @@ class Sysroot:
         else:
             packages = self._specification.packages
             self._create_empty_dir(self._sysroot_dir)
+            os.makedirs(self.host_bin_dir)
 
         # Create a new build directory.
-        build_dir = os.path.join(self._sysroot_dir, 'build')
-        self._create_empty_dir(build_dir)
+        self._create_empty_dir(self._build_dir)
         cwd = os.getcwd()
-        os.chdir(build_dir)
 
         # Build the packages.
         for package in packages:
-            package.build(self._message_handler)
+            package.build(self)
 
         # Remove the build directory.
         os.chdir(cwd)
-        self._delete_dir(build_dir)
+        self._delete_dir(self._build_dir)
 
     def show_options(self, package_names):
         """ Show the options for a sequence of packages.  If no names are given
@@ -130,3 +138,159 @@ class Sysroot:
         except Exception as e:
             raise UserException("unable to delete {}".format(name),
                     detail=str(e))
+
+    ###########################################################################
+    # The following make up the public API to be used by package plugins.
+    ###########################################################################
+
+    def find_exe(self, exe):
+        """ Return the absolute pathname of an executable located on PATH, or
+        None if it wasn't found.
+        """
+
+        exe = self._host.exe(exe)
+
+        for d in os.environ.get('PATH', '').split(os.pathsep):
+            exe_path = os.path.join(d, exe)
+
+            if os.access(exe_path, os.X_OK):
+                return exe_path
+
+        return None
+
+    @property
+    def host_bin_dir(self):
+        """ The directory containing the host binaries. """
+
+        return os.path.join(self.host_dir, 'bin')
+
+    @property
+    def host_dir(self):
+        """ The directory containing the host installations. """
+
+        return os.path.join(self._sysroot_dir, 'Host')
+
+    @property
+    def host_interpreter(self):
+        """ The pathname of the host Python interpreter. """
+
+        return os.path.join(self.host_bin_dir, self._host.exe('python'))
+
+    @property
+    def make(self):
+        """ The host-specific name of the make executable. """
+
+        return self._host.make
+
+    def progress(self, message):
+        """ Issue a progress message. """
+
+        self._message_handler.progress_message(message)
+
+    def run(self, *args, capture=False):
+        """ Run a command, optionally capturing stdout. """
+
+        self._message_handler.verbose_message(
+                "Running '{}'".format(' '.join(args)))
+
+        if capture:
+            try:
+                stdout = subprocess.check_output(args,
+                        universal_newlines=True, stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as e:
+                raise UserException("execution of '{}' failed".format(args[0]),
+                        detail=e.stderr)
+
+            return stdout.strip()
+
+        subprocess.check_call(args)
+
+        return None
+
+    def make_symlink(self, src, dst):
+        """ Create a host-specific symbolic link. """
+
+        # Remove any existing destination.
+        try:
+            os.remove(dst)
+        except FileNotFoundError:
+            pass
+
+        if sys.platform == 'win32':
+            # Don't bother with symbolic link privileges on Windows.
+            shutil.copyfile(src, dst)
+        else:
+            # If the source directory is within the same root as the
+            # destination then make the link relative.  This means that the
+            # root directory can be moved and the link will remain valid.
+            if os.path.commonpath((src, dst)).startswith(self._sysroot_dir):
+                src = os.path.relpath(src, os.path.dirname(dst))
+
+        os.symlink(src, dst)
+
+    def unpack_source(self, pattern):
+        """ Find the the source archive that matches a pattern.  There must be
+        exacly one matching archive.  The source archives must be found in the
+        directory specified by the --sources command line option.  If this is
+        not specified then the directory containing the JSON specification file
+        is used.  The archive is unpacked and it's top level directory becomes
+        the current directory.
+        """
+
+        # Get the name of the source archive.
+        sources = [fn for fn in os.listdir(self._sources_dir)
+                if fnmatch.fnmatch(fn, pattern)]
+        nr_sources = len(sources)
+
+        if nr_sources == 0:
+            raise UserException(
+                    "no source archive found in {} for '{}'".format(
+                            self._sources_dir, pattern))
+
+        if nr_sources > 1:
+            raise UserException(
+                    "multiple source archives found in {} for '{}'".format(
+                            self._sources_dir, pattern))
+
+        source = sources[0]
+
+        # Unpack the archive.
+        archive = os.path.join(self._sources_dir, source)
+        try:
+            shutil.unpack_archive(archive, self._build_dir)
+        except Exception as e:
+            raise UserException("unable to unpack {}".format(archive),
+                    detail=str(e))
+
+        # Assume that the name of the extracted directory is the same as the
+        # archive without the extension.
+        archive_dir = None
+        for _, extensions, _ in shutil.get_unpack_formats():
+            for ext in extensions:
+                if source.endswith(ext):
+                    archive_dir = source[:-len(ext)]
+                    break
+
+            if archive_dir:
+                break
+        else:
+            # This should never happen if we have got this far.
+            raise UserException("'{}' has an unknown extension".format(source))
+
+        # Validate the assumption by checking the expected directory exists.
+        archive_path = os.path.join(self._build_dir, archive_dir)
+        if not os.path.isdir(archive_path):
+            raise UserException(
+                    "unpacking {} did not create a directory called '{}' as expected".format(archive, archive_dir))
+
+        # Change to the extracted directory.
+        os.chdir(archive_path)
+
+        # Return the directory name which the package plugin will often use to
+        # extract version information.
+        return archive_dir
+
+    def verbose(self, message):
+        """ Issue a verbose progress message. """
+
+        self._message_handler.verbose_message(message)

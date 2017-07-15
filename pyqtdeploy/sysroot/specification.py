@@ -26,6 +26,7 @@
 
 import importlib
 import json
+import os
 import shutil
 
 from collections import OrderedDict
@@ -39,6 +40,8 @@ class Specification:
 
     def __init__(self, spec_file, plugin_path):
         """ Initialise the object. """
+
+        self.specification_file = os.path.abspath(spec_file)
 
         self.packages = []
 

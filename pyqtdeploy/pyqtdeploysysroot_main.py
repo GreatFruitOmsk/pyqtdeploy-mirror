@@ -75,8 +75,8 @@ def main():
     #        help="the number of .qrc resource files to generate (build) "
     #                "[default: 1]",
     #        metavar="NUMBER", type=int, default=1),
-    #parser.add_argument('--source-dir',
-    #        help="the Python source code directory (build)", metavar="DIR")
+    parser.add_argument('--sources',
+            help="the directory containing the source archives", metavar="DIR")
     #parser.add_argument('--standard-library-dir',
     #        help="the target Python standard library directory (build)",
     #        metavar="DIR")
@@ -107,7 +107,7 @@ def main():
 
     try:
         sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
-                args.target, message_handler)
+                args.sources, args.target, message_handler)
 
         if args.options:
             sysroot.show_options(args.package)
