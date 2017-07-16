@@ -25,6 +25,7 @@
 
 
 import fnmatch
+import glob
 import os
 import shutil
 import subprocess
@@ -40,7 +41,7 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, sources_dir, target_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, sources_dir, sdk, target_name, message_handler):
         """ Initialise the object. """
 
         self.target_name = normalised_target(target_name)
@@ -48,11 +49,12 @@ class Sysroot:
         if not sysroot_dir:
             sysroot_dir = 'sysroot-' + self.target_name
 
-        self._sysroot_dir = os.path.abspath(sysroot_dir)
-        self._build_dir = os.path.join(self._sysroot_dir, 'build')
+        self.sysroot_dir = os.path.abspath(sysroot_dir)
+        self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
         self._host = Host.factory()
         self._specification = Specification(sysroot_json, plugin_path)
+        self._sdk = self._find_sdk(sdk)
         self._message_handler = message_handler
 
         self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
@@ -67,7 +69,7 @@ class Sysroot:
             packages = self._packages_from_names(package_names)
         else:
             packages = self._specification.packages
-            self._create_empty_dir(self._sysroot_dir)
+            self._create_empty_dir(self.sysroot_dir)
             os.makedirs(self.host_bin_dir)
 
         # Create a new build directory.
@@ -142,6 +144,42 @@ class Sysroot:
             raise UserException("unable to delete {}".format(name),
                     detail=str(e))
 
+    @staticmethod
+    def _find_sdk(user_sdk):
+        """ Find an SDK to use. """
+
+        if user_sdk and '/' in user_sdk:
+            # The user specified an explicit path so use it.
+            sdk = user_sdk
+            if not os.path.isdir(sdk):
+                sdk = None
+        else:
+            # TODO: The candidate directories should be target specific and we
+            # need to decide how to handle iPhoneSimulator vs. iPhone.
+            sdk_dirs = (
+                '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
+                '/Developer/SDKs'
+            )
+
+            for sdk_dir in sdk_dirs:
+                if os.path.isdir(sdk_dir):
+                    if user_sdk:
+                        sdk = os.path.join(sdk_dir, user_sdk)
+                    else:
+                        # Use the latest SDK we find.
+                        sdks = glob.glob(sdk_dir + '/MacOSX*.sdk')
+                        if len(sdks) == 0:
+                            sdk = None
+                        else:
+                            sdks.sort()
+                            sdk = sdks[-1]
+
+                    break
+            else:
+                sdk = None
+
+        return sdk
+
     ###########################################################################
     # The following make up the public API to be used by package plugins.
     ###########################################################################
@@ -193,7 +231,7 @@ class Sysroot:
     def host_dir(self):
         """ The directory containing the host installations. """
 
-        return os.path.join(self._sysroot_dir, 'Host')
+        return os.path.join(self.sysroot_dir, 'host')
 
     @property
     def host_interpreter(self):
@@ -248,10 +286,19 @@ class Sysroot:
             # If the source directory is within the same root as the
             # destination then make the link relative.  This means that the
             # root directory can be moved and the link will remain valid.
-            if os.path.commonpath((src, dst)).startswith(self._sysroot_dir):
+            if os.path.commonpath((src, dst)).startswith(self.sysroot_dir):
                 src = os.path.relpath(src, os.path.dirname(dst))
 
         os.symlink(src, dst)
+
+    @property
+    def sdk(self):
+        """ The Apple SDK to use. """
+
+        if self._sdk is None:
+            raise UserException("a valid SDK hasn't been specified")
+
+        return self._sdk
 
     def unpack_archive(self, archive, chdir=True):
         """ An archive is unpacked in the current directory.  If requested its
@@ -269,10 +316,11 @@ class Sysroot:
         # Assume that the name of the extracted directory is the same as the
         # archive without the extension.
         archive_dir = None
+        archive_file = os.path.basename(archive)
         for _, extensions, _ in shutil.get_unpack_formats():
             for ext in extensions:
-                if source.endswith(ext):
-                    archive_dir = source[:-len(ext)]
+                if archive_file.endswith(ext):
+                    archive_dir = archive_file[:-len(ext)]
                     break
 
             if archive_dir:

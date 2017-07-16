@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import glob
 import sys
 
 from ... import (AbstractPackage, PackageOption, SourcePackageMixin,
@@ -63,7 +64,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         )
 
         if sys.platform == 'darwin' and sysroot.target_name == 'osx-64':
-            self._build_osx(sysroot, common_options)
+            self._build_macos(sysroot, common_options)
         elif sys.platform == 'win32' and sysroot.target_name in ('win-32', 'win-64'):
             self._build_win(sysroot, common_options)
         else:
@@ -71,19 +72,21 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
                     "building OpenSSL for {} is not yet supported".format(
                             sysroot.target_name))
 
-    def _build_osx(self, sysroot, common_options):
+    def _build_macos(self, sysroot, common_options):
         """ Build OpenSSL for osx-64. """
 
         # Check pre-requisites.
         sysroot.find_exe('patch')
-
-        # Make sure we have an SDK.
-        # TODO
-        check_sdk(sdk)
+        sysroot.find_exe('perl')
 
         # Find and apply the Python patch.
-        # TODO
-        patches = glob.glob('../Python-*/Mac/BuildScript/openssl*.patch')
+        if not self.python_source:
+            raise UserException("the 'python_source' option must be specified")
+
+        python_archive = sysroot.find_file(self.python_source)
+        python_dir = sysroot.unpack_archive(python_archive, chdir=False)
+
+        patches = glob.glob(python_dir + '/Mac/BuildScript/openssl*.patch')
 
         if len(patches) < 1:
             raise UserException(
@@ -96,6 +99,8 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         sysroot.run('patch', '-p1', '-i', patches[0])
 
         # Configure, build and install.
+        sdk = sysroot.sdk
+
         args = ['perl', 'Configure',
                 'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
         args.extend(common_options)

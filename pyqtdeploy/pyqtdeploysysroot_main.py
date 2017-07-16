@@ -47,50 +47,20 @@ def main():
     #parser.add_argument('--enable-dynamic-loading',
     #        help="enable the dynamic loading of modules (configure)",
     #        action='store_true')
-    #parser.add_argument('--include-dir',
-    #        help="the target Python include directory (build)", metavar="DIR")
-    #parser.add_argument('--interpreter',
-    #        help="the host interpreter executable (build)",
-    #        metavar="EXECUTABLE")
-    #parser.add_argument('--opt',
-    #        help="the optimisation level where 0 is none, 1 is no asserts, 2 "
-    #                "is no asserts or docstrings (build) [default: 2]",
-    #        metavar="LEVEL", type=int, choices=range(3), default=2),
     parser.add_argument('--options',
             help="show the options available for the packages",
             action='store_true')
-    #parser.add_argument('--output',
-    #        help="the name of the output file or directory (configure, build)",
-    #        metavar="OUTPUT")
     parser.add_argument('--package', help="the package name to build",
-            metavar="PACKAGE", action='append')
+            action='append')
     parser.add_argument('--plugin-path',
             help="the directories searched for package plugins",
             metavar="PATH")
-    #parser.add_argument('--project', help="the project file (build)",
-    #        metavar="FILE")
-    #parser.add_argument('--python-library',
-    #        help="the target Python library (build)", metavar="LIB")
-    #parser.add_argument('--resources',
-    #        help="the number of .qrc resource files to generate (build) "
-    #                "[default: 1]",
-    #        metavar="NUMBER", type=int, default=1),
+    parser.add_argument('--sdk', help="the SDK to use for Apple targets"),
     parser.add_argument('--sources',
             help="the directory containing the source archives", metavar="DIR")
-    #parser.add_argument('--standard-library-dir',
-    #        help="the target Python standard library directory (build)",
-    #        metavar="DIR")
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
-    #parser.add_argument('--system-python',
-    #        help="use the system installed Python (install)",
-    #        metavar="VERSION")
-    parser.add_argument('--target', help="the target platform",
-            metavar="TARGET")
-    #parser.add_argument('--timeout',
-    #        help="the number of seconds to wait for build processes to run "
-    #                "before timing out (build)",
-    #        metavar="SECONDS", type=int, default=30)
+    parser.add_argument('--target', help="the target platform"),
     parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose', help="enable verbose progress messages",
@@ -107,7 +77,7 @@ def main():
 
     try:
         sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
-                args.sources, args.target, message_handler)
+                args.sources, args.sdk, args.target, message_handler)
 
         if args.options:
             sysroot.show_options(args.package)
