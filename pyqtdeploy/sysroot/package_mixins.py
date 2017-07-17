@@ -45,3 +45,13 @@ class SourcePackageMixin:
         PackageOption('source', str, required=True,
                 help="The source archive to build the package from."),
     ]
+
+
+class PythonPackageMixin(OptionalSourcePackageMixin):
+    """ A mixin for host and target Python packages. """
+
+    # The package-specific options.
+    options = [
+        PackageOption('installed_version', str,
+                help="The version number of an existing Python installation to use. If it is not specified then the installation will be built from source."),
+    ]

@@ -27,18 +27,12 @@
 import os
 import sys
 
-from ... import (AbstractPackage, OptionalSourcePackageMixin, PackageOption,
+from ... import (AbstractPackage, PackageOption, PythonPackageMixin,
         UserException)
 
 
-class HostPythonPackage(OptionalSourcePackageMixin, AbstractPackage):
+class HostPythonPackage(PythonPackageMixin, AbstractPackage):
     """ The host Python package. """
-
-    # The package-specific options.
-    options = [
-        PackageOption('installed_version', str,
-                help="The version number of an existing host Python installation to use. If it is not specified then the installation will be built from source."),
-    ]
 
     def build(self, sysroot):
         """ Build Python for the host. """
