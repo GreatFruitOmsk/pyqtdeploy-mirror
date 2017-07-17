@@ -37,7 +37,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
     # The package-specific options.
     options = [
         PackageOption('python_source', str,
-                help="A pattern to identify the archive of the Python source containing patches to build OpenSSL on macOS."),
+                help="The archive of the Python source containing patches to build OpenSSL on macOS."),
     ]
 
     def build(self, sysroot):
@@ -46,7 +46,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         sysroot.progress("Building OpenSSL")
 
 		# Unpack the source.
-        archive = sysroot.find_file('openssl-*')
+        archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
         # TODO: Need to decide what to do about --openssldir.
@@ -106,9 +106,9 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         args.extend(common_options)
 
         sysroot.run(*args)
-        sysroot.run(sysroot.make, 'depend', 'OSX_SDK=' + sdk)
-        sysroot.run(sysroot.make, 'all', 'OSX_SDK=' + sdk)
-        sysroot.run(sysroot.make, 'install_sw', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.host_make, 'depend', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.host_make, 'all', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.host_make, 'install_sw', 'OSX_SDK=' + sdk)
 
     def _build_win(self, sysroot, common_options):
         """ Build OpenSSL for win-*. """
@@ -130,5 +130,5 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
 
         sysroot.run(*args)
         sysroot.run(post_config)
-        sysroot.run(sysroot.make, '-f', 'ms\\nt.mak')
-        sysroot.run(sysroot.make, '-f', 'ms\\nt.mak', 'install')
+        sysroot.run(sysroot.host_make, '-f', 'ms\\nt.mak')
+        sysroot.run(sysroot.host_make, '-f', 'ms\\nt.mak', 'install')

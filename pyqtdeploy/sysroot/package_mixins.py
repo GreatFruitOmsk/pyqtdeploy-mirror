@@ -27,11 +27,21 @@
 from .abstract_package import PackageOption
 
 
+class OptionalSourcePackageMixin:
+    """ A mixin for a package optionally built from source. """
+
+    # The package-specific options.
+    options = [
+        PackageOption('source', str,
+                help="The source archive to build the package from if an existing installation is not to be used."),
+    ]
+
+
 class SourcePackageMixin:
     """ A mixin for a package built from source. """
 
     # The package-specific options.
     options = [
         PackageOption('source', str, required=True,
-                help="A pattern to identify source archive to build the package from."),
+                help="The source archive to build the package from."),
     ]

@@ -36,7 +36,8 @@ from .version import PYQTDEPLOY_RELEASE
 
 
 # These are for the package plugins.
-from .sysroot import AbstractPackage, PackageOption, SourcePackageMixin
+from .sysroot import (AbstractPackage, OptionalSourcePackageMixin,
+        PackageOption, SourcePackageMixin)
 
 
 # These are used by both.

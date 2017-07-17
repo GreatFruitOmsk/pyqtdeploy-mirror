@@ -57,7 +57,8 @@ def main():
             metavar="PATH")
     parser.add_argument('--sdk', help="the SDK to use for Apple targets"),
     parser.add_argument('--sources',
-            help="the directory containing the source archives", metavar="DIR")
+            help="the default directory containing the source archives",
+            metavar="DIR")
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
     parser.add_argument('--target', help="the target platform"),

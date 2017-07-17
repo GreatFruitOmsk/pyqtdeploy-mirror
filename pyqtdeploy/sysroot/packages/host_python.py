@@ -27,7 +27,8 @@
 import os
 import sys
 
-from ... import AbstractPackage, PackageOption, UserException
+from ... import (AbstractPackage, OptionalSourcePackageMixin, PackageOption,
+        UserException)
 
 
 class HostPythonPackage(AbstractPackage):
@@ -36,33 +37,31 @@ class HostPythonPackage(AbstractPackage):
     # The package-specific options.
     options = [
         PackageOption('installed_version', str,
-                help="The version number of the existing host Python installation to use. If it is not specified then the host Python installation will be built from source."),
-        PackageOption('source', str,
-                help="A pattern to identify the source archive to build the host Python installation from if an existing installation is not to be used."),
+                help="The version number of an existing host Python installation to use. If it is not specified then the installation will be built from source."),
     ]
 
     def build(self, sysroot):
         """ Build Python for the host. """
 
         if self.installed_version:
-            sysroot.progress(
-                    "Installing the existing Python v{} as the host Python".format(self.installed_version))
-
             if self.source:
                 raise UserException(
                         "the 'installed_version' and 'source' options cannot both be specified")
+
+            sysroot.progress(
+                    "Installing the existing Python v{} as the host Python".format(self.installed_version))
 
             if sys.platform == 'win32':
                 interpreter = self._install_existing_windows_version(sysroot)
             else:
                 interpreter = self._install_existing_version(sysroot)
         else:
-            sysroot.progress("Building the host Python")
-
             if not self.source:
                 raise UserException(
                         "either the 'installed_version' or 'source' option must be specified")
                 
+            sysroot.progress("Building the host Python")
+
             if sys.platform == 'win32':
                 raise UserException(
                         "building the host Python from source on Windows is not supported")
@@ -71,7 +70,7 @@ class HostPythonPackage(AbstractPackage):
 
         # Create symbolic links to the interpreter in a standard place in
         # sysroot so that they can be referred to in cross-target .pdy files.
-        sysroot.make_symlink(interpreter, sysroot.host_interpreter)
+        sysroot.make_symlink(interpreter, sysroot.host_python)
 
     def _build_from_source(self, sysroot):
         """ Build the host Python from source and return the absolute pathname
@@ -96,8 +95,8 @@ class HostPythonPackage(AbstractPackage):
             configure.append('--with-ensurepip=no')
 
         sysroot.run(*configure)
-        sysroot.run(sysroot.make)
-        sysroot.run(sysroot.make, 'install')
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
 
         return os.path.join(sysroot.host_bin_dir,
                 'python' + '.'.join(py_version[:2]))

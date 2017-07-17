@@ -32,13 +32,6 @@ from abc import ABC, abstractmethod
 class Host(ABC):
     """ Encapsulate a host platform. """
 
-    def __init__(self):
-        """ Initialise the object. """
-
-        super().__init__()
-
-        #self._qt_version = None
-
     @abstractmethod
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
@@ -56,44 +49,10 @@ class Host(ABC):
 
         return host
 
-    #@property
-    #def interpreter(self):
-    #    """ The name of the host Python executable including any path. """
-
-    #    return os.path.join(self.sysroot.bin_dir, self.exe('python'))
-
     @property
     @abstractmethod
     def make(self):
         """ The name of the make executable including any required path. """
-
-    #@property
-    #def name(self):
-    #    """ The canonical name of the host. """
-
-    #    return self.python.name
-
-    #@property
-    #def qmake(self):
-    #    """ The name of the qmake executable including any path. """
-
-    #    return os.path.join(self.sysroot.bin_dir, self.exe('qmake'))
-
-    #@property
-    #def qt_version(self):
-    #    """ The Qt version as a string. """
-
-    #    if self._qt_version is None:
-    #        self._qt_version = self.run(self.qmake, '-query', 'QT_VERSION',
-    #                capture=True)
-
-    #    return self._qt_version
-
-    #@property
-    #def sip(self):
-    #    """ The name of the sip executable including any required path. """
-
-    #    return os.path.join(self.sysroot.bin_dir, self.exe('sip'))
 
 
 class WindowsHost(Host):

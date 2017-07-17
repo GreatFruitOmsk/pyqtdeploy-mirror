@@ -24,7 +24,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import fnmatch
 import glob
 import os
 import shutil
@@ -125,7 +124,7 @@ class Sysroot:
                         "{} already exists but is not a directory".format(
                                 name))
 
-        self._message_handler.progress_message("Creating {}".format(name))
+        self.verbose("Creating {}".format(name))
 
         try:
             os.mkdir(name)
@@ -136,7 +135,7 @@ class Sysroot:
     def _delete_dir(self, name):
         """ Delete an existng directory. """
 
-        self._message_handler.progress_message("Deleting {}".format(name))
+        self.verbose("Deleting {}".format(name))
 
         try:
             shutil.rmtree(name)
@@ -187,7 +186,7 @@ class Sysroot:
     def find_exe(self, exe):
         """ Return the absolute pathname of an executable located on PATH. """
 
-        host_exe = self._host.exe(exe)
+        host_exe = self.host_exe(exe)
 
         for d in os.environ.get('PATH', '').split(os.pathsep):
             exe_path = os.path.join(d, host_exe)
@@ -197,29 +196,26 @@ class Sysroot:
 
         raise UserException("'{}' must be installed on PATH".format(exe))
 
-    def find_file(self, pattern):
-        """ Find the the file that matches a pattern.  There must be exactly
-        one matching file.  The files must be found in the directory specified
-        by the --sources command line option.  If this is not specified then
-        the directory containing the JSON specification file is used.  The
-        absolute pathname of the file is returned.
+    def find_file(self, name):
+        """ Find a file.  If the name is relative then it is relative to the
+        directory specified by the --sources command line option.  If this is
+        not specified then the directory containing the JSON specification file
+        is used.  The absolute pathname of the file is returned.
         """
 
-        files = [fn for fn in os.listdir(self._sources_dir)
-                if fnmatch.fnmatch(fn, pattern)]
-        nr_files = len(files)
+        # Convert the name to a normalised absolute pathname.
+        name = os.path.expandvars(name)
 
-        if nr_files == 0:
-            raise UserException(
-                    "no file found matching '{}' in {}".format(pattern,
-                            self._sources_dir))
+        if not os.path.isabs(name):
+            name = os.path.join(self._sources_dir, name)
 
-        if nr_files > 1:
-            raise UserException(
-                    "multiple files found matching '{}' in {}".format(pattern,
-                            self._sources_dir))
+        name = os.path.normpath(name)
 
-        return os.path.join(self._sources_dir, files[0])
+        # Check the file exists.
+        if not os.path.exists(name):
+            raise UserException("'{}' could not be found".format(name))
+
+        return name
 
     @property
     def host_bin_dir(self):
@@ -233,17 +229,42 @@ class Sysroot:
 
         return os.path.join(self.sysroot_dir, 'host')
 
-    @property
-    def host_interpreter(self):
-        """ The pathname of the host Python interpreter. """
+    def host_exe(self, name):
+        """ Convert a generic executable name to a host-specific version. """
 
-        return os.path.join(self.host_bin_dir, self._host.exe('python'))
+        return self._host.exe(name)
 
     @property
-    def make(self):
-        """ The host-specific name of the make executable. """
+    def host_make(self):
+        """ The name of the host make executable. """
 
         return self._host.make
+
+    @property
+    def host_python(self):
+        """ The pathname of the host Python interpreter. """
+
+        return os.path.join(self.host_bin_dir, self.host_exe('python'))
+
+    @property
+    def host_qmake(self):
+        """ The name of the host qmake executable. """
+
+        return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
+
+    @property
+    def native(self):
+        """ Return True if the target and host platforms are the same.  The
+        word size is ignored.
+        """
+
+        if sys.platform == 'darwin':
+            return self.target_name.startswith('osx-')
+
+        if sys.platform == 'win32':
+            return self.target_name.startswith('win-')
+
+        return self.target_name.startswith('linux-')
 
     def progress(self, message):
         """ Issue a progress message. """
@@ -281,6 +302,7 @@ class Sysroot:
 
         if sys.platform == 'win32':
             # Don't bother with symbolic link privileges on Windows.
+            self.verbose("Copying {} to {}".format(src, dst))
             shutil.copyfile(src, dst)
         else:
             # If the source directory is within the same root as the
@@ -289,7 +311,8 @@ class Sysroot:
             if os.path.commonpath((src, dst)).startswith(self.sysroot_dir):
                 src = os.path.relpath(src, os.path.dirname(dst))
 
-        os.symlink(src, dst)
+            self.verbose("Linking {} to {}".format(src, dst))
+            os.symlink(src, dst)
 
     @property
     def sdk(self):
@@ -299,6 +322,12 @@ class Sysroot:
             raise UserException("a valid SDK hasn't been specified")
 
         return self._sdk
+
+    @property
+    def target_qt_dir(self):
+        """ The name of the root directory of the target Qt installation. """
+
+        return os.path.join(self.sysroot_dir, 'qt')
 
     def unpack_archive(self, archive, chdir=True):
         """ An archive is unpacked in the current directory.  If requested its

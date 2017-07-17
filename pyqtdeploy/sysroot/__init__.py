@@ -26,5 +26,5 @@
 
 # Publish the sub-package's API.
 from .abstract_package import AbstractPackage, PackageOption
-from .package_mixins import SourcePackageMixin
+from .package_mixins import OptionalSourcePackageMixin, SourcePackageMixin
 from .sysroot import Sysroot
