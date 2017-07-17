@@ -25,6 +25,7 @@
 
 
 import os
+import sys
 
 from ... import (AbstractPackage, OptionalSourcePackageMixin, PackageOption,
         UserException)
@@ -35,8 +36,14 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
 
     # The package-specific options.
     options = [
+        PackageOption('configure_options', list,
+                help="The additional options to be passed to 'configure' when building from source."),
+        PackageOption('disabled_features', list,
+                help="The features that are disabled when building from source."),
         PackageOption('qt_dir', str,
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
+        PackageOption('skip', list,
+                help="The Qt modules to skip when building from source."),
         PackageOption('static_msvc_runtime', bool,
                 help="Set if the MSVC runtime should be statically linked."),
     ]
@@ -86,7 +93,7 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
         """ Build Qt5 from source. """
 
         archive = sysroot.find_file(self.source)
-        sysroot.unpack_archive(archive)
+        archive_dir = sysroot.unpack_archive(archive)
 
         if sys.platform == 'win32':
             configure = 'configure.bat'
@@ -126,13 +133,23 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
             configure = './configure'
             original_path = None
 
-        # TODO: allow a sub-set of the Qt modules to be built.
-
-        license = '-opensource' if '-opensource-' in source else '-commercial'
+        license = '-opensource' if '-opensource-' in archive_dir else '-commercial'
 
         args = [configure, '-prefix', sysroot.target_qt_dir, license,
                 '-confirm-license', '-static', '-release', '-nomake',
                 'examples', '-nomake', 'tools']
+
+        if self.configure_options:
+            args.extend(self.configure_options)
+
+        if self.disabled_features:
+            for feature in self.disabled_features:
+                args.append('-no-feature-' + feature)
+
+        if self.skip:
+            for module in self.skip:
+                args.append('-skip')
+                args.append(module)
 
         if sys.platform == 'win32':
             # These cause compilation failures (although maybe only with static
