@@ -31,7 +31,7 @@ from ... import (AbstractPackage, OptionalSourcePackageMixin, PackageOption,
         UserException)
 
 
-class HostPythonPackage(AbstractPackage):
+class HostPythonPackage(OptionalSourcePackageMixin, AbstractPackage):
     """ The host Python package. """
 
     # The package-specific options.
