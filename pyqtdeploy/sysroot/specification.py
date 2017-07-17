@@ -38,7 +38,7 @@ from .abstract_package import AbstractPackage
 class Specification:
     """ Encapsulate the specification of a system root directory. """
 
-    def __init__(self, spec_file, plugin_path):
+    def __init__(self, spec_file, plugin_path, target_name):
         """ Initialise the object. """
 
         self.specification_file = os.path.abspath(spec_file)
@@ -89,20 +89,51 @@ class Specification:
                 package = plugin()
                 setattr(package, 'name', name)
 
-                # Parse the package-specific options.
+                # Remove values unrelated to the target.
                 if not isinstance(value, dict):
                     self._bad_type(name, spec_file)
 
+                config = {}
+                for opt_name, opt_value in value.items():
+                    # Extract any scope.
+                    parts = opt_name.split('#', maxsplit=1)
+                    if len(parts) == 2:
+                        scope, opt_name = parts
+
+                        # Remember if we are negating.
+                        if scope.startswith('!'):
+                            negate = True
+                            scope = scope[1:]
+                        else:
+                            negate = False
+
+                        # See if the scope matches the target.  The scope may
+                        # or may not include the word size.
+                        if '-' in scope:
+                            matches = (target_name == scope)
+                        else:
+                            matches = target_name.startswith(scope + '-')
+
+                        if negate:
+                            matches = not matches
+
+                        # Ignore if it isn't relevant.
+                        if not matches:
+                            continue
+
+                    # The value is relevant so save it.
+                    config[opt_name] = opt_value
+
+                # Parse the package-specific options.
                 for cls in plugin.__mro__:
                     options = cls.__dict__.get('options')
                     if options:
-                        self._parse_options(value, options, package, spec_file,
-                                name)
+                        self._parse_options(config, options, package, spec_file)
 
                     if cls is AbstractPackage:
                         break
 
-                unused = value.keys()
+                unused = config.keys()
                 if unused:
                     self._parse_error(
                             "unknown value(s): {}".format(', '.join(unused)),
@@ -150,9 +181,9 @@ class Specification:
 
         return None
 
-    def _parse_options(self, json_array, options, target, spec_file, context):
+    def _parse_options(self, json_array, options, package, spec_file):
         """ Parse a JSON array according to a set of options and add the
-        corresponding values as attributes of a target object.
+        corresponding values as attributes of a package object.
         """
 
         for option in options:
@@ -162,31 +193,31 @@ class Specification:
                 if option.required:
                     self._parse_error(
                             "'{}' has not been specified".format(option.name),
-                            spec_file, context)
+                            spec_file, package.name)
 
                 # Create a default value.
                 value = option.type()
             elif not isinstance(value, option.type):
-                self._bad_type(option.name, spec_file, context)
+                self._bad_type(option.name, spec_file, package.name)
 
-            setattr(target, option.name, value)
+            setattr(package, option.name, value)
 
             try:
                 del json_array[option.name]
             except KeyError:
                 pass
 
-    def _bad_type(self, name, spec_file, context=None):
+    def _bad_type(self, name, spec_file, package_name=None):
         """ Raise an exception when an option name has the wrong type. """
 
         self._parse_error("value of '{}' has an unexpected type".format(name),
-                spec_file, context)
+                spec_file, package_name)
 
-    def _parse_error(self, message, spec_file, context):
+    def _parse_error(self, message, spec_file, package_name):
         """ Raise an exception for by an error in the specification file. """
 
-        if context:
-            exception = "{}: Package '{}': {}".format(spec_file, context,
+        if package_name:
+            exception = "{}: Package '{}': {}".format(spec_file, package_name,
                     message)
         else:
             exception = "{}: {}".format(spec_file, message)

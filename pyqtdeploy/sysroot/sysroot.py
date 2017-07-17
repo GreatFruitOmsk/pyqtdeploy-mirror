@@ -52,7 +52,8 @@ class Sysroot:
         self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
         self._host = Host.factory()
-        self._specification = Specification(sysroot_json, plugin_path)
+        self._specification = Specification(sysroot_json, plugin_path,
+                self.target_name)
         self._sdk = self._find_sdk(sdk)
         self._message_handler = message_handler
 
