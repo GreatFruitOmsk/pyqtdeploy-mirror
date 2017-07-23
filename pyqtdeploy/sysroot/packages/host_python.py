@@ -37,11 +37,9 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
     def build(self, sysroot):
         """ Build Python for the host. """
 
-        if self.installed_version:
-            if self.source:
-                raise UserException(
-                        "the 'installed_version' and 'source' options cannot both be specified")
+        self.validate_install_source_options()
 
+        if self.installed_version:
             sysroot.progress(
                     "Installing the existing Python v{} as the host Python".format(self.installed_version))
 
@@ -49,11 +47,8 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
                 interpreter = self._install_existing_windows_version(sysroot)
             else:
                 interpreter = self._install_existing_version(sysroot)
+
         else:
-            if not self.source:
-                raise UserException(
-                        "either the 'installed_version' or 'source' option must be specified")
-                
             sysroot.progress("Building the host Python")
 
             if sys.platform == 'win32':
@@ -100,36 +95,10 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
         and return the absolute pathname of the interpreter.
         """ 
 
-        from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
-
-        py_major, py_minor = self.installed_version.split('.')
-        reg_version = self.installed_version
-        if int(py_major) == 3 and int(py_minor) >= 5 and target_name is not None and target_name.endswith('-32'):
-            reg_version += '-32'
-
-        sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
-        sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
-
-        queries = (
-            (HKEY_CURRENT_USER, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_all_users))
-
-        for key, sub_key in queries:
-            try:
-                install_path = QueryValue(key, sub_key)
-            except OSError:
-                pass
-            else:
-                break
-        else:
-            raise UserException(
-                    "unable to find an installation of Python v{}".format(
-                            reg_version))
+        install_path = self.get_windows_install_path()
 
         # Copy the DLL.
+        py_major, py_minor = self.installed_version.split('.')
         dll = 'python' + py_major + py_minor + '.dll'
         shutil.copyfile(os.path.join(install_path, dll),
                 os.path.join(sysroot.host_bin_dir, dll))

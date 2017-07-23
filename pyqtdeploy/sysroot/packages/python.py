@@ -43,11 +43,9 @@ class PythonPackage(PythonPackageMixin, AbstractPackage):
     def build(self, sysroot):
         """ Build Python for the target. """
 
-        if self.installed_version:
-            if self.source:
-                raise UserException(
-                        "the 'installed_version' and 'source' options cannot both be specified")
+        self.validate_install_source_options()
 
+        if self.installed_version:
             sysroot.progress(
                     "Installing the existing Python v{} as the target Python".format(self.installed_version))
 
@@ -56,11 +54,8 @@ class PythonPackage(PythonPackageMixin, AbstractPackage):
             else:
                 raise UserException(
                         "using an existing Python installation is not supported for the {} target".format(sysroot.target_name))
+
         else:
-            if not self.source:
-                raise UserException(
-                        "either the 'installed_version' or 'source' option must be specified")
-                
             sysroot.progress("Building the target Python")
 
             self._build_from_source(sysroot)
