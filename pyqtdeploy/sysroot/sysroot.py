@@ -111,7 +111,7 @@ class Sysroot:
                     packages.append(package)
                     break
             else:
-                raise UserException("unkown package '{}'".format(name))
+                raise UserException("unkown package '{0}'".format(name))
 
         return packages
 
@@ -163,7 +163,8 @@ class Sysroot:
         try:
             shutil.copy(src, dst)
         except Exception as e:
-            raise UserException("unable to copy {}".format(src), detail=str(e))
+            raise UserException("unable to copy {0}".format(src),
+                    detail=str(e))
 
     def copy_dir(self, src, dst, ignore=None):
         """ Copy a directory and its contents optionally ignoring a sequence of
@@ -183,7 +184,7 @@ class Sysroot:
         try:
             shutil.copytree(src, dst, ignore=ignore)
         except Exception as e:
-            raise UserException("unable to copy directory {}".format(src),
+            raise UserException("unable to copy directory {0}".format(src),
                     detail=str(e))
 
     def create_dir(self, name, empty=False):
@@ -195,7 +196,7 @@ class Sysroot:
         if os.path.exists(name):
             if not os.path.isdir(name):
                 raise UserException(
-                        "{} exists but is not a directory".format(name))
+                        "{0} exists but is not a directory".format(name))
         else:
             self.verbose("Creating {0}".format(name))
 
@@ -203,7 +204,7 @@ class Sysroot:
                 os.makedirs(name, exist_ok=True)
             except Exception as e:
                 raise UserException(
-                        "unable to create directory {}".format(name),
+                        "unable to create directory {0}".format(name),
                         detail=str(e))
 
     def delete_dir(self, name):
@@ -212,7 +213,7 @@ class Sysroot:
         if os.path.exists(name):
             if not os.path.isdir(name):
                 raise UserException(
-                        "{} exists but is not a directory".format(name))
+                        "{0} exists but is not a directory".format(name))
 
             self.verbose("Deleting {0}".format(name))
 
@@ -220,7 +221,7 @@ class Sysroot:
                 shutil.rmtree(name)
             except Exception as e:
                 raise UserException(
-                        "unable to remove directory {}.".format(name),
+                        "unable to remove directory {0}.".format(name),
                         detail=str(e))
 
     def find_exe(self, exe):
@@ -234,7 +235,7 @@ class Sysroot:
             if os.access(exe_path, os.X_OK):
                 return exe_path
 
-        raise UserException("'{}' must be installed on PATH".format(exe))
+        raise UserException("'{0}' must be installed on PATH".format(exe))
 
     def find_file(self, name):
         """ Find a file.  If the name is relative then it is relative to the
@@ -253,7 +254,7 @@ class Sysroot:
 
         # Check the file exists.
         if not os.path.exists(name):
-            raise UserException("'{}' could not be found".format(name))
+            raise UserException("'{0}' could not be found".format(name))
 
         return name
 
@@ -315,14 +316,15 @@ class Sysroot:
         """ Run a command, optionally capturing stdout. """
 
         self._message_handler.verbose_message(
-                "Running '{}'".format(' '.join(args)))
+                "Running '{0}'".format(' '.join(args)))
 
         if capture:
             try:
                 stdout = subprocess.check_output(args,
                         universal_newlines=True, stderr=subprocess.PIPE)
             except subprocess.CalledProcessError as e:
-                raise UserException("execution of '{}' failed".format(args[0]),
+                raise UserException(
+                        "execution of '{0}' failed".format(args[0]),
                         detail=e.stderr)
 
             return stdout.strip()
@@ -342,7 +344,7 @@ class Sysroot:
 
         if sys.platform == 'win32':
             # Don't bother with symbolic link privileges on Windows.
-            self.verbose("Copying {} to {}".format(src, dst))
+            self.verbose("Copying {0} to {1}".format(src, dst))
             shutil.copyfile(src, dst)
         else:
             # If the source directory is within the same root as the
@@ -351,7 +353,7 @@ class Sysroot:
             if os.path.commonpath((src, dst)).startswith(self.sysroot_dir):
                 src = os.path.relpath(src, os.path.dirname(dst))
 
-            self.verbose("Linking {} to {}".format(src, dst))
+            self.verbose("Linking {0} to {1}".format(src, dst))
             os.symlink(src, dst)
 
     @property
@@ -391,7 +393,7 @@ class Sysroot:
         try:
             shutil.unpack_archive(archive)
         except Exception as e:
-            raise UserException("unable to unpack {}".format(archive),
+            raise UserException("unable to unpack {0}".format(archive),
                     detail=str(e))
 
         # Assume that the name of the extracted directory is the same as the
@@ -408,12 +410,13 @@ class Sysroot:
                 break
         else:
             # This should never happen if we have got this far.
-            raise UserException("'{}' has an unknown extension".format(archive))
+            raise UserException(
+                    "'{0}' has an unknown extension".format(archive))
 
         # Validate the assumption by checking the expected directory exists.
         if not os.path.isdir(archive_dir):
             raise UserException(
-                    "unpacking {} did not create a directory called '{}' as expected".format(archive, archive_dir))
+                    "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_dir))
 
         # Change to the extracted directory if required.
         if chdir:

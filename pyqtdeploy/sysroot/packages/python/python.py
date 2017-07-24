@@ -27,15 +27,19 @@
 import os
 import sys
 
-from ... import (AbstractPackage, PackageOption, PythonPackageMixin,
-        UserException)
+from .... import (AbstractPackage, DebugPackageMxin, PackageOption,
+        PythonPackageMixin, UserException)
 
 
-class PythonPackage(PythonPackageMixin, AbstractPackage):
+class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
     """ The target Python package. """
 
     # The package-specific options.
     options = [
+        PackageOption('android_api', str,
+                help="The Android API level to target."),
+        PackageOption('disable_patches', bool,
+                help="Disable the patching of the source code for Android."),
         PackageOption('dynamic_loading', bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
     ]
@@ -47,13 +51,13 @@ class PythonPackage(PythonPackageMixin, AbstractPackage):
 
         if self.installed_version:
             sysroot.progress(
-                    "Installing the existing Python v{} as the target Python".format(self.installed_version))
+                    "Installing the existing Python v{0} as the target Python".format(self.installed_version))
 
             if sys.platform == 'win32':
                 self._install_existing_windows_version(sysroot)
             else:
                 raise UserException(
-                        "using an existing Python installation is not supported for the {} target".format(sysroot.target_name))
+                        "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
 
         else:
             sysroot.progress("Building the target Python")
@@ -62,27 +66,6 @@ class PythonPackage(PythonPackageMixin, AbstractPackage):
 
     def _build_from_source(self, sysroot):
         """ Build the target Python from source. """
-
-        # Unpack the source and extract the version number.
-        archive = sysroot.find_file(self.source)
-        package_name = sysroot.unpack_archive(archive)
-        py_version = package_name.split('-')[1].split('.')
-
-        # ensurepip was added in Python v2.7.9 and v3.4.0.
-        ensure_pip = False
-        if py_version[0] == '2':
-            if py_version[2] >= '9':
-                ensure_pip = True
-        elif py_version[1] >= '4':
-            ensure_pip = True
-
-        configure = ['./configure', '--prefix', sysroot.host_dir]
-        if ensure_pip:
-            configure.append('--with-ensurepip=no')
-
-        sysroot.run(*configure)
-        sysroot.run(sysroot.host_make)
-        sysroot.run(sysroot.host_make, 'install')
 
     def _install_existing_windows_version(self, sysroot):
         """ Install the host Python from an existing installation on Windows.

@@ -51,7 +51,7 @@ class Specification:
                 spec = json.load(f)
             except json.JSONDecodeError as e:
                 raise UserException(
-                        "{}:{}: {}".format(spec_file, e.lineno, e.msg))
+                        "{0}:{1}: {2}".format(spec_file, e.lineno, e.msg))
 
         # Do a high level parse and import the plugins.
         for name, value in spec.items():
@@ -82,7 +82,7 @@ class Specification:
                             break
                     else:
                         raise UserException(
-                                "unable to find a plugin for '{}'".format(
+                                "unable to find a plugin for '{0}'".format(
                                         name))
 
                 # Create the package plugin.
@@ -136,7 +136,7 @@ class Specification:
                 unused = config.keys()
                 if unused:
                     self._parse_error(
-                            "unknown value(s): {}".format(', '.join(unused)),
+                            "unknown value(s): {0}".format(', '.join(unused)),
                             spec_file, name)
 
                 self.packages.append(package)
@@ -192,7 +192,7 @@ class Specification:
             if value is None:
                 if option.required:
                     self._parse_error(
-                            "'{}' has not been specified".format(option.name),
+                            "'{0}' has not been specified".format(option.name),
                             spec_file, package.name)
 
                 # Create a default value.
@@ -210,17 +210,17 @@ class Specification:
     def _bad_type(self, name, spec_file, package_name=None):
         """ Raise an exception when an option name has the wrong type. """
 
-        self._parse_error("value of '{}' has an unexpected type".format(name),
+        self._parse_error("value of '{0}' has an unexpected type".format(name),
                 spec_file, package_name)
 
     def _parse_error(self, message, spec_file, package_name):
         """ Raise an exception for by an error in the specification file. """
 
         if package_name:
-            exception = "{}: Package '{}': {}".format(spec_file, package_name,
-                    message)
+            exception = "{0}: Package '{1}': {2}".format(spec_file,
+                    package_name, message)
         else:
-            exception = "{}: {}".format(spec_file, message)
+            exception = "{0}: {1}".format(spec_file, message)
 
         raise UserException(exception)
 

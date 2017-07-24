@@ -29,10 +29,20 @@ from ..user_exception import UserException
 from .abstract_package import PackageOption
 
 
+class DebugPackageMixin:
+    """ A mixin for a package that has a debug option. """
+
+    # The options.
+    options = [
+        PackageOption('debug', bool,
+                help="A debug version of the package is to be used."),
+    ]
+
+
 class OptionalSourcePackageMixin:
     """ A mixin for a package optionally built from source. """
 
-    # The package-specific options.
+    # The options.
     options = [
         PackageOption('source', str,
                 help="The source archive to build the package from if an existing installation is not to be used."),
@@ -42,7 +52,7 @@ class OptionalSourcePackageMixin:
 class SourcePackageMixin:
     """ A mixin for a package built from source. """
 
-    # The package-specific options.
+    # The options.
     options = [
         PackageOption('source', str, required=True,
                 help="The source archive to build the package from."),
@@ -52,7 +62,7 @@ class SourcePackageMixin:
 class PythonPackageMixin(OptionalSourcePackageMixin):
     """ A mixin for host and target Python packages. """
 
-    # The package-specific options.
+    # The options.
     options = [
         PackageOption('installed_version', str,
                 help="The major.minor version number of an existing Python installation to use. If it is not specified then the installation will be built from source."),
@@ -90,7 +100,7 @@ class PythonPackageMixin(OptionalSourcePackageMixin):
                 break
         else:
             raise UserException(
-                    "unable to find an installation of Python v{}".format(
+                    "unable to find an installation of Python v{0}".format(
                             reg_version))
 
         return install_path
@@ -108,7 +118,7 @@ class PythonPackageMixin(OptionalSourcePackageMixin):
             parts = self.installed_version.split('.')
             if len(parts) != 2:
                 raise UserException(
-                        "'installed_version' option must be in the form major.minor and not '{}'".format(self.installed_version))
+                        "'installed_version' option must be in the form major.minor and not '{0}'".format(self.installed_version))
         else:
             raise UserException(
                     "either the 'installed_version' or 'source' option must be specified")

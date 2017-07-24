@@ -69,7 +69,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
             self._build_win(sysroot, common_options)
         else:
             raise UserException(
-                    "building OpenSSL for {} is not yet supported".format(
+                    "building OpenSSL for {0} is not yet supported".format(
                             sysroot.target_name))
 
     def _build_macos(self, sysroot, common_options):

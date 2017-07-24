@@ -174,6 +174,6 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
         qt_dir = os.path.abspath(os.path.expandvars(self.qt_dir))
 
         if not os.path.isdir(qt_dir):
-            raise UserException("'{}' could not be found".format(qt_dir))
+            raise UserException("'{0}' could not be found".format(qt_dir))
 
         return qt_dir

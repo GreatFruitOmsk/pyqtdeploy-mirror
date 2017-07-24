@@ -41,7 +41,7 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
 
         if self.installed_version:
             sysroot.progress(
-                    "Installing the existing Python v{} as the host Python".format(self.installed_version))
+                    "Installing the existing Python v{0} as the host Python".format(self.installed_version))
 
             if sys.platform == 'win32':
                 interpreter = self._install_existing_windows_version(sysroot)
