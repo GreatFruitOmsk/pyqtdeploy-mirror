@@ -69,11 +69,13 @@ class Sysroot:
             packages = self._packages_from_names(package_names)
         else:
             packages = self._specification.packages
-            self._create_empty_dir(self.sysroot_dir)
+            self.create_dir(self.sysroot_dir, empty=True)
             os.makedirs(self.host_bin_dir)
+            os.makedirs(self.target_include_dir)
+            os.makedirs(self.target_lib_dir)
 
         # Create a new build directory.
-        self._create_empty_dir(self._build_dir)
+        self.create_dir(self._build_dir, empty=True)
         cwd = os.getcwd()
         os.chdir(self._build_dir)
 
@@ -83,7 +85,7 @@ class Sysroot:
 
         # Remove the build directory.
         os.chdir(cwd)
-        self._delete_dir(self._build_dir)
+        self.delete_dir(self._build_dir)
 
     def show_options(self, package_names):
         """ Show the options for a sequence of packages.  If no names are given
@@ -112,37 +114,6 @@ class Sysroot:
                 raise UserException("unkown package '{}'".format(name))
 
         return packages
-
-    def _create_empty_dir(self, name):
-        """ Create an empty directory. """
-
-        # Delete any existing one.
-        if os.path.exists(name):
-            if os.path.isdir(name):
-                self._delete_dir(name)
-            else:
-                raise UserException(
-                        "{} already exists but is not a directory".format(
-                                name))
-
-        self.verbose("Creating {}".format(name))
-
-        try:
-            os.mkdir(name)
-        except Exception as e:
-            raise UserException("unable to create {}".format(name),
-                    detail=str(e))
-
-    def _delete_dir(self, name):
-        """ Delete an existng directory. """
-
-        self.verbose("Deleting {}".format(name))
-
-        try:
-            shutil.rmtree(name)
-        except Exception as e:
-            raise UserException("unable to delete {}".format(name),
-                    detail=str(e))
 
     @staticmethod
     def _find_sdk(user_sdk):
@@ -183,6 +154,74 @@ class Sysroot:
     ###########################################################################
     # The following make up the public API to be used by package plugins.
     ###########################################################################
+
+    def copy_file(self, src, dst):
+        """ Copy a file. """
+
+        self.verbose("Copying {0} to {1}".format(src, dst))
+
+        try:
+            shutil.copy(src, dst)
+        except Exception as e:
+            raise UserException("unable to copy {}".format(src), detail=str(e))
+
+    def copy_dir(self, src, dst, ignore=None):
+        """ Copy a directory and its contents optionally ignoring a sequence of
+        patterns.  If the destination directory already exists its contents
+        will be first deleted.
+        """
+
+        # Make sure the destination does not exist but can be created.
+        self.delete_dir(dst)
+        self.create_dir(os.path.dirname(dst))
+
+        self.verbose("Copying {0} to {1}".format(src, dst))
+
+        if ignore is not None:
+            ignore = shutil.ignore_patterns(*ignore)
+
+        try:
+            shutil.copytree(src, dst, ignore=ignore)
+        except Exception as e:
+            raise UserException("unable to copy directory {}".format(src),
+                    detail=str(e))
+
+    def create_dir(self, name, empty=False):
+        """ Ensure a directory exists and optionally delete its contents. """
+
+        if empty:
+            self.delete_dir(name)
+
+        if os.path.exists(name):
+            if not os.path.isdir(name):
+                raise UserException(
+                        "{} exists but is not a directory".format(name))
+        else:
+            self.verbose("Creating {0}".format(name))
+
+            try:
+                os.makedirs(name, exist_ok=True)
+            except Exception as e:
+                raise UserException(
+                        "unable to create directory {}".format(name),
+                        detail=str(e))
+
+    def delete_dir(self, name):
+        """ Delete a directory and its contents. """
+
+        if os.path.exists(name):
+            if not os.path.isdir(name):
+                raise UserException(
+                        "{} exists but is not a directory".format(name))
+
+            self.verbose("Deleting {0}".format(name))
+
+            try:
+                shutil.rmtree(name)
+            except Exception as e:
+                raise UserException(
+                        "unable to remove directory {}.".format(name),
+                        detail=str(e))
 
     def find_exe(self, exe):
         """ Return the absolute pathname of an executable located on PATH. """
@@ -323,6 +362,18 @@ class Sysroot:
             raise UserException("a valid SDK hasn't been specified")
 
         return self._sdk
+
+    @property
+    def target_include_dir(self):
+        """ The name of the directory containing target header files. """
+
+        return os.path.join(self.sysroot_dir, 'include')
+
+    @property
+    def target_lib_dir(self):
+        """ The name of the directory containing target libraries. """
+
+        return os.path.join(self.sysroot_dir, 'lib')
 
     @property
     def target_qt_dir(self):

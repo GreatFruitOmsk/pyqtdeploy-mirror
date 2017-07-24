@@ -88,36 +88,54 @@ class PythonPackage(PythonPackageMixin, AbstractPackage):
         """ Install the host Python from an existing installation on Windows.
         """ 
 
-        from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
-
         py_major, py_minor = self.installed_version.split('.')
-        reg_version = self.installed_version
-        if int(py_major) == 3 and int(py_minor) >= 5 and target_name is not None and target_name.endswith('-32'):
-            reg_version += '-32'
+        install_path = self.get_windows_install_path()
 
-        sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
-        sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
+        # The interpreter library.
+        lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
 
-        queries = (
-            (HKEY_CURRENT_USER, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_all_users))
+        sysroot.copy_file(install_path + 'libs\\' + lib_name,
+                os.path.join(sysroot.target_lib_dir, lib_name))
 
-        for key, sub_key in queries:
-            try:
-                install_path = QueryValue(key, sub_key)
-            except OSError:
-                pass
-            else:
-                break
+        if py_major >= 3 and py_minor >= 4:
+            lib_name = 'python{0}.lib'.format(py_major)
+
+            sysroot.copy_file(install_path + 'libs\\' + lib_name,
+                    os.path.join(sysroot.target_lib_dir, lib_name))
+
+        # The DLLs and extension modules.
+        sysroot.copy_dir(install_path + 'DLLs',
+                os.path.join(sysroot.target_lib_dir,
+                        'DLLs{0}.{1}'.format(py_major, py_minor)),
+                ignore=('*.ico', 'tcl*.dll', 'tk*.dll', '_tkinter.pyd'))
+
+        py_dll = 'python{0}{1}.dll'.format(py_major, py_minor)
+
+        if py_major == 3 and py_minor >= 5:
+            py_dll_dir = install_path
+
+            vc_dll = 'vcruntime140.dll'
+            sysroot.copy_file(py_dll_dir + vc_dll,
+                    os.path.join(dlls_dir, vc_dll))
         else:
-            raise UserException(
-                    "unable to find an installation of Python v{}".format(
-                            reg_version))
+            # Check for an installation for all users on 32 bit Windows.
+            py_dll_dir = 'C:\\Windows\\System32\\'
+            if not os.path.isfile(py_dll_dir + py_dll):
+                # Check for an installation for all users on 64 bit Windows.
+                py_dll_dir = 'C:\\Windows\\SysWOW64\\'
+                if not os.path.isfile(py_dll_dir + py_dll):
+                    # Assume it is an installation for the current user.
+                    py_dll_dir = install_path
 
-        # Copy the DLL.
-        dll = 'python' + py_major + py_minor + '.dll'
-        shutil.copyfile(os.path.join(install_path, dll),
-                os.path.join(sysroot.host_bin_dir, dll))
+        sysroot.copy_file(py_dll_dir + py_dll, os.path.join(dlls_dir, py_dll))
+
+        # The standard library.
+        py_subdir = 'python{0}.{1}'.format(py_major, py_minor)
+
+        sysroot.copy_dir(install_path + 'Lib',
+                os.path.join(sysroot.target_lib_dir, py_subdir),
+                ignore=('site-packages', '__pycache__', '*.pyc', '*.pyo'))
+
+        # The header files.
+        sysroot.copy_dir(install_path + 'include',
+                os.path.join(sysroot.target_include_dir, py_subdir))
