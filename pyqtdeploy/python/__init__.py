@@ -26,5 +26,4 @@
 
 # Publish the sub-package's API.
 from .configure_python import configure_python
-from .install_python import install_python
 from .windows import get_windows_install_path

@@ -74,8 +74,7 @@ def main():
     parser.add_argument('--output',
             help="the name of the output file or directory (configure, build)",
             metavar="OUTPUT")
-    parser.add_argument('--package',
-            help="the package name (configure, install)",
+    parser.add_argument('--package', help="the package name (configure)",
             metavar="PACKAGE")
     parser.add_argument('--project', help="the project file (build)",
             metavar="FILE")
@@ -90,14 +89,7 @@ def main():
     parser.add_argument('--standard-library-dir',
             help="the target Python standard library directory (build)",
             metavar="DIR")
-    parser.add_argument('--sysroot',
-            help="the system image root directory (install)",
-            metavar="DIR")
-    parser.add_argument('--system-python',
-            help="use the system installed Python (install)",
-            metavar="VERSION")
-    parser.add_argument('--target',
-            help="the target platform (configure, install)",
+    parser.add_argument('--target', help="the target platform (configure)",
             metavar="TARGET")
     parser.add_argument('--timeout',
             help="the number of seconds to wait for build processes to run "
@@ -118,8 +110,6 @@ def main():
         rc = build(args, message_handler)
     elif args.action == 'configure':
         rc = configure(args, message_handler)
-    elif args.action == 'install':
-        rc = install(args, message_handler)
     elif args.action == 'show-packages':
         rc = show_packages(args, message_handler)
     elif args.action == 'show-targets':
@@ -186,38 +176,6 @@ def configure(args, message_handler):
         except UserException as e:
             message_handler.exception(e)
             return 1
-
-    return 0
-
-
-def install(args, message_handler):
-    """ Perform the install action. """
-
-    # Note that the intent is to support the installation of all supported
-    # packages into sysroot in a future version.  For now we just handle the
-    # Windows version of Python installed from the official installers.
-
-    if args.package is None:
-        missing_argument('--package', message_handler)
-        return 2
-
-    if args.sysroot is None:
-        missing_argument('--sysroot', message_handler)
-        return 2
-
-    if args.package == 'python':
-        from . import install_python
-
-        try:
-            install_python(args.target, args.sysroot, args.system_python,
-                    message_handler)
-        except UserException as e:
-            message_handler.exception(e)
-            return 1
-    else:
-        message_handler.error(
-                "install only supports the python package at the moment.")
-        return 1
 
     return 0
 
