@@ -30,7 +30,8 @@ from . import MessageHandler, PYQTDEPLOY_RELEASE, Sysroot, UserException
 
 
 def main():
-    """ The entry point for the setuptools generated pyqtdeploysysroot wrapper.
+    """ The entry point for the setuptools generated pyqtdeploy-sysroot
+    wrapper.
     """
 
     # Parse the command line.
@@ -73,7 +74,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Perform the required actions.
+    # Perform the required action.
     message_handler = MessageHandler(args.quiet, args.verbose)
 
     try:
