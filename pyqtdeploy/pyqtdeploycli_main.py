@@ -50,7 +50,7 @@ def main():
 
     parser.add_argument('action',
             help="the action to perform",
-            choices=('build', 'configure', 'show-targets', 'show-version'))
+            choices=('build', 'configure', 'show-targets'))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
                     "(configure) [default: {}]".format(default_api),
@@ -111,8 +111,6 @@ def main():
         rc = configure(args, message_handler)
     elif args.action == 'show-targets':
         rc = show_targets(args, message_handler)
-    elif args.action == 'show-version':
-        rc = show_version(args, message_handler)
     else:
         # This should never happen.
         rc = 1
@@ -191,14 +189,6 @@ def show_targets(args, message_handler):
     show(targets, message_handler)
 
     return 0
-
-
-def show_version(args, message_handler):
-    """ Perform the show-version action. """
-
-    from . import PYQTDEPLOY_RELEASE
-
-    message_handler.message(PYQTDEPLOY_RELEASE)
 
 
 def show(items, message_handler):
