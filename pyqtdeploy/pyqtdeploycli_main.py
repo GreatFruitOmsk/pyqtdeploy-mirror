@@ -49,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('action', help="the action to perform",
-            choices=('build', 'configure'))
+            choices=('configure', ))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
                     "(configure) [default: {}]".format(default_api),
@@ -60,43 +60,17 @@ def main():
     parser.add_argument('--enable-dynamic-loading',
             help="enable the dynamic loading of modules (configure)",
             action='store_true')
-    parser.add_argument('--include-dir',
-            help="the target Python include directory (build)", metavar="DIR")
-    parser.add_argument('--interpreter',
-            help="the host interpreter executable (build)",
-            metavar="EXECUTABLE")
-    parser.add_argument('--opt',
-            help="the optimisation level where 0 is none, 1 is no asserts, 2 "
-                    "is no asserts or docstrings (build) [default: 2]",
-            metavar="LEVEL", type=int, choices=range(3), default=2),
     parser.add_argument('--output',
-            help="the name of the output file or directory (configure, build)",
+            help="the name of the output file or directory (configure)",
             metavar="OUTPUT")
     parser.add_argument('--package', help="the package name (configure)",
             metavar="PACKAGE")
-    parser.add_argument('--project', help="the project file (build)",
-            metavar="FILE")
-    parser.add_argument('--python-library',
-            help="the target Python library (build)", metavar="LIB")
-    parser.add_argument('--resources',
-            help="the number of .qrc resource files to generate (build) "
-                    "[default: 1]",
-            metavar="NUMBER", type=int, default=1),
-    parser.add_argument('--source-dir',
-            help="the Python source code directory (build)", metavar="DIR")
-    parser.add_argument('--standard-library-dir',
-            help="the target Python standard library directory (build)",
-            metavar="DIR")
     parser.add_argument('--target', help="the target platform (configure)",
             metavar="TARGET")
-    parser.add_argument('--timeout',
-            help="the number of seconds to wait for build processes to run "
-                    "before timing out (build)",
-            metavar="SECONDS", type=int, default=30)
-    parser.add_argument('--quiet', help="disable progress messages (build)",
+    parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose',
-            help="enable verbose progress messages (configure, build)",
+            help="enable verbose progress messages (configure)",
             action='store_true')
 
     args = parser.parse_args()
@@ -104,43 +78,13 @@ def main():
     # Handle the specific actions.
     message_handler = MessageHandler(args.quiet, args.verbose)
 
-    if args.action == 'build':
-        rc = build(args, message_handler)
-    elif args.action == 'configure':
+    if args.action == 'configure':
         rc = configure(args, message_handler)
     else:
         # This should never happen.
         rc = 1
 
     return rc
-
-
-def build(args, message_handler):
-    """ Perform the build action. """
-
-    if args.project is None:
-        missing_argument('--project', message_handler)
-        return 2
-
-    if args.resources < 1:
-        message_handler.error(
-                "error: argument --resources: number must be at least 1")
-        return 2
-
-    from . import Builder, Project
-
-    try:
-        builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.opt, args.resources, args.timeout,
-                build_dir=args.output, include_dir=args.include_dir,
-                interpreter=args.interpreter,
-                python_library=args.python_library, source_dir=args.source_dir,
-                standard_library_dir=args.standard_library_dir)
-    except UserException as e:
-        message_handler.exception(e)
-        return 1
-
-    return 0
 
 
 def configure(args, message_handler):
