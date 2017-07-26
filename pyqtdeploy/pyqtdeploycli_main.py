@@ -50,8 +50,7 @@ def main():
 
     parser.add_argument('action',
             help="the action to perform",
-            choices=('build', 'configure', 'install', 'show-packages',
-                    'show-targets', 'show-version'))
+            choices=('build', 'configure', 'show-targets', 'show-version'))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
                     "(configure) [default: {}]".format(default_api),
@@ -110,8 +109,6 @@ def main():
         rc = build(args, message_handler)
     elif args.action == 'configure':
         rc = configure(args, message_handler)
-    elif args.action == 'show-packages':
-        rc = show_packages(args, message_handler)
     elif args.action == 'show-targets':
         rc = show_targets(args, message_handler)
     elif args.action == 'show-version':
@@ -176,22 +173,6 @@ def configure(args, message_handler):
         except UserException as e:
             message_handler.exception(e)
             return 1
-
-    return 0
-
-
-def show_packages(args, message_handler):
-    """ Perform the show-packages action. """
-
-    from . import get_supported_packages
-
-    try:
-        packages = get_supported_packages()
-    except UserException as e:
-        message_handler.exception(e, args.verbose)
-        return 1
-
-    show(packages, message_handler)
 
     return 0
 

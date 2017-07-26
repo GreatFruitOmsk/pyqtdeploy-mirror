@@ -74,25 +74,6 @@ def configure_package(package, target, output):
             macros={'@PY_PLATFORM@': py_platform})
 
 
-def get_supported_packages():
-    """ Return the list of supported packages. """
-
-    packages = [os.path.basename(name)
-            for name in get_embedded_dir_names(__file__, 'configurations')]
-    packages.append('python')
-
-    return packages
-
-
-def show_packages():
-    """ Write the list of packages for which configuration files exist to
-    stdout.
-    """
-
-    for package in sorted(get_supported_packages()):
-        print(package)
-
-
 def _get_configuration_name(package, target=None):
     """ Return the name of a configuration file for a platform and optional
     target.

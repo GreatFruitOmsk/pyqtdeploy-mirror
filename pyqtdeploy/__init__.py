@@ -27,7 +27,7 @@
 # Publish the package's API.  These are for the tools.
 from .builder import Builder
 from .message_handler import MessageHandler
-from .packages import configure_package, get_supported_packages
+from .packages import configure_package
 from .project import Project
 from .python import configure_python
 from .sysroot import Sysroot

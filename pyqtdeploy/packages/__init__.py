@@ -25,4 +25,4 @@
 
 
 # Publish the sub-package's API.
-from .packages import configure_package, get_supported_packages
+from .packages import configure_package
