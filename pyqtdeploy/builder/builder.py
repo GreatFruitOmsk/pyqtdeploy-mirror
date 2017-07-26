@@ -38,9 +38,9 @@ from ..file_utilities import (create_file, get_embedded_dir,
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         PLATFORM_SCOPES, pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
-from ..python import get_windows_install_path
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
+from ..windows import get_python_install_path
 
 
 # The sequence of all platform scopes.
@@ -127,7 +127,9 @@ class Builder():
                 interpreter = project.expandvars(
                         project.python_host_interpreter)
             elif sys.platform == 'win32':
-                interpreter = get_windows_install_path(py_major, py_minor) + 'python'
+                # TODO: This doesn't handle 32-bit Python v3.5 and later.
+                interpreter = get_python_install_path(
+                        '{0}.{1}'.format(py_major, py_minor)) + 'python'
             else:
                 interpreter = 'python{0}.{1}'.format(py_major, py_minor)
 

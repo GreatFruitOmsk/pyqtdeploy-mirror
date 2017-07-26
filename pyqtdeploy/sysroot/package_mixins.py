@@ -68,42 +68,20 @@ class PythonPackageMixin(OptionalSourcePackageMixin):
                 help="The major.minor version number of an existing Python installation to use. If it is not specified then the installation will be built from source."),
     ]
 
-    def get_windows_install_path(self):
+    def get_windows_install_path(self, target_name):
         """ Return the name of the directory containing the root of the Python
         installation directory for an existing installation.  It must not be
         called on a non-Windows platform.
         """
 
-        from winreg import (HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue)
+        from ..windows import get_python_install_path
 
         py_major, py_minor = self.installed_version.split('.')
         reg_version = self.installed_version
         if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
             reg_version += '-32'
 
-        sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
-        sub_key_all_users = 'Software\\Wow6432Node\\Python\\PythonCore\\{}\\InstallPath'.format(
-                reg_version)
-
-        queries = (
-            (HKEY_CURRENT_USER, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_user),
-            (HKEY_LOCAL_MACHINE, sub_key_all_users))
-
-        for key, sub_key in queries:
-            try:
-                install_path = QueryValue(key, sub_key)
-            except OSError:
-                pass
-            else:
-                break
-        else:
-            raise UserException(
-                    "unable to find an installation of Python v{0}".format(
-                            reg_version))
-
-        return install_path
+        return get_python_install_path(reg_version)
 
     def validate_install_source_options(self):
         """ Validate the values of the 'installed_version' and 'source'

@@ -72,7 +72,7 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
         """ 
 
         py_major, py_minor = self.installed_version.split('.')
-        install_path = self.get_windows_install_path()
+        install_path = self.get_windows_install_path(sysroot.target_name)
 
         # The interpreter library.
         lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)

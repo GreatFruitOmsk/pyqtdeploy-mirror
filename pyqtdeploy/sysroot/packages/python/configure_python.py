@@ -28,7 +28,6 @@ import os
 
 from ..file_utilities import (copy_embedded_file, extract_version,
         get_embedded_dir, get_embedded_file_for_version)
-from ..targets import normalised_target
 from ..user_exception import UserException
 
 from .patch import apply_diffs
@@ -36,11 +35,8 @@ from .pyconfig import generate_pyconfig_h
 from .supported_versions import check_version
 
 
-def configure_python(target, output, api, dynamic_loading, patches, message_handler):
+def configure_python(target_name, output, api, dynamic_loading, patches, message_handler):
     """ Configure a Python source directory for a particular target. """
-
-    # Validate the target.
-    target = normalised_target(target)
 
     # Get the name of the Python source directory and extract the Python
     # version.
@@ -64,20 +60,20 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
 
     message_handler.progress_message(
             "Configuring {0} as Python v{1} for {2}".format(
-                    py_src_dir, py_version_str, target))
+                    py_src_dir, py_version_str, target_name))
 
     configurations_dir = get_embedded_dir(__file__, 'configurations')
 
     # Patch with the most appropriate diff.  Only Android needs patches and
     # only for Python earlier than v3.6.0.
-    if patches and target.startswith('android') and (py_major, py_minor) < (3, 6):
+    if patches and target_name.startswith('android') and (py_major, py_minor) < (3, 6):
         python_diff_src_file = _get_file_for_version(py_version, 'patches')
 
         # I'm too lazy to generate patches for all old versions.
         if python_diff_src_file == '':
             raise UserException(
                     "Python v{0} is not supported on the {1} target".format(
-                            py_version_str, target))
+                            py_version_str, target_name))
 
         apply_diffs(python_diff_src_file, py_src_dir, message_handler)
 
@@ -96,7 +92,7 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
     # platforms.
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
-    if target.startswith('win'):
+    if target_name.startswith('win'):
         message_handler.progress_message(
                 "Installing {0}".format(pyconfig_h_dst_file))
 
@@ -117,14 +113,15 @@ def configure_python(target, output, api, dynamic_loading, patches, message_hand
             except FileNotFoundError:
                 pass
     else:
-        if target == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
+        if target_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
             raise UserException(
                     "Python v3.6.0 and later requires Android API level 21 or later")
 
         message_handler.progress_message(
                 "Generating {0}".format(pyconfig_h_dst_file))
 
-        generate_pyconfig_h(pyconfig_h_dst_file, target, api, dynamic_loading)
+        generate_pyconfig_h(pyconfig_h_dst_file, target_name, api,
+                dynamic_loading)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')

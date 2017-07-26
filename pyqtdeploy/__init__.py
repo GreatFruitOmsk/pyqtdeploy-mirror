@@ -29,7 +29,6 @@ from .builder import Builder
 from .message_handler import MessageHandler
 from .packages import configure_package
 from .project import Project
-from .python import configure_python
 from .sysroot import Sysroot
 from .version import PYQTDEPLOY_RELEASE
 
@@ -37,7 +36,6 @@ from .version import PYQTDEPLOY_RELEASE
 # These are for the package plugins.
 from .sysroot import (AbstractPackage, DebugPackageMixin,
         OptionalSourcePackageMixin, PackageOption, SourcePackageMixin)
-
 
 # These are used by both.
 from .user_exception import UserException

@@ -95,7 +95,7 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
         and return the absolute pathname of the interpreter.
         """ 
 
-        install_path = self.get_windows_install_path()
+        install_path = self.get_windows_install_path(sysroot.target_name)
 
         # Copy the DLL.
         py_major, py_minor = self.installed_version.split('.')
