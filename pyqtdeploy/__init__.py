@@ -31,7 +31,6 @@ from .packages import configure_package
 from .project import Project
 from .python import configure_python
 from .sysroot import Sysroot
-from .targets import get_supported_targets
 from .version import PYQTDEPLOY_RELEASE
 
 

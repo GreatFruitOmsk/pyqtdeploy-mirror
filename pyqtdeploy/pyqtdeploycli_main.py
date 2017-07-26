@@ -48,9 +48,8 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('action',
-            help="the action to perform",
-            choices=('build', 'configure', 'show-targets'))
+    parser.add_argument('action', help="the action to perform",
+            choices=('build', 'configure'))
     parser.add_argument('--android-api',
             help="the Android API level to target when configuring Python "
                     "(configure) [default: {}]".format(default_api),
@@ -109,8 +108,6 @@ def main():
         rc = build(args, message_handler)
     elif args.action == 'configure':
         rc = configure(args, message_handler)
-    elif args.action == 'show-targets':
-        rc = show_targets(args, message_handler)
     else:
         # This should never happen.
         rc = 1
@@ -173,29 +170,6 @@ def configure(args, message_handler):
             return 1
 
     return 0
-
-
-def show_targets(args, message_handler):
-    """ Perform the show-targets action. """
-
-    from . import get_supported_targets
-
-    try:
-        targets = get_supported_targets()
-    except UserException as e:
-        message_handler.exception(e, args.verbose)
-        return 1
-
-    show(targets, message_handler)
-
-    return 0
-
-
-def show(items, message_handler):
-    """ Show an unsorted list of items on stdout. """
-
-    for item in sorted(items):
-        message_handler.message(item)
 
 
 def missing_argument(name, message_handler):

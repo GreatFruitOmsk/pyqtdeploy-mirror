@@ -30,11 +30,11 @@ import sys
 from .user_exception import UserException
 
 
-def get_supported_targets():
-    """ Return the sequence of supported targets. """
-
-    return ('android-32', 'ios-64', 'linux-32', 'linux-64', 'osx-64', 'win-32',
-            'win-64')
+# The sequence of supported targets.
+SUPPORTED_TARGETS = (
+    'android-32', 'ios-64', 'linux-32', 'linux-64', 'osx-64', 'win-32',
+    'win-64',
+)
 
 
 def normalised_target(target):
@@ -56,7 +56,7 @@ def normalised_target(target):
 
         target = '{0}-{1}'.format(main_target, 8 * struct.calcsize('P'))
 
-    if target not in get_supported_targets():
+    if target not in SUPPORTED_TARGETS:
         raise UserException("'{0}' is not a supported target.".format(target))
 
     return target
