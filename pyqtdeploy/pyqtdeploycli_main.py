@@ -25,7 +25,6 @@
 
 
 import argparse
-import os
 
 from . import MessageHandler, UserException
 
@@ -33,33 +32,11 @@ from . import MessageHandler, UserException
 def main():
     """ The entry point for the setuptools generated pyqtdeploycli wrapper. """
 
-    # Get the default Android API level.  This is the level that Python v3.6.0
-    # targets.
-    default_api = 21
-
-    parts = os.environ.get('ANDROID_NDK_PLATFORM', '').split('-')
-
-    if len(parts) == 2 and parts[0] == 'android':
-        try:
-            default_api = int(parts[1])
-        except ValueError:
-            pass
-
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
     parser.add_argument('action', help="the action to perform",
             choices=('configure', ))
-    parser.add_argument('--android-api',
-            help="the Android API level to target when configuring Python "
-                    "(configure) [default: {}]".format(default_api),
-            metavar="LEVEL", type=int, default=default_api)
-    parser.add_argument('--disable-patches',
-            help="disable the patching of the Python source code (configure)",
-            action='store_true')
-    parser.add_argument('--enable-dynamic-loading',
-            help="enable the dynamic loading of modules (configure)",
-            action='store_true')
     parser.add_argument('--output',
             help="the name of the output file or directory (configure)",
             metavar="OUTPUT")
@@ -94,17 +71,7 @@ def configure(args, message_handler):
         missing_argument('--package', message_handler)
         return 2
 
-    if args.package == 'python':
-        from . import configure_python
-
-        try:
-            configure_python(args.target, args.output, args.android_api,
-                    args.enable_dynamic_loading, not args.disable_patches,
-                    message_handler)
-        except UserException as e:
-            message_handler.exception(e)
-            return 1
-    else:
+    if args.package != 'python':
         from . import configure_package
 
         try:
