@@ -27,7 +27,7 @@
 import os
 import sys
 
-from .... import (AbstractPackage, DebugPackageMxin, PackageOption,
+from .... import (AbstractPackage, DebugPackageMixin, PackageOption,
         PythonPackageMixin, UserException)
 
 

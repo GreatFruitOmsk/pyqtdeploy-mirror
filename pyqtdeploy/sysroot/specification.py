@@ -171,12 +171,15 @@ class Specification:
     def _plugin_from_module(self, fq_name, plugin_module):
         """ Get any plugin implementation from a module. """
 
+        fq_name_parts = fq_name.split('.')
+
         for package_type in plugin_module.__dict__.values():
             if isinstance(package_type, type):
                 if issubclass(package_type, AbstractPackage):
                     # Make sure the type is defined in the plugin and not
-                    # imported by it.
-                    if package_type.__module__ == fq_name:
+                    # imported by it.  Allow for a plugin implemented as a
+                    # sub-package.
+                    if package_type.__module__.split('.')[:len(fq_name_parts)] == fq_name_parts:
                         return package_type
 
         return None
