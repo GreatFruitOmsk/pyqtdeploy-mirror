@@ -230,7 +230,7 @@ class Specification:
     def show_options(self, packages, message_handler):
         """ Show the options for a sequence of packages. """
 
-        headings = ("Package", "Option", "Type", "Required?", "Description")
+        headings = ("Package", "Option [*=required]", "Type", "Description")
         widths = [len(h) for h in headings]
         options = OrderedDict()
 
@@ -250,6 +250,9 @@ class Specification:
                         package_options[option.name] = option
 
                         name_len = len(option.name)
+                        if option.required:
+                            name_len == 1
+
                         if widths[1] < name_len:
                             widths[1] = name_len
 
@@ -275,6 +278,9 @@ class Specification:
             package_col = package_name
 
             for option_name, option in package_options.items():
+                if option.required:
+                    option_name += '*'
+
                 row = [package_col, option_name]
 
                 if option.type is int:
@@ -291,8 +297,6 @@ class Specification:
                     type_name = "???"
 
                 row.append(type_name)
-
-                row.append("yes" if option.required else "no")
 
                 row.append('')
                 line = ''
