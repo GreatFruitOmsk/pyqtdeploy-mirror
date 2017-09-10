@@ -1,0 +1,7 @@
+{
+    "Description": "Build a host Python from an installed version.",
+
+    "host_python": {
+        "installed_version":    "3.6"
+    }
+}
