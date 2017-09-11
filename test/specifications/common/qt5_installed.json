@@ -1,0 +1,9 @@
+{
+    "Description": "Build Qt5 from an installed version.",
+
+    "qt5": {
+        "android-32#qt_dir":    "../Qt/5.9.1/android_armv7",
+        "ios-64#qt_dir":        "../Qt/5.9.1/ios",
+        "osx-64#qt_dir":        "../Qt/5.9.1/clang_64"
+    }
+}

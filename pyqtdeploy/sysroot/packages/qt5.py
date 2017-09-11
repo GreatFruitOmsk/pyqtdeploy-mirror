@@ -171,7 +171,7 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
     def _install_existing(self, sysroot):
         """ Install Qt5 from an existing installation. """
 
-        qt_dir = os.path.abspath(os.path.expandvars(self.qt_dir))
+        qt_dir = sysroot.find_file(self.qt_dir)
 
         if not os.path.isdir(qt_dir):
             raise UserException("'{0}' could not be found".format(qt_dir))

@@ -238,10 +238,11 @@ class Sysroot:
         raise UserException("'{0}' must be installed on PATH".format(exe))
 
     def find_file(self, name):
-        """ Find a file.  If the name is relative then it is relative to the
-        directory specified by the --sources command line option.  If this is
-        not specified then the directory containing the JSON specification file
-        is used.  The absolute pathname of the file is returned.
+        """ Find a file (or directory).  If the name is relative then it is
+        relative to the directory specified by the --sources command line
+        option.  If this is not specified then the directory containing the
+        JSON specification file is used.  The absolute pathname of the file is
+        returned.
         """
 
         # Convert the name to a normalised absolute pathname.
