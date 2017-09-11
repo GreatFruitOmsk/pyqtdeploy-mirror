@@ -1,0 +1,7 @@
+{
+    "Description": "Build Qt5 from source.",
+
+    "qt5": {
+        "source":   "qt-everywhere-enterprise-src-5.9.1.tar.xz"
+    }
+}
