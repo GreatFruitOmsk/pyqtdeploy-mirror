@@ -42,7 +42,7 @@ def configure_python(py_version, api, dynamic_loading, patches, sysroot):
     py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
 
     sysroot.progress(
-            "Configuring Python v{1} for {2}".format(py_version_str,
+            "Configuring Python v{0} for {1}".format(py_version_str,
                     sysroot.target_name))
 
     py_src_dir = os.getcwd()
@@ -105,8 +105,7 @@ def configure_python(py_version, api, dynamic_loading, patches, sysroot):
 
         sysroot.progress("Generating {0}".format(pyconfig_h_dst_file))
 
-        generate_pyconfig_h(pyconfig_h_dst_file, target_name, api,
-                dynamic_loading, sysroot)
+        generate_pyconfig_h(pyconfig_h_dst_file, api, dynamic_loading, sysroot)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')

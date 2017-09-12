@@ -77,7 +77,7 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
                 not self.disable_patches, sysroot)
 
         # Do the build.
-        sysroot.run(sysroot.host_qmake)
+        sysroot.run(sysroot.host_qmake, 'SYSROOT=' + sysroot.sysroot_dir)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 

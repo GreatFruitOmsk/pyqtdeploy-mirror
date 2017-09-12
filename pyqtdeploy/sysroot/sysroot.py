@@ -280,12 +280,12 @@ class Sysroot:
 
         return name
 
-	def get_embedded_dir(self, root, *subdirs):
-    	""" Return a QDir corresponding to an embedded directory.  root is the
+    def get_embedded_dir(self, root, *subdirs):
+        """ Return a QDir corresponding to an embedded directory.  root is the
         root directory and will be the __file__ attribute of a pyqtdeploy
         module.  subdirs is a sequence of sub-directories from the root.
         Return None if no such directory exists.
-    	"""
+        """
 
         return fu_get_embedded_dir(root, *subdirs)
 

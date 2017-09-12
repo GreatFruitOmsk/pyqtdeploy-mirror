@@ -1543,7 +1543,7 @@ pyconfig = (
 )
 
 
-def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading, sysroot):
+def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
     """ Create the pyconfig.h file for a specific target variant. """
 
     pyconfig_h = sysroot.create_file(pyconfig_h_name)
@@ -1553,7 +1553,7 @@ def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading, s
 
 ''')
 
-    if target == 'android':
+    if sysroot.target_name == 'android':
         pyconfig_h.write('#define ANDROID_API_LEVEL {0}\n'.format(android_api))
 
     if dynamic_loading:
@@ -1571,7 +1571,7 @@ def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading, s
                 pyconfig_h.write(
                         '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
 
-        value = config.value(target, android_api)
+        value = config.value(sysroot.target_name, android_api)
 
         if value is None:
             # We provide an commented out #define to make it easier to modify
