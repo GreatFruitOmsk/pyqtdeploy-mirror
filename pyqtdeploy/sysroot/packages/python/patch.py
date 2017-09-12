@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,22 +26,21 @@
 
 import os
 
-from ..file_utilities import create_file, open_file, read_embedded_file
-from ..user_exception import UserException
+from .... import UserException
 
 from .diff_parser import parse_diffs
 
 
-def apply_diffs(diff_file, patch_dir, message_handler):
+def apply_diffs(diff_file, patch_dir, sysroot):
     """ Apply an embedded diff file to a directory. """
 
-    diffs = read_embedded_file(diff_file)
+    diffs = sysroot.read_embedded_file(diff_file)
 
     for diff in parse_diffs(diffs):
-        _apply_diff(diff, patch_dir, message_handler)
+        _apply_diff(diff, patch_dir, sysroot)
 
 
-def _apply_diff(diff, patch_dir, message_handler):
+def _apply_diff(diff, patch_dir, sysroot):
     """ Apply a single diff. """
 
     # Note that (at the moment) we don't support a fuzz factor and the old
@@ -52,10 +51,10 @@ def _apply_diff(diff, patch_dir, message_handler):
     src_file_name = os.path.join(patch_dir, diff.file_name)
     dst_file_name = src_file_name + '.new'
 
-    message_handler.progress_message("Patching {0}".format(src_file_name))
+    sysroot.progress("Patching {0}".format(src_file_name))
 
-    src_file = open_file(src_file_name)
-    dst_file = create_file(dst_file_name)
+    src_file = sysroot.open_file(src_file_name)
+    dst_file = sysroot.create_file(dst_file_name)
 
     src_line_nr = 1
 

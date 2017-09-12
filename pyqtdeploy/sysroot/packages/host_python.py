@@ -67,16 +67,14 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
         """
 
         # Unpack the source and extract the version number.
-        archive = sysroot.find_file(self.source)
-        package_name = sysroot.unpack_archive(archive)
-        py_version = package_name.split('-')[1].split('.')
+        py_version = self.unpack_source_archive(sysroot)
 
         # ensurepip was added in Python v2.7.9 and v3.4.0.
         ensure_pip = False
-        if py_version[0] == '2':
-            if py_version[2] >= '9':
+        if py_version < 0x030000:
+            if py_version >= 0x020709:
                 ensure_pip = True
-        elif py_version[1] >= '4':
+        elif py_version >= 0x030400:
             ensure_pip = True
 
         configure = ['./configure', '--prefix', sysroot.host_dir]
@@ -88,7 +86,8 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
         sysroot.run(sysroot.host_make, 'install')
 
         return os.path.join(sysroot.host_bin_dir,
-                'python' + '.'.join(py_version[:2]))
+                'python%d.%d'.format(
+                        py_version >> 16, (py_version >> 8) & 0xff))
 
     def _install_existing_windows_version(self, sysroot):
         """ Install the host Python from an existing installation on Windows

@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from ..file_utilities import extract_version
 from ..user_exception import UserException
 
 from .abstract_package import PackageOption
@@ -77,11 +78,33 @@ class PythonPackageMixin(OptionalSourcePackageMixin):
         from ..windows import get_python_install_path
 
         py_major, py_minor = self.installed_version.split('.')
+        py_major = int(py_major)
+        py_minor = int(py_minor)
+
+        self._check_version(py_major, py_minor)
+
         reg_version = self.installed_version
-        if int(py_major) == 3 and int(py_minor) >= 5 and target_name.endswith('-32'):
+        if py_major == 3 and py_minor >= 5 and target_name.endswith('-32'):
             reg_version += '-32'
 
         return get_python_install_path(reg_version)
+
+    def unpack_source_archive(self, sysroot):
+        """ Unpack the source archive into the current directory, change to the
+        unpacked directory and return the encoded Python version number.
+        """
+
+        archive = sysroot.find_file(self.source)
+        package_name = sysroot.unpack_archive(archive)
+
+        py_version = extract_version(package_name)
+        if py_version == 0:
+            raise UserException(
+                    "unable to extract the Python version number from '{0}'".format(package_name))
+
+        self._check_version((py_version >> 16), ((py_version >> 8) & 0xff))
+
+        return py_version
 
     def validate_install_source_options(self):
         """ Validate the values of the 'installed_version' and 'source'
@@ -100,3 +123,12 @@ class PythonPackageMixin(OptionalSourcePackageMixin):
         else:
             raise UserException(
                     "either the 'installed_version' or 'source' option must be specified")
+
+    @staticmethod
+    def _check_version(py_major, py_minor):
+        """ Check that a version of Python is supported. """
+
+        if (py_major == 2 and py_minor < 7) or (py_major == 3 and py_minor < 3):
+            raise UserException(
+                    "Python v{0}.{1} is not supported.".format(py_major,
+                            py_minor))

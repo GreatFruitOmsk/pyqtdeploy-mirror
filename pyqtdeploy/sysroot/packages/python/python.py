@@ -30,6 +30,8 @@ import sys
 from .... import (AbstractPackage, DebugPackageMixin, PackageOption,
         PythonPackageMixin, UserException)
 
+from .configure_python import configure_python
+
 
 class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
     """ The target Python package. """
@@ -66,6 +68,18 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
 
     def _build_from_source(self, sysroot):
         """ Build the target Python from source. """
+
+        # Unpack the source and get the version number.
+        py_version = self.unpack_source_archive(sysroot)
+
+        # Configure for the target.
+        configure_python(py_version, self.android_api, self.dynamic_loading,
+                not self.disable_patches, sysroot)
+
+        # Do the build.
+        sysroot.run(sysroot.host_qmake)
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
 
     def _install_existing_windows_version(self, sysroot):
         """ Install the host Python from an existing installation on Windows.

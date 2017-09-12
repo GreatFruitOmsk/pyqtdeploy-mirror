@@ -24,9 +24,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from ..file_utilities import create_file
-
-
 class Config:
     """ Encapsulate a configuration value defined in pyconfig.h. """
 
@@ -1546,10 +1543,10 @@ pyconfig = (
 )
 
 
-def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading):
+def generate_pyconfig_h(pyconfig_h_name, target, android_api, dynamic_loading, sysroot):
     """ Create the pyconfig.h file for a specific target variant. """
 
-    pyconfig_h = create_file(pyconfig_h_name)
+    pyconfig_h = sysroot.create_file(pyconfig_h_name)
 
     pyconfig_h.write('''#ifndef Py_PYCONFIG_H
 #define Py_PYCONFIG_H

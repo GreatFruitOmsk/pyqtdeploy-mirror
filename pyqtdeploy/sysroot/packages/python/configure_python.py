@@ -26,31 +26,14 @@
 
 import os
 
-from ..file_utilities import (copy_embedded_file, extract_version,
-        get_embedded_dir, get_embedded_file_for_version)
-from ..user_exception import UserException
+from .... import UserException
 
 from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
-from .supported_versions import check_version
 
 
-def configure_python(target_name, output, api, dynamic_loading, patches, message_handler):
+def configure_python(py_version, api, dynamic_loading, patches, sysroot):
     """ Configure a Python source directory for a particular target. """
-
-    # Get the name of the Python source directory and extract the Python
-    # version.
-    if output is None:
-        output = '.'
-
-    py_src_dir = os.path.abspath(output)
-    py_version = extract_version(py_src_dir)
-
-    if py_version == 0:
-        raise UserException(
-                "Unable to determine the Python version from the name of {0}.".format(py_src_dir))
-
-    check_version(py_version)
 
     py_major = py_version >> 16
     py_minor = (py_version >> 8) & 0xff
@@ -58,33 +41,36 @@ def configure_python(target_name, output, api, dynamic_loading, patches, message
 
     py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
 
-    message_handler.progress_message(
-            "Configuring {0} as Python v{1} for {2}".format(
-                    py_src_dir, py_version_str, target_name))
+    sysroot.progress(
+            "Configuring Python v{1} for {2}".format(py_version_str,
+                    sysroot.target_name))
 
-    configurations_dir = get_embedded_dir(__file__, 'configurations')
+    py_src_dir = os.getcwd()
+
+    configurations_dir = sysroot.get_embedded_dir(__file__, 'configurations')
 
     # Patch with the most appropriate diff.  Only Android needs patches and
     # only for Python earlier than v3.6.0.
-    if patches and target_name.startswith('android') and (py_major, py_minor) < (3, 6):
-        python_diff_src_file = _get_file_for_version(py_version, 'patches')
+    if patches and sysroot.target_name.startswith('android') and (py_major, py_minor) < (3, 6):
+        python_diff_src_file = _get_file_for_version(py_version, 'patches',
+                sysroot)
 
         # I'm too lazy to generate patches for all old versions.
         if python_diff_src_file == '':
             raise UserException(
                     "Python v{0} is not supported on the {1} target".format(
-                            py_version_str, target_name))
+                            py_version_str, sysroot.target_name))
 
-        apply_diffs(python_diff_src_file, py_src_dir, message_handler)
+        apply_diffs(python_diff_src_file, py_src_dir, sysroot)
 
     # Copy the modules config.c file.
     config_c_src_file = 'config_py{0}.c'.format(py_major)
     config_c_dst_file = os.path.join(py_src_dir, 'Modules', 'config.c')
 
-    message_handler.progress_message(
-            "Installing {0}".format(config_c_dst_file))
+    sysroot.progress("Installing {0}".format(config_c_dst_file))
 
-    copy_embedded_file(configurations_dir.absoluteFilePath(config_c_src_file),
+    sysroot.copy_embedded_file(
+            configurations_dir.absoluteFilePath(config_c_src_file),
             config_c_dst_file)
 
     # Generate the pyconfig.h file.  We follow the Python approach of a static
@@ -92,13 +78,13 @@ def configure_python(target_name, output, api, dynamic_loading, patches, message
     # platforms.
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
-    if target_name.startswith('win'):
-        message_handler.progress_message(
-                "Installing {0}".format(pyconfig_h_dst_file))
+    if sysroot.target_name.startswith('win'):
+        sysroot.progress("Installing {0}".format(pyconfig_h_dst_file))
 
-        pyconfig_h_src_file = _get_file_for_version(py_version, 'pyconfig')
+        pyconfig_h_src_file = _get_file_for_version(py_version, 'pyconfig',
+                sysroot)
 
-        copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
+        sysroot.copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
                 macros={
                     '@PY_DYNAMIC_LOADING@': '#define' if dynamic_loading else '#undef'})
 
@@ -113,23 +99,22 @@ def configure_python(target_name, output, api, dynamic_loading, patches, message
             except FileNotFoundError:
                 pass
     else:
-        if target_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
+        if sysroot.target_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
             raise UserException(
                     "Python v3.6.0 and later requires Android API level 21 or later")
 
-        message_handler.progress_message(
-                "Generating {0}".format(pyconfig_h_dst_file))
+        sysroot.progress("Generating {0}".format(pyconfig_h_dst_file))
 
         generate_pyconfig_h(pyconfig_h_dst_file, target_name, api,
-                dynamic_loading)
+                dynamic_loading, sysroot)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
 
-    message_handler.progress_message(
-            "Installing {0}".format(python_pro_dst_file))
+    sysroot.progress("Installing {0}".format(python_pro_dst_file))
 
-    copy_embedded_file(configurations_dir.absoluteFilePath('python.pro'),
+    sysroot.copy_embedded_file(
+            configurations_dir.absoluteFilePath('python.pro'),
             python_pro_dst_file,
             macros={
                 '@PY_MAJOR_VERSION@': str(py_major),
@@ -138,11 +123,11 @@ def configure_python(target_name, output, api, dynamic_loading, patches, message
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
 
 
-def _get_file_for_version(version, subdir):
+def _get_file_for_version(version, subdir, sysroot):
     """ Return the name of a file in a sub-directory of the 'configurations'
     directory that is most appropriate for a particular version.  An empty
     string is returned if the version is not supported.
     """
 
-    return get_embedded_file_for_version(version, __file__, 'configurations',
-            subdir)
+    return sysroot.get_embedded_file_for_version(version, __file__,
+            'configurations', subdir)

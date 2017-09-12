@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -73,9 +73,8 @@ def get_embedded_file_names(root, *subdirs):
 
 
 def read_embedded_file(src_name):
-    """ Return the contents of an embedded source file as a QByteArray.
-    src_name is the name of the source file.  A UserException is raised if
-    there was an error.
+    """ Return the contents of an embedded text file as a QByteArray.  src_name
+    is the name of the file.  A UserException is raised if there was an error.
     """
 
     src_file = QFile(src_name)
@@ -92,11 +91,11 @@ def read_embedded_file(src_name):
 
 
 def copy_embedded_file(src_name, dst_name, macros={}):
-    """ Copy an embedded source file to a destination file.  src_name is the
-    name of the source file.  dst_name is the name of the destination file.
-    macros is an optional dictionary of key/value string macros and instances
-    of each key are replaced by the corresponding value.  A UserException is
-    raised if there was an error.
+    """ Copy an embedded text file to a destination file.  src_name is the name
+    of the source file.  dst_name is the name of the destination file.  macros
+    is an optional dictionary of key/value string macros and instances of each
+    key are replaced by the corresponding value.  A UserException is raised if
+    there was an error.
     """
 
     contents = read_embedded_file(src_name)

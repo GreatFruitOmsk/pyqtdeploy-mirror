@@ -30,6 +30,10 @@ import shutil
 import subprocess
 import sys
 
+from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
+        create_file as fu_create_file, get_embedded_dir as fu_get_embedded_dir,
+        get_embedded_file_for_version as fu_get_embedded_file_for_version,
+        open_file as fu_open_file, read_embedded_file as fu_read_embedded_file)
 from ..targets import normalised_target
 from ..user_exception import UserException
 
@@ -187,6 +191,23 @@ class Sysroot:
             raise UserException("unable to copy directory {0}".format(src),
                     detail=str(e))
 
+    def copy_embedded_file(self, src_name, dst_name, macros={}):
+        """ Copy an embedded text file to a destination file.  src_name is the
+        name of the source file.  dst_name is the name of the destination file.
+        macros is an optional dictionary of key/value string macros and
+        instances of each key are replaced by the corresponding value.  A
+        UserException is raised if there was an error.
+        """
+
+        fu_copy_embedded_file(src_name, dst_name, macros)
+
+    def create_file(self, name):
+        """ Create a text file.  A UserException is raised if there was an
+        error.
+        """
+
+        return fu_create_file(name)
+
     def create_dir(self, name, empty=False):
         """ Ensure a directory exists and optionally delete its contents. """
 
@@ -259,6 +280,26 @@ class Sysroot:
 
         return name
 
+	def get_embedded_dir(self, root, *subdirs):
+    	""" Return a QDir corresponding to an embedded directory.  root is the
+        root directory and will be the __file__ attribute of a pyqtdeploy
+        module.  subdirs is a sequence of sub-directories from the root.
+        Return None if no such directory exists.
+    	"""
+
+        return fu_get_embedded_dir(root, *subdirs)
+
+    def get_embedded_file_for_version(self, version, root, *subdirs):
+        """ Return the absolute file name in an embedded directory of a file
+        that is the most appropriate for a particular version.  version is the
+        encoded version.  root is the root directory and will be the __file__
+        attribute of a pyqtdeploy module.  subdirs is a sequence of
+        sub-directories from the root.  An empty string is returned if the
+        version is not supported.
+        """
+
+        return fu_get_embedded_file_for_version(version, root, *subdirs)
+
     @property
     def host_bin_dir(self):
         """ The directory containing the host binaries. """
@@ -294,6 +335,29 @@ class Sysroot:
 
         return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
 
+    def make_symlink(self, src, dst):
+        """ Create a host-specific symbolic link. """
+
+        # Remove any existing destination.
+        try:
+            os.remove(dst)
+        except FileNotFoundError:
+            pass
+
+        if sys.platform == 'win32':
+            # Don't bother with symbolic link privileges on Windows.
+            self.verbose("Copying {0} to {1}".format(src, dst))
+            shutil.copyfile(src, dst)
+        else:
+            # If the source directory is within the same root as the
+            # destination then make the link relative.  This means that the
+            # root directory can be moved and the link will remain valid.
+            if os.path.commonpath((src, dst)).startswith(self.sysroot_dir):
+                src = os.path.relpath(src, os.path.dirname(dst))
+
+            self.verbose("Linking {0} to {1}".format(src, dst))
+            os.symlink(src, dst)
+
     @property
     def native(self):
         """ Return True if the target and host platforms are the same.  The
@@ -307,6 +371,13 @@ class Sysroot:
             return self.target_name.startswith('win-')
 
         return self.target_name.startswith('linux-')
+
+    def open_file(self, name):
+        """ Open an existing text file.  A UserException is raised if there was
+        an error.
+        """
+
+        return fu_open_file(name)
 
     def progress(self, message):
         """ Issue a progress message. """
@@ -334,28 +405,13 @@ class Sysroot:
 
         return None
 
-    def make_symlink(self, src, dst):
-        """ Create a host-specific symbolic link. """
+    def read_embedded_file(self, name):
+        """ Return the contents of an embedded text file as a QByteArray.  name
+        is the name of the file.  A UserException is raised if there was an
+        error.
+        """
 
-        # Remove any existing destination.
-        try:
-            os.remove(dst)
-        except FileNotFoundError:
-            pass
-
-        if sys.platform == 'win32':
-            # Don't bother with symbolic link privileges on Windows.
-            self.verbose("Copying {0} to {1}".format(src, dst))
-            shutil.copyfile(src, dst)
-        else:
-            # If the source directory is within the same root as the
-            # destination then make the link relative.  This means that the
-            # root directory can be moved and the link will remain valid.
-            if os.path.commonpath((src, dst)).startswith(self.sysroot_dir):
-                src = os.path.relpath(src, os.path.dirname(dst))
-
-            self.verbose("Linking {0} to {1}".format(src, dst))
-            os.symlink(src, dst)
+        return fu_read_embedded_file(name)
 
     @property
     def sdk(self):

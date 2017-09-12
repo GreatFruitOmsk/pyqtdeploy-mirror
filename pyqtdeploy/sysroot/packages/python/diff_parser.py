@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
 
 import os
 
-from ..user_exception import UserException
+from .... import UserException
 
 
 class FileDiff:
@@ -55,7 +55,9 @@ class Hunk:
 
 
 def parse_diffs(diff):
-    """ Parse a diff and return a list of FileDiff instances. """
+    """ Parse a diff (in a QByteArray) and return a list of FileDiff
+    instances.
+    """
 
     WANT_DIFF, WANT_OLD, WANT_NEW, WANT_RANGES, WANT_BODY = range(5)
 
