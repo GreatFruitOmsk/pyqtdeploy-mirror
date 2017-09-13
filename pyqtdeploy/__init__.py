@@ -30,6 +30,7 @@ from .message_handler import MessageHandler
 from .packages import configure_package
 from .project import Project
 from .sysroot import Sysroot
+from .user_exception import UserException
 from .version import PYQTDEPLOY_RELEASE
 
 
@@ -37,6 +38,3 @@ from .version import PYQTDEPLOY_RELEASE
 from .sysroot import (AbstractPackage, DebugPackageMixin,
         OptionalSourcePackageMixin, PackageOption, PythonPackageMixin,
         SourcePackageMixin)
-
-# These are used by both.
-from .user_exception import UserException

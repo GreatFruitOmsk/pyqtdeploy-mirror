@@ -27,8 +27,7 @@
 import os
 import sys
 
-from ... import (AbstractPackage, OptionalSourcePackageMixin, PackageOption,
-        UserException)
+from ... import AbstractPackage, OptionalSourcePackageMixin, PackageOption,
 
 
 class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
@@ -53,7 +52,7 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
 
         if self.qt_dir:
             if self.source:
-                raise UserException(
+                sysroot.error(
                         "the 'qt_dir' and 'source' options cannot both be specified")
 
             sysroot.progress("Installing an existing Qt5")
@@ -61,14 +60,14 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
             qt_dir = self._install_existing(sysroot)
         else:
             if not self.source:
-                raise UserException(
+                sysroot.error(
                         "either the 'qt_dir' or 'source' option must be specified")
 
             sysroot.progress("Building Qt5")
 
             # We don't support cross-compiling Qt.
             if not sysroot.native:
-                raise UserException(
+                sysroot.error(
                         "cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation")
 
             qt_dir = self._build_from_source(sysroot)
@@ -174,6 +173,6 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
         qt_dir = sysroot.find_file(self.qt_dir)
 
         if not os.path.isdir(qt_dir):
-            raise UserException("'{0}' could not be found".format(qt_dir))
+            sysroot.error("'{0}' could not be found".format(qt_dir))
 
         return qt_dir

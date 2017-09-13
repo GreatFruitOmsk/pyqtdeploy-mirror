@@ -27,8 +27,7 @@
 import glob
 import sys
 
-from ... import (AbstractPackage, PackageOption, SourcePackageMixin,
-        UserException)
+from ... import AbstractPackage, PackageOption, SourcePackageMixin,
 
 
 class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
@@ -68,7 +67,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         elif sys.platform == 'win32' and sysroot.target_name in ('win-32', 'win-64'):
             self._build_win(sysroot, common_options)
         else:
-            raise UserException(
+            sysroot.error(
                     "building OpenSSL for {0} is not yet supported".format(
                             sysroot.target_name))
 
@@ -81,7 +80,7 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
 
         # Find and apply the Python patch.
         if not self.python_source:
-            raise UserException("the 'python_source' option must be specified")
+            sysroot.error("the 'python_source' option must be specified")
 
         python_archive = sysroot.find_file(self.python_source)
         python_dir = sysroot.unpack_archive(python_archive, chdir=False)
@@ -89,11 +88,11 @@ class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
         patches = glob.glob(python_dir + '/Mac/BuildScript/openssl*.patch')
 
         if len(patches) < 1:
-            raise UserException(
+            sysroot.error(
                     "unable to find an OpenSSL patch in the Python source tree")
 
         if len(patches) > 1:
-            raise UserException(
+            sysroot.error(
                     "found multiple OpenSSL patches in the Python source tree")
 
         sysroot.run('patch', '-p1', '-i', patches[0])

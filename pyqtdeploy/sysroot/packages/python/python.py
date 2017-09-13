@@ -28,7 +28,7 @@ import os
 import sys
 
 from .... import (AbstractPackage, DebugPackageMixin, PackageOption,
-        PythonPackageMixin, UserException)
+        PythonPackageMixin)
 
 from .configure_python import configure_python
 
@@ -58,7 +58,7 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
             if sys.platform == 'win32':
                 self._install_existing_windows_version(sysroot)
             else:
-                raise UserException(
+                self.error(
                         "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
 
         else:

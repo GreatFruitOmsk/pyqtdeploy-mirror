@@ -26,8 +26,6 @@
 
 import os
 
-from .... import UserException
-
 from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
 
@@ -57,7 +55,7 @@ def configure_python(py_version, api, dynamic_loading, patches, sysroot):
 
         # I'm too lazy to generate patches for all old versions.
         if python_diff_src_file == '':
-            raise UserException(
+            sysroot.error(
                     "Python v{0} is not supported on the {1} target".format(
                             py_version_str, sysroot.target_name))
 
@@ -100,7 +98,7 @@ def configure_python(py_version, api, dynamic_loading, patches, sysroot):
                 pass
     else:
         if sysroot.target_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
-            raise UserException(
+            sysroot.error(
                     "Python v3.6.0 and later requires Android API level 21 or later")
 
         sysroot.progress("Generating {0}".format(pyconfig_h_dst_file))

@@ -26,8 +26,6 @@
 
 import os
 
-from .... import UserException
-
 
 class FileDiff:
     """ Encapsulate the diff for a single file. """
@@ -54,7 +52,7 @@ class Hunk:
         self.new_lines = []
 
 
-def parse_diffs(diff):
+def parse_diffs(diff, sysroot):
     """ Parse a diff (in a QByteArray) and return a list of FileDiff
     instances.
     """
@@ -78,12 +76,12 @@ def parse_diffs(diff):
 
         if want == WANT_DIFF:
             if len(words) == 0 or words[0] != 'diff':
-                raise _DiffException(line_nr, "diff command line expected")
+                _diff_error(line_nr, "diff command line expected", sysroot)
 
             want = WANT_OLD
         elif want == WANT_OLD:
             if len(words) < 3 or words[0] != '---':
-                raise _DiffException(line_nr, "--- line expected")
+                _diff_error(line_nr, "--- line expected", sysroot)
 
             # Remove the root directory from the name of the file being
             # patched.  We assume we won't have a diff with paths containing
@@ -94,11 +92,12 @@ def parse_diffs(diff):
             want = WANT_NEW
         elif want == WANT_NEW:
             if len(words) < 3 or words[0] != '+++':
-                raise _DiffException(line_nr, "+++ line expected")
+                _diff_error(line_nr, "+++ line expected", sysroot)
 
             want = WANT_RANGES
         elif want == WANT_RANGES:
-            old_length, new_length = _parse_hunk_header(diffs, words, line_nr)
+            old_length, new_length = _parse_hunk_header(diffs, words, line_nr,
+                    sysroot)
 
             want = WANT_BODY
         elif want == WANT_BODY:
@@ -106,14 +105,16 @@ def parse_diffs(diff):
 
             if len(words) != 0:
                 if words[0] == 'diff':
-                    _check_hunk_lengths(hunk, old_length, new_length, line_nr)
+                    _check_hunk_lengths(hunk, old_length, new_length, line_nr,
+                            sysroot)
                     want = WANT_OLD
                     continue
 
                 if words[0] == '@@':
-                    _check_hunk_lengths(hunk, old_length, new_length, line_nr)
+                    _check_hunk_lengths(hunk, old_length, new_length, line_nr,
+                            sysroot)
                     old_length, new_length = _parse_hunk_header(diffs, words,
-                            line_nr)
+                            line_nr, sysroot)
                     continue
 
             line += '\n'
@@ -132,47 +133,50 @@ def parse_diffs(diff):
                 hunk.new_lines.append(line)
 
     if want != WANT_BODY:
-        raise _DiffException(line_nr, "diff seems to be truncated")
+        _diff_error(line_nr, "diff seems to be truncated", sysroot)
 
-    _check_hunk_lengths(diffs[-1].hunks[-1], old_length, new_length, line_nr)
+    _check_hunk_lengths(diffs[-1].hunks[-1], old_length, new_length, line_nr,
+            sysroot)
 
     return diffs
 
 
-def _parse_hunk_header(diffs, words, line_nr):
+def _parse_hunk_header(diffs, words, line_nr, sysroot):
     """ Parse a hunk header line and add it to the current diff.  Return a
     2-tuple of the length of the old part and the length of the new part.
     """
 
     if len(words) != 4 or words[0] != '@@' or words[3] != '@@':
-        raise _DiffException(line_nr, "hunk header line expected")
+        _diff_error(line_nr, "hunk header line expected", sysroot)
 
     old_start, old_length = _parse_range(words[1], '-')
     if old_start == 0:
-        raise _DiffException(line_nr, "invalid -range")
+        _diff_error(line_nr, "invalid -range", sysroot)
 
     new_start, new_length = _parse_range(words[2], '+')
     if new_start == 0:
-        raise _DiffException(line_nr, "invalid +range")
+        _diff_error(line_nr, "invalid +range", sysroot)
 
     diffs[-1].hunks.append(Hunk(old_start))
 
     return old_length, new_length
 
 
-def _check_hunk_lengths(hunk, old_length, new_length, line_nr):
+def _check_hunk_lengths(hunk, old_length, new_length, line_nr, sysroot):
     """ Sanity check the expected lengths of a hunk with the actual lengths.
     """
 
     if len(hunk.old_lines) != old_length:
-        raise _DiffException(line_nr,
+        sysroot.error(line_nr,
                 "found {0} old lines, expected {1}".format(len(hunk.old_lines),
-                        old_length))
+                        old_length),
+                sysroot)
 
     if len(hunk.new_lines) != new_length:
-        raise _DiffException(line_nr,
+        sysroot.error(line_nr,
                 "found {0} new lines, expected {1}".format(len(hunk.new_lines),
-                        new_length))
+                        new_length),
+                sysroot)
 
 
 def _parse_range(range_str, prefix):
@@ -198,12 +202,10 @@ def _parse_range(range_str, prefix):
     return (line_nr, nr_lines)
 
 
-class _DiffException(UserException):
-    """ A UserException specifically related to an unexpected diff file format.
+def _diff_error(line_nr, detail, sysroot):
+    """ Raise an exception specifically related to an unexpected diff file
+    format.
     """
 
-    def __init__(self, line_nr, detail):
-        """ Initialise the object. """
-
-        super().__init__("Unexpected diff format",
-                "line {0}: {1}".format(line_nr + 1, detail))
+    sysroot.error("Unexpected diff format",
+            detail="line {0}: {1}".format(line_nr + 1, detail))

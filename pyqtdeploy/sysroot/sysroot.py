@@ -115,7 +115,7 @@ class Sysroot:
                     packages.append(package)
                     break
             else:
-                raise UserException("unkown package '{0}'".format(name))
+                self.error("unkown package '{0}'".format(name))
 
         return packages
 
@@ -167,8 +167,7 @@ class Sysroot:
         try:
             shutil.copy(src, dst)
         except Exception as e:
-            raise UserException("unable to copy {0}".format(src),
-                    detail=str(e))
+            self.error("unable to copy {0}".format(src), detail=str(e))
 
     def copy_dir(self, src, dst, ignore=None):
         """ Copy a directory and its contents optionally ignoring a sequence of
@@ -188,10 +187,11 @@ class Sysroot:
         try:
             shutil.copytree(src, dst, ignore=ignore)
         except Exception as e:
-            raise UserException("unable to copy directory {0}".format(src),
+            self.error("unable to copy directory {0}".format(src),
                     detail=str(e))
 
-    def copy_embedded_file(self, src_name, dst_name, macros={}):
+    @staticmethod
+    def copy_embedded_file(src_name, dst_name, macros={}):
         """ Copy an embedded text file to a destination file.  src_name is the
         name of the source file.  dst_name is the name of the destination file.
         macros is an optional dictionary of key/value string macros and
@@ -201,7 +201,8 @@ class Sysroot:
 
         fu_copy_embedded_file(src_name, dst_name, macros)
 
-    def create_file(self, name):
+    @staticmethod
+    def create_file(name):
         """ Create a text file.  A UserException is raised if there was an
         error.
         """
@@ -216,16 +217,14 @@ class Sysroot:
 
         if os.path.exists(name):
             if not os.path.isdir(name):
-                raise UserException(
-                        "{0} exists but is not a directory".format(name))
+                self.error("{0} exists but is not a directory".format(name))
         else:
             self.verbose("Creating {0}".format(name))
 
             try:
                 os.makedirs(name, exist_ok=True)
             except Exception as e:
-                raise UserException(
-                        "unable to create directory {0}".format(name),
+                self.error("unable to create directory {0}".format(name),
                         detail=str(e))
 
     def delete_dir(self, name):
@@ -233,17 +232,23 @@ class Sysroot:
 
         if os.path.exists(name):
             if not os.path.isdir(name):
-                raise UserException(
-                        "{0} exists but is not a directory".format(name))
+                self.error("{0} exists but is not a directory".format(name))
 
             self.verbose("Deleting {0}".format(name))
 
             try:
                 shutil.rmtree(name)
             except Exception as e:
-                raise UserException(
-                        "unable to remove directory {0}.".format(name),
+                self.error("unable to remove directory {0}.".format(name),
                         detail=str(e))
+
+    @staticmethod
+    def error(text, detail=''):
+        """ Raise an exception that will report an error is a user friendly
+        manner.
+        """
+
+        raise UserException(text, detail=detail)
 
     def find_exe(self, exe):
         """ Return the absolute pathname of an executable located on PATH. """
@@ -256,7 +261,7 @@ class Sysroot:
             if os.access(exe_path, os.X_OK):
                 return exe_path
 
-        raise UserException("'{0}' must be installed on PATH".format(exe))
+        self.error("'{0}' must be installed on PATH".format(exe))
 
     def find_file(self, name):
         """ Find a file (or directory).  If the name is relative then it is
@@ -276,11 +281,12 @@ class Sysroot:
 
         # Check the file exists.
         if not os.path.exists(name):
-            raise UserException("'{0}' could not be found".format(name))
+            self.error("'{0}' could not be found".format(name))
 
         return name
 
-    def get_embedded_dir(self, root, *subdirs):
+    @staticmethod
+    def get_embedded_dir(root, *subdirs):
         """ Return a QDir corresponding to an embedded directory.  root is the
         root directory and will be the __file__ attribute of a pyqtdeploy
         module.  subdirs is a sequence of sub-directories from the root.
@@ -289,7 +295,8 @@ class Sysroot:
 
         return fu_get_embedded_dir(root, *subdirs)
 
-    def get_embedded_file_for_version(self, version, root, *subdirs):
+    @staticmethod
+    def get_embedded_file_for_version(version, root, *subdirs):
         """ Return the absolute file name in an embedded directory of a file
         that is the most appropriate for a particular version.  version is the
         encoded version.  root is the root directory and will be the __file__
@@ -372,7 +379,8 @@ class Sysroot:
 
         return self.target_name.startswith('linux-')
 
-    def open_file(self, name):
+    @staticmethod
+    def open_file(name):
         """ Open an existing text file.  A UserException is raised if there was
         an error.
         """
@@ -395,8 +403,7 @@ class Sysroot:
                 stdout = subprocess.check_output(args,
                         universal_newlines=True, stderr=subprocess.PIPE)
             except subprocess.CalledProcessError as e:
-                raise UserException(
-                        "execution of '{0}' failed".format(args[0]),
+                self.error("execution of '{0}' failed".format(args[0]),
                         detail=e.stderr)
 
             return stdout.strip()
@@ -405,7 +412,8 @@ class Sysroot:
 
         return None
 
-    def read_embedded_file(self, name):
+    @staticmethod
+    def read_embedded_file(name):
         """ Return the contents of an embedded text file as a QByteArray.  name
         is the name of the file.  A UserException is raised if there was an
         error.
@@ -418,7 +426,7 @@ class Sysroot:
         """ The Apple SDK to use. """
 
         if self._sdk is None:
-            raise UserException("a valid SDK hasn't been specified")
+            self.error("a valid SDK hasn't been specified")
 
         return self._sdk
 
@@ -450,8 +458,7 @@ class Sysroot:
         try:
             shutil.unpack_archive(archive)
         except Exception as e:
-            raise UserException("unable to unpack {0}".format(archive),
-                    detail=str(e))
+            self.error("unable to unpack {0}".format(archive), detail=str(e))
 
         # Assume that the name of the extracted directory is the same as the
         # archive without the extension.
@@ -467,12 +474,11 @@ class Sysroot:
                 break
         else:
             # This should never happen if we have got this far.
-            raise UserException(
-                    "'{0}' has an unknown extension".format(archive))
+            self.error("'{0}' has an unknown extension".format(archive))
 
         # Validate the assumption by checking the expected directory exists.
         if not os.path.isdir(archive_dir):
-            raise UserException(
+            self.error(
                     "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_dir))
 
         # Change to the extracted directory if required.

@@ -27,8 +27,7 @@
 import os
 import sys
 
-from ... import (AbstractPackage, PackageOption, PythonPackageMixin,
-        UserException)
+from ... import AbstractPackage, PackageOption, PythonPackageMixin,
 
 
 class HostPythonPackage(PythonPackageMixin, AbstractPackage):
@@ -52,7 +51,7 @@ class HostPythonPackage(PythonPackageMixin, AbstractPackage):
             sysroot.progress("Building the host Python")
 
             if sys.platform == 'win32':
-                raise UserException(
+                sysroot.error(
                         "building the host Python from source on Windows is not supported")
 
             interpreter = self._build_from_source(sysroot)

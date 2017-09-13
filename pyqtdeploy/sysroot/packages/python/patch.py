@@ -26,8 +26,6 @@
 
 import os
 
-from .... import UserException
-
 from .diff_parser import parse_diffs
 
 
@@ -36,7 +34,7 @@ def apply_diffs(diff_file, patch_dir, sysroot):
 
     diffs = sysroot.read_embedded_file(diff_file)
 
-    for diff in parse_diffs(diffs):
+    for diff in parse_diffs(diffs, sysroot):
         _apply_diff(diff, patch_dir, sysroot)
 
 
@@ -72,7 +70,7 @@ def _apply_diff(diff, patch_dir, sysroot):
             src_line_nr += 1
 
             if hunk_line != line:
-                raise UserException(
+                self.error(
                         "{0}:{1}: line does not match diff context".format(
                                 src_file_name, src_line_nr))
 
