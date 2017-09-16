@@ -27,53 +27,143 @@
 import os
 import sys
 
-from .... import (AbstractPackage, DebugPackageMixin, PackageOption,
-        PythonPackageMixin)
+from .... import AbstractPackage, DebugPackageMixin, PackageOption
 
 from .configure_python import configure_python
 
 
-class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
-    """ The target Python package. """
+class PythonPackage(DebugPackageMixin, AbstractPackage):
+    """ The host and target Python package. """
 
     # The package-specific options.
     options = [
         PackageOption('android_api', str,
                 help="The Android API level to target."),
+        PackageOption('build_host_from_source', bool,
+                help="Build the host Python from source code rather than use an existing installation."),
+        PackageOption('build_target_from_source', bool,
+                help="Build the target Python from source code rather than use an existing installation."),
         PackageOption('disable_patches', bool,
                 help="Disable the patching of the source code for Android."),
         PackageOption('dynamic_loading', bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
+        PackageOption('source', str, required=True,
+                help="The archive containing the Python source code."),
     ]
 
     def build(self, sysroot):
-        """ Build Python for the target. """
+        """ Build Python for the host and target. """
 
-        self.validate_install_source_options()
+        # Extract the source code.
+        archive = sysroot.find_file(self.source)
+        old_wd = os.getcwd()
+        os.chdir(sysroot.target_src_dir)
+        package_name = sysroot.unpack_archive(archive, chdir=False)
+        os.chdir(old_wd)
 
-        if self.installed_version:
+        # Build the host installation.
+        if self.build_host_from_source:
+            if sys.platform == 'win32':
+                sysroot.error(
+                        "building the host Python from source on Windows is not supported")
+
+            sysroot.progress("Building the host Python from source")
+            interpreter = self._build_host_from_source(sysroot, archive)
+        else:
             sysroot.progress(
-                    "Installing the existing Python v{0} as the target Python".format(self.installed_version))
+                    "Installing the existing Python v{0} as the host Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
 
             if sys.platform == 'win32':
-                self._install_existing_windows_version(sysroot)
+                interpreter = self._install_host_from_existing_windows_version(
+                        sysroot)
+            else:
+                interpreter = self._install_host_from_existing_version(sysroot)
+
+        # Create symbolic links to the interpreter in a standard place in
+        # sysroot so that they can be referred to in cross-target .pdy files.
+        sysroot.make_symlink(interpreter, sysroot.host_python)
+
+        # Build the target installation.
+        if self.build_target_from_source:
+            sysroot.progress("Building the target Python from source")
+            self._build_target_from_source(sysroot, archive)
+        else:
+            if sys.platform == 'win32':
+                sysroot.progress(
+                        "Installing the existing Python v{0} as the target Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
+                self._install_target_from_existing_windows_version(sysroot)
             else:
                 self.error(
                         "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
 
-        else:
-            sysroot.progress("Building the target Python")
+    def configure(self, sysroot):
+        """ Configure Python for the host and target. """
 
-            self._build_from_source(sysroot)
+        version_nr = sysroot.extract_version_nr(self.source)
 
-    def _build_from_source(self, sysroot):
+        if version_nr < 0x020700 or (version_nr >= 0x030000 and version_nr < 0x030300):
+            sysroot.error(
+                    "Python v{0} is not supported.".format(
+                            sysroot.format_version_nr(version_nr)))
+
+        sysroot.py_version_nr = version_nr
+
+    def _build_host_from_source(self, sysroot, archive):
+        """ Build the host Python from source and return the absolute pathname
+        of the interpreter.
+        """
+
+        # Unpack the source.
+        sysroot.unpack_archive(archive)
+
+        # ensurepip was added in Python v2.7.9 and v3.4.0.
+        ensure_pip = False
+        if sysroot.py_version_nr < 0x030000:
+            if sysroot.py_version_nr >= 0x020709:
+                ensure_pip = True
+        elif sysroot.py_version_nr >= 0x030400:
+            ensure_pip = True
+
+        configure = ['./configure', '--prefix', sysroot.host_dir]
+        if ensure_pip:
+            configure.append('--with-ensurepip=no')
+
+        sysroot.run(*configure)
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
+
+        return os.path.join(sysroot.host_bin_dir,
+                'python' + self._major_minor(sysroot))
+
+    def _install_host_from_existing_windows_version(self, sysroot):
+        """ Install the host Python from an existing installation on Windows
+        and return the absolute pathname of the interpreter.
+        """
+
+        install_path = sysroot.py_windows_install_path
+
+        # Copy the DLL.
+        dll = 'python' + self._major_minor(sysroot).remove('.')  + '.dll'
+        shutil.copyfile(os.path.join(install_path, dll),
+                os.path.join(sysroot.host_bin_dir, dll))
+
+        return install_path + 'python.exe'
+
+    def _install_host_from_existing_version(self, sysroot):
+        """ Install the host Python from an existing installation and return
+        the absolute pathname of the interpreter.
+        """
+
+        return sysroot.find_exe('python' + self._major_minor(sysroot))
+
+    def _build_target_from_source(self, sysroot, archive):
         """ Build the target Python from source. """
 
-        # Unpack the source and get the version number.
-        py_version = self.unpack_source_archive(sysroot)
+        # Unpack the source.
+        sysroot.unpack_archive(archive)
 
         # Configure for the target.
-        configure_python(py_version, self.android_api, self.dynamic_loading,
+        configure_python(self.android_api, self.dynamic_loading,
                 not self.disable_patches, sysroot)
 
         # Do the build.
@@ -81,12 +171,14 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
-    def _install_existing_windows_version(self, sysroot):
-        """ Install the host Python from an existing installation on Windows.
+    def _install_target_from_existing_windows_version(self, sysroot):
+        """ Install the target Python from an existing installation on Windows.
         """ 
 
-        py_major, py_minor = self.installed_version.split('.')
-        install_path = self.get_windows_install_path(sysroot.target_name)
+        install_path = sysroot.py_windows_install_path
+
+        py_major, py_minor, _ = sysroot.decode_version_nr(
+                sysroot.py_version_nr)
 
         # The interpreter library.
         lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
@@ -136,3 +228,11 @@ class PythonPackage(PythonPackageMixin, DebugPackageMixin, AbstractPackage):
         # The header files.
         sysroot.copy_dir(install_path + 'include',
                 os.path.join(sysroot.target_include_dir, py_subdir))
+
+    @staticmethod
+    def _major_minor(sysroot):
+        """ Return the Python major.minor as a string. """
+
+        major, minor, _ = sysroot.decode_version_nr(sysroot.py_version_nr)
+
+        return str(major) + '.' + str(minor)

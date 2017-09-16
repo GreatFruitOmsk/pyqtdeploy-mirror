@@ -27,7 +27,7 @@
 import os
 import sys
 
-from ... import AbstractPackage, OptionalSourcePackageMixin, PackageOption,
+from ... import AbstractPackage, OptionalSourcePackageMixin, PackageOption
 
 
 class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):

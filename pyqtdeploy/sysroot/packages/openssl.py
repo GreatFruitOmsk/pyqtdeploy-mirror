@@ -27,7 +27,7 @@
 import glob
 import sys
 
-from ... import AbstractPackage, PackageOption, SourcePackageMixin,
+from ... import AbstractPackage, PackageOption, SourcePackageMixin
 
 
 class OpenSSLPackage(SourcePackageMixin, AbstractPackage):

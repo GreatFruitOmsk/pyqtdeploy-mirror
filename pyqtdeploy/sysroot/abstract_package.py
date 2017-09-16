@@ -48,5 +48,8 @@ class AbstractPackage(ABC):
     options = []
 
     @abstractmethod
-    def build(self, message_handler):
+    def build(self, sysroot):
         """ Build the package. """
+
+    def configure(self, sysroot):
+        """ Configure the package. """

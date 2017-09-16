@@ -30,14 +30,12 @@ from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
 
 
-def configure_python(py_version, api, dynamic_loading, patches, sysroot):
+def configure_python(api, dynamic_loading, patches, sysroot):
     """ Configure a Python source directory for a particular target. """
 
-    py_major = py_version >> 16
-    py_minor = (py_version >> 8) & 0xff
-    py_patch = py_version & 0xff
-
-    py_version_str = '{0}.{1}.{2}'.format(py_major, py_minor, py_patch)
+    py_version_str = sysroot.format_version_nr(sysroot.py_version_nr)
+    py_major, py_minor, py_patch = sysroot.decode_version_nr(
+            sysroot.py_version_nr)
 
     sysroot.progress(
             "Configuring Python v{0} for {1}".format(py_version_str,

@@ -31,11 +31,13 @@ import subprocess
 import sys
 
 from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
-        create_file as fu_create_file, get_embedded_dir as fu_get_embedded_dir,
+        create_file as fu_create_file, extract_version as fu_extract_version,
+        get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
         open_file as fu_open_file, read_embedded_file as fu_read_embedded_file)
 from ..targets import normalised_target
 from ..user_exception import UserException
+from ..windows import get_python_install_path
 
 from .hosts import Host
 from .specification import Specification
@@ -63,11 +65,18 @@ class Sysroot:
 
         self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
 
+        self._py_version_nr = 0
+
     def build_packages(self, package_names):
         """ Build a sequence of packages.  If no names are given then create
         the system image root directory and build everything.  Raise a
         UserException if there is an error.
         """
+
+        # Allow the packages to configure sysroot even if they are not being
+        # built.
+        for package in self._specification.packages:
+            package.configure(self)
 
         if package_names:
             packages = self._packages_from_names(package_names)
@@ -250,6 +259,21 @@ class Sysroot:
 
         raise UserException(text, detail=detail)
 
+    def extract_version_nr(self, name):
+        """ Return an encoded version number from the name of a file or
+        directory.  name is the name of the file or directory.  An exception is
+        raised if a version number could not be extracted.
+        """
+
+        version_nr = fu_extract_version(name)
+
+        if version_nr == 0:
+            self.error(
+                    "unable to extract a version number from '{0}'".format(
+                            name))
+
+        return version_nr
+
     def find_exe(self, exe):
         """ Return the absolute pathname of an executable located on PATH. """
 
@@ -284,6 +308,22 @@ class Sysroot:
             self.error("'{0}' could not be found".format(name))
 
         return name
+
+    @staticmethod
+    def decode_version_nr(version_nr):
+        """ Decode an encoded version number to a 3-tuple. """
+
+        major = version_nr >> 16
+        minor = (version_nr >> 8) & 0xff
+        patch = version_nr & 0xff
+
+        return major, minor, patch
+
+    @classmethod
+    def format_version_nr(cls, version_nr):
+        """ Convert an encoded version number to a string. """
+
+        return '.'.join([str(v) for v in cls.decode_version_nr(version_nr)])
 
     @staticmethod
     def get_embedded_dir(root, *subdirs):
@@ -392,6 +432,22 @@ class Sysroot:
 
         self._message_handler.progress_message(message)
 
+    @property
+    def py_version_nr(self):
+        """ The Python version being targetted. """
+
+        if self._py_version_nr == 0:
+            self.error(
+                    "the sysroot specification must contain an entry for the host/target Python before anything that depends on it")
+
+        return self._py_version_nr
+
+    @py_version_nr.setter
+    def py_version_nr(self, version_nr):
+        """ The setter for the Python version being targetted. """
+
+        self._py_version_nr = version_nr
+
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
 
@@ -411,6 +467,21 @@ class Sysroot:
         subprocess.check_call(args)
 
         return None
+
+    @property
+    def py_windows_install_path(self):
+        """ The name of the directory caontaining the root of the Python
+        installation directory for an existing installation.  It must not be
+        called on a non-Windows platform.
+        """
+
+        major, minor, _ = self.decode_version_nr(self.py_version_nr)
+
+        reg_version = str(major) + '.' + str(minor)
+        if self.py_version_nr >= 0x030500 and self.target_name.endswith('-32'):
+            reg_version += '-32'
+
+        return get_python_install_path(reg_version)
 
     @staticmethod
     def read_embedded_file(name):
@@ -447,6 +518,12 @@ class Sysroot:
         """ The name of the root directory of the target Qt installation. """
 
         return os.path.join(self.sysroot_dir, 'qt')
+
+    @property
+    def target_src_dir(self):
+        """ The name of the directory containing target sources. """
+
+        return os.path.join(self.sysroot_dir, 'src')
 
     def unpack_archive(self, archive, chdir=True):
         """ An archive is unpacked in the current directory.  If requested its
