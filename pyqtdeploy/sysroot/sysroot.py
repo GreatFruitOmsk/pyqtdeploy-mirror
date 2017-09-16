@@ -380,7 +380,25 @@ class Sysroot:
     def host_qmake(self):
         """ The name of the host qmake executable. """
 
-        return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
+        qmake = os.path.join(self.host_bin_dir, self.host_exe('qmake'))
+
+        if not os.path.exists(qmake):
+            self.error(
+                    "the sysroot specification must contain an entry for Qt before anything that depends on it")
+
+        return qmake
+
+    @property
+    def host_sip(self):
+        """ The name of the host sip executable. """
+
+        sip = os.path.join(self.host_bin_dir, self.host_exe('sip'))
+
+        if not os.path.exists(sip):
+            self.error(
+                    "the sysroot specification must contain an entry for sip before anything that depends on it")
+
+        return sip
 
     def make_symlink(self, src, dst):
         """ Create a host-specific symbolic link. """
