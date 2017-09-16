@@ -27,10 +27,10 @@
 import os
 import sys
 
-from ... import AbstractPackage, OptionalSourcePackageMixin, PackageOption
+from ... import AbstractPackage, PackageOption
 
 
-class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
+class Qt5Package(AbstractPackage):
     """ The Qt5 package. """
 
     # The package-specific options.
@@ -43,11 +43,15 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
         PackageOption('skip', list,
                 help="The Qt modules to skip when building from source."),
+        PackageOption('source', str,
+                help="The archive containing the Qt5 source code if an existing installation is not to be used."),
         PackageOption('static_msvc_runtime', bool,
                 help="Set if the MSVC runtime should be statically linked."),
+        PackageOption('version', str,
+                help="The version of Qt being used. If it is not specified then it is extracted from either the 'qt_dir' or the 'source' option."),
     ]
 
-    def build(self, sysroot):
+    def build(self, sysroot, debug):
         """ Build Qt5 for the target. """
 
         if self.qt_dir:
@@ -63,7 +67,7 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
                 sysroot.error(
                         "either the 'qt_dir' or 'source' option must be specified")
 
-            sysroot.progress("Building Qt5")
+            sysroot.progress("Building Qt5 from source")
 
             # We don't support cross-compiling Qt.
             if not sysroot.native:
@@ -87,6 +91,30 @@ class Qt5Package(OptionalSourcePackageMixin, AbstractPackage):
         if os.path.isfile(androiddeployqt_path):
             make_symlink(androiddeployqt_path,
                     os.path.join(sysroot.host_bin_dir, androiddeployqt))
+
+    def configure(self, sysroot):
+        """ Configure the Qt package. """
+
+        if self.qt_dir:
+            if self.source:
+                sysroot.error(
+                        "the 'qt_dir' and 'source' options cannot both be specified")
+
+            # Normally the parent directory name has the major.minor version.
+            version_nr = sysroot.extract_version_nr(
+                    os.path.dirname(self.qt_dir))
+        else:
+            if not self.source:
+                sysroot.error(
+                        "either the 'qt_dir' or 'source' option must be specified")
+
+            version_nr = sysroot.extract_version_nr(self.source)
+
+        # An explicit version number always takes precedence.
+        if self.version:
+            version_nr = sysroot.parse_version_nr(self.version)
+
+        sysroot.qt_version_nr = version_nr
 
     def _build_from_source(self, sysroot):
         """ Build Qt5 from source. """

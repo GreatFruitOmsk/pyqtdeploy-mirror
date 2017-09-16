@@ -84,7 +84,7 @@ def main():
         if args.options:
             sysroot.show_options(args.package)
         else:
-            sysroot.build_packages(args.package)
+            sysroot.build_packages(args.package, args.debug)
     except UserException as e:
         message_handler.exception(e)
         return 1

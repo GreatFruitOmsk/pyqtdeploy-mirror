@@ -34,7 +34,8 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         create_file as fu_create_file, extract_version as fu_extract_version,
         get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
-        open_file as fu_open_file, read_embedded_file as fu_read_embedded_file)
+        open_file as fu_open_file, parse_version as fu_parse_version,
+        read_embedded_file as fu_read_embedded_file)
 from ..targets import normalised_target
 from ..user_exception import UserException
 from ..windows import get_python_install_path
@@ -66,8 +67,9 @@ class Sysroot:
         self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
 
         self._py_version_nr = 0
+        self._qt_version_nr = 0
 
-    def build_packages(self, package_names):
+    def build_packages(self, package_names, debug):
         """ Build a sequence of packages.  If no names are given then create
         the system image root directory and build everything.  Raise a
         UserException if there is an error.
@@ -94,7 +96,7 @@ class Sysroot:
 
         # Build the packages.
         for package in packages:
-            package.build(self)
+            package.build(self, debug)
 
         # Remove the build directory.
         os.chdir(cwd)
@@ -380,13 +382,7 @@ class Sysroot:
     def host_qmake(self):
         """ The name of the host qmake executable. """
 
-        qmake = os.path.join(self.host_bin_dir, self.host_exe('qmake'))
-
-        if not os.path.exists(qmake):
-            self.error(
-                    "the sysroot specification must contain an entry for Qt before anything that depends on it")
-
-        return qmake
+        return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
 
     @property
     def host_sip(self):
@@ -445,6 +441,21 @@ class Sysroot:
 
         return fu_open_file(name)
 
+    def parse_version_nr(version_str):
+        """ Return an encoded version number from a string.  version_str is the
+        string.  An exception is raised if a version number could not be
+        parsed.
+        """
+
+        version_nr = fu_parse_version(version_str)
+
+        if version_nr == 0:
+            self.error(
+                    "unable to convert a version number from '{0}'".format(
+                            version_str))
+
+        return version_nr
+
     def progress(self, message):
         """ Issue a progress message. """
 
@@ -466,6 +477,37 @@ class Sysroot:
 
         self._py_version_nr = version_nr
 
+    @property
+    def py_windows_install_path(self):
+        """ The name of the directory caontaining the root of the Python
+        installation directory for an existing installation.  It must not be
+        called on a non-Windows platform.
+        """
+
+        major, minor, _ = self.decode_version_nr(self.py_version_nr)
+
+        reg_version = str(major) + '.' + str(minor)
+        if self.py_version_nr >= 0x030500 and self.target_name.endswith('-32'):
+            reg_version += '-32'
+
+        return get_python_install_path(reg_version)
+
+    @property
+    def qt_version_nr(self):
+        """ The Qt version being targetted. """
+
+        if self._qt_version_nr == 0:
+            self.error(
+                    "the sysroot specification must contain an entry for Qt before anything that depends on it")
+
+        return self._qt_version_nr
+
+    @qt_version_nr.setter
+    def qt_version_nr(self, version_nr):
+        """ The setter for the Qt version being targetted. """
+
+        self._qt_version_nr = version_nr
+
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
 
@@ -485,21 +527,6 @@ class Sysroot:
         subprocess.check_call(args)
 
         return None
-
-    @property
-    def py_windows_install_path(self):
-        """ The name of the directory caontaining the root of the Python
-        installation directory for an existing installation.  It must not be
-        called on a non-Windows platform.
-        """
-
-        major, minor, _ = self.decode_version_nr(self.py_version_nr)
-
-        reg_version = str(major) + '.' + str(minor)
-        if self.py_version_nr >= 0x030500 and self.target_name.endswith('-32'):
-            reg_version += '-32'
-
-        return get_python_install_path(reg_version)
 
     @staticmethod
     def read_embedded_file(name):

@@ -268,7 +268,8 @@ class Specification:
         self._show_row(ulines, widths, message_handler)
 
         # Calculate the room available for the description column.
-        avail, _ = shutil.get_terminal_size()
+        avail = shutil.get_terminal_size()[0] - 1
+
         for w in widths[:-1]:
             avail -= 2 + w
 

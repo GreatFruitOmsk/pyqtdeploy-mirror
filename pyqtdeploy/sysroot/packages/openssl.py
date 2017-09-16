@@ -27,19 +27,21 @@
 import glob
 import sys
 
-from ... import AbstractPackage, PackageOption, SourcePackageMixin
+from ... import AbstractPackage, PackageOption
 
 
-class OpenSSLPackage(SourcePackageMixin, AbstractPackage):
+class OpenSSLPackage(AbstractPackage):
     """ The OpenSSL package. """
 
     # The package-specific options.
     options = [
         PackageOption('python_source', str,
-                help="The archive of the Python source containing patches to build OpenSSL on macOS."),
+                help="The archive of the Python source code containing patches to build OpenSSL on macOS."),
+        PackageOption('source', str, required=True,
+                help="The archive containing the OpenSSL source code."),
     ]
 
-    def build(self, sysroot):
+    def build(self, sysroot, debug):
         """ Build OpenSSL for the target. """
 
         sysroot.progress("Building OpenSSL")

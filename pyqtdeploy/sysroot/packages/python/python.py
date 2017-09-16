@@ -27,12 +27,12 @@
 import os
 import sys
 
-from .... import AbstractPackage, DebugPackageMixin, PackageOption
+from .... import AbstractPackage, PackageOption
 
 from .configure_python import configure_python
 
 
-class PythonPackage(DebugPackageMixin, AbstractPackage):
+class PythonPackage(AbstractPackage):
     """ The host and target Python package. """
 
     # The package-specific options.
@@ -51,7 +51,7 @@ class PythonPackage(DebugPackageMixin, AbstractPackage):
                 help="The archive containing the Python source code."),
     ]
 
-    def build(self, sysroot):
+    def build(self, sysroot, debug):
         """ Build Python for the host and target. """
 
         # Extract the source code.
@@ -97,7 +97,7 @@ class PythonPackage(DebugPackageMixin, AbstractPackage):
                         "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
 
     def configure(self, sysroot):
-        """ Configure Python for the host and target. """
+        """ Configure the Python package. """
 
         version_nr = sysroot.extract_version_nr(self.source)
 
