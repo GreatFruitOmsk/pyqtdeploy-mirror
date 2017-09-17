@@ -562,10 +562,24 @@ class Sysroot:
         return os.path.join(self.sysroot_dir, 'lib')
 
     @property
+    def target_py_include_dir(self):
+        """ The name of the directory containing target Python header files.
+        """
+
+        return os.path.join(self.target_include_dir, self._py_subdir)
+
+    @property
     def target_qt_dir(self):
         """ The name of the root directory of the target Qt installation. """
 
         return os.path.join(self.sysroot_dir, 'qt')
+
+    @property
+    def target_sitepackages_dir(self):
+        """ The name of the target Python site-packages directory. """
+
+        return os.path.join(self.target_lib_dir, self._py_subdir,
+                'site-packages')
 
     @property
     def target_src_dir(self):
@@ -618,3 +632,11 @@ class Sysroot:
         """ Issue a verbose progress message. """
 
         self._message_handler.verbose_message(message)
+
+    @property
+    def _py_subdir(self):
+        """ The name of a version-specific Python sub-directory. """
+
+        major, minor, _ = self.decode_version_nr(self.py_version_nr)
+
+        return 'python' + str(major) + '.' + str(minor)
