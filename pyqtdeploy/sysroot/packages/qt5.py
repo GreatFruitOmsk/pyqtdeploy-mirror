@@ -51,7 +51,7 @@ class Qt5Package(AbstractPackage):
                 help="The version of Qt being used. If it is not specified then it is extracted from either the 'qt_dir' or the 'source' option."),
     ]
 
-    def build(self, sysroot, debug):
+    def build(self, sysroot):
         """ Build Qt5 for the target. """
 
         if self.qt_dir:

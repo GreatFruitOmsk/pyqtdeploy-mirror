@@ -37,8 +37,6 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--debug', help="build debug versions where possible",
-            action='store_true')
     parser.add_argument('--no-clean',
             help="do not remove the temporary build directory to make debugging package plugins easier",
             action='store_true')
@@ -78,7 +76,7 @@ def main():
         if args.options:
             sysroot.show_options(args.package)
         else:
-            sysroot.build_packages(args.package, args.debug, args.no_clean)
+            sysroot.build_packages(args.package, args.no_clean)
     except UserException as e:
         message_handler.exception(e)
         return 1

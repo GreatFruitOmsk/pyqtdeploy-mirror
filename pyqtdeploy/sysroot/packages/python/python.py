@@ -51,7 +51,7 @@ class PythonPackage(AbstractPackage):
                 help="The archive containing the Python source code."),
     ]
 
-    def build(self, sysroot, debug):
+    def build(self, sysroot):
         """ Build Python for the host and target. """
 
         # Extract the source code.
@@ -71,7 +71,7 @@ class PythonPackage(AbstractPackage):
             interpreter = self._build_host_from_source(sysroot, archive)
         else:
             sysroot.progress(
-                    "Installing the existing Python v{0} as the host Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
+                    "Installing an existing Python v{0} as the host Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
 
             if sys.platform == 'win32':
                 interpreter = self._install_host_from_existing_windows_version(
@@ -90,7 +90,7 @@ class PythonPackage(AbstractPackage):
         else:
             if sys.platform == 'win32':
                 sysroot.progress(
-                        "Installing the existing Python v{0} as the target Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
+                        "Installing an existing Python v{0} as the target Python".format(sysroot.format_version_nr(sysroot.py_version_nr)))
                 self._install_target_from_existing_windows_version(sysroot)
             else:
                 self.error(

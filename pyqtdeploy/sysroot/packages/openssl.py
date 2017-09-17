@@ -41,7 +41,7 @@ class OpenSSLPackage(AbstractPackage):
                 help="The archive containing the OpenSSL source code."),
     ]
 
-    def build(self, sysroot, debug):
+    def build(self, sysroot):
         """ Build OpenSSL for the target. """
 
         sysroot.progress("Building OpenSSL")
