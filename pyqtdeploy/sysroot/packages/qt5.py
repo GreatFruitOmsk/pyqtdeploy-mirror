@@ -47,8 +47,6 @@ class Qt5Package(AbstractPackage):
                 help="The archive containing the Qt5 source code if an existing installation is not to be used."),
         PackageOption('static_msvc_runtime', bool,
                 help="Set if the MSVC runtime should be statically linked."),
-        PackageOption('version', str,
-                help="The version of Qt being used. If it is not specified then it is extracted from either the 'qt_dir' or the 'source' option."),
     ]
 
     def build(self, sysroot):
@@ -91,30 +89,6 @@ class Qt5Package(AbstractPackage):
         if os.path.isfile(androiddeployqt_path):
             make_symlink(androiddeployqt_path,
                     os.path.join(sysroot.host_bin_dir, androiddeployqt))
-
-    def configure(self, sysroot):
-        """ Configure the Qt package. """
-
-        if self.qt_dir:
-            if self.source:
-                sysroot.error(
-                        "the 'qt_dir' and 'source' options cannot both be specified")
-
-            # Normally the parent directory name has the major.minor version.
-            version_nr = sysroot.extract_version_nr(
-                    os.path.dirname(self.qt_dir))
-        else:
-            if not self.source:
-                sysroot.error(
-                        "either the 'qt_dir' or 'source' option must be specified")
-
-            version_nr = sysroot.extract_version_nr(self.source)
-
-        # An explicit version number always takes precedence.
-        if self.version:
-            version_nr = sysroot.parse_version_nr(self.version)
-
-        sysroot.qt_version_nr = version_nr
 
     def _build_from_source(self, sysroot):
         """ Build Qt5 from source. """

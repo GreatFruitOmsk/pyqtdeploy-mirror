@@ -67,7 +67,6 @@ class Sysroot:
         self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
 
         self._py_version_nr = 0
-        self._qt_version_nr = 0
 
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
@@ -495,22 +494,6 @@ class Sysroot:
 
         return get_python_install_path(reg_version)
 
-    @property
-    def qt_version_nr(self):
-        """ The Qt version being targetted. """
-
-        if self._qt_version_nr == 0:
-            self.error(
-                    "the sysroot specification must contain an entry for Qt before anything that depends on it")
-
-        return self._qt_version_nr
-
-    @qt_version_nr.setter
-    def qt_version_nr(self, version_nr):
-        """ The setter for the Qt version being targetted. """
-
-        self._qt_version_nr = version_nr
-
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
 
@@ -567,6 +550,18 @@ class Sysroot:
         """
 
         return os.path.join(self.target_include_dir, self._py_subdir)
+
+    @property
+    def target_py_lib(self):
+        """ The name of the target Python library. """
+
+        return self._py_subdir + 'm'
+
+    @property
+    def target_sip_dir(self):
+        """ The name of the directory containing the target .sip files. """
+
+        return os.path.join(self.sysroot_dir, 'share', 'sip')
 
     @property
     def target_qt_dir(self):
