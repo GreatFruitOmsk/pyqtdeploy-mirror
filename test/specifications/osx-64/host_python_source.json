@@ -1,7 +1,0 @@
-{
-    "Description": "Build a host Python from source.",
-
-    "host_python": {
-        "source":   "Python-3.6.0.tar.xz"
-    }
-}
