@@ -37,17 +37,11 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
-    #parser.add_argument('--android-api',
-    #        help="the Android API level to target when configuring Python "
-    #                "(configure) [default: {}]".format(default_api),
-    #        metavar="LEVEL", type=int, default=default_api)
-    parser.add_argument('--debug', help="build debug versions where possible")
-    #parser.add_argument('--disable-patches',
-    #        help="disable the patching of the Python source code (configure)",
-    #        action='store_true')
-    #parser.add_argument('--enable-dynamic-loading',
-    #        help="enable the dynamic loading of modules (configure)",
-    #        action='store_true')
+    parser.add_argument('--debug', help="build debug versions where possible",
+            action='store_true')
+    parser.add_argument('--no-clean',
+            help="do not remove the temporary build directory to make debugging package plugins easier",
+            action='store_true')
     parser.add_argument('--options',
             help="show the options available for the packages",
             action='store_true')
@@ -84,7 +78,7 @@ def main():
         if args.options:
             sysroot.show_options(args.package)
         else:
-            sysroot.build_packages(args.package, args.debug)
+            sysroot.build_packages(args.package, args.debug, args.no_clean)
     except UserException as e:
         message_handler.exception(e)
         return 1

@@ -69,7 +69,7 @@ class Sysroot:
         self._py_version_nr = 0
         self._qt_version_nr = 0
 
-    def build_packages(self, package_names, debug):
+    def build_packages(self, package_names, debug, no_clean):
         """ Build a sequence of packages.  If no names are given then create
         the system image root directory and build everything.  Raise a
         UserException if there is an error.
@@ -98,9 +98,11 @@ class Sysroot:
         for package in packages:
             package.build(self, debug)
 
-        # Remove the build directory.
+        # Remove the build directory if requested.
         os.chdir(cwd)
-        self.delete_dir(self._build_dir)
+
+        if not no_clean:
+            self.delete_dir(self._build_dir)
 
     def show_options(self, package_names):
         """ Show the options for a sequence of packages.  If no names are given
