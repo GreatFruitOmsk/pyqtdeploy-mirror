@@ -29,69 +29,58 @@ import os
 from ... import AbstractPackage, PackageOption
 
 
-class PyQt5Package(AbstractPackage):
-    """ The PyQt5 package. """
+class QScintillaPackage(AbstractPackage):
+    """ The QScintilla package. """
 
     # The package-specific options.
     options = [
-        PackageOption('disabled_features', list,
-                help="The features that are disabled (e.g. PyQt_SSL)."),
-        PackageOption('modules', list, required=True,
-                help="The extension modules to be built."),
         PackageOption('source', str, required=True,
-                help="The archive containing the PyQt5 source code."),
+                help="The archive containing the QScintilla source code."),
     ]
 
     def build(self, sysroot):
-        """ Build PyQt5 for the target. """
+        """ Build QScintilla for the target. """
 
-        sysroot.progress("Building PyQt5")
+        sysroot.progress("Building QScintilla")
 
         # Unpack the source.
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
-        # Copy any license file.
-        try:
-            license = sysroot.find_file('pyqt-commercial.sip')
-        except:
-            license = None
+        # Build the static C++ library.
+        os.chdir('Qt4Qt5')
+        sysroot.run(sysroot.host_qmake, 'CONFIG+=staticlib')
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
+        os.chdir('..')
 
-        if license:
-            sysroot.copy_file(license, 'sip')
+        # Build the static Python bindings.
+        os.chdir('Python')
 
         # Create a configuration file.
         cfg = '''py_inc_dir = {0}
 py_pylib_dir = {1}
 py_pylib_lib = {2}
-pyqt_module_dir = {3}
-pyqt_sip_dir = {4}
-[Qt 5.0]
-pyqt_modules = {5}
+py_sip_dir = {3}
+[PyQt 5]
+module_dir = {4}
 '''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
-                sysroot.target_py_lib, sysroot.target_sitepackages_dir,
-                os.path.join(sysroot.target_sip_dir, 'PyQt5'),
-                ' '.join(self.modules))
+                sysroot.target_py_lib, sysroot.target_sip_dir,
+                os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
         if sysroot.pyqt5_disabled_features:
-            cfg += 'pyqt_disabled_features = {0}\n'.format(
-                    ' '.join(sysroot.pyqt5_disabled_features))
+                cfg += 'pyqt_disabled_features = {0}\n'.format(
+                        ' '.join(sysroot.pyqt5_disabled_features))
 
-        cfg_name = 'pyqt5-' + sysroot.target_name + '.cfg'
+        cfg_name = 'qscintilla-' + sysroot.target_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)
 
         # Configure, build and install.
         sysroot.run(sysroot.host_python, 'configure.py', '--static', '--qmake',
-            sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir, '--no-tools',
-            '--no-qsci-api', '--no-designer-plugin', '--no-python-dbus',
-            '--no-qml-plugin', '--no-stubs', '--configuration', cfg_name,
-            '--sip', sysroot.host_sip, '--confirm-license', '-c', '-j2')
+            sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
+            '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
+            cfg_name, '--sip', sysroot.host_sip, '-c', '--pyqt', 'PyQt5')
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
-
-    def configure(self, sysroot):
-        """ Configure the PyQt5 package. """
-
-        sysroot.pyqt5_disabled_features = self.disabled_features

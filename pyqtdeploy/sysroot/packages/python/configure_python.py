@@ -33,9 +33,9 @@ from .pyconfig import generate_pyconfig_h
 def configure_python(api, dynamic_loading, patches, sysroot):
     """ Configure a Python source directory for a particular target. """
 
-    py_version_str = sysroot.format_version_nr(sysroot.py_version_nr)
+    py_version_str = sysroot.format_version_nr(sysroot.python_version_nr)
     py_major, py_minor, py_patch = sysroot.decode_version_nr(
-            sysroot.py_version_nr)
+            sysroot.python_version_nr)
 
     sysroot.progress(
             "Configuring Python v{0} for {1}".format(py_version_str,

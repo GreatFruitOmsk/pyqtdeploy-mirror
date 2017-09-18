@@ -66,7 +66,8 @@ class Sysroot:
 
         self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
 
-        self._py_version_nr = 0
+        self._pyqt5_disabled_features = None
+        self._python_version_nr = None
 
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
@@ -468,36 +469,51 @@ class Sysroot:
 
         self._message_handler.progress_message(message)
 
-    @property
-    def py_version_nr(self):
-        """ The Python version being targetted. """
-
-        if self._py_version_nr == 0:
-            self.error(
-                    "the sysroot specification must contain an entry for the host/target Python before anything that depends on it")
-
-        return self._py_version_nr
-
-    @py_version_nr.setter
-    def py_version_nr(self, version_nr):
-        """ The setter for the Python version being targetted. """
-
-        self._py_version_nr = version_nr
-
-    @property
     def py_windows_install_path(self):
         """ The name of the directory caontaining the root of the Python
         installation directory for an existing installation.  It must not be
         called on a non-Windows platform.
         """
 
-        major, minor, _ = self.decode_version_nr(self.py_version_nr)
+        major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         reg_version = str(major) + '.' + str(minor)
-        if self.py_version_nr >= 0x030500 and self.target_name.endswith('-32'):
+        if self.python_version_nr >= 0x030500 and self.target_name.endswith('-32'):
             reg_version += '-32'
 
         return get_python_install_path(reg_version)
+
+    @property
+    def pyqt5_disabled_features(self):
+        """ The PyQt5 features that are disabled. """
+
+        if self._pyqt5_disabled_features is None:
+            self.error(
+                    "the sysroot specification must contain an entry for PyQt5 before anything that depends on it")
+
+        return self._pyqt5_disabled_features
+
+    @pyqt5_disabled_features.setter
+    def pyqt5_disabled_features(self, disabled_features):
+        """ The setter for the PyQt5 features that are disabled. """
+
+        self._pyqt5_disabled_features = disabled_features
+
+    @property
+    def python_version_nr(self):
+        """ The Python version being targetted. """
+
+        if self._python_version_nr is None:
+            self.error(
+                    "the sysroot specification must contain an entry for the host/target Python before anything that depends on it")
+
+        return self._python_version_nr
+
+    @python_version_nr.setter
+    def python_version_nr(self, version_nr):
+        """ The setter for the Python version being targetted. """
+
+        self._python_version_nr = version_nr
 
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
@@ -637,6 +653,6 @@ class Sysroot:
     def _py_subdir(self):
         """ The name of a version-specific Python sub-directory. """
 
-        major, minor, _ = self.decode_version_nr(self.py_version_nr)
+        major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         return 'python' + str(major) + '.' + str(minor)

@@ -27,6 +27,6 @@
                 "QtWebSockets", "QtWidgets", "QtXml", "QtXmlPatterns",
                 "_QOpenGLFunctions_2_0"
         ],
-        "source":   "PyQt5_gpl-5.*.tar.gz"
+        "source":           "PyQt5_gpl-5.*.tar.gz"
     }
 }
