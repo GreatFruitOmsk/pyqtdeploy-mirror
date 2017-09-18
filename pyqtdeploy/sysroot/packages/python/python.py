@@ -96,8 +96,8 @@ class PythonPackage(AbstractPackage):
                 self.error(
                         "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
 
-    def configure(self, sysroot):
-        """ Configure the Python package. """
+    def publish(self, sysroot):
+        """ Publish the public Python package details. """
 
         archive = sysroot.find_file(self.source)
         version_nr = sysroot.extract_version_nr(archive)

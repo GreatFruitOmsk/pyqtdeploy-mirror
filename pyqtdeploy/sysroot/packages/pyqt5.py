@@ -91,7 +91,7 @@ pyqt_modules = {5}
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
-    def configure(self, sysroot):
-        """ Configure the PyQt5 package. """
+    def publish(self, sysroot):
+        """ Publish the public PyQt5 package details. """
 
         sysroot.pyqt5_disabled_features = self.disabled_features

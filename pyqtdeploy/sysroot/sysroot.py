@@ -78,7 +78,7 @@ class Sysroot:
         # Allow the packages to configure sysroot even if they are not being
         # built.
         for package in self._specification.packages:
-            package.configure(self)
+            package.publish(self)
 
         if package_names:
             packages = self._packages_from_names(package_names)
