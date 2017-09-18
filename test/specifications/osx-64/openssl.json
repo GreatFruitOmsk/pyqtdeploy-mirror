@@ -2,7 +2,7 @@
     "Description": "Build a static OpenSSL.",
 
     "openssl": {
-        "source":           "openssl-1.0.2j.tar.gz",
-        "python_source":    "Python-3.6.0.tar.xz"
+        "source":           "openssl-1.*.tar.gz",
+        "python_source":    "Python-3.*.tar.xz"
     }
 }

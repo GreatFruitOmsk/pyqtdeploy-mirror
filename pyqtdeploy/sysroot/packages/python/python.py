@@ -99,7 +99,8 @@ class PythonPackage(AbstractPackage):
     def configure(self, sysroot):
         """ Configure the Python package. """
 
-        version_nr = sysroot.extract_version_nr(self.source)
+        archive = sysroot.find_file(self.source)
+        version_nr = sysroot.extract_version_nr(archive)
 
         if version_nr < 0x020700 or (version_nr >= 0x030000 and version_nr < 0x030300):
             sysroot.error(

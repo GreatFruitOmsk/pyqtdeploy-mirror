@@ -1,0 +1,3 @@
+The tests expect that the required source packages Qt installations can be
+found in this directory.  Before running the tests make sure it contains the
+versions your wish to test with.

@@ -295,8 +295,8 @@ class Sysroot:
         """ Find a file (or directory).  If the name is relative then it is
         relative to the directory specified by the --sources command line
         option.  If this is not specified then the directory containing the
-        JSON specification file is used.  The absolute pathname of the file is
-        returned.
+        JSON specification file is used.  The name may be a glob pattern.  The
+        absolute pathname of the file is returned.
         """
 
         # Convert the name to a normalised absolute pathname.
@@ -305,13 +305,18 @@ class Sysroot:
         if not os.path.isabs(name):
             name = os.path.join(self._sources_dir, name)
 
-        name = os.path.normpath(name)
+        # Check the name matches exactly one file.
+        names = glob.glob(name)
+        if names:
+            if len(names) > 1:
+                self.error(
+                        "'{0}' matched several files and directories".format(
+                                name))
+        else:
+            self.error(
+                    "nothing matching '{0}' could not be found".format(name))
 
-        # Check the file exists.
-        if not os.path.exists(name):
-            self.error("'{0}' could not be found".format(name))
-
-        return name
+        return os.path.normpath(names[0])
 
     @staticmethod
     def decode_version_nr(version_nr):
