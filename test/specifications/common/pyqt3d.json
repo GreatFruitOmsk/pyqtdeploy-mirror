@@ -19,10 +19,10 @@
 
     "pyqt5": {
         "osx-64#modules":   ["QtCore", "QtGui"],
-        "source":           "PyQt5_gpl-5.*.tar.gz"
+        "source":           "PyQt5_*-5.*.tar.gz"
     },
 
     "pyqt3d": {
-        "source":   "PyQt3D_gpl-5.*.tar.gz"
+        "source":   "PyQt3D_*-5.*.tar.gz"
     }
 }

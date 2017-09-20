@@ -2,6 +2,6 @@
     "Description": "Build a static Qt5 from source.",
 
     "qt5": {
-        "source":   "qt-everywhere-opensource-src-5.*.tar.xz"
+        "source":   "qt-everywhere-*-src-5.*.tar.xz"
     }
 }

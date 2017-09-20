@@ -19,10 +19,10 @@
 
     "pyqt5": {
         "osx-64#modules":   ["QtCore"],
-        "source":           "PyQt5_gpl-5.*.tar.gz"
+        "source":           "PyQt5_*-5.*.tar.gz"
     },
 
     "pyqtpurchasing": {
-        "source":   "PyQtPurchasing_gpl-5.*.tar.gz"
+        "source":   "PyQtPurchasing_*-5.*.tar.gz"
     }
 }

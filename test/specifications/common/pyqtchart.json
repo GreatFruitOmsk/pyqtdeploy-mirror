@@ -19,10 +19,10 @@
 
     "pyqt5": {
         "osx-64#modules":   ["QtCore", "QtGui", "QtWidgets"],
-        "source":           "PyQt5_gpl-5.*.tar.gz"
+        "source":           "PyQt5_*-5.*.tar.gz"
     },
 
     "pyqtchart": {
-        "source":   "PyQtChart_gpl-5.*.tar.gz"
+        "source":   "PyQtChart_*-5.*.tar.gz"
     }
 }
