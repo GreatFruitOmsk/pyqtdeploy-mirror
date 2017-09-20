@@ -87,6 +87,24 @@ class Model(QStandardItemModel):
         self.add_value("sys.path_hooks", str(sys.path_hooks))
         self.add_value("sys.meta_path", str(sys.meta_path))
 
+        avail = "unavailable"
+        try:
+            import ssl
+            avail = "available"
+        except ImportError:
+            pass
+
+        self.add_value("Python SSL support", avail)
+
+        avail = "unavailable"
+        try:
+            from PyQt5.QtNetwork import QSslConfiguration
+            avail = "available"
+        except ImportError:
+            pass
+
+        self.add_value("Qt SSL support", avail)
+
         for product in optional_products:
             self.add_value(product, "imported")
 
