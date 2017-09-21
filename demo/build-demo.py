@@ -24,14 +24,32 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the package's API.  These are for the tools.
-from .builder import Builder
-from .message_handler import MessageHandler
-from .project import Project
-from .sysroot import Sysroot
-from .user_exception import UserException
-from .version import PYQTDEPLOY_RELEASE
+import argparse
+import os
 
 
-# These are for the package plugins.
-from .sysroot import AbstractPackage, PackageOption
+# Parse the command line.
+parser = argparse.ArgumentParser()
+parser.add_argument('--target', help="the target platform")
+parser.add_argument('--no-sysroot', help="do not build the sysroot",
+        action='store_true')
+cmd_line_args = parser.parse_args()
+target = cmd_line_args.target
+build_sysroot = not cmd_line_args.no_sysroot
+
+# Anchor everything from the directory containing this script.
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sysroot_dir = 'sysroot'
+source_dir = os.path.join('..', 'test', 'src')
+
+# Build sysroot.
+if build_sysroot:
+    args = ['pyqtdeploy-sysroot', '--sysroot', sysroot_dir, '--source-dir',
+            source_dir]
+
+    if target:
+        args.extend(['--target', target])
+
+    args.append('sysroot.json')
+
+    os.system(' '.join(args))

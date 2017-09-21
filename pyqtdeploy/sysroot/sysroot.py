@@ -47,7 +47,7 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, sources_dir, sdk, target_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, sdk, target_name, message_handler):
         """ Initialise the object. """
 
         self.target_name = normalised_target(target_name)
@@ -64,7 +64,7 @@ class Sysroot:
         self._sdk = self._find_sdk(sdk)
         self._message_handler = message_handler
 
-        self._sources_dir = os.path.abspath(sources_dir) if sources_dir else os.path.dirname(self._specification.specification_file)
+        self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
 
         self._pyqt5_disabled_features = None
         self._python_version_nr = None
@@ -77,13 +77,13 @@ class Sysroot:
 
         # Allow the packages to configure sysroot even if they are not being
         # built.
-        for package in self._specification.packages:
+        for package in self.packages:
             package.publish(self)
 
         if package_names:
             packages = self._packages_from_names(package_names)
         else:
-            packages = self._specification.packages
+            packages = self.packages
             self.create_dir(self.sysroot_dir, empty=True)
             os.makedirs(self.host_bin_dir)
             os.makedirs(self.target_include_dir)
@@ -93,10 +93,10 @@ class Sysroot:
         # Create a new build directory.
         self.create_dir(self._build_dir, empty=True)
         cwd = os.getcwd()
-        os.chdir(self._build_dir)
 
         # Build the packages.
         for package in packages:
+            os.chdir(self._build_dir)
             package.build(self)
 
         # Remove the build directory if requested.
@@ -114,7 +114,7 @@ class Sysroot:
         if package_names:
             packages = self._packages_from_names(package_names)
         else:
-            packages = self._specification.packages
+            packages = self.packages
 
         self._specification.show_options(packages, self._message_handler)
 
@@ -124,7 +124,7 @@ class Sysroot:
         packages = []
 
         for name in package_names:
-            for package in self._specification.packages:
+            for package in self.packages:
                 if package.name == name:
                     packages.append(package)
                     break
@@ -294,7 +294,7 @@ class Sysroot:
 
     def find_file(self, name):
         """ Find a file (or directory).  If the name is relative then it is
-        relative to the directory specified by the --sources command line
+        relative to the directory specified by the --source-dir command line
         option.  If this is not specified then the directory containing the
         JSON specification file is used.  The name may be a glob pattern.  The
         absolute pathname of the file is returned.
@@ -304,7 +304,7 @@ class Sysroot:
         name = os.path.expandvars(name)
 
         if not os.path.isabs(name):
-            name = os.path.join(self._sources_dir, name)
+            name = os.path.join(self._source_dir, name)
 
         # Check the name matches exactly one file.
         names = glob.glob(name)
@@ -429,8 +429,8 @@ class Sysroot:
 
     @property
     def native(self):
-        """ Return True if the target and host platforms are the same.  The
-        word size is ignored.
+        """ True if the target and host platforms are the same.  The word size
+        is ignored.
         """
 
         if sys.platform == 'darwin':
@@ -448,6 +448,13 @@ class Sysroot:
         """
 
         return fu_open_file(name)
+
+    @property
+    def packages(self):
+        """ The sequence of package names used in the sysroot specification.
+        """
+
+        return self._specification.packages
 
     def parse_version_nr(version_str):
         """ Return an encoded version number from a string.  version_str is the

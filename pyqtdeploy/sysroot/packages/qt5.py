@@ -140,6 +140,9 @@ class Qt5Package(AbstractPackage):
                 '-confirm-license', '-static', '-release', '-nomake',
                 'examples', '-nomake', 'tools']
 
+        if 'openssl' in sysroot.packages:
+            args.append('-openssl-linked')
+
         if self.configure_options:
             args.extend(self.configure_options)
 

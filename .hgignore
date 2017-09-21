@@ -5,5 +5,6 @@ pyqtdeploy.egg-info
 pyqtdeploy/version.py
 VERSION
 demo/build
+demo/sysroot
 test/src/*
-test/sysroot/*
+test/sysroot
