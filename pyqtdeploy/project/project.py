@@ -41,7 +41,7 @@ class Project(QObject):
     min_version = 4
 
     # The current project version.
-    version = 6
+    version = 7
 
     # Emitted when the modification state of the project changes.
     modified_changed = pyqtSignal(bool)
@@ -96,23 +96,33 @@ class Project(QObject):
         self.application_package = QrcPackage()
         self.application_script = ''
         self.application_entry_point = ''
-        self.build_dir = 'build'
         self.external_libraries = []
         self.other_extension_modules = []
         self.other_packages = []
         self.pyqt_modules = []
-        self.python_host_interpreter = ''
         self.python_use_platform = ['win32']
-        self.python_source_dir = '$SYSROOT/src/Python-$PDY_PY_MAJOR.$PDY_PY_MINOR.$PDY_PY_MICRO'
         self.python_ssl = False
-        self.python_target_include_dir = '$SYSROOT/include/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
-        self.python_target_library = '$SYSROOT/lib/libpython$PDY_PY_MAJOR.$PDY_PY_MINOR.a'
-        self.python_target_stdlib_dir = '$SYSROOT/lib/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
         self.python_target_version = get_latest_supported_python_version()
-        self.qmake = ''
         self.qmake_configuration = ''
         self.standard_library = []
         self.sys_path = ''
+
+        self.set_default_locations()
+
+    def set_default_locations(self):
+        """ Set the various locations to their default values. """
+
+        self.build_dir = 'build'
+
+        self.python_host_interpreter = '$SYSROOT/host/bin/python'
+        self.qmake = '$SYSROOT/host/bin/qmake'
+
+        self.python_source_dir = '$SYSROOT/src/Python-$PDY_PY_MAJOR.$PDY_PY_MINOR.$PDY_PY_MICRO'
+        self.python_target_include_dir = '$SYSROOT/include/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
+        self.python_target_library = '$SYSROOT/lib/libpython$PDY_PY_MAJOR.$PDY_PY_MINOR.a'
+        self.python_target_stdlib_dir = '$SYSROOT/lib/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
+
+        self.using_default_locations = True
 
     def path_to_user(self, path):
         """ Convert a file name to one that is relative to the project name if
@@ -314,6 +324,10 @@ class Project(QObject):
         project = cls()
         project._name = fi
 
+        # This was added in version 7.
+        project.using_default_locations = cls._get_bool(root,
+                'usingdefaultlocations', 'Project', default=False)
+
         # The Python specific configuration.
         python = root.find('Python')
         cls._assert(python is not None, "Missing 'Python' tag.")
@@ -419,6 +433,11 @@ class Project(QObject):
             project.build_dir = others.get('builddir', '')
             project.qmake = others.get('qmake', '')
 
+        # If the default locations are being used then use the current defaults
+        # instead of those (possibly out of date) in the project file.
+        if project.using_default_locations:
+            project.set_default_locations()
+
         return project
 
     def save(self):
@@ -522,7 +541,8 @@ class Project(QObject):
         """
 
         root = Element('Project', attrib={
-            'version': str(self.version)})
+            'version': str(self.version),
+            'usingdefaultlocations': str(int(self.using_default_locations))})
 
         SubElement(root, 'Python', attrib={
             'hostinterpreter': self.python_host_interpreter,

@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from PyQt5.QtWidgets import QGroupBox, QMessageBox, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (QGroupBox, QHBoxLayout, QMessageBox, QPushButton,
+        QVBoxLayout, QWidget)
 
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
@@ -127,11 +128,21 @@ class LocationsPage(QWidget):
 
         others_group.setLayout(others_layout)
 
+        set_defaults = QPushButton("Set defaults",
+                whatsThis="Set the locations to their default values. These "
+                        "are those used by <tt>pyqtdeploy-sysroot</tt>.",
+                clicked=self._set_defaults)
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(set_defaults)
+
         layout = QVBoxLayout()
         layout.addWidget(py_host_group)
         layout.addWidget(py_target_group)
         layout.addWidget(others_group)
         layout.addStretch()
+        layout.addLayout(button_layout)
 
         self.setLayout(layout)
 
@@ -154,24 +165,28 @@ class LocationsPage(QWidget):
         """ Invoked when the user edits the host interpreter name. """
 
         self.project.python_host_interpreter = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _source_changed(self, value):
         """ Invoked when the user edits the source directory name. """
 
         self.project.python_source_dir = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _target_inc_changed(self, value):
         """ Invoked when the user edits the target include directory name. """
 
         self.project.python_target_include_dir = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _target_lib_changed(self, value):
         """ Invoked when the user edits the target Python library name. """
 
         self.project.python_target_library = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _target_stdlib_changed(self, value):
@@ -180,16 +195,26 @@ class LocationsPage(QWidget):
         """
 
         self.project.python_target_stdlib_dir = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _build_changed(self, value):
         """ Invoked when the user edits the build directory name. """
 
         self.project.build_dir = value
+        self.project.using_default_locations = False
         self.project.modified = True
 
     def _qmake_changed(self, value):
         """ Invoked when the user edits the qmake name. """
 
         self.project.qmake = value
+        self.project.using_default_locations = False
+        self.project.modified = True
+
+    def _set_defaults(self):
+        """ Invoked when the user clicks to set the default locations. """
+
+        self.project.set_default_locations()
+        self._update_page()
         self.project.modified = True
