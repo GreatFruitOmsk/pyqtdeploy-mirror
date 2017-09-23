@@ -26,11 +26,21 @@
 
 import argparse
 import os
+import sys
+
+
+def run(*args):
+    """ Run a command and terminate if it fails. """
+
+    ec = os.system(' '.join(args))
+
+    if ec:
+        sys.exit(ec)
 
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
-parser.add_argument('--target', help="the target platform")
+parser.add_argument('--target', help="the target platform", default='')
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
 cmd_line_args = parser.parse_args()
@@ -52,4 +62,17 @@ if build_sysroot:
 
     args.append('sysroot.json')
 
-    os.system(' '.join(args))
+    run(*args)
+
+# Build the demo.
+run('pyqtdeploy-build', '--sysroot', sysroot_dir, 'pyqt-demo.pdy')
+
+# Tell the user where the demo is.
+if target.startswith('android'):
+    print("TODO")
+elif target.startswith('ios'):
+    print("TODO")
+elif target.startswith('win') or sys.platform == 'win32':
+    print("TODO")
+else:
+    print("The pyqt-demo executable can be found in the 'build' directory.")
