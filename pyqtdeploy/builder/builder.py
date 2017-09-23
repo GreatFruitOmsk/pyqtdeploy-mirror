@@ -50,15 +50,16 @@ ALL_SCOPES = tuple((scope for scope, platform, subscopes in PLATFORM_SCOPES))
 class Builder():
     """ The builder for a project. """
 
-    def __init__(self, project, message_handler):
+    def __init__(self, project, timeout, message_handler):
         """ Initialise the builder for a project. """
 
         super().__init__()
 
         self._project = project
+        self._timeout = timeout * 1000 if timeout > 0 else -1
         self._message_handler = message_handler
 
-    def build(self, opt, nr_resources, timeout, build_dir=None, clean=False, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
+    def build(self, opt, nr_resources, clean=True, build_dir=None, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -208,7 +209,7 @@ class Builder():
         freeze = self._copy_lib_file(self._get_lib_file_name('freeze.python'),
                 temp_dir.path(), dst_file_name='freeze.py')
 
-        self._run_freeze(freeze, interpreter, job_filename, opt, timeout)
+        self._run_freeze(freeze, interpreter, job_filename, opt)
 
     def _freeze_bootstrap(self, name, py_version, build_dir, temp_dir, job_writer):
         """ Freeze a version dependent bootstrap script. """
@@ -1231,7 +1232,7 @@ static struct _inittab %s[] = {
 
         job_writer.writerow([out_file, in_file, name, conversion])
 
-    def _run_freeze(self, freeze, interpreter, job_filename, opt, timeout):
+    def _run_freeze(self, freeze, interpreter, job_filename, opt):
         """ Run the accumlated freeze jobs. """
 
         # On Windows the interpreter name is simply 'python'.  So in order to
@@ -1253,12 +1254,29 @@ static struct _inittab %s[] = {
         argv.append(freeze)
         argv.append(job_filename)
 
-        self.run(argv, "Unable to freeze files", timeout=timeout)
+        self.run(argv, "Unable to freeze files")
 
-    def run(self, argv, error_message, in_build_dir=False, timeout=None):
+    def run_qmake(self, qmake):
+        """ Run qmake. """
+
+        if qmake is None:
+            qmake = os.path.expandvars(self._project.qmake)
+
+        if qmake == '':
+            raise UserException(
+                    "qmake cannot be run because its name has not been set")
+
+        self.run([qmake], "qmake failed", in_build_dir=True)
+
+    def run_make(self):
+        """ Run make. """
+
+        make = 'nmake' if sys.platform == 'win32' else 'make'
+
+        self.run([make], "{0} failed".format(make), in_build_dir=True)
+
+    def run(self, argv, error_message, in_build_dir=False):
         """ Execute a command and capture the output. """
-
-        timeout = -1 if timeout is None else timeout * 1000
 
         if in_build_dir:
             project = self._project
@@ -1289,7 +1307,7 @@ static struct _inittab %s[] = {
                 lambda: stderr_output.append(process.readAllStandardError()))
 
         process.start(argv[0], argv[1:])
-        finished = process.waitForFinished(timeout)
+        finished = process.waitForFinished(self._timeout)
 
         if saved_cwd is not None:
             os.chdir(saved_cwd)

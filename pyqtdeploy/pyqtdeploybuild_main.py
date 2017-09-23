@@ -37,19 +37,31 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--build-dir', help="the name of the build directory",
+            metavar="DIR")
     parser.add_argument('--include-dir',
             help="the target Python include directory", metavar="DIR")
     parser.add_argument('--interpreter',
             help="the host interpreter executable",
             metavar="EXECUTABLE")
+    parser.add_argument('--no-clean',
+            help="do not delete and re-create the build directory before "
+                    "starting",
+            dest='clean', default=True, action='store_false')
+    parser.add_argument('--no-make',
+            help="do not run make after running qmake", dest='run_make',
+            default=True, action='store_false')
+    parser.add_argument('--no-qmake',
+            help="do not run qmake after generating the code",
+            dest='run_qmake', default=True, action='store_false')
     parser.add_argument('--opt',
             help="the optimisation level where 0 is none, 1 is no asserts, 2 "
                     "is no asserts or docstrings [default: 2]",
             metavar="LEVEL", type=int, choices=range(3), default=2),
-    parser.add_argument('--output', help="the name of the output directory",
-            metavar="OUTPUT")
     parser.add_argument('--python-library', help="the target Python library",
             metavar="LIB")
+    parser.add_argument('--qmake', help="the qmake executable",
+            metavar="EXECUTABLE")
     parser.add_argument('--resources',
             help="the number of .qrc resource files to generate [default: 1]",
             metavar="NUMBER", type=int, default=1),
@@ -60,9 +72,9 @@ def main():
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
     parser.add_argument('--timeout',
-            help="the number of seconds to wait for build processes to run "
-                    "before timing out",
-            metavar="SECONDS", type=int, default=30)
+            help="the number of seconds to wait for the build processes to "
+                    "run before timing out",
+            metavar="SECONDS", type=int, default=0)
     parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose', help="enable verbose progress messages",
@@ -82,12 +94,20 @@ def main():
         return 2
 
     try:
-        builder = Builder(Project.load(args.project), message_handler)
-        builder.build(args.opt, args.resources, args.timeout,
-                build_dir=args.output, include_dir=args.include_dir,
+        builder = Builder(Project.load(args.project), args.timeout,
+                message_handler)
+
+        builder.build(args.opt, args.resources, args.clean,
+                build_dir=args.build_dir, include_dir=args.include_dir,
                 interpreter=args.interpreter,
                 python_library=args.python_library, source_dir=args.source_dir,
                 standard_library_dir=args.standard_library_dir)
+
+        if args.run_qmake:
+            builder.run_qmake(args.qmake)
+
+            if args.run_make:
+                builder.run_make()
     except UserException as e:
         message_handler.exception(e)
         return 1

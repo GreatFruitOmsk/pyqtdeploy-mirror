@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import QMessageBox
 def handle_user_exception(e, title, parent):
     """ Handle a UserException. """
 
-    msg_box = QMessageBox(QMessageBox.Warning, title, e.text, parent=parent)
+    msg_box = QMessageBox(QMessageBox.Warning, title, e.text + ".",
+            parent=parent)
 
     if e.detail != '':
         msg_box.setDetailedText(e.detail)

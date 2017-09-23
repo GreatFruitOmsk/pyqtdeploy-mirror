@@ -109,8 +109,8 @@ class BuildPage(QWidget):
         options_layout.addWidget(QLabel("Timeout"), 3, 0)
         self._timeout_edit = QSpinBox(
                 whatsThis="The number of seconds to wait for build processes "
-                        "to run before timing out.",
-                minimum=1)
+                        "to run before timing out (0 means no timeout).",
+                minimum=0)
         self._timeout_edit.setValue(30)
         options_layout.addWidget(self._timeout_edit, 3, 1)
 
@@ -161,7 +161,7 @@ class BuildPage(QWidget):
 
         logger = LoggingMessageHandler(bool(self._verbose_button.checkState()),
                 self._log_viewer)
-        builder = Builder(project, logger)
+        builder = Builder(project, self._timeout_edit.value(), logger)
 
         logger.clear()
         logger.status_message("Generating code...")
@@ -174,11 +174,10 @@ class BuildPage(QWidget):
             opt = 0
 
         nr_resources = self._resources_edit.value()
-        timeout = self._timeout_edit.value()
 
         try:
-            builder.build(opt, nr_resources, timeout,
-                    clean=bool(self._clean_button.checkState()))
+            builder.build(opt, nr_resources,
+                    bool(self._clean_button.checkState()))
         except UserException as e:
             logger.exception(e)
             handle_user_exception(e, self.label, self)
@@ -187,38 +186,28 @@ class BuildPage(QWidget):
         logger.status_message("Code generation succeeded.")
 
         if self._run_qmake_button.checkState() != Qt.Unchecked:
-            qmake = os.path.expandvars(project.qmake)
-
-            if qmake == '':
-                QMessageBox.warning(self, self.label,
-                    "qmake cannot be run because its name has not been set.")
-            else:
-                logger.status_message("Running qmake...")
-
-                try:
-                    builder.run([qmake], "qmake failed.", in_build_dir=True,
-                            timeout=timeout)
-                except UserException as e:
-                    logger.exception(e)
-                    handle_user_exception(e, self.label, self)
-                    return
-
-                logger.status_message("qmake succeeded.")
-
-        if self._run_make_button.checkState() != Qt.Unchecked:
-            make = 'nmake' if sys.platform == 'win32' else 'make'
-
-            logger.status_message("Running {0}...".format(make))
+            logger.status_message("Running qmake...")
 
             try:
-                builder.run([make], "{0} failed.".format(make),
-                        in_build_dir=True, timeout=timeout)
+                builder.run_qmake()
             except UserException as e:
                 logger.exception(e)
                 handle_user_exception(e, self.label, self)
                 return
 
-            logger.status_message("{0} succeeded.".format(make))
+            logger.status_message("qmake succeeded.")
+
+        if self._run_make_button.checkState() != Qt.Unchecked:
+            logger.status_message("Running make...")
+
+            try:
+                builder.run_make()
+            except UserException as e:
+                logger.exception(e)
+                handle_user_exception(e, self.label, self)
+                return
+
+            logger.status_message("make succeeded.")
 
         if self._run_application_button.checkState() != Qt.Unchecked:
             build_dir = project.path_from_user(project.build_dir)
@@ -235,7 +224,7 @@ class BuildPage(QWidget):
             logger.status_message("Running {0}...".format(exe_name))
 
             try:
-                builder.run([application], "{0} failed.".format(application))
+                builder.run([application], "{0} failed".format(application))
             except UserException as e:
                 logger.exception(e)
                 handle_user_exception(e, self.label, self)
