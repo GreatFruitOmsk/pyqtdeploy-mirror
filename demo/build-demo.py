@@ -48,8 +48,13 @@ target = cmd_line_args.target
 build_sysroot = not cmd_line_args.no_sysroot
 
 # Anchor everything from the directory containing this script.
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sysroot_dir = 'sysroot'
+build_dir = 'build'
+if target:
+    sysroot_dir += '-' + target
+    build_dir += '-' + target
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 source_dir = os.path.join('..', 'test', 'src')
 
 # Build sysroot.
@@ -65,7 +70,8 @@ if build_sysroot:
     run(*args)
 
 # Build the demo.
-run('pyqtdeploy-build', '--sysroot', sysroot_dir, 'pyqt-demo.pdy')
+run('pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir,
+        'pyqt-demo.pdy')
 
 # Tell the user where the demo is.
 if target.startswith('android'):
@@ -75,4 +81,4 @@ elif target.startswith('ios'):
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
 else:
-    print("The pyqt-demo executable can be found in the 'build' directory.")
+    print("The pyqt-demo executable can be found in the '{0}' directory.".format(build_dir))
