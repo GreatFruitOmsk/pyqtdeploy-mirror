@@ -695,6 +695,8 @@ class Builder():
         used_scopes.update(used_libs.keys())
         used_scopes.update(used_dlls.keys())
 
+        sysroot_defined = 'SYSROOT' in os.environ
+
         # Write out grouped by scope.
         for scope in used_scopes:
             f.write('\n')
@@ -724,8 +726,18 @@ class Builder():
             for defines in used_defines.get(scope, ()):
                 f.write('{0}DEFINES += {1}\n'.format(indent, defines))
 
+            if scope == '' and sysroot_defined:
+                f.write(
+                        'INCLUDEPATH += {0}\n'.format(
+                                os.path.expandvars('$SYSROOT/include')))
+
             for includepath in used_includepath.get(scope, ()):
                 f.write('{0}INCLUDEPATH += {1}\n'.format(indent, includepath))
+
+            if scope == '' and sysroot_defined:
+                f.write(
+                        'LIBS += -L{0}\n'.format(
+                                os.path.expandvars('$SYSROOT/lib')))
 
             for lib in used_libs.get(scope, ()):
                 # A (strictly unnecessary) bit of pretty printing.
@@ -1271,6 +1283,8 @@ static struct _inittab %s[] = {
     def run_make(self):
         """ Run make. """
 
+        # Note that this will be wrong if we are targeting Android with a
+        # Windows host.
         make = 'nmake' if sys.platform == 'win32' else 'make'
 
         self.run([make], "{0} failed".format(make), in_build_dir=True)
