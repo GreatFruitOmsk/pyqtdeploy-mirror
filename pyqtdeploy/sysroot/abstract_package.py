@@ -30,12 +30,13 @@ from abc import ABC, abstractmethod
 class PackageOption:
     """ Encapsulate an option for the package in the specification file. """
 
-    def __init__(self, name, type, required=False, help=None):
+    def __init__(self, name, type, required=False, values=None, help=None):
         """ Initialise the object. """
 
         self.name = name
         self.type = type
         self.required = required
+        self.values = values
         self.help = help if help else "None available."
 
 

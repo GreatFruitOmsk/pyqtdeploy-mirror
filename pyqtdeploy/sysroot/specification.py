@@ -60,6 +60,11 @@ class Specification:
                 if not isinstance(value, str):
                     self._bad_type(name, spec_file)
             else:
+                # Allow target-specific plugins.
+                name = self._value_for_target(name, target_name)
+                if name is None:
+                    continue
+
                 # Find the package's plugin.
                 plugin = None
 
@@ -95,31 +100,10 @@ class Specification:
 
                 config = {}
                 for opt_name, opt_value in value.items():
-                    # Extract any scope.
-                    parts = opt_name.split('#', maxsplit=1)
-                    if len(parts) == 2:
-                        scope, opt_name = parts
-
-                        # Remember if we are negating.
-                        if scope.startswith('!'):
-                            negate = True
-                            scope = scope[1:]
-                        else:
-                            negate = False
-
-                        # See if the scope matches the target.  The scope may
-                        # or may not include the word size.
-                        if '-' in scope:
-                            matches = (target_name == scope)
-                        else:
-                            matches = target_name.startswith(scope + '-')
-
-                        if negate:
-                            matches = not matches
-
-                        # Ignore if it isn't relevant.
-                        if not matches:
-                            continue
+                    # Allow target-specific options.
+                    opt_name = self._value_for_target(opt_name, target_name)
+                    if opt_name is None:
+                        continue
 
                     # The value is relevant so save it.
                     config[opt_name] = opt_value
@@ -140,6 +124,45 @@ class Specification:
                             spec_file, name)
 
                 self.packages.append(package)
+
+    @staticmethod
+    def _value_for_target(value, target_name):
+        """ If a value is valid for a particular target then return the value,
+        otherwise return None.
+        """
+
+        # Extract any scope.
+        parts = value.split('#', maxsplit=1)
+        if len(parts) != 2:
+            # Any unscoped value is valid.
+            return value
+
+        scope, value = parts
+
+        # A scope is a list of target names.
+        for name in scope.split():
+            # Remember if we are negating.
+            if name.startswith('!'):
+                negate = True
+                name = name[1:]
+            else:
+                negate = False
+
+            # See if the name matches the target.  The name may or may not
+            # include the word size.
+            if '-' in name:
+                matches = (target_name == name)
+            else:
+                matches = target_name.startswith(name + '-')
+
+            if negate:
+                matches = not matches
+
+            # We only need one to match.
+            if matches:
+                return value
+
+        return None
 
     def _plugin_from_file(self, name, plugin_dir):
         """ Try and load a package plugin from a file. """
@@ -202,6 +225,11 @@ class Specification:
                 value = option.type()
             elif not isinstance(value, option.type):
                 self._bad_type(option.name, spec_file, package.name)
+            elif option.values:
+                if value not in option.values:
+                    self._parse_error(
+                            "'{0}' must have be one of these values: {1}".format(option.name, ','.join(option.values)),
+                            spec_file, package.name)
 
             setattr(package, option.name, value)
 

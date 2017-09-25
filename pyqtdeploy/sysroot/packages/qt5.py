@@ -41,6 +41,10 @@ class Qt5Package(AbstractPackage):
                 help="The features that are disabled when building from source."),
         PackageOption('qt_dir', str,
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
+        PackageOption('ssl', str,
+                values=['openssl-linked', 'openssl-runtime',
+                        'securetransport'],
+                help="Either 'openssl-linked', 'openssl-runtime' or 'securetransport'."),
         PackageOption('skip', list,
                 help="The Qt modules to skip when building from source."),
         PackageOption('source', str,
@@ -140,8 +144,26 @@ class Qt5Package(AbstractPackage):
                 '-confirm-license', '-static', '-release', '-nomake',
                 'examples', '-nomake', 'tools']
 
-        if 'openssl' in sysroot.packages:
-            args.extend(['-openssl-linked', '-I', sysroot.target_include_dir])
+        if self.ssl:
+            args.append('-ssl')
+
+            if sysroot.target_name.startswith('ios-') or sysroot.target_name.startswith('osx-'):
+                if self.ssl == 'securetransport':
+                    args.append('-securetransport')
+                else:
+                    args.append('-no-securetransport')
+
+            if self.ssl == 'openssl-linked':
+                args.append('-openssl-linked')
+
+                for package in sysroot.packages:
+                    if package.name == 'openssl':
+                        args.extend(['-I', sysroot.target_include_dir])
+                        args.extend(['-L', sysroot.target_lib_dir])
+                        break
+
+            elif self.ssl == 'openssl-runtime':
+                args.append('-openssl-runtime')
 
         if self.configure_options:
             args.extend(self.configure_options)
