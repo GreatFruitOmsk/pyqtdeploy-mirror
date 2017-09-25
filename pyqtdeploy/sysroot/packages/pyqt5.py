@@ -35,7 +35,7 @@ class PyQt5Package(AbstractPackage):
     # The package-specific options.
     options = [
         PackageOption('disabled_features', list,
-                help="The features that are disabled (e.g. PyQt_SSL)."),
+                help="The features that are disabled."),
         PackageOption('modules', list, required=True,
                 help="The extension modules to be built."),
         PackageOption('source', str, required=True,
@@ -93,5 +93,8 @@ pyqt_modules = {5}
 
     def publish(self, sysroot):
         """ Publish the public PyQt5 package details. """
+
+        if not sysroot.find_package('qt5').ssl:
+            self.disabled_features.append('PyQt_SSL')
 
         sysroot.pyqt5_disabled_features = self.disabled_features

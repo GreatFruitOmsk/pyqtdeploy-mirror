@@ -156,11 +156,9 @@ class Qt5Package(AbstractPackage):
             if self.ssl == 'openssl-linked':
                 args.append('-openssl-linked')
 
-                for package in sysroot.packages:
-                    if package.name == 'openssl':
-                        args.extend(['-I', sysroot.target_include_dir])
-                        args.extend(['-L', sysroot.target_lib_dir])
-                        break
+                if sysroot.find_package('openssl', required=False) is not None:
+                    args.extend(['-I', sysroot.target_include_dir])
+                    args.extend(['-L', sysroot.target_lib_dir])
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')

@@ -241,6 +241,16 @@ class Sysroot:
                 self.error("unable to create directory {0}".format(name),
                         detail=str(e))
 
+    @staticmethod
+    def decode_version_nr(version_nr):
+        """ Decode an encoded version number to a 3-tuple. """
+
+        major = version_nr >> 16
+        minor = (version_nr >> 8) & 0xff
+        patch = version_nr & 0xff
+
+        return major, minor, patch
+
     def delete_dir(self, name):
         """ Delete a directory and its contents. """
 
@@ -319,15 +329,20 @@ class Sysroot:
 
         return os.path.normpath(names[0])
 
-    @staticmethod
-    def decode_version_nr(version_nr):
-        """ Decode an encoded version number to a 3-tuple. """
+    def find_package(self, name, required=True):
+        """ Return the package object for the given name or None if the package
+        isn't specified.  If it is not specified and it is required then raise
+        an exception.
+        """
 
-        major = version_nr >> 16
-        minor = (version_nr >> 8) & 0xff
-        patch = version_nr & 0xff
+        for package in self.packages:
+            if package.name == name:
+                return package
 
-        return major, minor, patch
+        if required:
+            self._missing_package(name)
+
+        return None
 
     @classmethod
     def format_version_nr(cls, version_nr):
@@ -399,8 +414,7 @@ class Sysroot:
         sip = os.path.join(self.host_bin_dir, self.host_exe('sip'))
 
         if not os.path.exists(sip):
-            self.error(
-                    "the sysroot specification must contain an entry for sip before anything that depends on it")
+            self._missing_package('sip')
 
         return sip
 
@@ -495,8 +509,7 @@ class Sysroot:
         """ The PyQt5 features that are disabled. """
 
         if self._pyqt5_disabled_features is None:
-            self.error(
-                    "the sysroot specification must contain an entry for PyQt5 before anything that depends on it")
+            self._missing_package('PyQt5')
 
         return self._pyqt5_disabled_features
 
@@ -511,8 +524,7 @@ class Sysroot:
         """ The Python version being targetted. """
 
         if self._python_version_nr is None:
-            self.error(
-                    "the sysroot specification must contain an entry for the host/target Python before anything that depends on it")
+            self._missing_package('python')
 
         return self._python_version_nr
 
@@ -663,3 +675,8 @@ class Sysroot:
         major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         return 'python' + str(major) + '.' + str(minor)
+
+    def _missing_package(self, name):
+        """ Raise an exception about a missing package. """
+
+        self.error("the sysroot specification must contain an entry for '{0}' before anything that depends on it".format(name))
