@@ -90,7 +90,8 @@ class Model(QStandardItemModel):
         avail = "unavailable"
         try:
             import ssl
-            avail = "available"
+
+            avail = "available ({0})".format(ssl.OPENSSL_VERSION)
         except ImportError:
             pass
 
@@ -101,7 +102,8 @@ class Model(QStandardItemModel):
             from PyQt5.QtNetwork import QSslSocket
 
             if QSslSocket.supportsSsl():
-                avail = "available"
+                avail = "available ({0})".format(
+                        QSslSocket.sslLibraryVersionString())
         except ImportError:
             pass
 

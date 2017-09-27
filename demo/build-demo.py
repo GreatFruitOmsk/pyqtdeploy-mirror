@@ -40,12 +40,18 @@ def run(*args):
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
-parser.add_argument('--target', help="the target platform", default='')
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
+parser.add_argument('--target', help="the target platform", default='')
+parser.add_argument('--quiet', help="disable progress messages",
+        action='store_true')
+parser.add_argument('--verbose', help="enable verbose progress messages",
+        action='store_true')
 cmd_line_args = parser.parse_args()
-target = cmd_line_args.target
 build_sysroot = not cmd_line_args.no_sysroot
+target = cmd_line_args.target
+quiet = cmd_line_args.quiet
+verbose = cmd_line_args.verbose
 
 # Anchor everything from the directory containing this script.
 sysroot_dir = 'sysroot'
@@ -64,6 +70,12 @@ if build_sysroot:
 
     if target:
         args.extend(['--target', target])
+
+    if quiet:
+        args.append('--quiet')
+
+    if verbose:
+        args.append('--verbose')
 
     args.append('sysroot.json')
 
