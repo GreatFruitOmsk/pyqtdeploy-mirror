@@ -52,5 +52,5 @@ class AbstractPackage(ABC):
     def build(self, sysroot, debug):
         """ Build the package. """
 
-    def publish(self, sysroot):
-        """ Publish the public package details. """
+    def configure(self, sysroot):
+        """ Complete the configuration of the package. """

@@ -66,7 +66,6 @@ class Sysroot:
 
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
 
-        self._pyqt5_disabled_features = None
         self._python_version_nr = None
 
     def build_packages(self, package_names, no_clean):
@@ -75,10 +74,10 @@ class Sysroot:
         UserException if there is an error.
         """
 
-        # Allow the packages to configure sysroot even if they are not being
+        # Allow the packages to configure themselves even if they are not being
         # built.
         for package in self.packages:
-            package.publish(self)
+            package.configure(self)
 
         if package_names:
             packages = self._packages_from_names(package_names)
@@ -505,21 +504,6 @@ class Sysroot:
         return get_python_install_path(reg_version)
 
     @property
-    def pyqt5_disabled_features(self):
-        """ The PyQt5 features that are disabled. """
-
-        if self._pyqt5_disabled_features is None:
-            self._missing_package('PyQt5')
-
-        return self._pyqt5_disabled_features
-
-    @pyqt5_disabled_features.setter
-    def pyqt5_disabled_features(self, disabled_features):
-        """ The setter for the PyQt5 features that are disabled. """
-
-        self._pyqt5_disabled_features = disabled_features
-
-    @property
     def python_version_nr(self):
         """ The Python version being targetted. """
 
@@ -667,6 +651,12 @@ class Sysroot:
         """ Issue a verbose progress message. """
 
         self._message_handler.verbose_message(message)
+
+    @property
+    def verbose_enabled(self):
+        """ True if verbose messages are being displayed. """
+
+        return self._message_handler.verbose
 
     @property
     def _py_subdir(self):

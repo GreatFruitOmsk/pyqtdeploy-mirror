@@ -58,9 +58,10 @@ module_dir = {4}
                 sysroot.target_py_lib, sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
-        if sysroot.pyqt5_disabled_features:
-                cfg += 'pyqt_disabled_features = {0}\n'.format(
-                        ' '.join(sysroot.pyqt5_disabled_features))
+        disabled_features = sysroot.find_package('pyqt5').disabled_features
+        if disabled_features:
+            cfg += 'pyqt_disabled_features = {0}\n'.format(
+                    ' '.join(disabled_features))
 
         cfg_name = 'pyqt3d-' + sysroot.target_name + '.cfg'
 
@@ -68,9 +69,14 @@ module_dir = {4}
             cfg_file.write(cfg)
 
         # Configure, build and install.
-        sysroot.run(sysroot.host_python, 'configure.py', '--static', '--qmake',
+        args = [sysroot.host_python, 'configure.py', '--static', '--qmake',
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
             '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
-            cfg_name, '--sip', sysroot.host_sip, '-c')
+            cfg_name, '--sip', sysroot.host_sip, '-c']
+
+        if sysroot.verbose_enabled:
+            args.append('--verbose')
+
+        sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')

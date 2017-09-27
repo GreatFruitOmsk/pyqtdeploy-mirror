@@ -73,9 +73,9 @@ pyqt_modules = {5}
                 os.path.join(sysroot.target_sip_dir, 'PyQt5'),
                 ' '.join(self.modules))
 
-        if sysroot.pyqt5_disabled_features:
+        if self.disabled_features:
             cfg += 'pyqt_disabled_features = {0}\n'.format(
-                    ' '.join(sysroot.pyqt5_disabled_features))
+                    ' '.join(self.disabled_features))
 
         cfg_name = 'pyqt5-' + sysroot.target_name + '.cfg'
 
@@ -83,18 +83,21 @@ pyqt_modules = {5}
             cfg_file.write(cfg)
 
         # Configure, build and install.
-        sysroot.run(sysroot.host_python, 'configure.py', '--static', '--qmake',
+        args = [sysroot.host_python, 'configure.py', '--static', '--qmake',
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir, '--no-tools',
             '--no-qsci-api', '--no-designer-plugin', '--no-python-dbus',
             '--no-qml-plugin', '--no-stubs', '--configuration', cfg_name,
-            '--sip', sysroot.host_sip, '--confirm-license', '-c', '-j2')
+            '--sip', sysroot.host_sip, '--confirm-license', '-c', '-j2']
+
+        if sysroot.verbose_enabled:
+            args.append('--verbose')
+
+        sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
-    def publish(self, sysroot):
-        """ Publish the public PyQt5 package details. """
+    def configure(self, sysroot):
+        """ Complete the configuration of the package. """
 
         if not sysroot.find_package('qt5').ssl:
             self.disabled_features.append('PyQt_SSL')
-
-        sysroot.pyqt5_disabled_features = self.disabled_features

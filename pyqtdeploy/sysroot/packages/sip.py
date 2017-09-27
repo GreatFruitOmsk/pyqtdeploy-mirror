@@ -52,8 +52,13 @@ class SIPPackage(AbstractPackage):
 
         sysroot.unpack_archive(archive)
 
-        sysroot.run(sysroot.host_python, 'configure.py', '--bindir',
-                sysroot.host_bin_dir)
+        args = [sysroot.host_python, 'configure.py', '--bindir',
+                sysroot.host_bin_dir]
+
+        if sysroot.verbose_enabled:
+            args.append('--verbose')
+
+        sysroot.run(*args)
 
         os.chdir('sipgen')
         sysroot.run(sysroot.host_make)
@@ -78,9 +83,14 @@ sip_module_dir = {2}
             cfg_file.write(cfg)
 
         # Configure, build and install.
-        sysroot.run(sysroot.host_python, 'configure.py', '--static',
-                '--sysroot', sysroot.sysroot_dir, '--no-pyi', '--no-tools',
-                '--use-qmake', '--configuration', cfg_name)
+        args = [sysroot.host_python, 'configure.py', '--static', '--sysroot',
+                sysroot.sysroot_dir, '--no-pyi', '--no-tools', '--use-qmake',
+                '--configuration', cfg_name]
+
+        if sysroot.verbose_enabled:
+            args.append('--verbose')
+
+        sysroot.run(*args)
         sysroot.run(sysroot.host_qmake)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
