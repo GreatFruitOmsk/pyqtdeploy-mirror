@@ -1,5 +1,5 @@
 {
-    "Description": "Build a static Qt5 from source with SSL support.",
+    "Description": "Build a static Qt5 from source.",
 
     "openssl": {
         "source":           "openssl-1.*.tar.gz",
