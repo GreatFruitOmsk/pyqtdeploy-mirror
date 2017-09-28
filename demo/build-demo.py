@@ -94,7 +94,7 @@ run('pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir,
 if target.startswith('android'):
     print("TODO")
 elif target.startswith('ios'):
-    print("TODO")
+    print("The pyqt-demo.app application bundle can be found in the '{0}/Debug-iphonesimulator' directory.".format(build_dir))
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
 else:
