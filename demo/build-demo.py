@@ -42,6 +42,8 @@ def run(*args):
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
+parser.add_argument('--sources',
+        help="the directory containing the source packages", metavar="DIR")
 parser.add_argument('--target', help="the target platform", default='')
 parser.add_argument('--quiet', help="disable progress messages",
         action='store_true')
@@ -49,24 +51,27 @@ parser.add_argument('--verbose', help="enable verbose progress messages",
         action='store_true')
 cmd_line_args = parser.parse_args()
 build_sysroot = not cmd_line_args.no_sysroot
+sources = cmd_line_args.sources
 target = cmd_line_args.target
 quiet = cmd_line_args.quiet
 verbose = cmd_line_args.verbose
 
 # Anchor everything from the directory containing this script.
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 sysroot_dir = 'sysroot'
 build_dir = 'build'
 if target:
     sysroot_dir += '-' + target
     build_dir += '-' + target
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-source_dir = os.path.join('..', 'test', 'src')
+if not sources:
+    sources = os.path.join('..', 'test', 'src')
 
 # Build sysroot.
 if build_sysroot:
     args = ['pyqtdeploy-sysroot', '--sysroot', sysroot_dir, '--source-dir',
-            source_dir]
+            sources]
 
     if target:
         args.extend(['--target', target])

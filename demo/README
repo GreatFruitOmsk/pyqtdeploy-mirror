@@ -1,0 +1,23 @@
+This directory contains a simple widget-based demonstration application
+(pyqt-demo.py) that will build on all supported target platforms.  When run it
+displays various pieces of information about what is included in the
+application.
+
+The build-demo.py will first build a sysroot (using the specification in
+sysroot.json) and then build the application itself.
+
+The '--no-sysroot' option to build-demo.py will skip the creation of the
+sysroot so that you can update and re-build pyqt-demo.py without having to
+re-build sysroot each time.
+
+By default build-demo.py will build a native application.  On macOS the
+'--target' option can be used to build applications for iOS and Android.  It
+should also be possible to build Android applications on Windows and Linux but
+this isn't tested.
+
+By default build-demo.py expects to find the source code for the different
+components (Python, OpenSSL, Qt, SIP, PyQt etc.) in the directory ../test/src
+(ie. shared with the pyqtdeploy-sysroot tests).  The '--sources' option can be
+used to specify a different directory.  For iOS and Android targets the Qt
+installations (installed using the binary installers from The Qt Company) must
+be in the same directory.
