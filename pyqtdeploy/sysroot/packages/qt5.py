@@ -44,7 +44,7 @@ class Qt5Package(AbstractPackage):
         PackageOption('ssl', str,
                 values=['openssl-linked', 'openssl-runtime',
                         'securetransport'],
-                help="Either 'openssl-linked', 'openssl-runtime' or 'securetransport'."),
+                help="Enable SSL support."),
         PackageOption('skip', list,
                 help="The Qt modules to skip when building from source."),
         PackageOption('source', str,

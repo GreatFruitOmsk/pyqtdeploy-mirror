@@ -39,6 +39,10 @@ class PackageOption:
         self.values = values
         self.help = help if help else "None available."
 
+        if values:
+            self.help += " The possible values are: {0}.".format(
+                    ', '.join(['"' + v + '"' for v in values]))
+
 
 class AbstractPackage(ABC):
     """ The base class for the implementation of a package plugin. """
