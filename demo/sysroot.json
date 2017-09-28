@@ -1,7 +1,7 @@
 {
     "Description": "The sysroot for the demo application.",
 
-    "!linux#openssl": {
+    "android osx win#openssl": {
         "source":           "openssl-1.*.tar.gz",
         "python_source":    "Python-3.*.tar.xz"
     },
@@ -12,8 +12,9 @@
 
         "osx#source":           "qt-everywhere-*-src-5.*.tar.xz",
 
-        "linux#ssl":            "openssl-runtime",
-        "!linux#ssl":           "openssl-linked",
+        "android linux#ssl":    "openssl-runtime",
+        "ios#ssl":              "securetransport",
+        "osx win#ssl":          "openssl-linked",
 
         "static_msvc_runtime":  true
     },
@@ -29,9 +30,18 @@
     },
 
     "pyqt5": {
-        "osx-64#modules":   ["QtCore", "QtGui", "QtNetwork", "QtPrintSupport",
-                "QtWidgets"],
-        "source":           "PyQt5_*-5.*.tar.gz"
+        "ios#disabled_features":    [
+                "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
+                "PyQt_MacCocoaViewContainer", "PyQt_Printer",
+                "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
+                "PyQt_PrintPreviewWidget", "PyQt_Process",
+                "PyQt_NotBootstrapped"
+        ],
+
+        "modules":                  [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets"
+        ],
+        "source":                   "PyQt5_*-5.*.tar.gz"
     },
 
     "pyqt3d": {
