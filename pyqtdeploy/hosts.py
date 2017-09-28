@@ -67,6 +67,7 @@ class WindowsHost(Host):
     def make(self):
         """ The name of the make executable including any required path. """
 
+        # Note that this will be wrong if we are targeting Android.
         return 'nmake'
 
 

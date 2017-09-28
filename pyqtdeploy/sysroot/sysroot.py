@@ -36,11 +36,11 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
         open_file as fu_open_file, parse_version as fu_parse_version,
         read_embedded_file as fu_read_embedded_file)
+from ..hosts import Host
 from ..targets import normalised_target
 from ..user_exception import UserException
 from ..windows import get_python_install_path
 
-from .hosts import Host
 from .specification import Specification
 
 
