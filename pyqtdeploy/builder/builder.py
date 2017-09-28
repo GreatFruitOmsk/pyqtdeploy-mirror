@@ -142,13 +142,15 @@ class Builder():
             standard_library_dir = project.path_from_user(
                     project.python_target_stdlib_dir)
 
-        # Get the name of the build directory.
+        # Set the name of the build directory.
         if build_dir is None:
             build_dir = project.build_dir
             if build_dir == '':
                 build_dir = '.'
 
             build_dir = project.path_from_user(build_dir)
+
+        self._build_dir = build_dir
 
         # Remove any build directory if required.
         if clean:
@@ -197,9 +199,9 @@ class Builder():
                 required_py, standard_library_dir, job_writer, nr_resources)
 
         # Write the .pro file.
-        self._write_qmake(py_version, build_dir, required_ext,
-                required_libraries, include_dir, python_library,
-                standard_library_dir, job_writer, opt, resource_names)
+        self._write_qmake(py_version, required_ext, required_libraries,
+                include_dir, python_library, standard_library_dir, job_writer,
+                opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -377,12 +379,12 @@ class Builder():
         '.y':       'YACCSOURCES',
     }
 
-    def _write_qmake(self, py_version, build_dir, required_ext, required_libraries, include_dir, python_library, standard_library_dir, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
 
-        f = self._create_file(build_dir + '/' +
+        f = self._create_file(self._build_dir + '/' +
                 project.get_executable_basename() + '.pro')
 
         f.write('TEMPLATE = app\n')
@@ -664,9 +666,9 @@ class Builder():
         f.write('\n')
 
         f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
-        self._write_main(build_dir, used_inittab)
-        self._copy_lib_file('pyqtdeploy_start.cpp', build_dir)
-        self._copy_lib_file('pdytools_module.cpp', build_dir)
+        self._write_main(used_inittab)
+        self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
+        self._copy_lib_file('pdytools_module.cpp', self._build_dir)
 
         defines = []
         headers = ['pyqtdeploy_version.h', 'frozen_bootstrap.h']
@@ -1090,12 +1092,12 @@ class Builder():
 
                 resource_contents.append(file_path)
 
-    def _write_main(self, build_dir, inittab):
+    def _write_main(self, inittab):
         """ Create the application specific pyqtdeploy_main.cpp file. """
 
         project = self._project
 
-        f = self._create_file(build_dir + '/pyqtdeploy_main.cpp')
+        f = self._create_file(self._build_dir + '/pyqtdeploy_main.cpp')
 
         f.write('''#include <Python.h>
 #include <QtGlobal>
@@ -1293,14 +1295,12 @@ static struct _inittab %s[] = {
         """ Execute a command and capture the output. """
 
         if in_build_dir:
-            project = self._project
-
             saved_cwd = os.getcwd()
-            build_dir = project.path_from_user(project.build_dir)
-            build_dir = QDir.toNativeSeparators(build_dir)
-            os.chdir(build_dir)
+            native_build_dir = QDir.toNativeSeparators(self._build_dir)
+            os.chdir(native_build_dir)
             self._message_handler.verbose_message(
-                    "{0} is now the current directory".format(build_dir))
+                    "{0} is now the current directory".format(
+                            native_build_dir))
         else:
             saved_cwd = None
 
