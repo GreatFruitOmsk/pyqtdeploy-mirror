@@ -84,7 +84,13 @@ class TargetSpecifications:
             if verbose:
                 print("Running: '{}'".format(' '.join(args)))
 
-            subprocess.check_call(args)
+            try:
+                subprocess.check_call(args)
+            except subprocess.CalledProcessError:
+                print("Build of sysroot from {} failed".format(spec))
+                break
+
+            print("Build of sysroot from {} successful".format(spec))
 
     @property
     def _default_target(self):

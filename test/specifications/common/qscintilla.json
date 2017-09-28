@@ -18,8 +18,18 @@
     },
 
     "pyqt5": {
-        "osx-64#modules":   ["QtCore", "QtGui", "QtPrintSupport", "QtWidgets"],
-        "source":           "PyQt5_*-5.*.tar.gz"
+        "ios-64#disabled_features": [
+                "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
+                "PyQt_MacCocoaViewContainer", "PyQt_Printer",
+                "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
+                "PyQt_PrintPreviewWidget", "PyQt_Process",
+                "PyQt_NotBootstrapped"
+        ],
+
+        "modules":                  [
+                "QtCore", "QtGui", "QtPrintSupport", "QtWidgets"
+        ],
+        "source":                   "PyQt5_*-5.*.tar.gz"
     },
 
     "qscintilla": {
