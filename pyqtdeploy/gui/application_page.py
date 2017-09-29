@@ -131,8 +131,8 @@ class ApplicationPage(QWidget):
                 stateChanged=self._console_changed)
         options_layout.addRow(self._console_edit)
 
-        self._bundle_edit = QCheckBox("Application bundle (OS X)",
-                whatsThis="Build an application bundle on OS X. If it is not "
+        self._bundle_edit = QCheckBox("Application bundle (macOS)",
+                whatsThis="Build an application bundle on macOS. If it is not "
                         "checked then the application will be built as a "
                         "simple executable.",
                 stateChanged=self._bundle_changed)

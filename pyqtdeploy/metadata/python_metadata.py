@@ -29,8 +29,9 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'PLATFORM_SCOPES']
 
 # The diffent qmake platform scopes and their corresponding descriptive names
 # and sub-scopes.
-PLATFORM_SCOPES = (('android', "Android", ()), ('linux-*', "Linux", ()),
-        ('macx', "OS X", ()), ('win32', "Windows", ('win32_x86', 'win32_x64')))
+PLATFORM_SCOPES = (('android', "Android", ()), ('ios', "iOS", ()),
+        ('linux-*', "Linux", ()), ('macx', "macOS", ()),
+        ('win32', "Windows", ('win32_x86', 'win32_x64')))
 
 
 class StdlibModule:

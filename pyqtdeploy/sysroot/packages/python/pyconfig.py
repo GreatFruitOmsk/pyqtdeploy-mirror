@@ -707,7 +707,7 @@ pyconfig = (
     # Define to 1 if you have the `openpty' function.
     Config('HAVE_OPENPTY', default=1, android=None),
 
-    # Define if compiling using MacOS X 10.5 SDK or later.
+    # Define if compiling using macOS 10.5 SDK or later.
     Config('HAVE_OSX105_SDK', ios=1, osx=1),
 
     # Define to 1 if you have the `pathconf' function.

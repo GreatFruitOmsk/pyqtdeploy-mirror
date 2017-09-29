@@ -62,8 +62,15 @@ DEFINES += PYTHONPATH=\\\"/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\
 INCLUDEPATH += . Include
 
 win32 {
+    DEFINES += PLATFORM=\\\"win32\\\"
     INCLUDEPATH += PC
 } else {
+    ios|macx {
+        DEFINES += PLATFORM=\\\"darwin\\\"
+    } else {
+        DEFINES += PLATFORM=\\\"linux\\\"
+    }
+
     QMAKE_CFLAGS_RELEASE = -O3
     QMAKE_CFLAGS += -fwrapv
 
@@ -74,18 +81,6 @@ win32 {
     } else {
         QMAKE_CFLAGS += -fno-strict-aliasing
     }
-}
-
-win32 {
-    DEFINES += PLATFORM=\\\"win32\\\"
-}
-
-macx {
-    DEFINES += PLATFORM=\\\"darwin\\\"
-}
-
-unix:!macx {
-    DEFINES += PLATFORM=\\\"linux\\\"
 }
 
 target.path = $$SYSROOT/lib
