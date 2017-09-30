@@ -110,12 +110,6 @@ class StandardLibraryPage(QSplitter):
         plat_gb.setLayout(plat_gb_layout)
         extlib_layout.addWidget(plat_gb)
 
-        self._ssl_edit = QCheckBox("Enable optional SSL support",
-                whatsThis="Enable SSL for the standard library modules "
-                        "that have optional support for it.",
-                stateChanged=self._ssl_changed)
-        extlib_layout.addWidget(self._ssl_edit)
-
         self._extlib_edit = QTreeView(
                 whatsThis="This is the list of external libraries that must "
                         "be linked with the application. A library will only "
@@ -172,11 +166,6 @@ class StandardLibraryPage(QSplitter):
                     Qt.Checked if plat._scope in project.python_use_platform
                             else Qt.Unchecked)
             plat.blockSignals(blocked)
-
-        blocked = self._ssl_edit.blockSignals(True)
-        self._ssl_edit.setCheckState(
-                Qt.Checked if project.python_ssl else Qt.Unchecked)
-        self._ssl_edit.blockSignals(blocked)
 
         self._update_extlib_editor()
         self._update_stdlib_editor()
@@ -295,16 +284,6 @@ class StandardLibraryPage(QSplitter):
                 libs.setText(extlib.libs)
 
         model.blockSignals(blocked)
-
-    def _ssl_changed(self, state):
-        """ Invoked when the SSL support changes. """
-
-        project = self.project
-
-        project.python_ssl = (state == Qt.Checked)
-        self._set_dependencies()
-
-        project.modified = True
 
     def _platforms_changed(self, state):
         """ Invoked when the platforms change. """

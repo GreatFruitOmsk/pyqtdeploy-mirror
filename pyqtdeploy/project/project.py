@@ -101,7 +101,6 @@ class Project(QObject):
         self.other_packages = []
         self.pyqt_modules = []
         self.python_use_platform = ['win32']
-        self.python_ssl = False
         self.python_target_version = get_latest_supported_python_version()
         self.qmake_configuration = ''
         self.standard_library = []
@@ -269,12 +268,12 @@ class Project(QObject):
             # excluded if SSL support is disabled.  If the first character is
             # '!' then it should be excluded if SSL support is enabled.
             if dep[0] == '?':
-                if not self.python_ssl:
+                if 'ssl' not in self.standard_library:
                     continue
 
                 dep = dep[1:]
             elif dep[0] == '!':
-                if self.python_ssl:
+                if 'ssl' in self.standard_library:
                     continue
 
                 dep = dep[1:]
@@ -338,7 +337,6 @@ class Project(QObject):
         project.python_use_platform = python.get('platformpython', '').split()
 
         project.python_source_dir = python.get('sourcedir', '')
-        project.python_ssl = cls._get_bool(python, 'ssl', 'Python')
         project.python_target_include_dir = python.get('targetincludedir', '')
         project.python_target_library = python.get('targetlibrary', '')
         project.python_target_stdlib_dir = python.get('targetstdlibdir', '')
@@ -548,7 +546,6 @@ class Project(QObject):
             'hostinterpreter': self.python_host_interpreter,
             'platformpython': ' '.join(self.python_use_platform),
             'sourcedir': self.python_source_dir,
-            'ssl': str(int(self.python_ssl)),
             'targetincludedir': self.python_target_include_dir,
             'targetlibrary': self.python_target_library,
             'targetstdlibdir': self.python_target_stdlib_dir,
