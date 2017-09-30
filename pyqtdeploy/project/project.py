@@ -542,16 +542,20 @@ class Project(QObject):
             'version': str(self.version),
             'usingdefaultlocations': str(int(self.using_default_locations))})
 
-        SubElement(root, 'Python', attrib={
-            'hostinterpreter': self.python_host_interpreter,
+        attrib = {
             'platformpython': ' '.join(self.python_use_platform),
-            'sourcedir': self.python_source_dir,
-            'targetincludedir': self.python_target_include_dir,
-            'targetlibrary': self.python_target_library,
-            'targetstdlibdir': self.python_target_stdlib_dir,
             'major': str(self.python_target_version[0]),
             'minor': str(self.python_target_version[1]),
-            'patch': str(self.python_target_version[2])})
+            'patch': str(self.python_target_version[2])}
+
+        if not self.using_default_locations:
+            attrib['hostinterpreter'] = self.python_host_interpreter
+            attrib['sourcedir'] = self.python_source_dir
+            attrib['targetincludedir'] = self.python_target_include_dir
+            attrib['targetlibrary'] = self.python_target_library
+            attrib['targetstdlibdir'] = self.python_target_stdlib_dir
+
+        SubElement(root, 'Python', attrib=attrib)
 
         application = SubElement(root, 'Application', attrib={
             'entrypoint': self.application_entry_point,
@@ -596,9 +600,10 @@ class Project(QObject):
                 'includepath': extension_module.includepath,
                 'libs': extension_module.libs})
 
-        SubElement(root, 'Others', attrib={
-            'builddir': self.build_dir,
-            'qmake': self.qmake})
+        if not self.using_default_locations:
+            SubElement(root, 'Others', attrib={
+                'builddir': self.build_dir,
+                'qmake': self.qmake})
 
         tree = ElementTree(root)
 
