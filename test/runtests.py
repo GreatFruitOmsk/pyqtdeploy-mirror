@@ -57,7 +57,7 @@ class TargetSpecifications:
         self._specifications = specifications
         self._target = target
 
-    def build(self, verbose):
+    def build(self, no_clean, verbose):
         """ Build the sysroot images. """
 
         os.chdir(self._root_dir)
@@ -73,9 +73,12 @@ class TargetSpecifications:
             # Build the command line.
             args = ['pyqtdeploy-sysroot']
 
+            if no_clean:
+                args.append('--no-clean')
+
             if verbose:
                 args.append('--verbose')
-                
+
             args.extend(['--source-dir', os.path.join(self._root_dir, 'src')])
             args.extend(['--target', self._target])
             args.extend(['--sysroot', sysroot])
@@ -101,7 +104,7 @@ class TargetSpecifications:
         elif sys.platform == 'win32':
             main_target = 'win'
         elif sys.platform == 'darwin':
-            main_target = 'osx'
+            main_target = 'macos'
         else:
             raise UserException("unsupported host platform")
 
@@ -115,6 +118,9 @@ if __name__ == '__main__':
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--no-clean',
+            help="do not remove the temporary build directories",
+            action='store_true')
     parser.add_argument('--specification', help="the JSON specification file")
     parser.add_argument('--target', help="the target platform")
     parser.add_argument('--verbose', help="enable verbose progress messages",
@@ -123,4 +129,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Build the sysroot images.
-    TargetSpecifications(args.target, args.specification).build(args.verbose)
+    TargetSpecifications(args.target, args.specification).build(args.no_clean,
+            args.verbose)

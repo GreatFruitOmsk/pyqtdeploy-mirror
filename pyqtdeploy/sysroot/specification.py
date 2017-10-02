@@ -38,7 +38,7 @@ from .abstract_package import AbstractPackage
 class Specification:
     """ Encapsulate the specification of a system root directory. """
 
-    def __init__(self, spec_file, plugin_path, target_name):
+    def __init__(self, spec_file, plugin_path, target_arch):
         """ Initialise the object. """
 
         self.specification_file = os.path.abspath(spec_file)
@@ -61,7 +61,7 @@ class Specification:
                     self._bad_type(name, spec_file)
             else:
                 # Allow target-specific plugins.
-                name = self._value_for_target(name, target_name)
+                name = self._value_for_target(name, target_arch)
                 if name is None:
                     continue
 
@@ -101,7 +101,7 @@ class Specification:
                 config = {}
                 for opt_name, opt_value in value.items():
                     # Allow target-specific options.
-                    opt_name = self._value_for_target(opt_name, target_name)
+                    opt_name = self._value_for_target(opt_name, target_arch)
                     if opt_name is None:
                         continue
 
@@ -126,9 +126,9 @@ class Specification:
                 self.packages.append(package)
 
     @staticmethod
-    def _value_for_target(value, target_name):
-        """ If a value is valid for a particular target then return the value,
-        otherwise return None.
+    def _value_for_target(value, target_arch):
+        """ If a value is valid for a particular target architecture then
+        return the value, otherwise return None.
         """
 
         # Extract any scope.
@@ -148,12 +148,12 @@ class Specification:
             else:
                 negate = False
 
-            # See if the name matches the target.  The name may or may not
-            # include the word size.
+            # See if the name matches the target (either architecture or
+            # platform).
             if '-' in name:
-                matches = (target_name == name)
+                matches = (target_arch.name == name)
             else:
-                matches = target_name.startswith(name + '-')
+                matches = (target_arch.platform.name)
 
             if negate:
                 matches = not matches

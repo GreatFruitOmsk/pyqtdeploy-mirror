@@ -30,6 +30,7 @@ from xml.etree.ElementTree import Element, ElementTree, SubElement
 from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
 
 from ..metadata import get_latest_supported_python_version, get_python_metadata
+from ..targets import TargetPlatform
 from ..user_exception import UserException
 
 
@@ -91,16 +92,15 @@ class Project(QObject):
         self.application_name = ''
         self.application_is_pyqt5 = True
         self.application_is_console = False
-        self.application_use_py_dll = False
         self.application_is_bundle = True
         self.application_package = QrcPackage()
         self.application_script = ''
         self.application_entry_point = ''
-        self.external_libraries = []
+        self.external_libraries = {}
         self.other_extension_modules = []
         self.other_packages = []
         self.pyqt_modules = []
-        self.python_use_platform = ['win32']
+        self.python_use_platform = ['win']
         self.python_target_version = get_latest_supported_python_version()
         self.qmake_configuration = ''
         self.standard_library = []
@@ -334,7 +334,8 @@ class Project(QObject):
         project.python_host_interpreter = python.get('hostinterpreter', '')
 
         # This was added in version 5.
-        project.python_use_platform = python.get('platformpython', '').split()
+        project.python_use_platform = cls._fix_scopes(
+                python.get('platformpython', '')).split()
 
         project.python_source_dir = python.get('sourcedir', '')
         project.python_target_include_dir = python.get('targetincludedir', '')
@@ -397,12 +398,23 @@ class Project(QObject):
             cls._assert(name is not None,
                     "Missing 'ExternalLib.name' attribute.")
 
-            defines = external_lib_element.get('defines', '')
-            includepath = external_lib_element.get('includepath', '')
-            libs = external_lib_element.get('libs', '')
+            defines = cls._fix_scopes(external_lib_element.get('defines', ''))
+            includepath = cls._fix_scopes(
+                    external_lib_element.get('includepath', ''))
+            libs = cls._fix_scopes(external_lib_element.get('libs', ''))
 
-            project.external_libraries.append(
-                    ExternalLibrary(name, defines, includepath, libs))
+            external_lib = ExternalLibrary(name, defines, includepath, libs)
+
+            target = external_lib_element.get('target')
+            if target is None:
+                # The project format is version 6 or earlier.
+                target_list = [p.name for p in TargetPlatform.get_platforms()]
+            else:
+                target_list = [target]
+
+            for target in target_list:
+                project.external_libraries.setdefault(target, []).append(
+                        external_lib)
 
         # Any other Python packages.
         project.other_packages = [cls._load_package(package)
@@ -410,16 +422,20 @@ class Project(QObject):
 
         # Any other extension module.
         for extension_module_element in root.iterfind('ExtensionModule'):
-            name = extension_module_element.get('name')
+            name = cls._fix_scopes(extension_module_element.get('name'))
             cls._assert(name is not None,
                     "Missing 'ExtensionModule.name' attribute.")
 
-            qt = extension_module_element.get('qt', '')
-            config = extension_module_element.get('config', '')
-            sources = extension_module_element.get('sources', '')
-            defines = extension_module_element.get('defines', '')
-            includepath = extension_module_element.get('includepath', '')
-            libs = extension_module_element.get('libs', '')
+            qt = cls._fix_scopes(extension_module_element.get('qt', ''))
+            config = cls._fix_scopes(
+                    extension_module_element.get('config', ''))
+            sources = cls._fix_scopes(
+                    extension_module_element.get('sources', ''))
+            defines = cls._fix_scopes(
+                    extension_module_element.get('defines', ''))
+            includepath = cls._fix_scopes(
+                    extension_module_element.get('includepath', ''))
+            libs = cls._fix_scopes(extension_module_element.get('libs', ''))
 
             project.other_extension_modules.append(
                     ExtensionModule(name, qt, config, sources, defines,
@@ -580,8 +596,9 @@ class Project(QObject):
             SubElement(root, 'StdlibModule', attrib={
                 'name': stdlib_module})
 
-        for external_lib in self.external_libraries:
+        for target, external_lib in self.external_libraries.items():
             SubElement(root, 'ExternalLib', attrib={
+                'target': target,
                 'name': external_lib.name,
                 'defines': external_lib.defines,
                 'includepath': external_lib.includepath,
@@ -650,6 +667,33 @@ class Project(QObject):
 
         if not ok:
             raise UserException("The project file is invalid.", detail)
+
+    @staticmethod
+    def _fix_scopes(value):
+        """ In version 6 and earlier scopes where qmake scopes, starting with
+        version 7 they are our well defined platform names.  This handles the
+        conversion for a string.
+        """
+
+        if '#' in value:
+            updated = []
+
+            for single in value.split():
+                parts = single.split('#', maxsplit=1)
+                if len(parts) == 2:
+                    lhs, rhs = parts
+
+                    lhs = lhs.replace('linux-*', 'linux')
+                    lhs = lhs.replace('macx', 'macos')
+                    lhs = lhs.replace('win32', 'win')
+
+                    updated.append(lhs + '#' + rhs)
+                else:
+                    updated.append(single)
+
+            value = ' '.join(updated)
+
+        return value
 
 
 class QrcPackage():

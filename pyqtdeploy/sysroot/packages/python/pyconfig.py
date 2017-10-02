@@ -36,32 +36,29 @@ class Config:
         self._api = api
         self._targets = targets
 
-    def value(self, target, android_api):
-        """ Get the value for a target.  A value of None means the
+    def value(self, target_arch, android_api):
+        """ Get the value for a target architecture.  A value of None means the
         configuration value is omitted.
         """
 
-        # Convert the target to a valid Python name.
-        target = target.replace('-', '_')
+        # Convert the target architecture and platform to valid Python names.
+        arch_name = target_arch.name.replace('-', '_')
+        plat_name = target_arch.platform.name
 
-        # Try the specific target variant.
+        # Try the architecture.
         try:
-            value = self._targets[target]
+            value = self._targets[arch_name]
         except KeyError:
-            # Try the main target if there was a variant.
-            target_parts = target.split('_', maxsplit=1)
-
-            if len(target_parts) != 1:
-                target = target_parts[0]
-                try:
-                    value = self._targets[target]
-                except KeyError:
-                    # Return the default.
-                    return self._default
+            # Try the platform.
+            try:
+                value = self._targets[plat_name]
+            except KeyError:
+                # Return the default.
+                return self._default
 
         # Return None if the targetted Android version is earlier than the one
         # for which the value is defined.
-        if target == 'android' and android_api < self._api:
+        if plat_name == 'android' and android_api < self._api:
             return None
 
         return value
@@ -79,7 +76,7 @@ pyconfig = (
 
     # Define if C doubles are 64-bit IEEE 754 binary format, stored with the
     # least significant byte first
-    Config('DOUBLE_IS_LITTLE_ENDIAN_IEEE754', ios=1, linux=1, osx=1),
+    Config('DOUBLE_IS_LITTLE_ENDIAN_IEEE754', ios=1, linux=1, macos=1),
 
     # Define if --enable-ipv6 is specified
     Config('ENABLE_IPV6', default=1),
@@ -152,7 +149,7 @@ pyconfig = (
     Config('HAVE_BROKEN_PTHREAD_SIGMASK'),
 
     # Define to 1 if your sem_getvalue is broken.
-    Config('HAVE_BROKEN_SEM_GETVALUE', android=1, ios=1, osx=1),
+    Config('HAVE_BROKEN_SEM_GETVALUE', android=1, ios=1, macos=1),
 
     # Define if `unsetenv` does not return an int.
     Config('HAVE_BROKEN_UNSETENV'),
@@ -164,7 +161,7 @@ pyconfig = (
     Config('HAVE_C99_BOOL', default=1),
 
     # Define to 1 if you have the `chflags' function.
-    Config('HAVE_CHFLAGS', ios=1, osx=1),
+    Config('HAVE_CHFLAGS', ios=1, macos=1),
 
     # Define to 1 if you have the `chown' function.
     Config('HAVE_CHOWN', default=1),
@@ -200,7 +197,7 @@ pyconfig = (
     Config('HAVE_CTERMID', default=1, android=None),
 
     # Define if you have the 'ctermid_r' function.
-    Config('HAVE_CTERMID_R', ios=1, osx=1),
+    Config('HAVE_CTERMID_R', ios=1, macos=1),
 
     # Define to 1 if you have the <curses.h> header file.
     Config('HAVE_CURSES_H', default=1, android=None),
@@ -398,13 +395,14 @@ pyconfig = (
 
     # Define if we can use x64 gcc inline assembler
     Config('HAVE_GCC_ASM_FOR_X64', android_64=1, ios_64=1, linux_64=1,
-            osx_64=1),
+            macos_64=1),
 
     # Define if we can use gcc inline assembler to get and set x87 control word
     Config('HAVE_GCC_ASM_FOR_X87', default=1, android=None),
 
     # Define if your compiler provides __uint128_t.
-    Config('HAVE_GCC_UINT128_T', android_64=1, ios_64=1, linux_64=1, osx_64=1),
+    Config('HAVE_GCC_UINT128_T', android_64=1, ios_64=1, linux_64=1,
+            macos_64=1),
 
     # Define if you have the getaddrinfo function.
     Config('HAVE_GETADDRINFO', default=1),
@@ -425,7 +423,7 @@ pyconfig = (
     Config('HAVE_GETGROUPS', default=1),
 
     # Define to 1 if you have the `gethostbyname' function.
-    Config('HAVE_GETHOSTBYNAME', ios=1, osx=1),
+    Config('HAVE_GETHOSTBYNAME', ios=1, macos=1),
 
     # Define this if you have some version of gethostbyname_r()
     Config('HAVE_GETHOSTBYNAME_R', android=1, linux=1),
@@ -552,7 +550,7 @@ pyconfig = (
     Config('HAVE_KILLPG', default=1),
 
     # Define if you have the 'kqueue' functions.
-    Config('HAVE_KQUEUE', ios=1, osx=1),
+    Config('HAVE_KQUEUE', ios=1, macos=1),
 
     # Define to 1 if you have the <langinfo.h> header file.
     Config('HAVE_LANGINFO_H', default=1, android=None),
@@ -564,10 +562,10 @@ pyconfig = (
     Config('HAVE_LARGEFILE_SUPPORT', linux_32=1),
 
     # Define to 1 if you have the `lchflags' function.
-    Config('HAVE_LCHFLAGS', ios=1, osx=1),
+    Config('HAVE_LCHFLAGS', ios=1, macos=1),
 
     # Define to 1 if you have the `lchmod' function.
-    Config('HAVE_LCHMOD', ios=1, osx=1),
+    Config('HAVE_LCHMOD', ios=1, macos=1),
 
     # Define to 1 if you have the `lchown' function.
     Config('HAVE_LCHOWN', default=1),
@@ -627,13 +625,13 @@ pyconfig = (
     Config('HAVE_LINUX_RANDOM_H', linux=1),
 
     # Define to 1 if you have the `lockf' function.
-    Config('HAVE_LOCKF', ios=1, linux=1, osx=1),
+    Config('HAVE_LOCKF', ios=1, linux=1, macos=1),
 
     # Define to 1 if you have the `log1p' function.
     Config('HAVE_LOG1P', default=1),
 
     # Define to 1 if you have the `log2' function.
-    Config('HAVE_LOG2', android=1, api=18, ios=1, linux=1, osx=1),
+    Config('HAVE_LOG2', android=1, api=18, ios=1, linux=1, macos=1),
 
     # Define this if you have the type long double.
     Config('HAVE_LONG_DOUBLE', default=1),
@@ -708,7 +706,7 @@ pyconfig = (
     Config('HAVE_OPENPTY', default=1, android=None),
 
     # Define if compiling using macOS 10.5 SDK or later.
-    Config('HAVE_OSX105_SDK', ios=1, osx=1),
+    Config('HAVE_OSX105_SDK', ios=1, macos=1),
 
     # Define to 1 if you have the `pathconf' function.
     Config('HAVE_PATHCONF', default=1),
@@ -943,7 +941,7 @@ pyconfig = (
     Config('HAVE_SOCKADDR_ALG', linux=1),
 
     # Define if sockaddr has sa_len member
-    Config('HAVE_SOCKADDR_SA_LEN', ios=1, osx=1),
+    Config('HAVE_SOCKADDR_SA_LEN', ios=1, macos=1),
 
     # struct sockaddr_storage (sys/socket.h),
     Config('HAVE_SOCKADDR_STORAGE', default=1),
@@ -964,7 +962,7 @@ pyconfig = (
     Config('HAVE_STAT_TV_NSEC', linux=1),
 
     # Define if you have struct stat.st_mtimensec
-    Config('HAVE_STAT_TV_NSEC2', ios=1, osx=1),
+    Config('HAVE_STAT_TV_NSEC2', ios=1, macos=1),
 
     # Define if your compiler supports variable length function prototypes
     # (e.g.  void fprintf(FILE *, char *, ...);) *and* <stdarg.h>
@@ -994,7 +992,7 @@ pyconfig = (
     Config('HAVE_STRING_H', default=1),
 
     # Define to 1 if you have the `strlcpy' function.
-    Config('HAVE_STRLCPY', ios=1, osx=1),
+    Config('HAVE_STRLCPY', ios=1, macos=1),
 
     # Define to 1 if you have the <stropts.h> header file.
     Config('HAVE_STROPTS_H'),
@@ -1006,7 +1004,7 @@ pyconfig = (
     Config('HAVE_STRUCT_PASSWD_PW_PASSWD', default=1),
 
     # Define to 1 if `st_birthtime' is a member of `struct stat'.
-    Config('HAVE_STRUCT_STAT_ST_BIRTHTIME', ios=1, osx=1),
+    Config('HAVE_STRUCT_STAT_ST_BIRTHTIME', ios=1, macos=1),
 
     # Define to 1 if `st_blksize' is a member of `struct stat'.
     Config('HAVE_STRUCT_STAT_ST_BLKSIZE', default=1),
@@ -1015,10 +1013,10 @@ pyconfig = (
     Config('HAVE_STRUCT_STAT_ST_BLOCKS', default=1),
 
     # Define to 1 if `st_flags' is a member of `struct stat'.
-    Config('HAVE_STRUCT_STAT_ST_FLAGS', ios=1, osx=1),
+    Config('HAVE_STRUCT_STAT_ST_FLAGS', ios=1, macos=1),
 
     # Define to 1 if `st_gen' is a member of `struct stat'.
-    Config('HAVE_STRUCT_STAT_ST_GEN', ios=1, osx=1),
+    Config('HAVE_STRUCT_STAT_ST_GEN', ios=1, macos=1),
 
     # Define to 1 if `st_rdev' is a member of `struct stat'.
     Config('HAVE_STRUCT_STAT_ST_RDEV', default=1),
@@ -1061,7 +1059,7 @@ pyconfig = (
     Config('HAVE_SYS_EPOLL_H', android=1, linux=1),
 
     # Define to 1 if you have the <sys/event.h> header file.
-    Config('HAVE_SYS_EVENT_H', ios=1, osx=1),
+    Config('HAVE_SYS_EVENT_H', ios=1, macos=1),
 
     # Define to 1 if you have the <sys/file.h> header file.
     Config('HAVE_SYS_FILE_H', default=1),
@@ -1070,13 +1068,13 @@ pyconfig = (
     Config('HAVE_SYS_IOCTL_H', default=1),
 
     # Define to 1 if you have the <sys/kern_control.h> header file.
-    Config('HAVE_SYS_KERN_CONTROL_H', osx=1),
+    Config('HAVE_SYS_KERN_CONTROL_H', macos=1),
 
     # Define to 1 if you have the <sys/loadavg.h> header file.
     Config('HAVE_SYS_LOADAVG_H'),
 
     # Define to 1 if you have the <sys/lock.h> header file.
-    Config('HAVE_SYS_LOCK_H', ios=1, osx=1),
+    Config('HAVE_SYS_LOCK_H', ios=1, macos=1),
 
     # Define to 1 if you have the <sys/mkdev.h> header file.
     Config('HAVE_SYS_MKDEV_H'),
@@ -1107,7 +1105,7 @@ pyconfig = (
     Config('HAVE_SYS_SOCKET_H', default=1),
 
     # Define to 1 if you have the <sys/statvfs.h> header file.
-    Config('HAVE_SYS_STATVFS_H', ios=1, linux=1, osx=1),
+    Config('HAVE_SYS_STATVFS_H', ios=1, linux=1, macos=1),
 
     # Define to 1 if you have the <sys/stat.h> header file.
     Config('HAVE_SYS_STAT_H', default=1),
@@ -1116,7 +1114,7 @@ pyconfig = (
     Config('HAVE_SYS_SYSCALL_H', default=1),
 
     # Define to 1 if you have the <sys/sys_domain.h> header file.
-    Config('HAVE_SYS_SYS_DOMAIN_H', osx=1),
+    Config('HAVE_SYS_SYS_DOMAIN_H', macos=1),
 
     # Define to 1 if you have the <sys/termio.h> header file.
     Config('HAVE_SYS_TERMIO_H'),
@@ -1215,7 +1213,7 @@ pyconfig = (
     Config('HAVE_USABLE_WCHAR_T'),
 
     # Define to 1 if you have the <util.h> header file.
-    Config('HAVE_UTIL_H', ios=1, osx=1),
+    Config('HAVE_UTIL_H', ios=1, macos=1),
 
     # Define to 1 if you have the `utimensat' function.
     Config('HAVE_UTIMENSAT', linux=1),
@@ -1323,50 +1321,50 @@ pyconfig = (
     Config('SIZEOF_FLOAT', default=4),
 
     # The size of `fpos_t', as computed by sizeof.
-    Config('SIZEOF_FPOS_T', android=4, ios=8, linux=16, osx=8),
+    Config('SIZEOF_FPOS_T', android=4, ios=8, linux=16, macos=8),
 
     # The size of `int', as computed by sizeof.
     Config('SIZEOF_INT', default=4),
 
     # The size of `long', as computed by sizeof.
     Config('SIZEOF_LONG', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `long double', as computed by sizeof.
     Config('SIZEOF_LONG_DOUBLE', android=8, ios=16, linux_32=12, linux_64=16,
-            osx=16),
+            macos=16),
 
     # The size of `long long', as computed by sizeof.
     Config('SIZEOF_LONG_LONG', default=8),
 
     # The size of `off_t', as computed by sizeof.
-    Config('SIZEOF_OFF_T', android=4, ios=8, linux=8, osx=8),
+    Config('SIZEOF_OFF_T', android=4, ios=8, linux=8, macos=8),
 
     # The size of `pid_t', as computed by sizeof.
     Config('SIZEOF_PID_T', default=4),
 
     # The size of `pthread_t', as computed by sizeof.
     Config('SIZEOF_PTHREAD_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `short', as computed by sizeof.
     Config('SIZEOF_SHORT', default=2),
 
     # The size of `size_t', as computed by sizeof.
     Config('SIZEOF_SIZE_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `time_t', as computed by sizeof.
     Config('SIZEOF_TIME_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `uintptr_t', as computed by sizeof.
     Config('SIZEOF_UINTPTR_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `void *', as computed by sizeof.
     Config('SIZEOF_VOID_P', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            osx_64=8),
+            macos_64=8),
 
     # The size of `wchar_t', as computed by sizeof.
     Config('SIZEOF_WCHAR_T', default=4),
@@ -1397,10 +1395,10 @@ pyconfig = (
     Config('USE_INLINE', default=1),
 
     # Define if you want to use MacPython modules on MacOSX in unix-Python.
-    Config('USE_TOOLBOX_OBJECT_GLUE', ios=1, osx=1),
+    Config('USE_TOOLBOX_OBJECT_GLUE', ios=1, macos=1),
 
     # Define if a va_list is an array of some kind
-    Config('VA_LIST_IS_ARRAY', ios_64=1, linux_64=1, osx_64=1),
+    Config('VA_LIST_IS_ARRAY', ios_64=1, linux_64=1, macos_64=1),
 
     # Define if you want SIGFPE handled (see Include/pyfpe.h).
     Config('WANT_SIGFPE_HANDLER'),
@@ -1438,7 +1436,7 @@ pyconfig = (
     Config('_BSD_SOURCE'),
 
     # Define on Darwin to activate all library features
-    Config('_DARWIN_C_SOURCE', ios=1, osx=1),
+    Config('_DARWIN_C_SOURCE', ios=1, macos=1),
 
     # This must be set to 64 on some systems to enable large file support.
     Config('_FILE_OFFSET_BITS', default=64),
@@ -1469,7 +1467,7 @@ pyconfig = (
     Config('_POSIX_THREADS'),
 
     # Define to force use of thread-safe errno, h_errno, and other functions
-    Config('_REENTRANT', android=1, ios=1, osx=1),
+    Config('_REENTRANT', android=1, ios=1, macos=1),
 
     # Define to the level of X/Open that your system supports
     Config('_XOPEN_SOURCE', android=700, linux=700),
@@ -1553,7 +1551,7 @@ def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
 
 ''')
 
-    if sysroot.target_name == 'android':
+    if sysroot.target_platform_name == 'android':
         pyconfig_h.write('#define ANDROID_API_LEVEL {0}\n'.format(android_api))
 
     if dynamic_loading:
@@ -1571,7 +1569,7 @@ def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
                 pyconfig_h.write(
                         '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
 
-        value = config.value(sysroot.target_name, android_api)
+        value = config.value(sysroot.target_arch, android_api)
 
         if value is None:
             # We provide an commented out #define to make it easier to modify

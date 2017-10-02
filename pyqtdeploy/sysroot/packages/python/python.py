@@ -94,7 +94,7 @@ class PythonPackage(AbstractPackage):
                 self._install_target_from_existing_windows_version(sysroot)
             else:
                 self.error(
-                        "using an existing Python installation is not supported for the {0} target".format(sysroot.target_name))
+                        "using an existing Python installation is not supported for the {0}".format(sysroot.target_arch_name))
 
     def configure(self, sysroot):
         """ Complete the configuration of the package. """

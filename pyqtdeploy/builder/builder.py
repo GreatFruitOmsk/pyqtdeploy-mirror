@@ -37,15 +37,17 @@ from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
 from ..hosts import Host
 from ..metadata import (external_libraries_metadata, get_python_metadata,
-        PLATFORM_SCOPES, pyqt4_metadata, pyqt5_metadata)
+        pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
+from ..targets import qmake_scope_for_target, TargetPlatform
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 from ..windows import get_python_install_path
 
 
-# The sequence of all platform scopes.
-ALL_SCOPES = tuple((scope for scope, platform, subscopes in PLATFORM_SCOPES))
+# The sequence of all platform qmake scopes.
+PLATFORM_QMAKE_SCOPES = tuple(
+        (p.qmake_scope for p in TargetPlatform.get_platforms()))
 
 
 class Builder():
@@ -521,7 +523,7 @@ class Builder():
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
             scopes, value = self._get_scopes_and_value(other_em.name,
-                    ALL_SCOPES)
+                    PLATFORM_QMAKE_SCOPES)
             self._add_value_for_scopes(used_inittab, value, scopes)
 
             if other_em.qt != '':
@@ -580,7 +582,7 @@ class Builder():
 
             for name, module in required_ext.items():
                 # Get the list of all applicable scopes.
-                module_scopes = self._stdlib_scopes(module.scope)
+                module_scopes = self._stdlib_scopes(module.target)
 
                 if len(module_scopes) == 0:
                     # The module is specific to a platform for which we are
@@ -632,19 +634,21 @@ class Builder():
 
         # Handle any required external libraries.
         for required_lib in required_libraries:
-            for xlib in project.external_libraries:
+            for target, xlib in project.external_libraries.items():
+                scopes = qmake_scope_for_target(target)
+
                 if xlib.name == required_lib:
                     if xlib.defines != '':
                         self._add_parsed_scoped_values(used_defines,
-                                xlib.defines, False)
+                                xlib.defines, False, scopes)
 
                     if xlib.includepath != '':
                         self._add_parsed_scoped_values(used_includepath,
-                                xlib.includepath, True)
+                                xlib.includepath, Tru, scopes)
 
                     if xlib.libs != '':
                         self._add_parsed_scoped_values(used_libs, xlib.libs,
-                                False)
+                                Fals, scopes)
 
                     break
             else:
@@ -823,27 +827,35 @@ class Builder():
         f.write('\n')
         f.write(contents.data().decode('latin1'))
 
-    def _stdlib_scopes(self, module_scope=''):
+    def _stdlib_scopes(self, module_target=''):
         """ Return the list of scopes for the standard library and, optionally,
         one of its modules.
         """
 
-        # Get the list of all applicable scopes.
-        stdlib_scopes = list(ALL_SCOPES)
+        platforms = TargetPlatform.get_platforms()
 
-        if module_scope != '':
-            if module_scope.startswith('!'):
-                stdlib_scopes.remove(module_scope[1:])
-            else:
-                stdlib_scopes = [module_scope]
+        # Get the list of all applicable scopes.
+        stdlib_scopes = list(PLATFORM_QMAKE_SCOPES)
+
+        if module_target:
+            for platform in platforms:
+                if module_target.startswith('!'):
+                    if platform.name == module_target[1:]:
+                        stdlib_scopes.remove(platform.qmake_scope)
+                        break
+                elif platform.name == module_target:
+                    stdlib_scopes = [platform.qmake_scope]
+                    break
 
         # Remove those scopes for which we are using the python.org Python
         # libraries.
-        for plat_scope in self._project.python_use_platform:
-            try:
-                stdlib_scopes.remove(plat_scope)
-            except ValueError:
-                pass
+        for plat_name in self._project.python_use_platform:
+            for platform in platforms:
+                if platform.name == plat_name:
+                    try:
+                        stdlib_scopes.remove(platform.qmake_scope)
+                    except ValueError:
+                        pass
 
         return stdlib_scopes
 
@@ -857,19 +869,19 @@ class Builder():
 
         return QFileInfo(file_path).absoluteFilePath()
 
-    def _add_parsed_scoped_values(self, used_values, raw, isfilename):
+    def _add_parsed_scoped_values(self, used_values, raw, isfilename, scopes=None):
         """ Parse a string of space separated possible scoped values and add
         them to a dict of used values indexed by scope.  The values are
         optionally treated as filenames where they are converted to absolute
         filenames with UNIX separators and have environment variables expanded.
         """
 
-        scoped_values = self._parse_scoped_values(raw, isfilename)
+        scoped_values = self._parse_scoped_values(raw, isfilename, scopes)
 
         for scope, values in scoped_values.items():
             self._add_value_set_for_scope(used_values, values, scope)
 
-    def _parse_scoped_values(self, raw, isfilename):
+    def _parse_scoped_values(self, raw, isfilename, outer_scopes):
         """ Parse a string of space separated possible scoped values and return
         a dict, keyed by scope, of the values for each scope.
         """
@@ -878,8 +890,12 @@ class Builder():
 
         scoped_value_sets = {}
 
+        if outer_scopes is None:
+            outer_scopes = PLATFORM_QMAKE_SCOPES
+
         for scoped_value in self._split_quotes(raw):
-            scopes, value = self._get_scopes_and_value(scoped_value, ALL_SCOPES)
+            scopes, value = self._get_scopes_and_value(scoped_value,
+                    outer_scopes)
 
             # Convert potential filenames.
             if isfilename:
@@ -926,14 +942,16 @@ class Builder():
 
         parts = scoped_value.split('#', maxsplit=1)
         if len(parts) == 2:
-            scope, value = parts
+            target, value = parts
 
-            if scope.startswith('!'):
-                scope = scope[1:]
+            if target.startswith('!'):
+                scope = qmake_scope_for_target(target[1:])
 
                 # Make sure we don't modify the original list.
                 scopes = [s for s in scopes if s != scope]
             else:
+                scope = qmake_scope_for_target(target)
+
                 for s in scopes:
                     # Assume sub-scopes start with the scope.
                     if scope.startswith(s):
@@ -947,14 +965,17 @@ class Builder():
         return scopes, value
 
     @staticmethod
-    def _add_value_for_scopes(used_values, value, scopes=ALL_SCOPES):
+    def _add_value_for_scopes(used_values, value, scopes=PLATFORM_QMAKE_SCOPES):
         """ Add a value to the set of used values for some scopes. """
 
         # Make sure we have a fresh list as we may want to modify it.
         scopes = list(scopes)
 
         # Optimise any sub-scopes.
-        for scope, platform, subscopes in PLATFORM_SCOPES:
+        for platform in TargetPlatform.get_platforms():
+            scope = platform.qmake_scope
+            subscopes = platform.subscopes
+
             if len(subscopes) == 0:
                 continue
 
@@ -973,12 +994,12 @@ class Builder():
                     collapsed.append(scope)
                     scopes = collapsed
 
-        if len(scopes) == len(ALL_SCOPES):
+        if len(scopes) == len(PLATFORM_QMAKE_SCOPES):
             scopes = ['']
-        elif len(scopes) == len(ALL_SCOPES) - 1:
+        elif len(scopes) == len(PLATFORM_QMAKE_SCOPES) - 1:
             # This usually makes the generated code shorter because non-Windows
             # scopes will be collapsed into one.
-            scopes = ['!' + (set(ALL_SCOPES) - set(scopes)).pop()]
+            scopes = ['!' + (set(PLATFORM_QMAKE_SCOPES) - set(scopes)).pop()]
 
         for scope in scopes:
             used_values.setdefault(scope, set()).add(value)

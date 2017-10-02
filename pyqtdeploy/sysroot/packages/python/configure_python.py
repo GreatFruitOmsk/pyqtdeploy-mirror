@@ -39,7 +39,7 @@ def configure_python(api, dynamic_loading, patches, sysroot):
 
     sysroot.progress(
             "Configuring Python v{0} for {1}".format(py_version_str,
-                    sysroot.target_name))
+                    sysroot.target_arch_name))
 
     py_src_dir = os.getcwd()
 
@@ -47,15 +47,15 @@ def configure_python(api, dynamic_loading, patches, sysroot):
 
     # Patch with the most appropriate diff.  Only Android needs patches and
     # only for Python earlier than v3.6.0.
-    if patches and sysroot.target_name.startswith('android') and (py_major, py_minor) < (3, 6):
+    if patches and sysroot.target_platform_name == 'android' and (py_major, py_minor) < (3, 6):
         python_diff_src_file = _get_file_for_version(py_version, 'patches',
                 sysroot)
 
         # I'm too lazy to generate patches for all old versions.
         if python_diff_src_file == '':
             sysroot.error(
-                    "Python v{0} is not supported on the {1} target".format(
-                            py_version_str, sysroot.target_name))
+                    "Python v{0} is not supported for {1}".format(
+                            py_version_str, sysroot.target_arch_name))
 
         apply_diffs(python_diff_src_file, py_src_dir, sysroot)
 
@@ -74,7 +74,7 @@ def configure_python(api, dynamic_loading, patches, sysroot):
     # platforms.
     pyconfig_h_dst_file = os.path.join(py_src_dir, 'pyconfig.h')
 
-    if sysroot.target_name.startswith('win'):
+    if sysroot.target_platform_name == 'win':
         sysroot.progress("Installing {0}".format(pyconfig_h_dst_file))
 
         pyconfig_h_src_file = _get_file_for_version(py_version, 'pyconfig',
@@ -95,7 +95,7 @@ def configure_python(api, dynamic_loading, patches, sysroot):
             except FileNotFoundError:
                 pass
     else:
-        if sysroot.target_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
+        if sysroot.target_platform_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
             sysroot.error(
                     "Python v3.6.0 and later requires Android API level 21 or later")
 

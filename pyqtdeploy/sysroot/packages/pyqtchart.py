@@ -63,7 +63,7 @@ module_dir = {4}
             cfg += 'pyqt_disabled_features = {0}\n'.format(
                     ' '.join(disabled_features))
 
-        cfg_name = 'pyqtchart-' + sysroot.target_name + '.cfg'
+        cfg_name = 'pyqtchart-' + sysroot.target_arch_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)

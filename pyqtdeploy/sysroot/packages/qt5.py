@@ -147,13 +147,10 @@ class Qt5Package(AbstractPackage):
         if self.ssl:
             args.append('-ssl')
 
-            if sysroot.target_name.startswith('ios-') or sysroot.target_name.startswith('osx-'):
-                if self.ssl == 'securetransport':
-                    args.append('-securetransport')
-                else:
-                    args.append('-no-securetransport')
+            if self.ssl == 'securetransport':
+                args.append('-securetransport')
 
-            if self.ssl == 'openssl-linked':
+            elif self.ssl == 'openssl-linked':
                 args.append('-openssl-linked')
 
                 if sysroot.find_package('openssl', required=False) is not None:
@@ -162,6 +159,9 @@ class Qt5Package(AbstractPackage):
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')
+
+        else:
+            args.append('-no-ssl')
 
         if self.configure_options:
             args.extend(self.configure_options)

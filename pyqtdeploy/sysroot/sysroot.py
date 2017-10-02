@@ -37,7 +37,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         open_file as fu_open_file, parse_version as fu_parse_version,
         read_embedded_file as fu_read_embedded_file)
 from ..hosts import Host
-from ..targets import normalised_target
+from ..targets import TargetArch
 from ..user_exception import UserException
 from ..windows import get_python_install_path
 
@@ -47,20 +47,20 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, sdk, target_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, sdk, target_arch_name, message_handler):
         """ Initialise the object. """
 
-        self.target_name = normalised_target(target_name)
+        self.target_arch = TargetArch(target_arch_name)
 
         if not sysroot_dir:
-            sysroot_dir = 'sysroot-' + self.target_name
+            sysroot_dir = 'sysroot-' + self.target_arch.name
 
         self.sysroot_dir = os.path.abspath(sysroot_dir)
         self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
         self._host = Host.factory()
         self._specification = Specification(sysroot_json, plugin_path,
-                self.target_name)
+                self.target_arch)
         self._sdk = self._find_sdk(sdk)
         self._message_handler = message_handler
 
@@ -446,13 +446,7 @@ class Sysroot:
         is ignored.
         """
 
-        if sys.platform == 'darwin':
-            return self.target_name.startswith('osx-')
-
-        if sys.platform == 'win32':
-            return self.target_name.startswith('win-')
-
-        return self.target_name.startswith('linux-')
+        return TargetArch.factory().platform is self.target_arch.platform
 
     @staticmethod
     def open_file(name):
@@ -498,7 +492,7 @@ class Sysroot:
         major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         reg_version = str(major) + '.' + str(minor)
-        if self.python_version_nr >= 0x030500 and self.target_name.endswith('-32'):
+        if self.python_version_nr >= 0x030500 and self.target_arch_name.endswith('-32'):
             reg_version += '-32'
 
         return get_python_install_path(reg_version)
@@ -557,6 +551,12 @@ class Sysroot:
         return self._sdk
 
     @property
+    def target_arch_name(self):
+        """ The name of the target architecture. """
+
+        return self.target_arch.name
+
+    @property
     def target_include_dir(self):
         """ The name of the directory containing target header files. """
 
@@ -567,6 +567,12 @@ class Sysroot:
         """ The name of the directory containing target libraries. """
 
         return os.path.join(self.sysroot_dir, 'lib')
+
+    @property
+    def target_platform_name(self):
+        """ The name of the target platform. """
+
+        return self.target_arch.platform.name
 
     @property
     def target_py_include_dir(self):

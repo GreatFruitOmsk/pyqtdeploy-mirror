@@ -64,14 +64,14 @@ class OpenSSLPackage(AbstractPackage):
             '--prefix=' + sysroot.sysroot_dir,
         )
 
-        if sys.platform == 'darwin' and sysroot.target_name == 'osx-64':
+        if sys.platform == 'darwin' and sysroot.native:
             self._build_macos(sysroot, common_options)
-        elif sys.platform == 'win32' and sysroot.target_name in ('win-32', 'win-64'):
+        elif sys.platform == 'win32' and sysroot.native:
             self._build_win(sysroot, common_options)
         else:
             sysroot.error(
                     "building OpenSSL for {0} is not yet supported".format(
-                            sysroot.target_name))
+                            sysroot.target_arch_name))
 
     def _build_macos(self, sysroot, common_options):
         """ Build OpenSSL for osx-64. """
@@ -118,7 +118,7 @@ class OpenSSLPackage(AbstractPackage):
         sysroot.find_exe('perl')
 
         # Set the architecture-specific values.
-        if sysroot.target_name.endswith('-64'):
+        if sysroot.target_arch_name.endswith('-64'):
             compiler = 'VC-WIN64A'
             post_config = 'ms\\do_win64a.bat'
         else:

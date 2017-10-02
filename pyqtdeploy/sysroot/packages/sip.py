@@ -77,7 +77,7 @@ sip_module_dir = {2}
 '''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
                 sysroot.target_sitepackages_dir)
 
-        cfg_name = 'sip-' + sysroot.target_name + '.cfg'
+        cfg_name = 'sip-' + sysroot.target_arch_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)

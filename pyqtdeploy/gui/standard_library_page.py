@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,9 @@ from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTreeView,
         QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout,
         QWidget)
 
-from ..metadata import (external_libraries_metadata, get_python_metadata,
-        PLATFORM_SCOPES)
+from ..metadata import external_libraries_metadata, get_python_metadata
 from ..project import ExternalLibrary
+from ..targets import TargetPlatform
 
 
 class StandardLibraryPage(QSplitter):
@@ -97,13 +97,13 @@ class StandardLibraryPage(QSplitter):
         plat_gb_layout = QVBoxLayout()
         self._platform_buttons = []
 
-        for scope, plat, subscopes in PLATFORM_SCOPES:
-            plat_cb = QCheckBox(plat,
+        for platform in TargetPlatform.get_platforms():
+            plat_cb = QCheckBox(platform.full_name,
                     whatsThis="Enable the use of the standard Python shared "
                             "library on {0} rather than a statically compiled "
-                            "library.".format(plat),
+                            "library.".format(platform.full_name),
                     stateChanged=self._platforms_changed)
-            plat_cb._scope = scope
+            plat_cb._target = platform.name
             plat_gb_layout.addWidget(plat_cb)
             self._platform_buttons.append(plat_cb)
 
@@ -163,7 +163,7 @@ class StandardLibraryPage(QSplitter):
         for plat in self._platform_buttons:
             blocked = plat.blockSignals(True)
             plat.setCheckState(
-                    Qt.Checked if plat._scope in project.python_use_platform
+                    Qt.Checked if plat._target in project.python_use_platform
                             else Qt.Unchecked)
             plat.blockSignals(blocked)
 
@@ -269,19 +269,23 @@ class StandardLibraryPage(QSplitter):
 
         blocked = model.blockSignals(True)
 
-        for extlib in external_libraries_metadata:
-            _, defs, incp, libs = extlib._items
+        for platform in TargetPlatform.get_platforms():
+            for extlib in external_libraries_metadata:
+                _, defs, incp, libs = extlib._items
 
-            for prj_extlib in project.external_libraries:
-                if prj_extlib.name == extlib.name:
-                    defs.setText(prj_extlib.defines)
-                    incp.setText(prj_extlib.includepath)
-                    libs.setText(prj_extlib.libs)
-                    break
-            else:
-                defs.setText('')
-                incp.setText('')
-                libs.setText(extlib.libs)
+                for prj_extlib in project.external_libraries[platform.name]:
+                    if prj_extlib.name == extlib.name:
+                        defs.setText(prj_extlib.defines)
+                        incp.setText(prj_extlib.includepath)
+                        libs.setText(prj_extlib.libs)
+                        break
+                else:
+                    defs.setText('')
+                    incp.setText('')
+                    libs.setText(extlib.libs)
+
+            # TODO: do each page.
+            break
 
         model.blockSignals(blocked)
 
@@ -294,7 +298,7 @@ class StandardLibraryPage(QSplitter):
 
         for plat in self._platform_buttons:
             if plat.checkState() == Qt.Checked:
-                project.python_use_platform.append(plat._scope)
+                project.python_use_platform.append(plat._target)
 
         project.modified = True
 
@@ -349,6 +353,7 @@ class StandardLibraryPage(QSplitter):
         col = idx.column()
 
         # Get the project entry, creating it if necessary.
+        # TODO
         for prj_extlib in project.external_libraries:
             if prj_extlib.name == extlib.name:
                 break
