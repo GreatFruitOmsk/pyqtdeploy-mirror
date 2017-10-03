@@ -29,7 +29,7 @@ import os
 import sys
 
 
-def run(*args):
+def run(args):
     """ Run a command and terminate if it fails. """
 
     ec = os.system(' '.join(args))
@@ -84,17 +84,23 @@ if build_sysroot:
 
     args.append('sysroot.json')
 
-    run(*args)
+    run(args)
 
 # Build the demo.
-run('pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir,
-        'pyqt-demo.pdy')
+args = ['pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir]
+
+if target == 'ios-64':
+    args.append('--no-make')
+
+args.append('pyqt-demo.pdy')
+
+run(args)
 
 # Tell the user where the demo is.
 if target.startswith('android'):
     print("TODO")
 elif target.startswith('ios'):
-    print("The pyqt-demo.app application bundle can be found in the '{0}/Debug-iphonesimulator' directory.".format(build_dir))
+    print("The pyqt-demo.xcodeproj file can be found in the '{0}' directory. Run Xcode to build the app and run it in the simulator.".format(build_dir))
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
 else:
