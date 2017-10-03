@@ -334,7 +334,7 @@ class Project(QObject):
         project.python_host_interpreter = python.get('hostinterpreter', '')
 
         # This was added in version 5.
-        project.python_use_platform = cls._fix_scopes(
+        project.python_use_platform = cls._replace_scopes(
                 python.get('platformpython', '')).split()
 
         project.python_source_dir = python.get('sourcedir', '')
@@ -596,13 +596,14 @@ class Project(QObject):
             SubElement(root, 'StdlibModule', attrib={
                 'name': stdlib_module})
 
-        for target, external_lib in self.external_libraries.items():
-            SubElement(root, 'ExternalLib', attrib={
-                'target': target,
-                'name': external_lib.name,
-                'defines': external_lib.defines,
-                'includepath': external_lib.includepath,
-                'libs': external_lib.libs})
+        for target, external_libs in self.external_libraries.items():
+            for external_lib in external_libs:
+                SubElement(root, 'ExternalLib', attrib={
+                    'target': target,
+                    'name': external_lib.name,
+                    'defines': external_lib.defines,
+                    'includepath': external_lib.includepath,
+                    'libs': external_lib.libs})
 
         for package in self.other_packages:
             self._save_package(root, package)
@@ -668,8 +669,8 @@ class Project(QObject):
         if not ok:
             raise UserException("The project file is invalid.", detail)
 
-    @staticmethod
-    def _fix_scopes(value):
+    @classmethod
+    def _fix_scopes(cls, value):
         """ In version 6 and earlier scopes where qmake scopes, starting with
         version 7 they are our well defined platform names.  This handles the
         conversion for a string.
@@ -682,16 +683,21 @@ class Project(QObject):
                 parts = single.split('#', maxsplit=1)
                 if len(parts) == 2:
                     lhs, rhs = parts
-
-                    lhs = lhs.replace('linux-*', 'linux')
-                    lhs = lhs.replace('macx', 'macos')
-                    lhs = lhs.replace('win32', 'win')
-
-                    updated.append(lhs + '#' + rhs)
+                    updated.append(cls._replace_scopes(lhs) + '#' + rhs)
                 else:
                     updated.append(single)
 
             value = ' '.join(updated)
+
+        return value
+
+    @staticmethod
+    def _replace_scopes(value):
+        """ Replace any qmake scopes in a value. """
+
+        value = value.replace('linux-*', 'linux')
+        value = value.replace('macx', 'macos')
+        value = value.replace('win32', 'win')
 
         return value
 
