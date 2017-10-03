@@ -55,10 +55,31 @@ class TargetPlatform:
                         target_platform_name))
 
     @staticmethod
+    def get_host_platform_name():
+        """ Return the well known name of the host platform. """
+
+        if sys.platform.startswith('linux'):
+            return 'linux'
+
+        if sys.platform == 'win32':
+            return 'win'
+
+        if sys.platform == 'darwin':
+            return 'macos'
+
+        raise UserException(
+                "'{0}' is not a supported host platform.".format(sys.platform))
+
+    @staticmethod
     def get_platforms():
         """ Get the sequence of all supported platforms. """
 
         return _TARGET_PLATFORMS
+
+    def is_native(self):
+        """ Return True if the target platform is native. """
+
+        return self.name == self.get_host_platform_name()
 
 
 class TargetArch:
@@ -80,18 +101,9 @@ class TargetArch:
         """
 
         if target_arch_name is None:
-            if sys.platform.startswith('linux'):
-                target_plat_name = 'linux'
-            elif sys.platform == 'win32':
-                target_plat_name = 'win'
-            elif sys.platform == 'darwin':
-                target_plat_name = 'macos'
-            else:
-                # This will fail.
-                target_plat_name = sys.platform
-
             target_arch_name = '{0}-{1}'.format(
-                    target_plat_name, 8 * struct.calcsize('P'))
+                    TargetPlatform.get_host_platform_name,
+                    8 * struct.calcsize('P'))
         elif target_arch_name.startswith('osx-'):
             # Map the deprecated values.  Such values can only come from the
             # command line.

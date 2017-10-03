@@ -446,7 +446,7 @@ class Sysroot:
         is ignored.
         """
 
-        return TargetArch.factory().platform is self.target_arch.platform
+        return self.target_arch.platform.is_native()
 
     @staticmethod
     def open_file(name):

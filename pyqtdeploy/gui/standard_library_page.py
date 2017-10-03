@@ -26,9 +26,9 @@
 
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTreeView,
-        QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout,
-        QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTabWidget,
+        QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
+        QVBoxLayout, QWidget)
 
 from ..metadata import external_libraries_metadata, get_python_metadata
 from ..project import ExternalLibrary
@@ -64,6 +64,9 @@ class StandardLibraryPage(QSplitter):
         self._project = None
 
         # Create the page's GUI.
+        plat_pane = QWidget()
+        plat_layout = QVBoxLayout()
+
         stdlib_pane = QWidget()
         stdlib_layout = QVBoxLayout()
 
@@ -90,84 +93,35 @@ class StandardLibraryPage(QSplitter):
         stdlib_pane.setLayout(stdlib_layout)
         self.addWidget(stdlib_pane)
 
-        extlib_pane = QWidget()
-        extlib_layout = QVBoxLayout()
-
-        plat_gb = QGroupBox("Use standard Python shared library")
-        plat_gb_layout = QVBoxLayout()
-        self._platform_buttons = []
+        self._plat_guis = QTabWidget()
+        host_gui = None
 
         for platform in TargetPlatform.get_platforms():
-            plat_cb = QCheckBox(platform.full_name,
-                    whatsThis="Enable the use of the standard Python shared "
-                            "library on {0} rather than a statically compiled "
-                            "library.".format(platform.full_name),
-                    stateChanged=self._platforms_changed)
-            plat_cb._target = platform.name
-            plat_gb_layout.addWidget(plat_cb)
-            self._platform_buttons.append(plat_cb)
+            plat_gui = _PlatformGui(platform.name)
+            self._plat_guis.addTab(plat_gui, platform.full_name)
 
-        plat_gb.setLayout(plat_gb_layout)
-        extlib_layout.addWidget(plat_gb)
+            if platform.is_native():
+                host_gui = plat_gui
 
-        self._extlib_edit = QTreeView(
-                whatsThis="This is the list of external libraries that must "
-                        "be linked with the application. A library will only "
-                        "be enabled if a module in the standard library uses "
-                        "it. Double-click in the <b>DEFINES</b>, "
-                        "<b>INCLUDEPATH</b> and <b>LIBS</b> columns to modify "
-                        "the corresponding <tt>qmake</tt> variable as "
-                        "required. Values may be prefixed by a platform "
-                        "specific <tt>qmake</tt> scope.")
-        self._extlib_edit.setRootIsDecorated(False)
-        self._extlib_edit.setEditTriggers(
-                QTreeView.DoubleClicked|QTreeView.SelectedClicked|
-                QTreeView.EditKeyPressed)
+        self._plat_guis.setCurrentWidget(host_gui)
 
-        model = QStandardItemModel(self._extlib_edit)
-        model.setHorizontalHeaderLabels(
-                ("External Library", 'DEFINES', 'INCLUDEPATH', 'LIBS'))
-        model.itemChanged.connect(self._extlib_changed)
+        plat_layout.addWidget(self._plat_guis)
+        plat_pane.setLayout(plat_layout)
 
-        for extlib in external_libraries_metadata:
-            name_itm = QStandardItem(extlib.user_name)
-
-            extlib._items = (name_itm, QStandardItem(), QStandardItem(),
-                    QStandardItem())
-
-            model.appendRow(extlib._items)
-
-        self._extlib_edit.setModel(model)
-
-        for col in range(3):
-            self._extlib_edit.resizeColumnToContents(col)
-
-        extlib_layout.addWidget(self._extlib_edit)
-
-        self._ignore_extlib_changes = False
-
-        extlib_pane.setLayout(extlib_layout)
-        self.addWidget(extlib_pane)
+        self.addWidget(plat_pane)
 
     @pyqtSlot()
     def python_target_version_changed(self):
         """ Configure the page after the Python target version has changed. """
 
         self._update_page()
- 
+
     def _update_page(self):
         """ Update the page using the current project. """
 
-        project = self.project
+        for i in range(self._plat_guis.count()):
+            self._plat_guis.widget(i).update_from_project(self.project)
 
-        for plat in self._platform_buttons:
-            blocked = plat.blockSignals(True)
-            plat.setCheckState(
-                    Qt.Checked if plat._target in project.python_use_platform
-                            else Qt.Unchecked)
-            plat.blockSignals(blocked)
-
-        self._update_extlib_editor()
         self._update_stdlib_editor()
 
     def _update_stdlib_editor(self):
@@ -243,64 +197,9 @@ class StandardLibraryPage(QSplitter):
 
         editor.blockSignals(blocked)
 
-        model = self._extlib_edit.model()
-
-        # Note that we can't simply block the model's signals as this would
-        # interfere with the model/view interactions.
-        self._ignore_extlib_changes = True
-
-        for extlib in external_libraries_metadata:
-            if extlib.name in required_libraries:
-                for idx, itm in enumerate(extlib._items):
-                    itm.setFlags(
-                            Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
-                                    else Qt.ItemIsEnabled)
-            else:
-                for itm in extlib._items:
-                    itm.setFlags(Qt.NoItemFlags)
-
-        self._ignore_extlib_changes = False
-
-    def _update_extlib_editor(self):
-        """ Update the external library editor. """
-
-        project = self.project
-        model = self._extlib_edit.model()
-
-        blocked = model.blockSignals(True)
-
-        for platform in TargetPlatform.get_platforms():
-            for extlib in external_libraries_metadata:
-                _, defs, incp, libs = extlib._items
-
-                for prj_extlib in project.external_libraries[platform.name]:
-                    if prj_extlib.name == extlib.name:
-                        defs.setText(prj_extlib.defines)
-                        incp.setText(prj_extlib.includepath)
-                        libs.setText(prj_extlib.libs)
-                        break
-                else:
-                    defs.setText('')
-                    incp.setText('')
-                    libs.setText(extlib.libs)
-
-            # TODO: do each page.
-            break
-
-        model.blockSignals(blocked)
-
-    def _platforms_changed(self, state):
-        """ Invoked when the platforms change. """
-
-        project = self._project
-
-        project.python_use_platform = []
-
-        for plat in self._platform_buttons:
-            if plat.checkState() == Qt.Checked:
-                project.python_use_platform.append(plat._target)
-
-        project.modified = True
+        for i in range(self._plat_guis.count()):
+            self._plat_guis.widget(i).update_from_required_libraries(
+                    required_libraries)
 
     def _module_changed(self, itm, col):
         """ Invoked when a standard library module has changed. """
@@ -338,6 +237,138 @@ class StandardLibraryPage(QSplitter):
 
         project.modified = True
 
+
+class _PlatformGui(QWidget):
+    """ The platform-specific GUI. """
+
+    def __init__(self, platform_name):
+        """ Initialise the object. """
+
+        super().__init__()
+
+        self._project = None
+        self._platform_name = platform_name
+
+        self._ignore_extlib_changes = False
+
+        layout = QVBoxLayout()
+
+        self._pyshlib_cb = QCheckBox("Use standard Python shared library",
+                whatsThis="Use the standard Python shared library rather than "
+                        "a statically compiled library.",
+                stateChanged=self._pyshlib_changed)
+        layout.addWidget(self._pyshlib_cb)
+
+        self._extlib_edit = QTreeView(
+                whatsThis="This is the list of external libraries that must "
+                        "be linked with the application for this platform. A "
+                        "library will only be enabled if a module in the "
+                        "standard library uses it. Double-click in the "
+                        "<b>DEFINES</b>, <b>INCLUDEPATH</b> and <b>LIBS</b> "
+                        "columns to modify the corresponding <tt>qmake</tt> "
+                        "variable as required.")
+        self._extlib_edit.setRootIsDecorated(False)
+        self._extlib_edit.setEditTriggers(
+                QTreeView.DoubleClicked|QTreeView.SelectedClicked|
+                QTreeView.EditKeyPressed)
+
+        model = QStandardItemModel(self._extlib_edit)
+        model.setHorizontalHeaderLabels(
+                ("External Library", 'DEFINES', 'INCLUDEPATH', 'LIBS'))
+        model.itemChanged.connect(self._extlib_changed)
+
+        model._items = {}
+
+        for extlib in external_libraries_metadata:
+            name_itm = QStandardItem(extlib.user_name)
+
+            items = (name_itm, QStandardItem(), QStandardItem(),
+                    QStandardItem())
+
+            model.appendRow(items)
+
+            model._items[extlib.name] = items
+
+        self._extlib_edit.setModel(model)
+
+        for col in range(3):
+            self._extlib_edit.resizeColumnToContents(col)
+
+        layout.addWidget(self._extlib_edit)
+
+        self.setLayout(layout)
+
+    def update_from_project(self, project):
+        """ Update the GUI to reflect the current state of the project. """
+
+        self._project = project
+
+        platform_name = self._platform_name
+
+        # Update the shared library state.
+        blocked = self._pyshlib_cb.blockSignals(True)
+        self._pyshlib_cb.setCheckState(
+                Qt.Checked if platform_name in project.python_use_platform
+                        else Qt.Unchecked)
+        self._pyshlib_cb.blockSignals(blocked)
+
+        # Update the external libraries.
+        model = self._extlib_edit.model()
+
+        blocked = model.blockSignals(True)
+
+        external_libs = project.external_libraries.get(platform_name, [])
+
+        for extlib in external_libraries_metadata:
+            _, defs, incp, libs = model._items[extlib.name]
+
+            for prj_extlib in external_libs:
+                if prj_extlib.name == extlib.name:
+                    defs.setText(prj_extlib.defines)
+                    incp.setText(prj_extlib.includepath)
+                    libs.setText(prj_extlib.libs)
+                    break
+            else:
+                defs.setText('')
+                incp.setText('')
+                libs.setText(extlib.libs)
+
+        model.blockSignals(blocked)
+
+    def update_from_required_libraries(self, required_libraries):
+        """ Update the GUI as the required external libraries changes. """
+
+        items = self._extlib_edit.model()._items
+
+        # Note that we can't simply block the model's signals as this would
+        # interfere with the model/view interactions.
+        self._ignore_extlib_changes = True
+
+        for extlib in external_libraries_metadata:
+            if extlib.name in required_libraries:
+                for idx, itm in enumerate(items[extlib.name]):
+                    itm.setFlags(
+                            Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
+                                    else Qt.ItemIsEnabled)
+            else:
+                for itm in items[extlib.name]:
+                    itm.setFlags(Qt.NoItemFlags)
+
+        self._ignore_extlib_changes = False
+
+    def _pyshlib_changed(self, state):
+        """ Invoked when the shared library state changes. """
+
+        project = self._project
+        platform_name = self._platform_name
+
+        if state == Qt.Checked:
+            project.python_use_platform.append(platform_name)
+        else:
+            project.python_use_platform.remove(platform_name)
+
+        project.modified = True
+
     def _extlib_changed(self, itm):
         """ Invoked when an external library has changed. """
 
@@ -346,20 +377,23 @@ class StandardLibraryPage(QSplitter):
 
         self._ignore_extlib_changes = True
 
-        project = self.project
+        project = self._project
+        platform_name = self._platform_name
 
         idx = self._extlib_edit.model().indexFromItem(itm)
         extlib = external_libraries_metadata[idx.row()]
         col = idx.column()
 
         # Get the project entry, creating it if necessary.
-        # TODO
-        for prj_extlib in project.external_libraries:
+        external_libs = project.external_libraries.get(platform_name, [])
+
+        for prj_extlib in external_libs:
             if prj_extlib.name == extlib.name:
                 break
         else:
             prj_extlib = ExternalLibrary(extlib.name, '', '', extlib.libs)
-            project.external_libraries.append(prj_extlib)
+            external_libs.append(prj_extlib)
+            project.external_libraries[platform_name] = external_libs
 
         # Update the project.
         text = itm.text().strip()
@@ -369,15 +403,13 @@ class StandardLibraryPage(QSplitter):
         elif col == 2:
             prj_extlib.includepath = text
         elif col == 3:
-            if text == '':
-                text = extlib.libs
-                itm.setText(text)
-
             prj_extlib.libs = text
 
         # If the project entry corresponds to the default then remove it.
         if prj_extlib.defines == '' and prj_extlib.includepath == '' and prj_extlib.libs == extlib.libs:
-            project.external_libraries.remove(prj_extlib)
+            external_libs.remove(prj_extlib)
+            if len(external_libs) == 0:
+                del project.external_libraries[platform_name]
 
         project.modified = True
 
