@@ -39,15 +39,14 @@ from ..hosts import Host
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
-from ..targets import qmake_scope_for_target, TargetPlatform
+from ..targets import TargetArch, TargetPlatform
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 from ..windows import get_python_install_path
 
 
-# The sequence of all platform qmake scopes.
-PLATFORM_QMAKE_SCOPES = tuple(
-        (p.qmake_scope for p in TargetPlatform.get_platforms()))
+# The list of all target platform names.
+TARGET_PLATFORM_NAMES = [p.name for p in TargetPlatform.get_platforms()]
 
 
 class Builder():
@@ -497,7 +496,7 @@ class Builder():
                 if pyqt == 'uic':
                     continue
 
-                self._add_value_for_scopes(used_inittab,
+                self._add_value_for_targets(used_inittab,
                         pyqt_version + '.' + pyqt)
 
                 lib_name = pyqt
@@ -509,48 +508,50 @@ class Builder():
 
                 l_libs.append('-l' + lib_name)
 
-            # Add the LIBS value for any PyQt modules to the global scope.
+            # Add the LIBS value for any PyQt modules to all targets.
             if len(l_libs) > 0:
-                self._add_value_for_scopes(used_libs,
+                self._add_value_for_targets(used_libs,
                         '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
                                 ' '.join(l_libs)))
 
             # Add the sip module.
-            self._add_value_for_scopes(used_inittab, 'sip')
-            self._add_value_for_scopes(used_libs,
+            self._add_value_for_targets(used_inittab, 'sip')
+            self._add_value_for_targets(used_libs,
                     '-L{0} -lsip'.format(site_packages))
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
-            scopes, value = self._get_scopes_and_value(other_em.name,
-                    PLATFORM_QMAKE_SCOPES)
-            self._add_value_for_scopes(used_inittab, value, scopes)
+            # If the name is scoped then the targets are the outer scopes for
+            # the remaining values.
+            targets, value = self._get_targets_and_value(other_em.name)
+            self._add_value_for_targets(used_inittab, value, targets)
 
             if other_em.qt != '':
-                self._add_parsed_scoped_values(used_qt, other_em.qt, False)
+                self._add_compound_scoped_values(used_qt, other_em.qt, False)
 
             if other_em.config != '':
-                self._add_parsed_scoped_values(used_config, other_em.config,
+                self._add_compound_scoped_values(used_config, other_em.config,
                         False)
 
             if other_em.sources != '':
-                self._add_parsed_scoped_values(used_sources, other_em.sources,
-                        True)
+                self._add_compound_scoped_values(used_sources,
+                        other_em.sources, True)
 
             if other_em.defines != '':
-                self._add_parsed_scoped_values(used_defines, other_em.defines,
-                        False)
+                self._add_compound_scoped_values(used_defines,
+                        other_em.defines, False)
 
             if other_em.includepath != '':
-                self._add_parsed_scoped_values(used_includepath,
+                self._add_compound_scoped_values(used_includepath,
                         other_em.includepath, True)
 
             if other_em.libs != '':
-                self._add_parsed_scoped_values(used_libs, other_em.libs, False)
+                self._add_compound_scoped_values(used_libs, other_em.libs,
+                        False)
 
         # Configure the target Python interpreter.
         if include_dir != '':
-            self._add_value_for_scopes(used_includepath, include_dir)
+            self._add_value_for_targets(used_includepath, include_dir)
 
         if python_library != '':
             fi = QFileInfo(python_library)
@@ -564,13 +565,14 @@ class Builder():
                 lib = lib[3:]
 
             if '.' in lib:
-                self._add_value_for_scopes(used_libs,
+                self._add_value_for_targets(used_libs,
                         '-L{0} -l{1}'.format(py_lib_dir, lib.replace('.', '')),
-                        ['win32'])
-                self._add_value_for_scopes(used_libs,
-                        '-L{0} -l{1}'.format(py_lib_dir, lib), ['!win32'])
+                        self._resolve_target_expression('win'))
+                self._add_value_for_targets(used_libs,
+                        '-L{0} -l{1}'.format(py_lib_dir, lib),
+                        self._resolve_target_expression('!win'))
             else:
-                self._add_value_for_scopes(used_libs,
+                self._add_value_for_targets(used_libs,
                         '-L{0} -l{1}'.format(py_lib_dir, lib))
         else:
             py_lib_dir = None
@@ -578,90 +580,94 @@ class Builder():
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
             source_dir = project.path_from_user(project.python_source_dir)
-            source_scopes = set()
+            source_targets = set()
 
             for name, module in required_ext.items():
-                # Get the list of all applicable scopes.
-                module_scopes = self._stdlib_scopes(module.target)
+                # Get the list of all applicable targets.
+                module_targets = self._stdlib_extmod_targets(module.target)
 
-                if len(module_scopes) == 0:
+                if len(module_targets) == 0:
                     # The module is specific to a platform for which we are
                     # using the python.org Python libraries so ignore it
                     # completely.
                     continue
 
-                self._add_value_for_scopes(used_inittab, name, module_scopes)
+                self._add_value_for_targets(used_inittab, name, module_targets)
 
                 for source in module.source:
-                    scopes, source = self._get_scopes_and_value(source,
-                            module_scopes)
+                    targets, source = self._get_targets_and_value(source,
+                            module_targets)
                     source = self._python_source_file(source_dir, source)
-                    self._add_value_for_scopes(used_sources, source, scopes)
+                    self._add_value_for_targets(used_sources, source, targets)
 
-                    source_scopes.update(scopes)
+                    source_targets.update(targets)
 
                 if module.defines is not None:
                     for define in module.defines:
-                        scopes, define = self._get_scopes_and_value(define,
-                                module_scopes)
-                        self._add_value_for_scopes(used_defines, define,
-                                scopes)
+                        targets, define = self._get_targets_and_value(define,
+                                module_targets)
+                        self._add_value_for_targets(used_defines, define,
+                                targets)
 
                 if module.includepath is not None:
                     for includepath in module.includepath:
-                        scopes, includepath = self._get_scopes_and_value(
-                                includepath, module_scopes)
+                        targets, includepath = self._get_targets_and_value(
+                                includepath, module_targets)
                         includepath = self._python_source_file(source_dir,
                                 includepath)
-                        self._add_value_for_scopes(used_includepath,
-                                includepath, scopes)
+                        self._add_value_for_targets(used_includepath,
+                                includepath, targets)
 
                 if module.libs is not None:
                     for lib in module.libs:
-                        scopes, lib = self._get_scopes_and_value(lib,
-                                module_scopes)
-                        self._add_value_for_scopes(used_libs, lib, scopes)
+                        targets, lib = self._get_targets_and_value(lib,
+                                module_targets)
+                        self._add_value_for_targets(used_libs, lib, targets)
 
                 if module.pyd is not None:
-                    self._add_value_for_scopes(used_dlls, module, ['win32'])
+                    self._add_value_for_targets(used_dlls, module, ['win'])
 
-            self._add_value_for_scopes(used_includepath,
-                    source_dir + '/Modules', source_scopes)
+            self._add_value_for_targets(used_includepath,
+                    source_dir + '/Modules', source_targets)
 
-            if 'win32' not in project.python_use_platform:
-                self._add_value_for_scopes(used_includepath,
-                        source_dir + '/PC', ['win32'])
+            if 'win' not in project.python_use_platform:
+                self._add_value_for_targets(used_includepath,
+                        source_dir + '/PC', ['win'])
 
-        # Handle any required external libraries.
-        for required_lib in required_libraries:
-            for target, xlib in project.external_libraries.items():
-                scopes = qmake_scope_for_target(target)
+        # Handle any required external libraries platform by platform.
+        for platform in TargetPlatform.get_platforms():
+            external_libs = project.external_libraries.get(platform.name, [])
 
-                if xlib.name == required_lib:
-                    if xlib.defines != '':
-                        self._add_parsed_scoped_values(used_defines,
-                                xlib.defines, False, scopes)
+            for required_lib in required_libraries:
+                for xlib in external_libs:
+                    if xlib.name == required_lib:
+                        # Check the library is not disabled for this platform.
+                        if xlib.libs != '':
+                            if xlib.defines != '':
+                                self._add_compound_scoped_values(used_defines,
+                                        xlib.defines, False, platform.name)
 
-                    if xlib.includepath != '':
-                        self._add_parsed_scoped_values(used_includepath,
-                                xlib.includepath, Tru, scopes)
+                            if xlib.includepath != '':
+                                self._add_compound_scoped_values(
+                                        used_includepath, xlib.includepath,
+                                        True, platform.name)
 
-                    if xlib.libs != '':
-                        self._add_parsed_scoped_values(used_libs, xlib.libs,
-                                Fals, scopes)
+                            self._add_compound_scoped_values(used_libs,
+                                    xlib.libs, False, platform.name)
 
                     break
-            else:
-                for xlib in external_libraries_metadata:
-                    if xlib.name == required_lib:
-                        scopes = self._stdlib_scopes()
+                else:
+                    # Use the defaults.
+                    for xlib in external_libraries_metadata:
+                        if xlib.name == required_lib:
+                            targets = self._stdlib_extmod_targets()
 
-                        if len(scopes) != 0:
-                            for lib in xlib.libs.split():
-                                self._add_value_for_scopes(used_libs, lib,
-                                        scopes)
+                            if len(targets) != 0:
+                                for lib in xlib.libs.split():
+                                    self._add_value_for_targets(used_libs, lib,
+                                            targets)
 
-                        break
+                            break
 
         # Specify the resource files.
         f.write('\n')
@@ -769,8 +775,8 @@ class Builder():
 
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
-        if 'win32' in project.python_use_platform and used_dlls and py_lib_dir is not None:
-            self._copy_windows_dlls(py_version, py_lib_dir, used_dlls['win32'],
+        if 'win' in project.python_use_platform and used_dlls and py_lib_dir is not None:
+            self._copy_windows_dlls(py_version, py_lib_dir, used_dlls['win'],
                     f)
 
         # Add the project independent post-configuration stuff.
@@ -827,37 +833,26 @@ class Builder():
         f.write('\n')
         f.write(contents.data().decode('latin1'))
 
-    def _stdlib_scopes(self, module_target=''):
-        """ Return the list of scopes for the standard library and, optionally,
-        one of its modules.
+    def _stdlib_extmod_targets(self, module_target=None):
+        """ Return the list of targets for any extension module included in the
+        standard library or, optionally, for one particular module.
         """
 
-        platforms = TargetPlatform.get_platforms()
-
-        # Get the list of all applicable scopes.
-        stdlib_scopes = list(PLATFORM_QMAKE_SCOPES)
-
+        # Get the list of all applicable targets.
         if module_target:
-            for platform in platforms:
-                if module_target.startswith('!'):
-                    if platform.name == module_target[1:]:
-                        stdlib_scopes.remove(platform.qmake_scope)
-                        break
-                elif platform.name == module_target:
-                    stdlib_scopes = [platform.qmake_scope]
-                    break
+            targets = self._resolve_target_expression(module_target)
+        else:
+            targets = list(TARGET_PLATFORM_NAMES)
 
-        # Remove those scopes for which we are using the python.org Python
+        # Remove those targets for which we are using the python.org Python
         # libraries.
         for plat_name in self._project.python_use_platform:
-            for platform in platforms:
-                if platform.name == plat_name:
-                    try:
-                        stdlib_scopes.remove(platform.qmake_scope)
-                    except ValueError:
-                        pass
+            try:
+                targets.remove(plat_name)
+            except ValueError:
+                pass
 
-        return stdlib_scopes
+        return targets
 
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
@@ -869,33 +864,22 @@ class Builder():
 
         return QFileInfo(file_path).absoluteFilePath()
 
-    def _add_parsed_scoped_values(self, used_values, raw, isfilename, scopes=None):
+    def _add_compound_scoped_values(self, used_values, raw, isfilename, target=None):
         """ Parse a string of space separated possible scoped values and add
-        them to a dict of used values indexed by scope.  The values are
+        them to a dict of used values indexed by target.  The values are
         optionally treated as filenames where they are converted to absolute
         filenames with UNIX separators and have environment variables expanded.
         """
 
-        scoped_values = self._parse_scoped_values(raw, isfilename, scopes)
-
-        for scope, values in scoped_values.items():
-            self._add_value_set_for_scope(used_values, values, scope)
-
-    def _parse_scoped_values(self, raw, isfilename, outer_scopes):
-        """ Parse a string of space separated possible scoped values and return
-        a dict, keyed by scope, of the values for each scope.
-        """
-
         project = self._project
+
+        targets = TARGET_PLATFORM_NAMES if target is None else [target]
 
         scoped_value_sets = {}
 
-        if outer_scopes is None:
-            outer_scopes = PLATFORM_QMAKE_SCOPES
-
         for scoped_value in self._split_quotes(raw):
-            scopes, value = self._get_scopes_and_value(scoped_value,
-                    outer_scopes)
+            value_targets, value = self._get_targets_and_value(scoped_value,
+                    targets)
 
             # Convert potential filenames.
             if isfilename:
@@ -903,9 +887,11 @@ class Builder():
             elif value.startswith('-L'):
                 value = '-L' + project.path_from_user(value[2:])
 
-            self._add_value_for_scopes(scoped_value_sets, value, scopes)
+            self._add_value_for_targets(scoped_value_sets, value,
+                    value_targets)
 
-        return scoped_value_sets
+        for target, values in scoped_value_sets.items():
+            used_values.setdefault(target, set()).update(values)
 
     @staticmethod
     def _split_quotes(s):
@@ -934,81 +920,68 @@ class Builder():
 
             s = s[i:].lstrip()
 
-    @staticmethod
-    def _get_scopes_and_value(scoped_value, scopes):
-        """ Return the 2-tuple of scopes and value from a (possibly) scoped
-        value.
+    @classmethod
+    def _get_targets_and_value(cls, scoped_value, targets=None):
+        """ Return the 2-tuple of targets and value from a (possibly) scoped
+        value.  If the returning list of targets is empty then the value is not
+        valid.
         """
+
+        if targets is None:
+            targets = TARGET_PLATFORM_NAMES
 
         parts = scoped_value.split('#', maxsplit=1)
         if len(parts) == 2:
-            target, value = parts
+            target_scope, value = parts
+            target_scopes = cls._resolve_target_expression(target_scope)
 
-            if target.startswith('!'):
-                scope = qmake_scope_for_target(target[1:])
+            # The final targets is the intersection of the current targets and
+            # those defined by the scope while taking architectures into
+            # account.
+            final_targets = []
+            for target in target_scopes:
+                if target in targets:
+                    final_targets.append(target)
+                elif TargetPlatform.find_platform(target) is None:
+                    arch = TargetArch.find_arch(target)
+                    if arch is None:
+                        raise UserException(
+                                "'{0}' is not the name of a target architecture or platform".format(target))
 
-                # Make sure we don't modify the original list.
-                scopes = [s for s in scopes if s != scope]
-            else:
-                scope = qmake_scope_for_target(target)
-
-                for s in scopes:
-                    # Assume sub-scopes start with the scope.
-                    if scope.startswith(s):
-                        scopes = [scope]
-                        break
-                else:
-                    scopes = []
+                    if arch.name in targets:
+                        final_targets.append(arch.name)
         else:
-            value = parts[0]
+            # The value is unscoped.
+            value = scoped_value
 
-        return scopes, value
-
-    @staticmethod
-    def _add_value_for_scopes(used_values, value, scopes=PLATFORM_QMAKE_SCOPES):
-        """ Add a value to the set of used values for some scopes. """
-
-        # Make sure we have a fresh list as we may want to modify it.
-        scopes = list(scopes)
-
-        # Optimise any sub-scopes.
-        for platform in TargetPlatform.get_platforms():
-            scope = platform.qmake_scope
-            subscopes = platform.subscopes
-
-            if len(subscopes) == 0:
-                continue
-
-            if scope in scopes:
-                # Remove any redundant sub-scopes.
-                for ss in subscopes:
-                    try:
-                        scopes.remove(ss)
-                    except ValueError:
-                        pass
-            else:
-                # Replace all sub-scopes if all are present.
-                collapsed = [s for s in scopes if s not in subscopes]
-
-                if len(collapsed) == len(scopes) - len(subscopes):
-                    collapsed.append(scope)
-                    scopes = collapsed
-
-        if len(scopes) == len(PLATFORM_QMAKE_SCOPES):
-            scopes = ['']
-        elif len(scopes) == len(PLATFORM_QMAKE_SCOPES) - 1:
-            # This usually makes the generated code shorter because non-Windows
-            # scopes will be collapsed into one.
-            scopes = ['!' + (set(PLATFORM_QMAKE_SCOPES) - set(scopes)).pop()]
-
-        for scope in scopes:
-            used_values.setdefault(scope, set()).add(value)
+        return targets, value
 
     @staticmethod
-    def _add_value_set_for_scope(used_values, values, scope=''):
-        """ Add a set of values to the set of used values for a scope. """
+    def _add_value_for_targets(used_values, value, targets=None):
+        """ Add a value to the set of used values for a set of targets. """
 
-        used_values.setdefault(scope, set()).update(values)
+        # Get the list of relevant targets.
+        if targets is None:
+            targets = TARGET_PLATFORM_NAMES
+
+        # Add the value for each relevant target.
+        for target in targets:
+            used_values.setdefault(target, set()).add(value)
+
+    @staticmethod
+    def _resolve_target_expression(target):
+        """ Convert a target expression to a list of targets. """
+
+        if target[0] == '!':
+            # Note that this assumes that the target is a platform rather than
+            # an architecture.  If this is incorrect then it is a bug in the
+            # metadata somewhere.
+            targets = list(TARGET_PLATFORM_NAMES)
+            targets.remove(target[1:])
+        else:
+            targets = [target]
+
+        return targets
 
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """
@@ -1235,12 +1208,13 @@ static struct _inittab %s[] = {
 };
 ''')
 
-    # The map of scopes to pre-processor symbols.
+    # The map of targets to pre-processor symbols.
     _guards = {
         'android':  'Q_OS_ANDROID',
-        'linux-*':  'Q_OS_LINUX',
-        'macx':     'Q_OS_MAC',
-        'win32':    'Q_OS_WIN',
+        'ios':      'Q_OS_IOS',
+        'linux':    'Q_OS_LINUX',
+        'macos':    'Q_OS_MAC',
+        'win':      'Q_OS_WIN',
     }
 
     @classmethod

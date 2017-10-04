@@ -33,12 +33,13 @@ from .user_exception import UserException
 class TargetPlatform:
     """ Encapsulate a target platform and sub-architectures. """
 
-    def __init__(self, full_name, name, archs, qmake_scope, subscopes=()):
+    def __init__(self, full_name, name, archs, cpp, qmake_scope, subscopes=()):
         """ Initialise the object. """
 
         self.full_name = full_name
         self.name = name
         self._archs = archs
+        self.cpp = cpp
         self.qmake_scope = qmake_scope
         self.subscopes = subscopes
 
@@ -50,9 +51,7 @@ class TargetPlatform:
             if platform.name == target_platform_name:
                 return platform
 
-        raise UserException(
-                "'{0}' is not a supported target platform.".format(
-                        target_platform_name))
+        return None
 
     @staticmethod
     def get_host_platform_name():
@@ -110,7 +109,14 @@ class TargetArch:
             target_arch_name = 'macos-' + target_arch_name.split('-')[1]
 
         # Find the target instance.
-        return cls.find_arch(target_arch_name)
+        arch = cls.find_arch(target_arch_name)
+
+        if arch is None:
+            raise UserException(
+                    "'{0}' is not a supported target architecture.".format(
+                            target_arch_name))
+
+        return arch
 
     @staticmethod
     def find_arch(target_arch_name):
@@ -120,27 +126,18 @@ class TargetArch:
             if arch.name == target_arch_name:
                 return arch
 
-        raise UserException(
-                "'{0}' is not a supported target architecture.".format(
-                        target_arch_name))
-
-
-def qmake_scope_for_target(target_name):
-    """ Return the qmake scope for a target architecture or platform. """
-
-    if '-' in target_name:
-        return TargetArch.find_arch(target_name).qmake_scope
-
-    return TargetPlatform.find_platform(target_name).qmake_scope
+        return None
 
 
 # The sequence of supported target platforms in alphabetical order.
 _TARGET_PLATFORMS = (
-    TargetPlatform("Android", 'android', ('android-32', ), 'android'),
-    TargetPlatform("iOS", 'ios', ('ios-64', ), 'ios'),
-    TargetPlatform("Linux", 'linux', ('linux-32', 'linux-64'), 'linux-*'),
-    TargetPlatform("macOS", 'macos', ('macos-64', ), 'macx'),
-    TargetPlatform("Windows", 'win', ('win-32', 'win-64'), 'win-32',
+    TargetPlatform("Android", 'android', ('android-32', ), 'Q_OS_ANDROID',
+            'android'),
+    TargetPlatform("iOS", 'ios', ('ios-64', ), 'Q_OS_IOS', 'ios'),
+    TargetPlatform("Linux", 'linux', ('linux-32', 'linux-64'), 'Q_OS_LINUX',
+            'linux-*'),
+    TargetPlatform("macOS", 'macos', ('macos-64', ), 'Q_OS_MAC', 'macx'),
+    TargetPlatform("Windows", 'win', ('win-32', 'win-64'), 'Q_OS_WIN', 'win32',
             ('win32_x86', 'win32_x64'))
 )
 
