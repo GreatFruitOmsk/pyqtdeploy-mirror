@@ -479,6 +479,12 @@ class Builder():
         used_inittab = {}
         used_dlls = {}
 
+        if 'SYSROOT' in os.environ:
+            self._add_value_for_targets(used_includepath,
+                    os.path.expandvars('$SYSROOT/include'))
+            self._add_value_for_targets(used_libs,
+                    os.path.expandvars('-L$SYSROOT/lib'))
+
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
             site_packages = standard_library_dir + '/site-packages'
@@ -511,13 +517,15 @@ class Builder():
             # Add the LIBS value for any PyQt modules to all targets.
             if len(l_libs) > 0:
                 self._add_value_for_targets(used_libs,
-                        '-L{0}/{1} {2}'.format(site_packages, pyqt_version,
-                                ' '.join(l_libs)))
+                        '-L' + site_packages + '/' + pyqt_version)
+
+                for l_lib in l_libs:
+                    self._add_value_for_targets(used_libs, l_lib)
 
             # Add the sip module.
             self._add_value_for_targets(used_inittab, 'sip')
-            self._add_value_for_targets(used_libs,
-                    '-L{0} -lsip'.format(site_packages))
+            self._add_value_for_targets(used_libs, '-L' + site_packages)
+            self._add_value_for_targets(used_libs, '-lsip')
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
@@ -566,14 +574,14 @@ class Builder():
 
             if '.' in lib:
                 self._add_value_for_targets(used_libs,
-                        '-L{0} -l{1}'.format(py_lib_dir, lib.replace('.', '')),
+                        '-l' + lib.replace('.', ''),
                         self._resolve_target_expression('win'))
-                self._add_value_for_targets(used_libs,
-                        '-L{0} -l{1}'.format(py_lib_dir, lib),
+                self._add_value_for_targets(used_libs, '-l' + lib,
                         self._resolve_target_expression('!win'))
             else:
-                self._add_value_for_targets(used_libs,
-                        '-L{0} -l{1}'.format(py_lib_dir, lib))
+                self._add_value_for_targets(used_libs, '-l' + lib)
+
+            self._add_value_for_targets(used_libs, '-L' + py_lib_dir)
         else:
             py_lib_dir = None
 
@@ -669,20 +677,22 @@ class Builder():
 
                             break
 
+        # Specify any project-specific configuration.
+        if used_qt:
+            f.write('\n')
+            self._write_used_values(f, used_qt, 'QT')
+
+        if used_config:
+            f.write('\n')
+            self._write_used_values(f, used_config, 'CONFIG')
+
         # Specify the resource files.
         f.write('\n')
         f.write('RESOURCES = \\\n')
         f.write(' \\\n'.join(['    resources/{0}'.format(n) for n in resource_names]))
         f.write('\n')
 
-        # Specify the source and header files.
-        f.write('\n')
-
-        f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
-        self._write_main(self._optimised(used_inittab))
-        self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
-        self._copy_lib_file('pdytools_module.cpp', self._build_dir)
-
+        # Specify the defines.
         defines = []
         headers = ['pyqtdeploy_version.h', 'frozen_bootstrap.h']
 
@@ -696,23 +706,38 @@ class Builder():
         if opt:
             defines.append('PYQTDEPLOY_OPTIMIZED')
 
-        if len(defines) != 0:
-            f.write('DEFINES += {0}\n'.format(' '.join(defines)))
+        if defines or used_defines:
+            f.write('\n')
 
+            if defines:
+                f.write('DEFINES += {0}\n'.format(' '.join(defines)))
+
+            self._write_used_values(f, used_defines, 'DEFINES')
+
+        # Specify the include paths.
+        if used_includepath:
+            f.write('\n')
+            self._write_used_values(f, used_includepath, 'INCLUDEPATH')
+
+        # Specify the source files and header files.
+        f.write('\n')
+        f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
+        self._write_used_values(f, used_sources, 'SOURCES')
+        self._write_main(self._optimised(used_inittab))
+        self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
+        self._copy_lib_file('pdytools_module.cpp', self._build_dir)
+
+        f.write('\n')
         f.write('HEADERS = {0}\n'.format(' '.join(headers)))
 
+        # Specify the libraries.
+        if used_libs:
+            f.write('\n')
+            self._write_used_values(f, used_libs, 'LIBS')
+
         # Get the set of all scopes used.
-        used_scopes = set(used_qt.keys())
-        used_scopes.update(used_config.keys())
-        used_scopes.update(used_sources.keys())
-        used_scopes.update(used_defines.keys())
-        used_scopes.update(used_includepath.keys())
-        used_scopes.update(used_libs.keys())
-        used_scopes.update(used_dlls.keys())
+        used_scopes = set()
 
-        sysroot_defined = 'SYSROOT' in os.environ
-
-        # Write out grouped by scope.
         for scope in used_scopes:
             f.write('\n')
 
@@ -731,44 +756,6 @@ class Builder():
                 indent = '    '
                 f.write('%s {\n' % scope)
                 tail = '}\n'
-
-            for qt in used_qt.get(scope, ()):
-                f.write('{0}QT += {1}\n'.format(indent, qt))
-
-            for config in used_config.get(scope, ()):
-                f.write('{0}CONFIG += {1}\n'.format(indent, config))
-
-            for defines in used_defines.get(scope, ()):
-                f.write('{0}DEFINES += {1}\n'.format(indent, defines))
-
-            if scope == '' and sysroot_defined:
-                f.write(
-                        'INCLUDEPATH += {0}\n'.format(
-                                os.path.expandvars('$SYSROOT/include')))
-
-            for includepath in used_includepath.get(scope, ()):
-                f.write('{0}INCLUDEPATH += {1}\n'.format(indent, includepath))
-
-            if scope == '' and sysroot_defined:
-                f.write(
-                        'LIBS += -L{0}\n'.format(
-                                os.path.expandvars('$SYSROOT/lib')))
-
-            for lib in used_libs.get(scope, ()):
-                # A (strictly unnecessary) bit of pretty printing.
-                if lib.startswith('"-framework') and lib.endswith('"'):
-                    lib = lib[1:-1]
-
-                f.write('{0}LIBS += {1}\n'.format(indent, lib))
-
-            for source in used_sources.get(scope, ()):
-                for ext, qmake_var in self._source_extensions.items():
-                    if source.endswith(ext):
-                        break
-                else:
-                    qmake_var = 'SOURCES'
-
-                f.write('{0}{1} += {2}\n'.format(indent, qmake_var, source))
 
             if tail is not None:
                 f.write(tail)
@@ -790,6 +777,43 @@ class Builder():
 
         # All done.
         f.close()
+
+    @classmethod
+    def _write_used_values(cls, f, used_values, name):
+        """ Write a set of used values to a .pro file. """
+
+        for targets, values in cls._optimised(used_values):
+            if targets:
+                indent = '    '
+
+                if targets[0][0] == '!':
+                    f.write('!%s {\n' % cls._qmake_scope_for_target(
+                            targets[0][1:]))
+                else:
+                    f.write('%s {\n' % ':'.join(
+                            [cls._qmake_scope_for_target(t)
+                                    for t in targets]))
+            else:
+                indent = ''
+
+            for value in values:
+                qmake_var = name
+
+                if qmake_var == 'SOURCES':
+                    for ext, var in cls._source_extensions.items():
+                        if value.endswith(ext):
+                            qmake_var = var
+                            break
+
+                elif qmake_var == 'LIBS':
+                    # A (strictly unnecessary) bit of pretty printing.
+                    if value.startswith('"-framework') and value.endswith('"'):
+                        value = value[1:-1]
+
+                f.write('{0}{1} += {2}\n'.format(indent, qmake_var, value))
+
+            if targets:
+                f.write('}\n')
 
     def _copy_windows_dlls(self, py_version, py_lib_dir, modules, f):
         """ Generate additional qmake commands to install additional Windows
@@ -1435,3 +1459,13 @@ static struct _inittab %s[] = {
             return TargetArch.find_arch(target).platform.cpp
 
         return TargetPlatform.find_platform(target).cpp
+
+    @staticmethod
+    def _qmake_scope_for_target(target):
+        """ Return the C pre-processor guard for an architecture or platform.
+        """
+
+        if '-' in target:
+            return TargetArch.find_arch(target).qmake_scope
+
+        return TargetPlatform.find_platform(target).qmake_scope
