@@ -974,6 +974,8 @@ class Builder():
 
                     if arch.name in targets:
                         final_targets.append(arch.name)
+
+            targets = final_targets
         else:
             # The value is unscoped.
             value = scoped_value
