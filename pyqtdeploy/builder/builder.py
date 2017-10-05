@@ -594,6 +594,16 @@ class Builder():
                 # Get the list of all applicable targets.
                 module_targets = self._stdlib_extmod_targets(module.target)
 
+                # See if the extension module should be disabled for a platform
+                # because there are no external libraries to link against.
+                for target in module_targets:
+                    for xlib in project.external_libraries.get(target, ()):
+                        if xlib.name == module.xlib:
+                            if xlib.libs == '':
+                                module_targets.remove(target)
+
+                            break
+
                 if len(module_targets) == 0:
                     # The module is specific to a platform for which we are
                     # using the python.org Python libraries so ignore it
