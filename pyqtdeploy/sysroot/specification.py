@@ -153,7 +153,7 @@ class Specification:
             if '-' in name:
                 matches = (target_arch.name == name)
             else:
-                matches = (target_arch.platform.name)
+                matches = (target_arch.platform.name == name)
 
             if negate:
                 matches = not matches
