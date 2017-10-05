@@ -50,7 +50,7 @@ class Sysroot:
     def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, sdk, target_arch_name, message_handler):
         """ Initialise the object. """
 
-        self.target_arch = TargetArch(target_arch_name)
+        self.target_arch = TargetArch.factory(target_arch_name)
 
         if not sysroot_dir:
             sysroot_dir = 'sysroot-' + self.target_arch.name
