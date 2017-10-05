@@ -101,7 +101,7 @@ class TargetArch:
 
         if target_arch_name is None:
             target_arch_name = '{0}-{1}'.format(
-                    TargetPlatform.get_host_platform_name,
+                    TargetPlatform.get_host_platform_name(),
                     8 * struct.calcsize('P'))
         elif target_arch_name.startswith('osx-'):
             # Map the deprecated values.  Such values can only come from the
