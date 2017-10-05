@@ -139,8 +139,8 @@ class Specification:
 
         scope, value = parts
 
-        # A scope is a list of target names.
-        for name in scope.split():
+        # A scope is a '|' separated list of target names.
+        for name in scope.replace(' ', '').split('|'):
             # Remember if we are negating.
             if name.startswith('!'):
                 negate = True
