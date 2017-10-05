@@ -679,7 +679,7 @@ class Builder():
         f.write('\n')
 
         f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
-        self._write_main(used_inittab)
+        self._write_main(self._optimised(used_inittab))
         self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
         self._copy_lib_file('pdytools_module.cpp', self._build_dir)
 
@@ -1175,9 +1175,9 @@ int main(int argc, char **argv)
             init_type = 'void '
             init_prefix = 'init'
 
-        for scope, names in inittab.items():
-            if scope != '':
-                cls._write_scope_guard(f, scope)
+        for targets, names in inittab:
+            if targets:
+                cls._write_cpp_guard(f, targets)
 
             for name in names:
                 base_name = name.split('.')[-1]
@@ -1185,49 +1185,88 @@ int main(int argc, char **argv)
                 f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
                         base_name))
 
-            if scope != '':
+            if targets:
                 f.write('#endif\n')
 
         f.write('''
 static struct _inittab %s[] = {
 ''' % c_inittab)
 
-        for scope, names in inittab.items():
-            if scope != '':
-                cls._write_scope_guard(f, scope)
+        for targets, names in inittab:
+            if targets:
+                cls._write_cpp_guard(f, targets)
 
             for name in names:
                 base_name = name.split('.')[-1]
 
                 f.write('    {"%s", %s%s},\n' % (name, init_prefix, base_name))
 
-            if scope != '':
+            if targets:
                 f.write('#endif\n')
 
         f.write('''    {NULL, NULL}
 };
 ''')
 
-    # The map of targets to pre-processor symbols.
-    _guards = {
-        'android':  'Q_OS_ANDROID',
-        'ios':      'Q_OS_IOS',
-        'linux':    'Q_OS_LINUX',
-        'macos':    'Q_OS_MAC',
-        'win':      'Q_OS_WIN',
-    }
-
     @classmethod
-    def _write_scope_guard(cls, f, scope):
-        """ Write the C pre-processor guard for a scope. """
+    def _write_cpp_guard(cls, f, targets):
+        """ Write the C pre-processor guard for some targets. """
 
-        if scope[0] == '!':
-            inv = '!'
-            scope = scope[1:]
+        f.write('#if ')
+
+        if targets[0][0] == '!':
+            f.write('!defined({0})'.format(cls._cpp_for_target(targets[0][1:])))
         else:
-            inv = ''
+            f.write(' || '.join(['defined({0})'.format(cls._cpp_for_target(t)) for t in targets]))
 
-        f.write('#if {0}defined({1})\n'.format(inv, cls._guards[scope]))
+        f.write('\n')
+
+    @staticmethod
+    def _optimised(used_targets):
+        """ Return an optimised (to reduce the amount of generated code) list
+        of a 2-tuple of targets and values.
+        """
+
+        # Generate a reverse dict.
+        by_value = {}
+        for target, values in used_targets.items():
+            for value in values:
+                by_value.setdefault(value, set()).add(target)
+
+        # Reverse again and merge the targets.
+        optimised = {}
+        for value, targets in by_value.items():
+            # Convert the targets to a list in predictable order.
+            targets = sorted(targets)
+
+            # Ignore unless all targets are platform names.
+            for target in targets:
+                if '-' in target:
+                    break
+            else:
+                nr_targets = len(targets)
+                nr_platforms = len(TARGET_PLATFORM_NAMES)
+
+                if nr_targets == nr_platforms:
+                    # The value is unscoped.
+                    targets = []
+                elif nr_targets == nr_platforms - 1:
+                    # Find the missing target.
+                    missing = list(TARGET_PLATFORM_NAMES)
+                    for target in targets:
+                        missing.remove(target)
+
+                    targets = ['!' + missing[0]]
+
+            optimised.setdefault(tuple(targets), set()).add(value)
+
+        # Convert to a data structure that will generate code in a predictable
+        # order with unscoped values first.
+        pretty = []
+        for targets in sorted(optimised.keys()):
+            pretty.append((targets, sorted(optimised[targets])))
+
+        return pretty
 
     @staticmethod
     def _freeze(job_writer, out_file, in_file, name, as_c=False):
@@ -1386,3 +1425,13 @@ static struct _inittab %s[] = {
             raise UserException(
                     "Unable to create the '{0}' directory".format(dir_name),
                     str(e))
+
+    @staticmethod
+    def _cpp_for_target(target):
+        """ Return the C pre-processor guard for an architecture or platform.
+        """
+
+        if '-' in target:
+            return TargetArch.find_arch(target).platform.cpp
+
+        return TargetPlatform.find_platform(target).cpp
