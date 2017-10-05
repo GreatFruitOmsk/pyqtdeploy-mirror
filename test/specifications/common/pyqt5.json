@@ -4,7 +4,7 @@
     "qt5": {
         "android-32#qt_dir":    "Qt/*/android_armv7",
         "ios-64#qt_dir":        "Qt/*/ios",
-        "osx-64#qt_dir":        "Qt/*/clang_64"
+        "macos-64#qt_dir":      "Qt/*/clang_64"
     },
 
     "python": {
@@ -34,7 +34,7 @@
                 "QtXmlPatterns", "_QOpenGLFunctions_ES2"
         ],
 
-        "osx-64#modules":           [
+        "macos-64#modules":         [
                 "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
                 "QtMacExtras", "QtMultimedia", "QtMultimediaWidgets",
                 "QtNetwork", "QtOpenGL", "QtPositioning", "QtPrintSupport",
