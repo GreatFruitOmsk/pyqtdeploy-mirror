@@ -644,6 +644,7 @@ class Builder():
 
         # Handle any required external libraries platform by platform.
         for platform in TargetPlatform.get_platforms():
+            targets = [platform.name]
             external_libs = project.external_libraries.get(platform.name, [])
 
             for required_lib in required_libraries:
@@ -653,24 +654,22 @@ class Builder():
                         if xlib.libs != '':
                             if xlib.defines != '':
                                 self._add_compound_scoped_values(used_defines,
-                                        xlib.defines, False, platform.name)
+                                        xlib.defines, False, targets)
 
                             if xlib.includepath != '':
                                 self._add_compound_scoped_values(
                                         used_includepath, xlib.includepath,
-                                        True, platform.name)
+                                        True, targets)
 
                             self._add_compound_scoped_values(used_libs,
-                                    xlib.libs, False, platform.name)
+                                    xlib.libs, False, targets)
 
-                    break
+                        break
                 else:
                     # Use the defaults.
                     for xlib in external_libraries_metadata:
                         if xlib.name == required_lib:
-                            targets = self._stdlib_extmod_targets()
-
-                            if len(targets) != 0:
+                            if platform.name in self._stdlib_extmod_targets():
                                 for lib in xlib.libs.split():
                                     self._add_value_for_targets(used_libs, lib,
                                             targets)
@@ -863,7 +862,7 @@ class Builder():
 
         return QFileInfo(file_path).absoluteFilePath()
 
-    def _add_compound_scoped_values(self, used_values, raw, isfilename, target=None):
+    def _add_compound_scoped_values(self, used_values, raw, isfilename, targets=None):
         """ Parse a string of space separated possible scoped values and add
         them to a dict of used values indexed by target.  The values are
         optionally treated as filenames where they are converted to absolute
@@ -872,7 +871,8 @@ class Builder():
 
         project = self._project
 
-        targets = TARGET_PLATFORM_NAMES if target is None else [target]
+        if targets is None:
+            targets = TARGET_PLATFORM_NAMES
 
         scoped_value_sets = {}
 
