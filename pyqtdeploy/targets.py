@@ -138,7 +138,8 @@ _TARGET_PLATFORMS = (
             'linux-*'),
     TargetPlatform("macOS", 'macos', ('macos-64', ), 'Q_OS_MAC', 'macx'),
     TargetPlatform("Windows", 'win', ('win-32', 'win-64'), 'Q_OS_WIN', 'win32',
-            ('win32_x86', 'win32_x64'))
+            ('win32:!contains(QMAKE_TARGET.arch, x86_64)',
+                    'win32:contains(QMAKE_TARGET.arch, x86_64)'))
 )
 
 

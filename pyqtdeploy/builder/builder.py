@@ -735,31 +735,6 @@ class Builder():
             f.write('\n')
             self._write_used_values(f, used_libs, 'LIBS')
 
-        # Get the set of all scopes used.
-        used_scopes = set()
-
-        for scope in used_scopes:
-            f.write('\n')
-
-            if scope == '':
-                indent = ''
-                tail = None
-            elif scope.startswith('win32_'):
-                # We could avoid the hardcoded handling by reverting to
-                # defining appropriate CONFIG values in a pre_configuration.pro
-                # file.
-                indent = '        '
-                f.write(
-                        'win32 {\n    %scontains(QMAKE_TARGET.arch, x86_64) {\n' % ('!' if scope == 'win32_x86' else ''))
-                tail = '    }\n}\n'
-            else:
-                indent = '    '
-                f.write('%s {\n' % scope)
-                tail = '}\n'
-
-            if tail is not None:
-                f.write(tail)
-
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
         if 'win' in project.python_use_platform and used_dlls and py_lib_dir is not None:
@@ -972,7 +947,7 @@ class Builder():
                         raise UserException(
                                 "'{0}' is not the name of a target architecture or platform".format(target))
 
-                    if arch.name in targets:
+                    if arch.platform.name in targets:
                         final_targets.append(arch.name)
 
             targets = final_targets
