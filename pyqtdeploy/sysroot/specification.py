@@ -222,7 +222,10 @@ class Specification:
                             spec_file, package.name)
 
                 # Create a default value.
-                value = option.type()
+                if option.default is None:
+                    value = option.type()
+                else:
+                    value = option.default
             elif not isinstance(value, option.type):
                 self._bad_type(option.name, spec_file, package.name)
             elif option.values:

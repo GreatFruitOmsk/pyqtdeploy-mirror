@@ -30,18 +30,33 @@ from abc import ABC, abstractmethod
 class PackageOption:
     """ Encapsulate an option for the package in the specification file. """
 
-    def __init__(self, name, type, required=False, values=None, help=None):
+    def __init__(self, name, type, required=False, default=None, values=None, help=None):
         """ Initialise the object. """
 
         self.name = name
         self.type = type
         self.required = required
+        self.default = default
         self.values = values
         self.help = help if help else "None available."
 
         if values:
             self.help += " The possible values are: {0}.".format(
-                    ', '.join(['"' + v + '"' for v in values]))
+                    ', '.join([self._format_value(v) for v in values]))
+
+        if default is not None:
+            self.help += " The default value is {0}.".format(
+                    self._format_value(default))
+
+    def _format_value(self, value):
+        """ Format a value according to the type of the option. """
+
+        value = str(value)
+
+        if self.type is not int:
+            value = "'" + value + "'"
+
+        return value
 
 
 class AbstractPackage(ABC):
