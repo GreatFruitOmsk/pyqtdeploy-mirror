@@ -32,19 +32,21 @@ from .... import AbstractPackage, PackageOption
 from .configure_python import configure_python
 
 
+# This is the minimum value required by Python v3.6.0.
+MINIMUM_ANDROID_API = 21
+
+
 class PythonPackage(AbstractPackage):
     """ The host and target Python package. """
 
     # The package-specific options.
     options = [
-        PackageOption('android_api', str,
+        PackageOption('android_api', int, default=MINIMUM_ANDROID_API,
                 help="The Android API level to target."),
         PackageOption('build_host_from_source', bool,
                 help="Build the host Python from source code rather than use an existing installation."),
         PackageOption('build_target_from_source', bool,
                 help="Build the target Python from source code rather than use an existing installation."),
-        PackageOption('disable_patches', bool,
-                help="Disable the patching of the source code for Android."),
         PackageOption('dynamic_loading', bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
         PackageOption('source', str, required=True,
@@ -107,6 +109,17 @@ class PythonPackage(AbstractPackage):
                     "Python v{0} is not supported.".format(
                             sysroot.format_version_nr(version_nr)))
 
+        if sysroot.target_platform_name == 'android':
+            if version_nr < 0x030600:
+                sysroot.error(
+                        "Python v{0} is not supported on android.".format(
+                                sysroot.format_version_nr(version_nr)))
+
+            if self.android_api < MINIMUM_ANDROID_API:
+                sysroot.error(
+                        "the minimum Android API is {0}.".format(
+                                MINIMUM_ANDROID_API))
+
         sysroot.python_version_nr = version_nr
 
     def _build_host_from_source(self, sysroot, archive):
@@ -164,8 +177,7 @@ class PythonPackage(AbstractPackage):
         sysroot.unpack_archive(archive)
 
         # Configure for the target.
-        configure_python(self.android_api, self.dynamic_loading,
-                not self.disable_patches, sysroot)
+        configure_python(self.android_api, self.dynamic_loading, sysroot)
 
         # Do the build.
         sysroot.run(sysroot.host_qmake, 'SYSROOT=' + sysroot.sysroot_dir)

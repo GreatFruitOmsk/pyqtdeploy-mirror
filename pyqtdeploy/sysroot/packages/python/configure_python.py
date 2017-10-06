@@ -26,11 +26,10 @@
 
 import os
 
-from .patch import apply_diffs
 from .pyconfig import generate_pyconfig_h
 
 
-def configure_python(api, dynamic_loading, patches, sysroot):
+def configure_python(android_api, dynamic_loading, sysroot):
     """ Configure a Python source directory for a particular target. """
 
     py_version_str = sysroot.format_version_nr(sysroot.python_version_nr)
@@ -44,20 +43,6 @@ def configure_python(api, dynamic_loading, patches, sysroot):
     py_src_dir = os.getcwd()
 
     configurations_dir = sysroot.get_embedded_dir(__file__, 'configurations')
-
-    # Patch with the most appropriate diff.  Only Android needs patches and
-    # only for Python earlier than v3.6.0.
-    if patches and sysroot.target_platform_name == 'android' and (py_major, py_minor) < (3, 6):
-        python_diff_src_file = _get_file_for_version(py_version, 'patches',
-                sysroot)
-
-        # I'm too lazy to generate patches for all old versions.
-        if python_diff_src_file == '':
-            sysroot.error(
-                    "Python v{0} is not supported for {1}".format(
-                            py_version_str, sysroot.target_arch_name))
-
-        apply_diffs(python_diff_src_file, py_src_dir, sysroot)
 
     # Copy the modules config.c file.
     config_c_src_file = 'config_py{0}.c'.format(py_major)
@@ -77,8 +62,8 @@ def configure_python(api, dynamic_loading, patches, sysroot):
     if sysroot.target_platform_name == 'win':
         sysroot.progress("Installing {0}".format(pyconfig_h_dst_file))
 
-        pyconfig_h_src_file = _get_file_for_version(py_version, 'pyconfig',
-                sysroot)
+        pyconfig_h_src_file = sysroot.get_embedded_file_for_version(py_version,
+                __file__, 'configurations', 'pyconfig')
 
         sysroot.copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
                 macros={
@@ -95,13 +80,10 @@ def configure_python(api, dynamic_loading, patches, sysroot):
             except FileNotFoundError:
                 pass
     else:
-        if sysroot.target_platform_name == 'android' and py_major == 3 and py_minor >= 6 and api < 21:
-            sysroot.error(
-                    "Python v3.6.0 and later requires Android API level 21 or later")
-
         sysroot.progress("Generating {0}".format(pyconfig_h_dst_file))
 
-        generate_pyconfig_h(pyconfig_h_dst_file, api, dynamic_loading, sysroot)
+        generate_pyconfig_h(pyconfig_h_dst_file, android_api, dynamic_loading,
+                sysroot)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
@@ -116,13 +98,3 @@ def configure_python(api, dynamic_loading, patches, sysroot):
                 '@PY_MINOR_VERSION@': str(py_minor),
                 '@PY_PATCH_VERSION@': str(py_patch),
                 '@PY_DYNAMIC_LOADING@': 'enabled' if dynamic_loading else 'disabled'})
-
-
-def _get_file_for_version(version, subdir, sysroot):
-    """ Return the name of a file in a sub-directory of the 'configurations'
-    directory that is most appropriate for a particular version.  An empty
-    string is returned if the version is not supported.
-    """
-
-    return sysroot.get_embedded_file_for_version(version, __file__,
-            'configurations', subdir)

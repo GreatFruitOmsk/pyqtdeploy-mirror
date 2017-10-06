@@ -34,8 +34,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         create_file as fu_create_file, extract_version as fu_extract_version,
         get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
-        open_file as fu_open_file, parse_version as fu_parse_version,
-        read_embedded_file as fu_read_embedded_file)
+        open_file as fu_open_file, parse_version as fu_parse_version)
 from ..hosts import Host
 from ..targets import TargetArch
 from ..user_exception import UserException
@@ -531,15 +530,6 @@ class Sysroot:
         subprocess.check_call(args)
 
         return None
-
-    @staticmethod
-    def read_embedded_file(name):
-        """ Return the contents of an embedded text file as a QByteArray.  name
-        is the name of the file.  A UserException is raised if there was an
-        error.
-        """
-
-        return fu_read_embedded_file(name)
 
     @property
     def sdk(self):
