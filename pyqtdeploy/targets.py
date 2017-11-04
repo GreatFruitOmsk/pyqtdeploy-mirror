@@ -213,6 +213,8 @@ class iOS(AppleTargetPlatform):
         
         super().__init__("iOS", 'ios', ('ios-64', ), 'Q_OS_IOS', 'ios')
 
+iOS()
+
 
 class Linux(TargetPlatform):
     """ Encapsulate the Linux platform. """
