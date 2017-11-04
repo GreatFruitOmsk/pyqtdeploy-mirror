@@ -213,15 +213,6 @@ class iOS(AppleTargetPlatform):
         
         super().__init__("iOS", 'ios', ('ios-64', ), 'Q_OS_IOS', 'ios')
 
-    def get_apple_sdk(self, user_sdk):
-        """ Return the name of a target-specific Apple SDK. """
-
-        # TODO: Do we need separate ios and iossimulator targets?  Is it qmake
-        # that determines whether the simulator is used?
-        return self.find_sdk(user_sdk, 'iPhoneSimulator')
-
-iOS()
-
 
 class Linux(TargetPlatform):
     """ Encapsulate the Linux platform. """
