@@ -91,7 +91,7 @@ class Qt5Package(AbstractPackage):
         androiddeployqt_path = os.path.join(qt_bin_dir, androiddeployqt)
 
         if os.path.isfile(androiddeployqt_path):
-            make_symlink(androiddeployqt_path,
+            sysroot.make_symlink(androiddeployqt_path,
                     os.path.join(sysroot.host_bin_dir, androiddeployqt))
 
     def _build_from_source(self, sysroot):
