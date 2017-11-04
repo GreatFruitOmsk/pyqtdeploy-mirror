@@ -48,7 +48,8 @@ def main():
     parser.add_argument('--plugin-path',
             help="the directories searched for package plugins",
             metavar="PATH")
-    parser.add_argument('--sdk', help="the SDK to use for Apple targets"),
+    parser.add_argument('--apple-sdk',
+            help="the SDK to use for Apple targets"),
     parser.add_argument('--source-dir',
             help="the default directory containing the source archives",
             metavar="DIR")
@@ -71,7 +72,7 @@ def main():
 
     try:
         sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
-                args.source_dir, args.sdk, args.target, message_handler)
+                args.source_dir, args.apple_sdk, args.target, message_handler)
 
         if args.options:
             sysroot.show_options(args.package)

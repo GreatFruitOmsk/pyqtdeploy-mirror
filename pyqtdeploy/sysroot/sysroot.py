@@ -46,7 +46,7 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, sdk, target_arch_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, apple_sdk, target_arch_name, message_handler):
         """ Initialise the object. """
 
         self.target_arch = TargetArch.factory(target_arch_name)
@@ -60,7 +60,7 @@ class Sysroot:
         self._host = Host.factory()
         self._specification = Specification(sysroot_json, plugin_path,
                 self.target_arch)
-        self._sdk = self._find_sdk(sdk)
+        self._apple_sdk = self._find_apple_sdk(apple_sdk)
         self._message_handler = message_handler
 
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
@@ -132,8 +132,8 @@ class Sysroot:
         return packages
 
     @staticmethod
-    def _find_sdk(user_sdk):
-        """ Find an SDK to use. """
+    def _find_apple_sdk(user_sdk):
+        """ Find an Apple SDK to use. """
 
         if user_sdk and '/' in user_sdk:
             # The user specified an explicit path so use it.
@@ -532,13 +532,13 @@ class Sysroot:
         return None
 
     @property
-    def sdk(self):
+    def apple_sdk(self):
         """ The Apple SDK to use. """
 
-        if self._sdk is None:
-            self.error("a valid SDK hasn't been specified")
+        if self._apple_sdk is None:
+            self.error("a valid Apple SDK hasn't been specified")
 
-        return self._sdk
+        return self._apple_sdk
 
     @property
     def target_arch_name(self):

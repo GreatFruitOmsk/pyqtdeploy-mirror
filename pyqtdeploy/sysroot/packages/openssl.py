@@ -100,7 +100,7 @@ class OpenSSLPackage(AbstractPackage):
         sysroot.run('patch', '-p1', '-i', patches[0])
 
         # Configure, build and install.
-        sdk = sysroot.sdk
+        sdk = sysroot.apple_sdk
 
         args = ['perl', 'Configure',
                 'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
