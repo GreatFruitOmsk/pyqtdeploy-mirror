@@ -408,7 +408,7 @@ class Project(QObject):
             target = external_lib_element.get('target')
             if target is None:
                 # The project format is version 6 or earlier.
-                target_list = [p.name for p in TargetPlatform.get_platforms()]
+                target_list = [p.name for p in TargetPlatform.platforms]
             else:
                 target_list = [target]
 

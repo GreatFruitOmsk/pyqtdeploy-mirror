@@ -60,7 +60,7 @@ class Sysroot:
         self._host = Host.factory()
         self._specification = Specification(sysroot_json, plugin_path,
                 self.target_arch)
-        self._apple_sdk = self._find_apple_sdk(apple_sdk)
+        self._apple_sdk = apple_sdk
         self._message_handler = message_handler
 
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
@@ -130,42 +130,6 @@ class Sysroot:
                 self.error("unkown package '{0}'".format(name))
 
         return packages
-
-    @staticmethod
-    def _find_apple_sdk(user_sdk):
-        """ Find an Apple SDK to use. """
-
-        if user_sdk and '/' in user_sdk:
-            # The user specified an explicit path so use it.
-            sdk = user_sdk
-            if not os.path.isdir(sdk):
-                sdk = None
-        else:
-            # TODO: The candidate directories should be target specific and we
-            # need to decide how to handle iPhoneSimulator vs. iPhone.
-            sdk_dirs = (
-                '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs',
-                '/Developer/SDKs'
-            )
-
-            for sdk_dir in sdk_dirs:
-                if os.path.isdir(sdk_dir):
-                    if user_sdk:
-                        sdk = os.path.join(sdk_dir, user_sdk)
-                    else:
-                        # Use the latest SDK we find.
-                        sdks = glob.glob(sdk_dir + '/MacOSX*.sdk')
-                        if len(sdks) == 0:
-                            sdk = None
-                        else:
-                            sdks.sort()
-                            sdk = sdks[-1]
-
-                    break
-            else:
-                sdk = None
-
-        return sdk
 
     ###########################################################################
     # The following make up the public API to be used by package plugins.
@@ -535,10 +499,7 @@ class Sysroot:
     def apple_sdk(self):
         """ The Apple SDK to use. """
 
-        if self._apple_sdk is None:
-            self.error("a valid Apple SDK hasn't been specified")
-
-        return self._apple_sdk
+        return self.target_arch.platform.get_apple_sdk(self._apple_sdk)
 
     @property
     def target_arch_name(self):

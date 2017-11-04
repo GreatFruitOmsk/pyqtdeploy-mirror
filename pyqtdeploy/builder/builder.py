@@ -46,7 +46,7 @@ from ..windows import get_python_install_path
 
 
 # The list of all target platform names.
-TARGET_PLATFORM_NAMES = [p.name for p in TargetPlatform.get_platforms()]
+TARGET_PLATFORM_NAMES = [p.name for p in TargetPlatform.platforms]
 
 
 class Builder():
@@ -653,7 +653,7 @@ class Builder():
                         source_dir + '/PC', ['win'])
 
         # Handle any required external libraries platform by platform.
-        for platform in TargetPlatform.get_platforms():
+        for platform in TargetPlatform.platforms:
             targets = [platform.name]
             external_libs = project.external_libraries.get(platform.name, [])
 

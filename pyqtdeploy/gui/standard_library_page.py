@@ -96,7 +96,7 @@ class StandardLibraryPage(QSplitter):
         self._plat_guis = QTabWidget()
         host_gui = None
 
-        for platform in TargetPlatform.get_platforms():
+        for platform in TargetPlatform.platforms:
             plat_gui = _PlatformGui(platform.name)
             self._plat_guis.addTab(plat_gui, platform.full_name)
 
