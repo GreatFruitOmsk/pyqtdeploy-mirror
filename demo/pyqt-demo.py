@@ -2,7 +2,7 @@
 
 
 ###############################################################################
-# Copyright (c) 2016 Riverbank Computing Limited.
+# Copyright (c) 2017 Riverbank Computing Limited.
 ###############################################################################
 
 
@@ -137,7 +137,7 @@ This is a simple Python application using the PyQt bindings for the
 cross-platform Qt application framework.
 </p>
 <p>
-It will run on OSX, Linux, Windows, iOS and Android without changes to the
+It will run on macOS, Linux, Windows, iOS and Android without changes to the
 source code.
 </p>
 <p>
