@@ -61,15 +61,17 @@ class PyQt5Package(AbstractPackage):
             sysroot.copy_file(license, 'sip')
 
         # Create a configuration file.
-        cfg = '''py_inc_dir = {0}
-py_pylib_dir = {1}
-py_pylib_lib = {2}
-pyqt_module_dir = {3}
-pyqt_sip_dir = {4}
-[Qt 5.0]
-pyqt_modules = {5}
-'''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
-                sysroot.target_py_lib, sysroot.target_sitepackages_dir,
+        cfg = '''py_platform = {0}
+py_inc_dir = {1}
+py_pylib_dir = {2}
+py_pylib_lib = {3}
+pyqt_module_dir = {4}
+pyqt_sip_dir = {5}
+[Qt 5]
+pyqt_modules = {6}
+'''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
+                sysroot.target_lib_dir, sysroot.target_py_lib,
+                sysroot.target_sitepackages_dir,
                 os.path.join(sysroot.target_sip_dir, 'PyQt5'),
                 ' '.join(self.modules))
 

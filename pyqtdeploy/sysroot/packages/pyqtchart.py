@@ -48,14 +48,16 @@ class PyQtChartPackage(AbstractPackage):
         sysroot.unpack_archive(archive)
 
         # Create a configuration file.
-        cfg = '''py_inc_dir = {0}
-py_pylib_dir = {1}
-py_pylib_lib = {2}
-py_sip_dir = {3}
+        cfg = '''py_platform = {0}
+py_inc_dir = {1}
+py_pylib_dir = {2}
+py_pylib_lib = {3}
+py_sip_dir = {4}
 [PyQt 5]
-module_dir = {4}
-'''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
-                sysroot.target_py_lib, sysroot.target_sip_dir,
+module_dir = {5}
+'''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
+                sysroot.target_lib_dir, sysroot.target_py_lib,
+                sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
         disabled_features = sysroot.find_package('pyqt5').disabled_features

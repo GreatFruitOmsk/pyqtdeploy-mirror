@@ -545,6 +545,25 @@ class Sysroot:
         return self._py_subdir + 'm'
 
     @property
+    def target_py_platform(self):
+        """ The name of the target Python platform (as known by PyQt's
+        configure.py).
+        """
+
+        # Note that this is a bit of a hack because configure.py doesn't
+        # distinguish between Android and Linux or iOS and macOS.
+        py_platform = self.target_platform_name
+
+        if py_platform == 'android':
+            py_platform = 'linux'
+        elif py_platform in ('ios', 'macos'):
+            py_platform = 'darwin'
+        elif py_platform == 'win':
+            py_platform = 'win32'
+
+        return py_platform
+
+    @property
     def target_sip_dir(self):
         """ The name of the directory containing the target .sip files. """
 
