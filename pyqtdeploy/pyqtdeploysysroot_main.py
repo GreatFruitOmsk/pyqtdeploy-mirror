@@ -49,7 +49,7 @@ def main():
             help="the directories searched for package plugins",
             metavar="PATH")
     parser.add_argument('--apple-sdk',
-            help="the SDK to use for Apple targets"),
+            help="the SDK to use for Apple targets", metavar="SDK"),
     parser.add_argument('--source-dir',
             help="the default directory containing the source archives",
             metavar="DIR")
