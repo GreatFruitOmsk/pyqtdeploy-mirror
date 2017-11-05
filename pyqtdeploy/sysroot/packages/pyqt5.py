@@ -67,7 +67,7 @@ py_pylib_dir = {2}
 py_pylib_lib = {3}
 pyqt_module_dir = {4}
 pyqt_sip_dir = {5}
-[Qt 5]
+[Qt 5.0]
 pyqt_modules = {6}
 '''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
                 sysroot.target_lib_dir, sysroot.target_py_lib,
