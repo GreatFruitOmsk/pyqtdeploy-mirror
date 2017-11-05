@@ -18,7 +18,12 @@
     },
 
     "pyqt5": {
-        "ios-64#disabled_features": [
+        "android-32#disabled_features": [
+                "PyQt_Desktop_OpenGL", "PyQt_Printer", "PyQt_PrintDialog",
+                "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
+        ],
+
+        "ios-64#disabled_features":     [
                 "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
                 "PyQt_MacCocoaViewContainer", "PyQt_Printer",
                 "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
@@ -26,10 +31,10 @@
                 "PyQt_NotBootstrapped"
         ],
 
-        "modules":                  [
+        "modules":                      [
                 "QtCore", "QtGui", "QtPrintSupport", "QtWidgets"
         ],
-        "source":                   "PyQt5_*-5.*.tar.gz"
+        "source":                       "PyQt5_*-5.*.tar.gz"
     },
 
     "qscintilla": {

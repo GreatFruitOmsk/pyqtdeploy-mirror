@@ -18,14 +18,11 @@
     },
 
     "pyqt5": {
-        "ios-64#disabled_features": [
-                "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
-                "PyQt_MacCocoaViewContainer", "PyQt_Printer",
-                "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
-                "PyQt_PrintPreviewWidget", "PyQt_Process",
-                "PyQt_NotBootstrapped"
+        "android-32#disabled_features": [
+                "PyQt_Desktop_OpenGL", "PyQt_Printer", "PyQt_PrintDialog",
+                "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
         ],
-        "ios-64#modules":           [
+        "android-32#modules":           [
                 "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
                 "QtMultimedia", "QtMultimediaWidgets", "QtNetwork", "QtNfc",
                 "QtOpenGL", "QtPositioning", "QtPrintSupport", "QtQml",
@@ -34,7 +31,23 @@
                 "QtXmlPatterns", "_QOpenGLFunctions_ES2"
         ],
 
-        "macos-64#modules":         [
+        "ios-64#disabled_features":     [
+                "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
+                "PyQt_MacCocoaViewContainer", "PyQt_Printer",
+                "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
+                "PyQt_PrintPreviewWidget", "PyQt_Process",
+                "PyQt_NotBootstrapped"
+        ],
+        "ios-64#modules":               [
+                "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
+                "QtMultimedia", "QtMultimediaWidgets", "QtNetwork", "QtNfc",
+                "QtOpenGL", "QtPositioning", "QtPrintSupport", "QtQml",
+                "QtQuick", "QtQuickWidgets", "QtSensors", "QtSql", "QtSvg",
+                "QtTest", "QtWebChannel", "QtWebSockets", "QtWidgets", "QtXml",
+                "QtXmlPatterns", "_QOpenGLFunctions_ES2"
+        ],
+
+        "macos-64#modules":             [
                 "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
                 "QtMacExtras", "QtMultimedia", "QtMultimediaWidgets",
                 "QtNetwork", "QtOpenGL", "QtPositioning", "QtPrintSupport",
@@ -43,6 +56,7 @@
                 "QtWebSockets", "QtWidgets", "QtXml", "QtXmlPatterns",
                 "_QOpenGLFunctions_2_0"
         ],
-        "source":                   "PyQt5_*-5.*.tar.gz"
+
+        "source":                       "PyQt5_*-5.*.tar.gz"
     }
 }
