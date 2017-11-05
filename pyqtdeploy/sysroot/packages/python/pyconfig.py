@@ -58,7 +58,7 @@ class Config:
 
         # Return None if the targetted Android version is earlier than the one
         # for which the value is defined.
-        if plat_name == 'android' and android_api < self._api:
+        if android_api is not None and android_api < self._api:
             return None
 
         return value
@@ -1541,7 +1541,7 @@ pyconfig = (
 )
 
 
-def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
+def generate_pyconfig_h(pyconfig_h_name, dynamic_loading, sysroot):
     """ Create the pyconfig.h file for a specific target variant. """
 
     pyconfig_h = sysroot.create_file(pyconfig_h_name)
@@ -1552,7 +1552,8 @@ def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
 ''')
 
     if sysroot.target_platform_name == 'android':
-        pyconfig_h.write('#define ANDROID_API_LEVEL {0}\n'.format(android_api))
+        pyconfig_h.write(
+                '#define ANDROID_API_LEVEL {0}\n'.format(sysroot.android_api))
 
     if dynamic_loading:
         pyconfig_h.write('#define HAVE_DYNAMIC_LOADING 1\n')
@@ -1569,7 +1570,7 @@ def generate_pyconfig_h(pyconfig_h_name, android_api, dynamic_loading, sysroot):
                 pyconfig_h.write(
                         '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
 
-        value = config.value(sysroot.target_arch, android_api)
+        value = config.value(sysroot.target_arch, sysroot.android_api)
 
         if value is None:
             # We provide an commented out #define to make it easier to modify

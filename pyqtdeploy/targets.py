@@ -25,6 +25,7 @@
 
 
 import glob
+import os
 import struct
 import sys
 
@@ -60,6 +61,15 @@ class TargetPlatform:
             if platform.name == target_platform_name:
                 return platform
 
+        return None
+
+    def get_android_api(self):
+        """ Return the number of the Android API.  None is returned if the
+        platform doesn't have Android APIs, otherwise an exception is raised
+        for any other sort of error.
+        """
+
+        # This default implementation does not support Android APIs.
         return None
 
     def get_apple_sdk(self, user_sdk):
@@ -196,11 +206,38 @@ class AppleTargetPlatform(TargetPlatform):
 class Android(TargetPlatform):
     """ Encapsulate the Android platform. """
 
+    # This is the minimum API required by Python v3.6.
+    MINIMUM_API = 21
+
     def __init__(self):
         """ Initialise the object. """
 
         super().__init__("Android", 'android', ('android-32', ),
                 'Q_OS_ANDROID', 'android')
+
+    def get_android_api(self):
+        """ Return the number of the Android API. """
+
+        api = None
+
+        ndk_platform = os.environ.get('ANDROID_NDK_PLATFORM')
+
+        if ndk_platform:
+            parts = ndk_platform.split('-')
+
+            if len(parts) == 2 and parts[0] == 'android':
+                try:
+                    api = int(parts[1])
+                except ValueError:
+                    api = 0
+
+                if api < self.MINIMUM_API:
+                    api = None
+
+        if api is None:
+            raise UserException("Use the ANDROID_NDK_PLATFORM environment variable to specify an API level >= {}".format(self.MINIMUM_API))
+
+        return api
 
 Android()
 

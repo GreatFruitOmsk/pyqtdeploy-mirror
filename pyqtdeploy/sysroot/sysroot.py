@@ -135,6 +135,18 @@ class Sysroot:
     # The following make up the public API to be used by package plugins.
     ###########################################################################
 
+    @property
+    def android_api(self):
+        """ The Android API to use. """
+
+        return self.target_arch.platform.get_android_api()
+
+    @property
+    def apple_sdk(self):
+        """ The Apple SDK to use. """
+
+        return self.target_arch.platform.get_apple_sdk(self._apple_sdk)
+
     def copy_file(self, src, dst):
         """ Copy a file. """
 
@@ -494,12 +506,6 @@ class Sysroot:
         subprocess.check_call(args)
 
         return None
-
-    @property
-    def apple_sdk(self):
-        """ The Apple SDK to use. """
-
-        return self.target_arch.platform.get_apple_sdk(self._apple_sdk)
 
     @property
     def target_arch_name(self):

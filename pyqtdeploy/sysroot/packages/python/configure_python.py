@@ -29,7 +29,7 @@ import os
 from .pyconfig import generate_pyconfig_h
 
 
-def configure_python(android_api, dynamic_loading, sysroot):
+def configure_python(dynamic_loading, sysroot):
     """ Configure a Python source directory for a particular target. """
 
     py_version_str = sysroot.format_version_nr(sysroot.python_version_nr)
@@ -82,8 +82,7 @@ def configure_python(android_api, dynamic_loading, sysroot):
     else:
         sysroot.progress("Generating {0}".format(pyconfig_h_dst_file))
 
-        generate_pyconfig_h(pyconfig_h_dst_file, android_api, dynamic_loading,
-                sysroot)
+        generate_pyconfig_h(pyconfig_h_dst_file, dynamic_loading, sysroot)
 
     # Copy the python.pro file.
     python_pro_dst_file = os.path.join(py_src_dir, 'python.pro')
