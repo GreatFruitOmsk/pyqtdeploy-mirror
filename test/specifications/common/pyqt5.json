@@ -23,12 +23,13 @@
                 "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
         ],
         "android-32#modules":           [
-                "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
-                "QtMultimedia", "QtMultimediaWidgets", "QtNetwork", "QtNfc",
-                "QtOpenGL", "QtPositioning", "QtPrintSupport", "QtQml",
-                "QtQuick", "QtQuickWidgets", "QtSensors", "QtSql", "QtSvg",
-                "QtTest", "QtWebChannel", "QtWebSockets", "QtWidgets", "QtXml",
-                "QtXmlPatterns", "_QOpenGLFunctions_ES2"
+                "QtAndroidExtras", "QtBluetooth", "QtCore", "QtGui", "QtHelp",
+                "QtLocation", "QtMultimedia", "QtMultimediaWidgets",
+                "QtNetwork", "QtNfc", "QtOpenGL", "QtPositioning",
+                "QtPrintSupport", "QtQml", "QtQuick", "QtQuickWidgets",
+                "QtSensors", "QtSql", "QtSvg", "QtTest", "QtWebChannel",
+                "QtWebSockets", "QtWidgets", "QtXml", "QtXmlPatterns",
+                "_QOpenGLFunctions_ES2"
         ],
 
         "ios-64#disabled_features":     [
