@@ -38,8 +38,9 @@
                 "PyQt_NotBootstrapped"
         ],
 
-        "modules":                  [
-                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets"
+        "ios|macos#modules":        [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtMacExtras"
         ],
         "source":                   "PyQt5_*-5.*.tar.gz"
     },

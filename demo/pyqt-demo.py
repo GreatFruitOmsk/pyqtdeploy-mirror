@@ -20,6 +20,34 @@ except ImportError:
     pdy_hexversion = 0
 
 
+# Try and import the platform-specific modules.
+platform_module = "Not available"
+
+try:
+    import PyQt5.QtAndroidExtras
+    platform_module = 'QtAndroidExtras'
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtMacExtras
+    platform_module = 'QtMacExtras'
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtWinExtras
+    platform_module = 'QtWinExtras'
+except ImportError:
+    pass
+
+try:
+    import PyQt5.QtX11Extras
+    platform_module = 'QtX11Extras'
+except ImportError:
+    pass
+
+
 # Try and import the optional products.
 optional_products = []
 
@@ -87,6 +115,8 @@ class Model(QStandardItemModel):
         self.add_value("sys.path", str(sys.path))
         self.add_value("sys.path_hooks", str(sys.path_hooks))
         self.add_value("sys.meta_path", str(sys.meta_path))
+
+        self.add_value("Platform module", platform_module)
 
         avail = "unavailable"
         try:

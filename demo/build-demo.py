@@ -100,7 +100,7 @@ run(args)
 if target.startswith('android'):
     print("TODO")
 elif target.startswith('ios'):
-    print("The pyqt-demo.xcodeproj file can be found in the '{0}' directory. Run Xcode to build the app and run it in the simulator.".format(build_dir))
+    print("The pyqt-demo.xcodeproj file can be found in the '{0}' directory. Run Xcode to build the app and run it in the simulator or deploy it to a device.".format(build_dir))
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
 else:
