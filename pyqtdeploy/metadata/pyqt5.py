@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,9 @@ pyqt5_metadata = {
 
     'Qt':
         PyQt5Metadata(deps=['sip']),
+
+    'QtAndroidExtras':
+        PyQt5Metadata(deps=['QtCore'], qt5=['androidextras']),
 
     'QtBluetooth':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['bluetooth']),
