@@ -79,7 +79,9 @@ class TargetSpecifications:
             if verbose:
                 args.append('--verbose')
 
-            args.extend(['--source-dir', os.path.join(self._root_dir, 'src')])
+            args.extend(['--source-dir',
+                    os.path.join(os.path.dirname(self._root_dir), 'demo',
+                            'src')])
             args.extend(['--target', self._target])
             args.extend(['--sysroot', sysroot])
             args.append(spec)

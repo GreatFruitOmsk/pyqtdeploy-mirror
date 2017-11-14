@@ -66,7 +66,7 @@ if target:
     build_dir += '-' + target
 
 if not sources:
-    sources = os.path.join('..', 'test', 'src')
+    sources = 'src'
 
 # Build sysroot.
 if build_sysroot:

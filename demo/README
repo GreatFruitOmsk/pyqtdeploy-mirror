@@ -16,8 +16,7 @@ should also be possible to build Android applications on Windows and Linux but
 this isn't tested.
 
 By default build-demo.py expects to find the source code for the different
-components (Python, OpenSSL, Qt, SIP, PyQt etc.) in the directory ../test/src
-(ie. shared with the pyqtdeploy-sysroot tests).  The '--sources' option can be
-used to specify a different directory.  For iOS and Android targets the Qt
-installations (installed using the binary installers from The Qt Company) must
-be in the same directory.
+components (Python, OpenSSL, Qt, SIP, PyQt etc.) in the directory 'src'.  The
+'--sources' option can be used to specify a different directory.  For iOS and
+Android targets the Qt installations (installed using the binary installers
+from The Qt Company) must be in the same directory.

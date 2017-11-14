@@ -6,7 +6,7 @@ pyqtdeploy/version.py
 VERSION
 demo/build
 demo/build-*
+demo/src/*
 demo/sysroot
 demo/sysroot-*
-test/src/*
 test/sysroot
