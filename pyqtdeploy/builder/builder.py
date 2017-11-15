@@ -415,48 +415,48 @@ class Builder():
             if metadata.gui:
                 needs_gui = True
 
-            if metadata.platforms:
-                for platform in metadata.platforms:
-                    update_qt_config(qmake_qt4, platform, metadata.qt4)
-                    update_qt_config(qmake_config4, platform, metadata.config4)
+            if metadata.targets:
+                for target in metadata.targets:
+                    update_qt_config(qmake_qt4, target, metadata.qt4)
+                    update_qt_config(qmake_config4, target, metadata.config4)
 
-                    update_qt_config(qmake_qt5, platform, metadata.qt5)
-                    update_qt_config(qmake_config5, platform, metadata.config5)
+                    update_qt_config(qmake_qt5, target, metadata.qt5)
+                    update_qt_config(qmake_config5, target, metadata.config5)
             else:
-                update_qt_config(qmake_qt4, None, metadata.qt4)
-                update_qt_config(qmake_config4, None, metadata.config4)
+                update_qt_config(qmake_qt4, '', metadata.qt4)
+                update_qt_config(qmake_config4, '', metadata.config4)
 
-                update_qt_config(qmake_qt5, None, metadata.qt5)
-                update_qt_config(qmake_config5, None, metadata.config5)
+                update_qt_config(qmake_qt5, '', metadata.qt5)
+                update_qt_config(qmake_config5, '', metadata.config5)
 
         # Extract QT and CONFIG values that not version-specific.
         qmake_qt45 = {}
         qmake_config45 = {}
 
-        def common_qt_config(platform, values_45, values_4, values_5):
-            plat_values_4 = values_4.setdefault(platform, set())
-            plat_values_5 = values_5.setdefault(platform, set())
+        def common_qt_config(target, values_45, values_4, values_5):
+            target_values_4 = values_4.setdefault(target, set())
+            target_values_5 = values_5.setdefault(target, set())
 
-            plat_values_45 = plat_values_4 & plat_values_5
-            plat_values_4 -= plat_values_45
-            plat_values_5 -= plat_values_45
+            target_values_45 = target_values_4 & target_values_5
+            target_values_4 -= target_values_45
+            target_values_5 -= target_values_45
 
-            if plat_values_45:
-                values_45[platform] = plat_values_45
+            if target_values_45:
+                values_45[target] = target_values_45
 
-            if not plat_values_4:
-                del values_4[platform]
+            if not target_values_4:
+                del values_4[target]
 
-            if not plat_values_5:
-                del values_5[platform]
+            if not target_values_5:
+                del values_5[target]
 
-        for platform in TargetPlatform.platforms:
-            common_qt_config(platform, qmake_qt45, qmake_qt4, qmake_qt5)
-            common_qt_config(platform, qmake_config45, qmake_config4,
+        for target in TARGET_PLATFORM_NAMES:
+            common_qt_config(target, qmake_qt45, qmake_qt4, qmake_qt5)
+            common_qt_config(target, qmake_config45, qmake_config4,
                     qmake_config5)
 
-        common_qt_config(None, qmake_qt45, qmake_qt4, qmake_qt5)
-        common_qt_config(None, qmake_config45, qmake_config4, qmake_config5)
+        common_qt_config('', qmake_qt45, qmake_qt4, qmake_qt5)
+        common_qt_config('', qmake_config45, qmake_config4, qmake_config5)
 
         # Generate QT.
         self._write_qt_config(f, 'QT', None, qmake_qt45)
@@ -507,42 +507,43 @@ class Builder():
             site_packages = standard_library_dir + '/site-packages'
             pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
-            l_libs = []
-            for pyqt in self._get_all_pyqt_modules():
+            need_pyqt_dir = True
+
+            for module in self._get_all_pyqt_modules():
+                # The uic module is pure Python.
+                if module == 'uic':
+                    continue
+
+                metadata = self._get_pyqt_module_metadata(module)
+
                 # The sip module is always needed (implicitly or explicitly) if
                 # we have got this far.  We handle it separately as it is in a
                 # different directory.
-                if pyqt == 'sip':
-                    continue
+                if module == 'sip':
+                    module_path = module
 
-                # The uic module is pure Python.
-                if pyqt == 'uic':
-                    continue
+                    self._add_value_for_targets(used_libs,
+                            '-L' + site_packages)
+                else:
+                    module_path = pyqt_version + '.' + module
 
-                self._add_value_for_targets(used_inittab,
-                        pyqt_version + '.' + pyqt)
+                    if need_pyqt_dir:
+                        self._add_value_for_targets(used_libs,
+                                '-L' + site_packages + '/' + pyqt_version)
+                        need_pyqt_dir = False
 
-                lib_name = pyqt
-                if self._get_pyqt_module_metadata(pyqt).needs_suffix:
+                self._add_value_for_targets(used_inittab, module_path,
+                        metadata.targets)
+
+                lib_name = '-l' + module
+                if metadata.needs_suffix:
                     # Qt4's qmake thinks -lQtCore etc. always refer to the Qt
                     # libraries so PyQt4 creates static libraries with a
                     # suffix.
                     lib_name += '_s'
 
-                l_libs.append('-l' + lib_name)
-
-            # Add the LIBS value for any PyQt modules to all targets.
-            if len(l_libs) > 0:
-                self._add_value_for_targets(used_libs,
-                        '-L' + site_packages + '/' + pyqt_version)
-
-                for l_lib in l_libs:
-                    self._add_value_for_targets(used_libs, l_lib)
-
-            # Add the sip module.
-            self._add_value_for_targets(used_inittab, 'sip')
-            self._add_value_for_targets(used_libs, '-L' + site_packages)
-            self._add_value_for_targets(used_libs, '-lsip')
+                self._add_value_for_targets(used_libs, lib_name,
+                        metadata.targets)
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
@@ -782,47 +783,47 @@ class Builder():
     @classmethod
     def _write_qt_config(cls, f, name, qt_major, values):
         """ Write the values of QT or CONFIG which may be Qt version and/or
-        platform specific.
+        target specific.
         """
 
-        # Do any non-platform specific values first.
-        plat_values = values.get(None)
-        if plat_values:
-            cls._write_platform_qt_config(f, name, qt_major, None, plat_values)
+        # Do any non-target specific values first.
+        target_values = values.get('')
+        if target_values:
+            cls._write_target_qt_config(f, name, qt_major, '', target_values)
 
-        # Now do any platform specific values.
-        for platform, plat_values in values.items():
-            if platform is not None:
-                cls._write_platform_qt_config(f, name, qt_major, platform,
-                        plat_values)
+        # Now do any target specific values.
+        for target, target_values in values.items():
+            if target:
+                cls._write_target_qt_config(f, name, qt_major, target,
+                        target_values)
 
-    @staticmethod
-    def _write_platform_qt_config(f, name, qt_major, platform, values):
+    @classmethod
+    def _write_target_qt_config(cls, f, name, qt_major, target, values):
         """ Write the values of QT or CONFIG which may be Qt version specific.
         """
 
-        if platform:
-            f.write('%s {\n' % platform.qmake_scope)
-            plat_indent = '    '
+        if target:
+            f.write('%s {\n' % cls._qmake_scope_for_target(target))
+            target_indent = '    '
         else:
-            plat_indent = ''
+            target_indent = ''
 
         if qt_major is None:
-            vers_indent = plat_indent
+            vers_indent = target_indent
         else:
-            vers_indent = plat_indent + '    '
+            vers_indent = target_indent + '    '
 
             if qt_major == 5:
-                f.write('%sgreaterThan(QT_MAJOR_VERSION, 4) {\n' % plat_indent)
+                f.write('%sgreaterThan(QT_MAJOR_VERSION, 4) {\n' % target_indent)
             else:
-                f.write('%slessThan(QT_MAJOR_VERSION, 5) {\n' % plat_indent)
+                f.write('%slessThan(QT_MAJOR_VERSION, 5) {\n' % target_indent)
 
         f.write('%s%s += %s\n' % (vers_indent, name, ' '.join(values)))
 
         if qt_major is not None:
-            f.write('%s}\n' % plat_indent)
+            f.write('%s}\n' % target_indent)
 
-        if platform:
+        if target:
             f.write('}\n')
 
     @classmethod
@@ -837,7 +838,7 @@ class Builder():
                     f.write('!%s {\n' % cls._qmake_scope_for_target(
                             targets[0][1:]))
                 else:
-                    f.write('%s {\n' % ':'.join(
+                    f.write('%s {\n' % '|'.join(
                             [cls._qmake_scope_for_target(t)
                                     for t in targets]))
             else:

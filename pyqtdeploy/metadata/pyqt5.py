@@ -33,12 +33,12 @@ from .pyqt_metadata import PyQtMetadata
 class PyQt5Metadata(PyQtMetadata):
     """ Encapsulate the meta-data for a single PyQt5 module. """
 
-    def __init__(self, group='base', deps=(), cpp11=False, gui=True, qt5=(), config5=(), platforms=None):
+    def __init__(self, group='base', deps=(), cpp11=False, gui=True, qt5=(), config5=(), targets=None):
         """ Initialise the object. """
 
         super().__init__(group=group, deps=deps, cpp11=cpp11, gui=gui, qt4=qt5,
                 qt5=qt5, config4=config5, config5=config5, needs_suffix=False,
-                platforms=platforms)
+                targets=targets)
 
 
 # The dictionary of meta-data for the PyQt5 modules.
@@ -48,14 +48,14 @@ pyqt5_metadata = {
 
     'QAxContainer':
         PyQt5Metadata(deps=['QtWidgets'], qt5=['axcontainer'],
-                platforms=['win']),
+                targets=['win']),
 
     'Qt':
         PyQt5Metadata(deps=['sip']),
 
     'QtAndroidExtras':
         PyQt5Metadata(deps=['QtCore'], qt5=['androidextras'],
-                platforms=['android']),
+                targets=['android']),
 
     'QtBluetooth':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['bluetooth']),
@@ -80,7 +80,7 @@ pyqt5_metadata = {
 
     'QtMacExtras':
         PyQt5Metadata(deps=['QtGui'], qt5=['macextras'],
-                platforms=['ios', 'macos']),
+                targets=['ios', 'macos']),
 
     'QtMultimedia':
         PyQt5Metadata(deps=['QtGui', 'QtNetwork'], qt5=['multimedia']),
@@ -150,11 +150,10 @@ pyqt5_metadata = {
         PyQt5Metadata(deps=['QtGui'], qt5=['widgets']),
 
     'QtWinExtras':
-        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras'],
-                platforms=['win']),
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras'], targets=['win']),
 
     'QtX11Extras':
-        PyQt5Metadata(deps=['QtCore'], qt5=['x11extras'], platforms=['linux']),
+        PyQt5Metadata(deps=['QtCore'], qt5=['x11extras'], targets=['linux']),
 
     'QtXml':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['xml']),
