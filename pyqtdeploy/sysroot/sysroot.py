@@ -67,10 +67,13 @@ class Sysroot:
 
         self._python_version_nr = None
 
-        # Set the deployment target for Apple targets.  If there is already one
-        # set then we leave it as it is.
+        # Set the deployment targets for Apple targets.  If they are already
+        # set then we leave them as they are.  The versions set are those used
+        # by Qt.
+        if 'IPHONEOS_DEPLOYMENT_TARGET' not in os.environ:
+            os.environ['IPHONEOS_DEPLOYMENT_TARGET'] = '8.0'
+
         if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-            # This is the version used by Qt.
             os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.10'
 
     def build_packages(self, package_names, no_clean):
