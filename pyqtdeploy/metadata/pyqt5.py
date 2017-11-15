@@ -150,7 +150,7 @@ pyqt5_metadata = {
         PyQt5Metadata(deps=['QtGui'], qt5=['widgets']),
 
     'QtWinExtras':
-        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras', 'widgets'],
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras'],
                 platforms=['win']),
 
     'QtX11Extras':

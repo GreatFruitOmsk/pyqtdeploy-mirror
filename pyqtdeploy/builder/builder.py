@@ -392,14 +392,19 @@ class Builder():
                 project.get_executable_basename() + '.pro')
 
         f.write('TEMPLATE = app\n')
+        f.write('\n')
 
         # Configure the CONFIG and QT values that are project dependent.
         needs_cpp11 = False
         needs_gui = False
-        qmake_qt4 = set()
-        qmake_config4 = set()
-        qmake_qt5 = set()
-        qmake_config5 = set()
+        qmake_qt4 = {}
+        qmake_config4 = {}
+        qmake_qt5 = {}
+        qmake_config5 = {}
+
+        def update_qt_config(qt_config, platform, values):
+            # Update the set of QT or CONFIG values for a particular platform.
+            qt_config.setdefault(platform, set()).update(values)
 
         for pyqt_m in project.pyqt_modules:
             metadata = self._get_pyqt_module_metadata(pyqt_m)
@@ -410,62 +415,74 @@ class Builder():
             if metadata.gui:
                 needs_gui = True
 
-            qmake_qt4.update(metadata.qt4)
-            qmake_config4.update(metadata.config4)
-            qmake_qt5.update(metadata.qt5)
-            qmake_config5.update(metadata.config5)
+            if metadata.platforms:
+                for platform in metadata.platforms:
+                    update_qt_config(qmake_qt4, platform, metadata.qt4)
+                    update_qt_config(qmake_config4, platform, metadata.config4)
 
-        both_qt = qmake_qt4 & qmake_qt5
-        qmake_qt4 -= both_qt
-        qmake_qt5 -= both_qt
+                    update_qt_config(qmake_qt5, platform, metadata.qt5)
+                    update_qt_config(qmake_config5, platform, metadata.config5)
+            else:
+                update_qt_config(qmake_qt4, None, metadata.qt4)
+                update_qt_config(qmake_config4, None, metadata.config4)
 
-        both_config = qmake_config4 & qmake_config5
-        qmake_config4 -= both_config
-        qmake_config5 -= both_config
+                update_qt_config(qmake_qt5, None, metadata.qt5)
+                update_qt_config(qmake_config5, None, metadata.config5)
 
-        both_config.add('warn_off')
+        # Extract QT and CONFIG values that not version-specific.
+        qmake_qt45 = {}
+        qmake_config45 = {}
 
-        if project.application_is_console or not needs_gui:
-            both_config.add('console')
+        def common_qt_config(platform, values_45, values_4, values_5):
+            plat_values_4 = values_4.setdefault(platform, set())
+            plat_values_5 = values_5.setdefault(platform, set())
 
-        if needs_cpp11:
-            both_config.add('c++11')
+            plat_values_45 = plat_values_4 & plat_values_5
+            plat_values_4 -= plat_values_45
+            plat_values_5 -= plat_values_45
 
-        f.write('\n')
-        f.write('CONFIG += {0}\n'.format(' '.join(both_config)))
+            if plat_values_45:
+                values_45[platform] = plat_values_45
 
-        if not project.application_is_bundle:
-            f.write('CONFIG -= app_bundle\n')
+            if not plat_values_4:
+                del values_4[platform]
+
+            if not plat_values_5:
+                del values_5[platform]
+
+        for platform in TargetPlatform.platforms:
+            common_qt_config(platform, qmake_qt45, qmake_qt4, qmake_qt5)
+            common_qt_config(platform, qmake_config45, qmake_config4,
+                    qmake_config5)
+
+        common_qt_config(None, qmake_qt45, qmake_qt4, qmake_qt5)
+        common_qt_config(None, qmake_config45, qmake_config4, qmake_config5)
+
+        # Generate QT.
+        self._write_qt_config(f, 'QT', None, qmake_qt45)
+        self._write_qt_config(f, 'QT', 4, qmake_qt4)
+        self._write_qt_config(f, 'QT', 5, qmake_qt5)
 
         if not needs_gui:
             f.write('QT -= gui\n')
 
-        if both_qt:
-            f.write('QT += {0}\n'.format(' '.join(both_qt)))
+        # Generate CONFIG.
+        config = ['warn_off']
 
-        if qmake_config4 or qmake_qt4:
-            f.write('\n')
-            f.write('lessThan(QT_MAJOR_VERSION, 5) {\n')
+        if project.application_is_console or not needs_gui:
+            config.append('console')
 
-            if qmake_config4:
-                f.write('    CONFIG += {0}\n'.format(' '.join(qmake_config4)))
+        if needs_cpp11:
+            config.append('c++11')
 
-            if qmake_qt4:
-                f.write('    QT += {0}\n'.format(' '.join(qmake_qt4)))
+        f.write('CONFIG += {0}\n'.format(' '.join(config)))
 
-            f.write('}\n')
+        if not project.application_is_bundle:
+            f.write('CONFIG -= app_bundle\n')
 
-        if qmake_config5 or qmake_qt5:
-            f.write('\n')
-            f.write('greaterThan(QT_MAJOR_VERSION, 4) {\n')
-
-            if qmake_config5:
-                f.write('    CONFIG += {0}\n'.format(' '.join(qmake_config5)))
-
-            if qmake_qt5:
-                f.write('    QT += {0}\n'.format(' '.join(qmake_qt5)))
-
-            f.write('}\n')
+        self._write_qt_config(f, 'CONFIG', None, qmake_config45)
+        self._write_qt_config(f, 'CONFIG', 4, qmake_config4)
+        self._write_qt_config(f, 'CONFIG', 5, qmake_config5)
 
         # Modules can share sources so we need to make sure we don't include
         # them more than once.  We might as well handle the other things in the
@@ -761,6 +778,52 @@ class Builder():
 
         # All done.
         f.close()
+
+    @classmethod
+    def _write_qt_config(cls, f, name, qt_major, values):
+        """ Write the values of QT or CONFIG which may be Qt version and/or
+        platform specific.
+        """
+
+        # Do any non-platform specific values first.
+        plat_values = values.get(None)
+        if plat_values:
+            cls._write_platform_qt_config(f, name, qt_major, None, plat_values)
+
+        # Now do any platform specific values.
+        for platform, plat_values in values.items():
+            if platform is not None:
+                cls._write_platform_qt_config(f, name, qt_major, platform,
+                        plat_values)
+
+    @staticmethod
+    def _write_platform_qt_config(f, name, qt_major, platform, values):
+        """ Write the values of QT or CONFIG which may be Qt version specific.
+        """
+
+        if platform:
+            f.write('%s {\n' % platform.qmake_scope)
+            plat_indent = '    '
+        else:
+            plat_indent = ''
+
+        if qt_major is None:
+            vers_indent = plat_indent
+        else:
+            vers_indent = plat_indent + '    '
+
+            if qt_major == 5:
+                f.write('%sgreaterThan(QT_MAJOR_VERSION, 4) {\n' % plat_indent)
+            else:
+                f.write('%slessThan(QT_MAJOR_VERSION, 5) {\n' % plat_indent)
+
+        f.write('%s%s += %s\n' % (vers_indent, name, ' '.join(values)))
+
+        if qt_major is not None:
+            f.write('%s}\n' % plat_indent)
+
+        if platform:
+            f.write('}\n')
 
     @classmethod
     def _write_used_values(cls, f, used_values, name):
