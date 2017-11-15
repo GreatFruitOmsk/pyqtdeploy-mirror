@@ -419,7 +419,7 @@ class Builder():
         qmake_qt4 -= both_qt
         qmake_qt5 -= both_qt
 
-        both_config = qmake_qt4 & qmake_qt5
+        both_config = qmake_config4 & qmake_config5
         qmake_config4 -= both_config
         qmake_config5 -= both_config
 
