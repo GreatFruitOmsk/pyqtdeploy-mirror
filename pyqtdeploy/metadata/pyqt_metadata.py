@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,10 +24,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+from ..targets import TargetPlatform
+
+
 class PyQtMetadata:
     """ Encapsulate the meta-data for a single PyQt module. """
 
-    def __init__(self, group, deps, cpp11, gui, qt4, qt5, config4, config5, needs_suffix):
+    def __init__(self, group, deps, cpp11, gui, qt4, qt5, config4, config5, needs_suffix, platforms):
         """ Initialise the object. """
 
         # The group (either 'base', 'opengl', or 'addon') that the module
@@ -64,3 +67,7 @@ class PyQtMetadata:
         # Set if a suffix must be added to the name of the statically linked
         # module (in order to work around a quirk in Qt4's qmake).
         self.needs_suffix = needs_suffix
+
+        # The sequence of target platforms or None if the module is not
+        # platform-specific.
+        self.platforms = None if platforms is None else [TargetPlatform.find_platform(p) for p in platforms]

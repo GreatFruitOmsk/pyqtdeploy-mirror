@@ -33,11 +33,12 @@ from .pyqt_metadata import PyQtMetadata
 class PyQt5Metadata(PyQtMetadata):
     """ Encapsulate the meta-data for a single PyQt5 module. """
 
-    def __init__(self, group='base', deps=(), cpp11=False, gui=True, qt5=(), config5=()):
+    def __init__(self, group='base', deps=(), cpp11=False, gui=True, qt5=(), config5=(), platforms=None):
         """ Initialise the object. """
 
         super().__init__(group=group, deps=deps, cpp11=cpp11, gui=gui, qt4=qt5,
-                qt5=qt5, config4=config5, config5=config5, needs_suffix=False)
+                qt5=qt5, config4=config5, config5=config5, needs_suffix=False,
+                platforms=platforms)
 
 
 # The dictionary of meta-data for the PyQt5 modules.
@@ -46,13 +47,15 @@ pyqt5_metadata = {
         PyQt5Metadata(gui=False),
 
     'QAxContainer':
-        PyQt5Metadata(deps=['QtWidgets'], qt5=['axcontainer']),
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['axcontainer'],
+                platforms=['win']),
 
     'Qt':
         PyQt5Metadata(deps=['sip']),
 
     'QtAndroidExtras':
-        PyQt5Metadata(deps=['QtCore'], qt5=['androidextras']),
+        PyQt5Metadata(deps=['QtCore'], qt5=['androidextras'],
+                platforms=['android']),
 
     'QtBluetooth':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['bluetooth']),
@@ -76,7 +79,8 @@ pyqt5_metadata = {
         PyQt5Metadata(deps=['QtPositioning'], qt5=['location']),
 
     'QtMacExtras':
-        PyQt5Metadata(deps=['QtGui'], qt5=['macextras']),
+        PyQt5Metadata(deps=['QtGui'], qt5=['macextras'],
+                platforms=['ios', 'macos']),
 
     'QtMultimedia':
         PyQt5Metadata(deps=['QtGui', 'QtNetwork'], qt5=['multimedia']),
@@ -146,10 +150,11 @@ pyqt5_metadata = {
         PyQt5Metadata(deps=['QtGui'], qt5=['widgets']),
 
     'QtWinExtras':
-        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras', 'widgets']),
+        PyQt5Metadata(deps=['QtWidgets'], qt5=['winextras', 'widgets'],
+                platforms=['win']),
 
     'QtX11Extras':
-        PyQt5Metadata(deps=['QtCore'], qt5=['x11extras']),
+        PyQt5Metadata(deps=['QtCore'], qt5=['x11extras'], platforms=['linux']),
 
     'QtXml':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['xml']),

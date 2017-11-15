@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,12 @@ from .pyqt_metadata import PyQtMetadata
 class PyQt4Metadata(PyQtMetadata):
     """ Encapsulate the meta-data for a single PyQt4 module. """
 
-    def __init__(self, group='base', deps=(), gui=True, qt4=(), qt5=(), config4=(), config5=(), needs_suffix=True):
+    def __init__(self, group='base', deps=(), gui=True, qt4=(), qt5=(), config4=(), config5=(), needs_suffix=True, platforms=None):
         """ Initialise the object. """
 
         super().__init__(group=group, deps=deps, cpp11=False, gui=gui, qt4=qt4,
                 qt5=qt5, config4=config4, config5=config5,
-                needs_suffix=needs_suffix)
+                needs_suffix=needs_suffix, platforms=platforms)
 
 
 # The dictionary of meta-data for the PyQt4 modules.
@@ -48,7 +48,7 @@ pyqt4_metadata = {
 
     'QAxContainer':
         PyQt4Metadata(deps=['QtGui'], config4=['qaxcontainer'],
-                qt5=['axcontainer']),
+                qt5=['axcontainer'], platforms=['win']),
 
     'Qt':
         PyQt4Metadata(deps=['sip']),
