@@ -67,6 +67,12 @@ class Sysroot:
 
         self._python_version_nr = None
 
+        # Set the deployment target for Apple targets.  If there is already one
+        # set then we leave it as it is.
+        if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+            # This is the version used by Qt.
+            os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.10'
+
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
         the system image root directory and build everything.  Raise a
@@ -146,15 +152,6 @@ class Sysroot:
         """ The Apple SDK to use. """
 
         return self.target_arch.platform.get_apple_sdk(self._apple_sdk)
-
-    @staticmethod
-    def apple_set_deployment_target():
-        """ Set the deployment target for Apple targets. """
-
-        # If there is already one set then we use it.
-        if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-            # This is the version used by Qt.
-            os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.10'
 
     def copy_file(self, src, dst):
         """ Copy a file. """

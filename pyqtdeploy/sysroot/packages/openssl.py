@@ -106,7 +106,6 @@ class OpenSSLPackage(AbstractPackage):
                 'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
         args.extend(common_options)
 
-        sysroot.apple_set_deployment_target()
         sysroot.run(*args)
         sysroot.run(sysroot.host_make, 'depend', 'OSX_SDK=' + sdk)
         sysroot.run(sysroot.host_make, 'all', 'OSX_SDK=' + sdk)
