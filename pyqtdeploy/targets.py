@@ -53,6 +53,13 @@ class TargetPlatform:
 
         self.platforms.append(self)
 
+    def configure(self):
+        """ Configure the platform.  This should only be called for the
+        platform that is actually being targeted.
+        """
+
+        pass
+
     @classmethod
     def find_platform(cls, target_platform_name):
         """ Return the platform with the given name. """
@@ -117,6 +124,13 @@ class TargetArch:
         self.platform = platform
 
         self.architectures.append(self)
+
+    def configure(self):
+        """ Configure the architecture.  This should only be called for the
+        architecture that is actually being targeted.
+        """
+
+        self.platform.configure()
 
     @classmethod
     def factory(cls, target_arch_name=None):
@@ -250,6 +264,15 @@ class iOS(AppleTargetPlatform):
         
         super().__init__("iOS", 'ios', ('ios-64', ), 'Q_OS_IOS', 'ios')
 
+    def configure(self):
+        """ Configure the platform.  This should only be called for the
+        platform that is actually being targeted.
+        """
+
+        if 'IPHONEOS_DEPLOYMENT_TARGET' not in os.environ:
+            # If not set then use the value that Qt uses.
+            os.environ['IPHONEOS_DEPLOYMENT_TARGET'] = '8.0'
+
 iOS()
 
 
@@ -272,6 +295,15 @@ class macOS(AppleTargetPlatform):
         """ Initialise the object. """
         
         super().__init__("macOS", 'macos', ('macos-64', ), 'Q_OS_MAC', 'macx')
+
+    def configure(self):
+        """ Configure the platform.  This should only be called for the
+        platform that is actually being targeted.
+        """
+
+        if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
+            # If not set then use the value that Qt uses.
+            os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.10'
 
     def get_apple_sdk(self, user_sdk):
         """ Return the name of a target-specific Apple SDK. """

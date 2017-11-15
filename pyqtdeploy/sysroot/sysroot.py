@@ -50,6 +50,7 @@ class Sysroot:
         """ Initialise the object. """
 
         self.target_arch = TargetArch.factory(target_arch_name)
+        self.target_arch.configure()
 
         if not sysroot_dir:
             sysroot_dir = 'sysroot-' + self.target_arch.name
@@ -66,15 +67,6 @@ class Sysroot:
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
 
         self._python_version_nr = None
-
-        # Set the deployment targets for Apple targets.  If they are already
-        # set then we leave them as they are.  The versions set are those used
-        # by Qt.
-        if 'IPHONEOS_DEPLOYMENT_TARGET' not in os.environ:
-            os.environ['IPHONEOS_DEPLOYMENT_TARGET'] = '8.0'
-
-        if 'MACOSX_DEPLOYMENT_TARGET' not in os.environ:
-            os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.10'
 
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
