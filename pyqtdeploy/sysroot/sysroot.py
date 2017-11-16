@@ -35,7 +35,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
         open_file as fu_open_file, parse_version as fu_parse_version)
-from ..hosts import Host
+from ..hosts import HostPlatform
 from ..targets import TargetArch
 from ..user_exception import UserException
 from ..windows import get_python_install_path
@@ -58,7 +58,7 @@ class Sysroot:
         self.sysroot_dir = os.path.abspath(sysroot_dir)
         self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
-        self._host = Host.factory()
+        self._host = HostPlatform.factory()
         self._specification = Specification(sysroot_json, plugin_path,
                 self.target_arch)
         self._apple_sdk = apple_sdk
@@ -371,6 +371,12 @@ class Sysroot:
         return self._host.make
 
     @property
+    def host_platform_name(self):
+        """ The name of the host platform. """
+
+        return self._host.name
+
+    @property
     def host_python(self):
         """ The pathname of the host Python interpreter. """
 
@@ -415,14 +421,6 @@ class Sysroot:
 
             self.verbose("Linking {0} to {1}".format(src, dst))
             os.symlink(src, dst)
-
-    @property
-    def native(self):
-        """ True if the target and host platforms are the same.  The word size
-        is ignored.
-        """
-
-        return self.target_arch.platform.is_native()
 
     @staticmethod
     def open_file(name):

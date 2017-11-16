@@ -72,7 +72,7 @@ class Qt5Package(AbstractPackage):
             sysroot.progress("Building Qt5 from source")
 
             # We don't support cross-compiling Qt.
-            if not sysroot.native:
+            if sysroot.host_platform_name != sysroot.target_platform_name:
                 sysroot.error(
                         "cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation")
 

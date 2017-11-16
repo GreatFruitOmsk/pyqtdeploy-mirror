@@ -29,6 +29,7 @@ import os
 import struct
 import sys
 
+from .hosts import HostPlatform
 from .user_exception import UserException
 
 
@@ -88,27 +89,6 @@ class TargetPlatform:
         # This default implementation does not support Apple SDKs.
         return None
 
-    @staticmethod
-    def get_host_platform_name():
-        """ Return the well known name of the host platform. """
-
-        if sys.platform.startswith('linux'):
-            return 'linux'
-
-        if sys.platform == 'win32':
-            return 'win'
-
-        if sys.platform == 'darwin':
-            return 'macos'
-
-        raise UserException(
-                "'{0}' is not a supported host platform.".format(sys.platform))
-
-    def is_native(self):
-        """ Return True if the target platform is native. """
-
-        return self.name == self.get_host_platform_name()
-
 
 class TargetArch:
     """ Encapsulate a target architecture. """
@@ -141,8 +121,7 @@ class TargetArch:
         """
 
         if target_arch_name is None:
-            target_arch_name = '{0}-{1}'.format(
-                    TargetPlatform.get_host_platform_name(),
+            target_arch_name = '{0}-{1}'.format(HostPlatform.factory().name,
                     8 * struct.calcsize('P'))
         elif target_arch_name.startswith('osx-'):
             # Map the deprecated values.  Such values can only come from the

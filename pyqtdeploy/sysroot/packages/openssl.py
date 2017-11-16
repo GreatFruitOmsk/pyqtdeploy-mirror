@@ -64,17 +64,46 @@ class OpenSSLPackage(AbstractPackage):
             '--prefix=' + sysroot.sysroot_dir,
         )
 
-        if sys.platform == 'darwin' and sysroot.native:
-            self._build_macos(sysroot, common_options)
-        elif sys.platform == 'win32' and sysroot.native:
-            self._build_win(sysroot, common_options)
+        if sysroot.target_platform_name == sysroot.host_platform_name:
+            # We are building natively.
+
+            if sysroot.target_platform_name == 'linux':
+                self._build_linux(sysroot, common_options)
+                return
+
+            if sysroot.target_arch_name == 'macos-64':
+                self._build_macos(sysroot, common_options)
+                return
+
+            if sysroot.target_platform_name == 'win':
+                self._build_win(sysroot, common_options)
+                return
         else:
-            sysroot.error(
-                    "building OpenSSL for {0} is not yet supported".format(
-                            sysroot.target_arch_name))
+            # We are cross-compiling.
+
+            if sysroot.target_platform_name == 'android' and sysroot.host_platform_name in ('linux', 'macos'):
+                self._build_android(sysroot, common_options)
+                return
+
+        # If we get this far then we can't do the requested build.
+        sysroot.error(
+                "building OpenSSL for '{0}' on '{1}' is not supported".format(
+                        sysroot.target_arch_name, sysroot.host_platform_name))
+
+    def _build_android(self, sysroot, common_options):
+        """ Build OpenSSL for Android on either Linux or MacOS hosts. """
+
+        sysroot.error("building OpenSSL for '{0}' is not yet supported".format(
+                sysroot.target_platform_name))
+
+    def _build_linux(self, sysroot, common_options):
+        """ Build OpenSSL for Linux. """
+
+        sysroot.error("building OpenSSL for '{0}' is not yet supported".format(
+                sysroot.target_platform_name))
 
     def _build_macos(self, sysroot, common_options):
-        """ Build OpenSSL for osx-64. """
+        """ Build OpenSSL for 64 bit macOS. """
 
         # Check pre-requisites.
         sysroot.find_exe('patch')
@@ -112,7 +141,7 @@ class OpenSSLPackage(AbstractPackage):
         sysroot.run(sysroot.host_make, 'install_sw', 'OSX_SDK=' + sdk)
 
     def _build_win(self, sysroot, common_options):
-        """ Build OpenSSL for win-*. """
+        """ Build OpenSSL for Windows. """
 
         # Check pre-requisites.
         sysroot.find_exe('perl')

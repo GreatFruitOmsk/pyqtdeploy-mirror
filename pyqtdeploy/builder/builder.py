@@ -35,7 +35,7 @@ from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
-from ..hosts import Host
+from ..hosts import HostPlatform
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
@@ -61,7 +61,7 @@ class Builder():
         self._timeout = timeout * 1000 if timeout > 0 else -1
         self._message_handler = message_handler
 
-        self._host = Host.factory()
+        self._host = HostPlatform.factory()
 
     def build(self, opt, nr_resources, clean=True, build_dir=None, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if

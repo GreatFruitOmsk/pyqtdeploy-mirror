@@ -28,9 +28,16 @@ import sys
 
 from abc import ABC, abstractmethod
 
+from .user_exception import UserException
 
-class Host(ABC):
+
+class HostPlatform(ABC):
     """ Encapsulate a host platform. """
+
+    def __init__(self, name):
+        """ Initialise the object. """
+
+        self._name = name
 
     @abstractmethod
     def exe(self, name):
@@ -44,8 +51,12 @@ class Host(ABC):
             host = macOSHost()
         elif sys.platform == 'win32':
             host = WindowsHost()
-        else:
+        elif sys.platform.startswith('linux'):
             host = LinuxHost()
+        else:
+            raise UserException(
+                    "'{0}' is not a supported host platform.".format(
+                            sys.platform))
 
         return host
 
@@ -54,9 +65,22 @@ class Host(ABC):
     def make(self):
         """ The name of the make executable including any required path. """
 
+    @property
+    def name(self):
+        """ The name of the host platform (using the same naming as the target
+        platform).
+        """
 
-class WindowsHost(Host):
+        return self._name
+
+
+class WindowsHost(HostPlatform):
     """ The class that encapsulates a Windows host platform. """
+
+    def __init__(self):
+        """ Initialise the object. """
+
+        super().__init__('win')
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
@@ -71,7 +95,7 @@ class WindowsHost(Host):
         return 'nmake'
 
 
-class PosixHost(Host):
+class PosixHost(HostPlatform):
     """ The base class that encapsulates a POSIX based host platform. """
 
     def exe(self, name):
@@ -89,6 +113,16 @@ class PosixHost(Host):
 class macOSHost(PosixHost):
     """ The class that encapsulates an macOS host. """
 
+    def __init__(self):
+        """ Initialise the object. """
+
+        super().__init__('macos')
+
 
 class LinuxHost(PosixHost):
     """ The class that encapsulates a Linux host. """
+
+    def __init__(self):
+        """ Initialise the object. """
+
+        super().__init__('linux')
