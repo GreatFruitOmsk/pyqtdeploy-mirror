@@ -25,6 +25,7 @@
 
 
 import glob
+import os
 import sys
 
 from ... import AbstractPackage, PackageOption
@@ -64,6 +65,9 @@ class OpenSSLPackage(AbstractPackage):
             '--prefix=' + sysroot.sysroot_dir,
         )
 
+        # Check the common pre-requisites.
+        sysroot.find_exe('perl')
+
         if sysroot.target_platform_name == sysroot.host_platform_name:
             # We are building natively.
 
@@ -93,8 +97,43 @@ class OpenSSLPackage(AbstractPackage):
     def _build_android(self, sysroot, common_options):
         """ Build OpenSSL for Android on either Linux or MacOS hosts. """
 
-        sysroot.error("building OpenSSL for '{0}' is not yet supported".format(
-                sysroot.target_platform_name))
+        # Configure the environment.
+        android_host = 'darwin' if sysroot.host_platform_name == 'macos' else 'linux'
+        android_host += '-x86_64'
+
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+        ndk_sysroot = os.path.join(ndk_root, 'platforms',
+                'android-{}'.format(sysroot.android_api), 'arch-arm')
+        toolchain_prefix = 'arm-linux-androideabi-'
+        # ZZZ - fix for toolchain version.
+        toolchain_bin = os.path.join(ndk_root, 'toolchains',
+                toolchain_prefix + '4.9', 'prebuilt', android_host, 'bin')
+
+        path = os.environ['PATH'].split(os.pathsep)
+        if toolchain_bin not in path:
+            path.insert(0, toolchain_bin)
+            os.environ['PATH'] = os.pathsep.join(path)
+
+        os.environ['MACHINE'] = 'arm7'
+        os.environ['RELEASE'] = '2.6.37'
+        os.environ['SYSTEM'] = 'android'
+        os.environ['ARCH'] = 'arm'
+        os.environ['CROSS_COMPILE'] = toolchain_prefix
+
+        # OpenSSL v1.1.0 and later.
+        os.environ['CROSS_SYSROOT'] = ndk_sysroot
+
+        # OpenSSL earlier that v1.1.0.
+        os.environ['ANDROID_DEV'] = os.path.join(ndk_sysroot, 'usr')
+
+        # Configure, build and install.
+        args = ['perl', 'Configure', 'shared', 'android']
+        args.extend(common_options)
+
+        sysroot.run(*args)
+        sysroot.run(sysroot.host_make, 'depend')
+        sysroot.run(sysroot.host_make, 'all')
+        sysroot.run(sysroot.host_make, 'install_sw')
 
     def _build_linux(self, sysroot, common_options):
         """ Build OpenSSL for Linux. """
@@ -105,9 +144,8 @@ class OpenSSLPackage(AbstractPackage):
     def _build_macos(self, sysroot, common_options):
         """ Build OpenSSL for 64 bit macOS. """
 
-        # Check pre-requisites.
+        # Check the additional pre-requisites.
         sysroot.find_exe('patch')
-        sysroot.find_exe('perl')
 
         # Find and apply the Python patch.
         if not self.python_source:
@@ -142,9 +180,6 @@ class OpenSSLPackage(AbstractPackage):
 
     def _build_win(self, sysroot, common_options):
         """ Build OpenSSL for Windows. """
-
-        # Check pre-requisites.
-        sysroot.find_exe('perl')
 
         # Set the architecture-specific values.
         if sysroot.target_arch_name.endswith('-64'):

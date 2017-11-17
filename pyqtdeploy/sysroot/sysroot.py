@@ -348,6 +348,12 @@ class Sysroot:
         return fu_get_embedded_file_for_version(version, root, *subdirs)
 
     @property
+    def host_arch_name(self):
+        """ The name of the host architecture. """
+
+        return self._host.arch_name
+
+    @property
     def host_bin_dir(self):
         """ The directory containing the host binaries. """
 

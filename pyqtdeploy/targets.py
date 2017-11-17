@@ -26,7 +26,6 @@
 
 import glob
 import os
-import struct
 import sys
 
 from .hosts import HostPlatform
@@ -121,8 +120,7 @@ class TargetArch:
         """
 
         if target_arch_name is None:
-            target_arch_name = '{0}-{1}'.format(HostPlatform.factory().name,
-                    8 * struct.calcsize('P'))
+            target_arch_name = HostPlatform.factory().arch_name
         elif target_arch_name.startswith('osx-'):
             # Map the deprecated values.  Such values can only come from the
             # command line.
@@ -202,11 +200,25 @@ class Android(TargetPlatform):
     # This is the minimum API required by Python v3.6.
     MINIMUM_API = 21
 
+    # The environment variables that should be set.
+    REQUIRED_ENV_VARS = ['ANDROID_NDK_ROOT']
+
     def __init__(self):
         """ Initialise the object. """
 
         super().__init__("Android", 'android', ('android-32', ),
                 'Q_OS_ANDROID', 'android')
+
+    def configure(self):
+        """ Configure the platform.  This should only be called for the
+        platform that is actually being targeted.
+        """
+
+        for name in self.REQUIRED_ENV_VARS:
+            if name not in os.environ:
+                raise UserException(
+                        "The {0} environment variable must be set.".format(
+                                name))
 
     def get_android_api(self):
         """ Return the number of the Android API. """
@@ -228,7 +240,8 @@ class Android(TargetPlatform):
                     api = None
 
         if api is None:
-            raise UserException("Use the ANDROID_NDK_PLATFORM environment variable to specify an API level >= {}".format(self.MINIMUM_API))
+            raise UserException(
+                    "Use the ANDROID_NDK_PLATFORM environment variable to specify an API level >= {0}.".format(self.MINIMUM_API))
 
         return api
 

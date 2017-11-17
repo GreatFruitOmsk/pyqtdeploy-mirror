@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import struct
 import sys
 
 from abc import ABC, abstractmethod
@@ -38,6 +39,14 @@ class HostPlatform(ABC):
         """ Initialise the object. """
 
         self._name = name
+
+    @property
+    def arch_name(self):
+        """ The name of the host architecure (using the same naming as the
+        target architecture).
+        """
+
+        return '{0}-{1}'.format(self._name, 8 * struct.calcsize('P'))
 
     @abstractmethod
     def exe(self, name):
