@@ -105,9 +105,15 @@ class OpenSSLPackage(AbstractPackage):
         ndk_sysroot = os.path.join(ndk_root, 'platforms',
                 'android-{}'.format(sysroot.android_api), 'arch-arm')
         toolchain_prefix = 'arm-linux-androideabi-'
-        # ZZZ - fix for toolchain version.
+
+        toolchain_version = os.environ.get('ANDROID_NDK_TOOLCHAIN_VERSION')
+        if toolchain_version is None:
+            sysroot.error(
+                    "the ANDROID_NDK_TOOLCHAIN_VERSION environment variable must be set to an appropriate value (e.g. '4.9')")
+
         toolchain_bin = os.path.join(ndk_root, 'toolchains',
-                toolchain_prefix + '4.9', 'prebuilt', android_host, 'bin')
+                toolchain_prefix + toolchain_version, 'prebuilt',
+                android_host, 'bin')
 
         path = os.environ['PATH'].split(os.pathsep)
         if toolchain_bin not in path:
@@ -132,8 +138,14 @@ class OpenSSLPackage(AbstractPackage):
 
         sysroot.run(*args)
         sysroot.run(sysroot.host_make, 'depend')
-        sysroot.run(sysroot.host_make, 'all')
+        sysroot.run(sysroot.host_make,
+                'CALC_VERSIONS="SHLIB_COMPAT=; SHLIB_SOVER="', 'build_libs',
+                'build_apps')
         sysroot.run(sysroot.host_make, 'install_sw')
+
+        # Remove the static libraries that were also built.
+        for lib in ('libcrypto.a', 'libssl.a'):
+            os.remove(os.path.join(sysroot.target_lib_dir, lib))
 
     def _build_linux(self, sysroot, common_options):
         """ Build OpenSSL for Linux. """
