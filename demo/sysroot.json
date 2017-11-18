@@ -30,18 +30,27 @@
     },
 
     "pyqt5": {
-        "ios#disabled_features":    [
+        "android#disabled_features":    [
+                "PyQt_Desktop_OpenGL", "PyQt_Printer", "PyQt_PrintDialog",
+                "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
+        ],
+        "android#modules":              [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtAndroidExtras"
+        ],
+
+        "ios#disabled_features":        [
                 "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
                 "PyQt_MacCocoaViewContainer", "PyQt_Printer",
                 "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
                 "PyQt_PrintPreviewWidget", "PyQt_Process",
                 "PyQt_NotBootstrapped"
         ],
-
-        "ios|macos#modules":        [
+        "ios|macos#modules":            [
                 "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
                 "QtMacExtras"
         ],
+
         "source":                   "PyQt5_*-5.*.tar.gz"
     },
 
