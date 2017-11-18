@@ -143,9 +143,18 @@ class OpenSSLPackage(AbstractPackage):
                 'build_apps')
         sysroot.run(sysroot.host_make, 'install_sw')
 
-        # Remove the static libraries that were also built.
-        for lib in ('libcrypto.a', 'libssl.a'):
-            os.remove(os.path.join(sysroot.target_lib_dir, lib))
+        for lib in ('libcrypto', 'libssl'):
+            # Remove the static library that was also built.
+            os.remove(os.path.join(sysroot.target_lib_dir, lib + '.a'))
+
+            # The unversioned .so was installed and then overwritten with a
+            # symbolic link to the non-existing versioned .so, so install it
+            # again.
+            lib_so = lib + '.so'
+            installed_lib_so = os.path.join(sysroot.target_lib_dir, lib_so)
+
+            os.remove(installed_lib_so)
+            sysroot.copy_file(lib_so, installed_lib_so)
 
     def _build_linux(self, sysroot, common_options):
         """ Build OpenSSL for Linux. """
