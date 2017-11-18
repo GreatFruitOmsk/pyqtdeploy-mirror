@@ -517,7 +517,7 @@ pyconfig = (
     Config('HAVE_IEEEFP_H'),
 
     # Define to 1 if you have the `if_nameindex' function.
-    Config('HAVE_IF_NAMEINDEX', default=1),
+    Config('HAVE_IF_NAMEINDEX', default=1, android=None),
 
     # Define if you have the 'inet_aton' function.
     Config('HAVE_INET_ATON', default=1),
