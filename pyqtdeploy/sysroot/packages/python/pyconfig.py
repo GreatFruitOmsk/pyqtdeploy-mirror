@@ -866,7 +866,7 @@ pyconfig = (
     Config('HAVE_SETGROUPS', default=1),
 
     # Define to 1 if you have the `sethostname' function.
-    Config('HAVE_SETHOSTNAME', default=1),
+    Config('HAVE_SETHOSTNAME', default=1, android=None),
 
     # Define to 1 if you have the `setitimer' function.
     Config('HAVE_SETITIMER', default=1),
