@@ -1290,9 +1290,9 @@ static struct _inittab %s[] = {
         f.write('#if ')
 
         if targets[0][0] == '!':
-            f.write('!defined({0})'.format(cls._cpp_for_target(targets[0][1:])))
+            f.write('!{0}'.format(cls._cpp_for_target(targets[0][1:])))
         else:
-            f.write(' || '.join(['defined({0})'.format(cls._cpp_for_target(t)) for t in targets]))
+            f.write(' || '.join([cls._cpp_for_target(t) for t in targets]))
 
         f.write('\n')
 

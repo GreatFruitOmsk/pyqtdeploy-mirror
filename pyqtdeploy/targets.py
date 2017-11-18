@@ -207,7 +207,7 @@ class Android(TargetPlatform):
         """ Initialise the object. """
 
         super().__init__("Android", 'android', ('android-32', ),
-                'Q_OS_ANDROID', 'android')
+                'defined(Q_OS_ANDROID)', 'android')
 
     def configure(self):
         """ Configure the platform.  This should only be called for the
@@ -254,7 +254,8 @@ class iOS(AppleTargetPlatform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("iOS", 'ios', ('ios-64', ), 'Q_OS_IOS', 'ios')
+        super().__init__("iOS", 'ios', ('ios-64', ), 'defined(Q_OS_IOS)',
+                'ios')
 
     def configure(self):
         """ Configure the platform.  This should only be called for the
@@ -275,7 +276,7 @@ class Linux(TargetPlatform):
         """ Initialise the object. """
         
         super().__init__("Linux", 'linux', ('linux-32', 'linux-64'),
-                'Q_OS_LINUX', 'linux-*')
+                '(defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))', 'linux-*')
 
 Linux()
 
@@ -286,7 +287,8 @@ class macOS(AppleTargetPlatform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("macOS", 'macos', ('macos-64', ), 'Q_OS_MAC', 'macx')
+        super().__init__("macOS", 'macos', ('macos-64', ), 'defined(Q_OS_MAC)',
+                'macx')
 
     def configure(self):
         """ Configure the platform.  This should only be called for the
@@ -311,8 +313,9 @@ class Windows(TargetPlatform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("Windows", 'win', ('win-32', 'win-64'), 'Q_OS_WIN',
-                'win32', ('win32:!contains(QMAKE_TARGET.arch, x86_64)',
+        super().__init__("Windows", 'win', ('win-32', 'win-64'),
+                'defined(Q_OS_WIN)', 'win32',
+                ('win32:!contains(QMAKE_TARGET.arch, x86_64)',
                         'win32:contains(QMAKE_TARGET.arch, x86_64)'))
 
 Windows()
