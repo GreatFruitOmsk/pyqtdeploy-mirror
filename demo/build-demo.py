@@ -98,10 +98,19 @@ run(args)
 
 # Tell the user where the demo is.
 if target.startswith('android'):
-    print("TODO")
+    print("""The libpyqt-demo.so file can be found in the '{0}' directory.
+Run the following commands to generate the APK:
+    cd {0}
+    make INSTALL_ROOT=deploy install
+    androiddeployqt --input android-libpyqt-demo.so-deployment-settings.json --output deploy""".format(build_dir))
+
 elif target.startswith('ios'):
-    print("The pyqt-demo.xcodeproj file can be found in the '{0}' directory. Run Xcode to build the app and run it in the simulator or deploy it to a device.".format(build_dir))
+    print("""The pyqt-demo.xcodeproj file can be found in the '{0}' directory.
+Run Xcode to build the app and run it in the simulator or deploy it to a
+device.""".format(build_dir))
+
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
 else:
+
     print("The pyqt-demo executable can be found in the '{0}' directory.".format(build_dir))
