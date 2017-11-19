@@ -496,11 +496,21 @@ class Builder():
         used_inittab = {}
         used_dlls = {}
 
+        # This is a hack to allow us to find external libraries (eg. OpenSSL)
+        # and their header files.  There is no way to specifiy these locations
+        # without using SYSROOT.  Instead we should set the default value for
+        # INCLUDEPATH in the External Library section of the Standard Library
+        # page in the GUI to $SYSROOT/include so that it can be specified on a
+        # per-library basis and without having to use SYSROOT.  The default
+        # value of LIBS should be prefixed with -L$SYSROOT/lib.
         if 'SYSROOT' in os.environ:
             self._add_value_for_targets(used_includepath,
                     os.path.expandvars('$SYSROOT/include'))
-            self._add_value_for_targets(used_libs,
-                    os.path.expandvars('-L$SYSROOT/lib'))
+
+            external_libs_dir = os.path.expandvars('$SYSROOT/lib')
+            self._add_value_for_targets(used_libs, '-L' + external_libs_dir)
+        else:
+            external_libs_dir = None
 
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
@@ -670,7 +680,12 @@ class Builder():
                 self._add_value_for_targets(used_includepath,
                         source_dir + '/PC', ['win'])
 
-        # Handle any required external libraries platform by platform.
+        # Handle any required external libraries platform by platform.  We
+        # special case the OpenSSL libraries for Android (so they get included
+        # in the APK) but we may need to generalise this for other external
+        # libraries.
+        android_ssl_libs = 'ssl' in required_libraries
+
         for platform in TargetPlatform.platforms:
             targets = [platform.name]
             external_libs = project.external_libraries.get(platform.name, [])
@@ -691,6 +706,8 @@ class Builder():
 
                             self._add_compound_scoped_values(used_libs,
                                     xlib.libs, False, targets)
+                        elif platform.name == 'android' and required_lib == 'ssl':
+                            android_ssl_libs = False
 
                         break
                 else:
@@ -761,6 +778,18 @@ class Builder():
         if used_libs:
             f.write('\n')
             self._write_used_values(f, used_libs, 'LIBS')
+
+        if external_libs_dir and android_ssl_libs:
+            for ssl_lib in ('crypto', 'ssl'):
+                ssl_lib_path = os.path.join(external_libs_dir,
+                        'lib' + ssl_lib + '.so')
+
+                # Check it exists in case the standard SYSROOT pattern isn't
+                # being used.  Without the hack described above it wouldn't be
+                # necessary.
+                f.write('android:exists(%s) {\n' % ssl_lib_path)
+                f.write('    ANDROID_EXTRA_LIBS += %s\n' % ssl_lib_path)
+                f.write('}\n')
 
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
