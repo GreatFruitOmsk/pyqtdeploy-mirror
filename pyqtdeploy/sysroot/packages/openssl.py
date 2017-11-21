@@ -51,6 +51,23 @@ class OpenSSLPackage(AbstractPackage):
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
+        # We require OpenSSL v1.0.* as Qt does.
+        major = minor = None
+        name = os.path.basename(os.getcwd())
+        name_parts = name.split('-')
+        if len(name_parts) == 2:
+            version_parts = name_parts[1].split('.')
+            if len(version_parts) == 3:
+                major, minor, _ = version_parts
+
+        if major is None:
+            sysroot.error(
+                    "unable to extract OpenSSL version number from '{0}'".format(
+                        name))
+
+        if major != '1' or minor != '0':
+            sysroot.error("OpenSSL v1.0.* is required")
+
         # TODO: Need to decide what to do about --openssldir.
         common_options = (
             'no-krb5',
@@ -126,10 +143,8 @@ class OpenSSLPackage(AbstractPackage):
         os.environ['ARCH'] = 'arm'
         os.environ['CROSS_COMPILE'] = toolchain_prefix
 
-        # OpenSSL v1.1.0 and later.
-        os.environ['CROSS_SYSROOT'] = ndk_sysroot
-
-        # OpenSSL earlier that v1.1.0.
+        # Note that OpenSSL v1.1.0 and later uses CROSS_SYSROOT=ndk_sysroot
+        # instead.
         os.environ['ANDROID_DEV'] = os.path.join(ndk_sysroot, 'usr')
 
         # Configure, build and install.
