@@ -30,7 +30,7 @@ from xml.etree.ElementTree import Element, ElementTree, SubElement
 from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
 
 from ..metadata import get_latest_supported_python_version, get_python_metadata
-from ..targets import TargetPlatform
+from ..platforms import Platform
 from ..user_exception import UserException
 
 
@@ -408,7 +408,7 @@ class Project(QObject):
             target = external_lib_element.get('target')
             if target is None:
                 # The project format is version 6 or earlier.
-                target_list = [p.name for p in TargetPlatform.platforms]
+                target_list = [p.name for p in Platform.all_platforms]
             else:
                 target_list = [target]
 

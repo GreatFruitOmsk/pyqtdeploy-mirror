@@ -38,7 +38,7 @@ from .abstract_package import AbstractPackage
 class Specification:
     """ Encapsulate the specification of a system root directory. """
 
-    def __init__(self, spec_file, plugin_path, target_arch):
+    def __init__(self, spec_file, plugin_path, target):
         """ Initialise the object. """
 
         self.specification_file = os.path.abspath(spec_file)
@@ -61,7 +61,7 @@ class Specification:
                     self._bad_type(name, spec_file)
             else:
                 # Allow target-specific plugins.
-                name = self._value_for_target(name, target_arch)
+                name = self._value_for_target(name, target)
                 if name is None:
                     continue
 
@@ -101,7 +101,7 @@ class Specification:
                 config = {}
                 for opt_name, opt_value in value.items():
                     # Allow target-specific options.
-                    opt_name = self._value_for_target(opt_name, target_arch)
+                    opt_name = self._value_for_target(opt_name, target)
                     if opt_name is None:
                         continue
 
@@ -126,7 +126,7 @@ class Specification:
                 self.packages.append(package)
 
     @staticmethod
-    def _value_for_target(value, target_arch):
+    def _value_for_target(value, target):
         """ If a value is valid for a particular target architecture then
         return the value, otherwise return None.
         """
@@ -151,9 +151,9 @@ class Specification:
             # See if the name matches the target (either architecture or
             # platform).
             if '-' in name:
-                matches = (target_arch.name == name)
+                matches = (target.name == name)
             else:
-                matches = (target_arch.platform.name == name)
+                matches = (target.platform.name == name)
 
             if negate:
                 matches = not matches

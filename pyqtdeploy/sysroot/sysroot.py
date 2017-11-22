@@ -35,8 +35,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
         open_file as fu_open_file, parse_version as fu_parse_version)
-from ..hosts import HostPlatform
-from ..targets import TargetArch
+from ..platforms import Architecture
 from ..user_exception import UserException
 from ..windows import get_python_install_path
 
@@ -46,27 +45,27 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, apple_sdk, target_arch_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, target_arch_name, message_handler):
         """ Initialise the object. """
 
-        self.target_arch = TargetArch.factory(target_arch_name)
-        self.target_arch.configure()
+        self._host = Architecture.architecture()
+        self._target = Architecture.architecture(target_arch_name)
 
         if not sysroot_dir:
-            sysroot_dir = 'sysroot-' + self.target_arch.name
+            sysroot_dir = 'sysroot-' + self._target.name
 
         self.sysroot_dir = os.path.abspath(sysroot_dir)
         self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
-        self._host = HostPlatform.factory()
         self._specification = Specification(sysroot_json, plugin_path,
-                self.target_arch)
-        self._apple_sdk = apple_sdk
+                self._target)
         self._message_handler = message_handler
 
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
 
         self._python_version_nr = None
+
+        self.build_for_target = True
 
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
@@ -140,13 +139,38 @@ class Sysroot:
     def android_api(self):
         """ The Android API to use. """
 
-        return self.target_arch.platform.get_android_api()
+        return self._target.platform.android_api
 
     @property
     def apple_sdk(self):
         """ The Apple SDK to use. """
 
-        return self.target_arch.platform.get_apple_sdk(self._apple_sdk)
+        arch = self._target if self._build_for_target else self._host
+
+        return arch.apple_sdk
+
+    @property
+    def build_for_target(self):
+        """ This is set if building (ie. compiling and linking) for the target
+        architecture.  Otherwise build for the host.  The default is True.
+        """
+
+        return self._build_for_target
+
+    @build_for_target.setter
+    def build_for_target(self, value):
+        """ Set to build (ie. compile and link) for the target architecture.
+        Otherwise build for the host.
+        """
+
+        if value:
+            self._host.deconfigure()
+            self._target.configure()
+        else:
+            self._target.deconfigure()
+            self._host.configure()
+
+        self._build_for_target = value
 
     def copy_file(self, src, dst):
         """ Copy a file. """
@@ -472,7 +496,7 @@ class Sysroot:
         major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         reg_version = str(major) + '.' + str(minor)
-        if self.python_version_nr >= 0x030500 and self.target_arch_name.endswith('-32'):
+        if self.python_version_nr >= 0x030500 and self._target.name.endswith('-32'):
             reg_version += '-32'
 
         return get_python_install_path(reg_version)
@@ -516,7 +540,7 @@ class Sysroot:
     def target_arch_name(self):
         """ The name of the target architecture. """
 
-        return self.target_arch.name
+        return self._target.name
 
     @property
     def target_include_dir(self):
@@ -534,7 +558,7 @@ class Sysroot:
     def target_platform_name(self):
         """ The name of the target platform. """
 
-        return self.target_arch.platform.name
+        return self._target.platform.name
 
     @property
     def target_py_include_dir(self):

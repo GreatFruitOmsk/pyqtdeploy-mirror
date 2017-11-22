@@ -116,6 +116,8 @@ class PythonPackage(AbstractPackage):
         of the interpreter.
         """
 
+        sysroot.build_for_target = False
+
         # Unpack the source.
         sysroot.unpack_archive(archive)
 
@@ -134,6 +136,8 @@ class PythonPackage(AbstractPackage):
         sysroot.run(*configure)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
+
+        sysroot.build_for_target = True
 
         return os.path.join(sysroot.host_bin_dir,
                 'python' + self._major_minor(sysroot))

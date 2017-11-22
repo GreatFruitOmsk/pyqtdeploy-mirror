@@ -30,10 +30,9 @@ from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTabWidget,
         QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
         QVBoxLayout, QWidget)
 
-from ..hosts import HostPlatform
 from ..metadata import external_libraries_metadata, get_python_metadata
+from ..platforms import Architecture, Platform
 from ..project import ExternalLibrary
-from ..targets import TargetPlatform
 
 
 class StandardLibraryPage(QSplitter):
@@ -95,10 +94,10 @@ class StandardLibraryPage(QSplitter):
         self.addWidget(stdlib_pane)
 
         self._plat_guis = QTabWidget()
-        host = HostPlatform.factory()
+        host = Architecture.architecture().platform
         host_gui = None
 
-        for platform in TargetPlatform.platforms:
+        for platform in Platform.all_platforms:
             plat_gui = _PlatformGui(platform.name)
             self._plat_guis.addTab(plat_gui, platform.full_name)
 

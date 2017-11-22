@@ -50,6 +50,8 @@ class SIPPackage(AbstractPackage):
     def _build_code_generator(self, sysroot, archive):
         """ Build the code generator for the host. """
 
+        sysroot.build_for_target = False
+
         sysroot.unpack_archive(archive)
 
         args = [sysroot.host_python, 'configure.py', '--bindir',
@@ -61,6 +63,8 @@ class SIPPackage(AbstractPackage):
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
         os.chdir('..')
+
+        sysroot.build_for_target = True
 
     def _build_module(self, sysroot, archive):
         """ Build the static module for the target. """

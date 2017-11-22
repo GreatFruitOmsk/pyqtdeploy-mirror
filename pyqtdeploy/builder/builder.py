@@ -35,18 +35,17 @@ from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
 
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, read_embedded_file)
-from ..hosts import HostPlatform
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
-from ..targets import TargetArch, TargetPlatform
+from ..platforms import Architecture, Platform
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
 from ..windows import get_python_install_path
 
 
 # The list of all target platform names.
-TARGET_PLATFORM_NAMES = [p.name for p in TargetPlatform.platforms]
+TARGET_PLATFORM_NAMES = [p.name for p in Platform.all_platforms]
 
 
 class Builder():
@@ -61,7 +60,7 @@ class Builder():
         self._timeout = timeout * 1000 if timeout > 0 else -1
         self._message_handler = message_handler
 
-        self._host = HostPlatform.factory()
+        self._host = Architecture.architecture()
 
     def build(self, opt, nr_resources, clean=True, build_dir=None, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
         """ Build the project in a given directory.  Raise a UserException if
@@ -686,7 +685,7 @@ class Builder():
         # libraries.
         android_ssl_libs = 'ssl' in required_libraries
 
-        for platform in TargetPlatform.platforms:
+        for platform in Platform.all_platforms:
             targets = [platform.name]
             external_libs = project.external_libraries.get(platform.name, [])
 
@@ -1044,12 +1043,8 @@ class Builder():
             for target in target_scopes:
                 if target in targets:
                     final_targets.append(target)
-                elif TargetPlatform.find_platform(target) is None:
-                    arch = TargetArch.find_arch(target)
-                    if arch is None:
-                        raise UserException(
-                                "'{0}' is not the name of a target architecture or platform".format(target))
-
+                elif '-' in target:
+                    arch = Architecture.architecture(target)
                     if arch.platform.name in targets:
                         final_targets.append(arch.name)
 
@@ -1530,22 +1525,25 @@ static struct _inittab %s[] = {
                     "Unable to create the '{0}' directory".format(dir_name),
                     str(e))
 
-    @staticmethod
-    def _cpp_for_target(target):
+    @classmethod
+    def _cpp_for_target(cls, target):
         """ Return the C pre-processor guard for an architecture or platform.
         """
 
-        if '-' in target:
-            return TargetArch.find_arch(target).platform.cpp
+        return cls._target_platform(target).cpp
 
-        return TargetPlatform.find_platform(target).cpp
-
-    @staticmethod
-    def _qmake_scope_for_target(target):
+    @classmethod
+    def _qmake_scope_for_target(cls, target):
         """ Return the C pre-processor guard for an architecture or platform.
         """
 
-        if '-' in target:
-            return TargetArch.find_arch(target).qmake_scope
+        return cls._target_platform(target).qmake_scope
 
-        return TargetPlatform.find_platform(target).qmake_scope
+    @staticmethod
+    def _target_platform(target):
+        """ Return the platform of a target. """
+
+        if '-' in target:
+            return Architecture.architecture(target).platform
+
+        return Platform.platform(target)
