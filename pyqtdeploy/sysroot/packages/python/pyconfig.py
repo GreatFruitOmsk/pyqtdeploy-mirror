@@ -36,14 +36,14 @@ class Config:
         self._api = api
         self._targets = targets
 
-    def value(self, target_arch, android_api):
+    def value(self, sysroot):
         """ Get the value for a target architecture.  A value of None means the
         configuration value is omitted.
         """
 
         # Convert the target architecture and platform to valid Python names.
-        arch_name = target_arch.name.replace('-', '_')
-        plat_name = target_arch.platform.name
+        arch_name = sysroot.target_arch_name.replace('-', '_')
+        plat_name = sysroot.target_platform_name
 
         # Try the architecture.
         try:
@@ -58,7 +58,7 @@ class Config:
 
         # Return None if the targetted Android version is earlier than the one
         # for which the value is defined.
-        if android_api is not None and android_api < self._api:
+        if sysroot.android_api is not None and sysroot.android_api < self._api:
             return None
 
         return value
@@ -1570,7 +1570,7 @@ def generate_pyconfig_h(pyconfig_h_name, dynamic_loading, sysroot):
                 pyconfig_h.write(
                         '#if PY_MAJOR_VERSION == {0}\n'.format(py_major))
 
-        value = config.value(sysroot.target_arch, sysroot.android_api)
+        value = config.value(sysroot)
 
         if value is None:
             # We provide an commented out #define to make it easier to modify

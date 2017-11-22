@@ -65,7 +65,8 @@ class Sysroot:
 
         self._python_version_nr = None
 
-        self.build_for_target = True
+        self._target.configure()
+        self._build_for_target = True
 
     def build_packages(self, package_names, no_clean):
         """ Build a sequence of packages.  If no names are given then create
@@ -392,19 +393,19 @@ class Sysroot:
     def host_exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
 
-        return self._host.exe(name)
+        return self._host.platform.exe(name)
 
     @property
     def host_make(self):
         """ The name of the host make executable. """
 
-        return self._host.make
+        return self._host.platform.make
 
     @property
     def host_platform_name(self):
         """ The name of the host platform. """
 
-        return self._host.name
+        return self._host.platform.name
 
     @property
     def host_python(self):
