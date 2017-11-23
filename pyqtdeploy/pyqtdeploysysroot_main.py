@@ -25,6 +25,7 @@
 
 
 import argparse
+import os
 
 from . import MessageHandler, PYQTDEPLOY_RELEASE, Sysroot, UserException
 
@@ -69,7 +70,11 @@ def main():
     message_handler = MessageHandler(args.quiet, args.verbose)
 
     try:
-        sysroot = Sysroot(args.sysroot, args.json, args.plugin_path,
+        sysroot_dir = args.sysroot
+        if not sysroot_dir:
+            sysroot_dir = os.environ.get('SYSROOT')
+
+        sysroot = Sysroot(sysroot_dir, args.json, args.plugin_path,
                 args.source_dir, args.target, message_handler)
 
         if args.options:
