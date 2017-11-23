@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,6 @@ from ..user_exception import UserException
 from ..version import PYQTDEPLOY_RELEASE
 
 from .application_page import ApplicationPage
-from .build_page import BuildPage
 from .exception_handlers import handle_user_exception
 from .locations_page import LocationsPage
 from .other_extension_modules_page import OtherExtensionModulesPage
@@ -151,9 +150,6 @@ class ProjectGUI(QMainWindow):
 
         locations_page = LocationsPage()
         tabs.addTab(locations_page, locations_page.label)
-
-        build_page = BuildPage()
-        tabs.addTab(build_page, build_page.label)
 
         application_page.pyqt_version_changed.connect(
                 pyqt_page.set_pyqt_version)

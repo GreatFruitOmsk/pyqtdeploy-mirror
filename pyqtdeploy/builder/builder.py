@@ -62,7 +62,7 @@ class Builder():
 
         self._host = Architecture.architecture()
 
-    def build(self, opt, nr_resources, clean=True, build_dir=None, include_dir=None, interpreter=None, python_library=None, source_dir=None, standard_library_dir=None):
+    def build(self, opt, nr_resources, clean, build_dir, include_dir, interpreter, python_library, source_dir, standard_library_dir):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
