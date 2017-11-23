@@ -38,8 +38,11 @@ class ExternalLibraryMetadata:
         # The well known internal identifier of the library.
         self.name = name
 
+        # The default INCLUDEPATH to add to the .pro file.
+        self.includepath = '$SYSROOT/include'
+
         # The default LIBS to add to the .pro file.
-        self.libs = libs
+        self.libs = '-L$SYSROOT/lib ' + libs
 
         # The name of the library as presented to the user.
         self.user_name = user_name

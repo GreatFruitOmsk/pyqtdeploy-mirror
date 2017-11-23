@@ -331,7 +331,7 @@ class _PlatformGui(QWidget):
                     break
             else:
                 defs.setText('')
-                incp.setText('')
+                incp.setText(extlib.includepath)
                 libs.setText(extlib.libs)
 
         model.blockSignals(blocked)

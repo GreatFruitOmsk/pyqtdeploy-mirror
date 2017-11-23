@@ -495,22 +495,6 @@ class Builder():
         used_inittab = {}
         used_dlls = {}
 
-        # This is a hack to allow us to find external libraries (eg. OpenSSL)
-        # and their header files.  There is no way to specifiy these locations
-        # without using SYSROOT.  Instead we should set the default value for
-        # INCLUDEPATH in the External Library section of the Standard Library
-        # page in the GUI to $SYSROOT/include so that it can be specified on a
-        # per-library basis and without having to use SYSROOT.  The default
-        # value of LIBS should be prefixed with -L$SYSROOT/lib.
-        if 'SYSROOT' in os.environ:
-            self._add_value_for_targets(used_includepath,
-                    os.path.expandvars('$SYSROOT/include'))
-
-            external_libs_dir = os.path.expandvars('$SYSROOT/lib')
-            self._add_value_for_targets(used_libs, '-L' + external_libs_dir)
-        else:
-            external_libs_dir = None
-
         # Handle any static PyQt modules.
         if len(project.pyqt_modules) > 0:
             site_packages = standard_library_dir + '/site-packages'
@@ -679,46 +663,48 @@ class Builder():
                 self._add_value_for_targets(used_includepath,
                         source_dir + '/PC', ['win'])
 
-        # Handle any required external libraries platform by platform.  We
-        # special case the OpenSSL libraries for Android (so they get included
-        # in the APK) but we may need to generalise this for other external
-        # libraries.
-        android_ssl_libs = 'ssl' in required_libraries
+        # Handle any required external libraries platform by platform.
+        android_extra_libs = []
 
         for platform in Platform.all_platforms:
             targets = [platform.name]
             external_libs = project.external_libraries.get(platform.name, [])
 
             for required_lib in required_libraries:
+                libs = ''
+
                 for xlib in external_libs:
                     if xlib.name == required_lib:
-                        # Check the library is not disabled for this platform.
-                        if xlib.libs != '':
-                            if xlib.defines != '':
-                                self._add_compound_scoped_values(used_defines,
-                                        xlib.defines, False, targets)
-
-                            if xlib.includepath != '':
-                                self._add_compound_scoped_values(
-                                        used_includepath, xlib.includepath,
-                                        True, targets)
-
-                            self._add_compound_scoped_values(used_libs,
-                                    xlib.libs, False, targets)
-                        elif platform.name == 'android' and required_lib == 'ssl':
-                            android_ssl_libs = False
-
+                        defines = xlib.defines
+                        includepath = xlib.includepath
+                        libs = xlib.libs
                         break
                 else:
                     # Use the defaults.
                     for xlib in external_libraries_metadata:
                         if xlib.name == required_lib:
                             if platform.name in self._stdlib_extmod_targets():
-                                for lib in xlib.libs.split():
-                                    self._add_value_for_targets(used_libs, lib,
-                                            targets)
+                                defines = ''
+                                includepath = xlib.includepath
+                                libs = xlib.libs
 
                             break
+
+                # Check the library is not disabled for this platform.
+                if libs != '':
+                    if defines != '':
+                        self._add_compound_scoped_values(used_defines, defines,
+                                False, targets)
+
+                    if includepath != '':
+                        self._add_compound_scoped_values(used_includepath,
+                                includepath, True, targets)
+
+                    self._add_compound_scoped_values(used_libs, libs, False,
+                            targets)
+
+                    if platform.name == 'android':
+                        self._add_android_extra_libs(libs, android_extra_libs)
 
         # Specify any project-specific configuration.
         if used_qt:
@@ -778,17 +764,10 @@ class Builder():
             f.write('\n')
             self._write_used_values(f, used_libs, 'LIBS')
 
-        if external_libs_dir and android_ssl_libs:
-            for ssl_lib in ('crypto', 'ssl'):
-                ssl_lib_path = os.path.join(external_libs_dir,
-                        'lib' + ssl_lib + '.so')
-
-                # Check it exists in case the standard SYSROOT pattern isn't
-                # being used.  Without the hack described above it wouldn't be
-                # necessary.
-                f.write('android:exists(%s) {\n' % ssl_lib_path)
-                f.write('    ANDROID_EXTRA_LIBS += %s\n' % ssl_lib_path)
-                f.write('}\n')
+        # Add the library files to be added to an Android APK.
+        if android_extra_libs:
+            f.write('\n')
+            f.write('android:ANDROID_EXTRA_LIBS += %s\n' % ' '.join(android_extra_libs))
 
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
@@ -993,6 +972,31 @@ class Builder():
 
         for target, values in scoped_value_sets.items():
             used_values.setdefault(target, set()).update(values)
+
+    def _add_android_extra_libs(self, libs, android_extra_libs):
+        """ Add the shared library files for Android. """
+
+        project = self._project
+
+        targets = ['android']
+        lib_dir = ''
+        lib_so = []
+
+        for scoped_value in self._split_quotes(libs):
+            # We support the use of scoped values (to be consistent) but it
+            # actually makes no sense in this context.
+            value_targets, value = self._get_targets_and_value(scoped_value,
+                    targets)
+
+            if 'android' in value_targets:
+                if value.startswith('-L'):
+                    lib_dir = project.path_from_user(value[2:])
+                elif value.startswith('-l'):
+                    lib_so.append('lib' + value[2:] + '.so')
+
+        if lib_dir != '':
+            for lib in lib_so:
+                android_extra_libs.append(lib_dir + '/' + lib)
 
     @staticmethod
     def _split_quotes(s):
@@ -1421,7 +1425,7 @@ static struct _inittab %s[] = {
     def run_make(self):
         """ Run make. """
 
-        make = self._host.make
+        make = self._host.platform.make
 
         self.run([make], "{0} failed".format(make), in_build_dir=True)
 
