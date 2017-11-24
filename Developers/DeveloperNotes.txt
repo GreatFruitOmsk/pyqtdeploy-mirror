@@ -6,64 +6,51 @@ These are various notes, instructions and reminders for the pyqtdeploy
 developer.
 
 
-Updating pyqtdeploy When New Package Versions are Released
-==========================================================
+Updating pyqtdeploy When New New Versions of Python are Released
+================================================================
 
 These notes assume that immediately prior releases are fully supported by
 pyqtdeploy.
 
-Also the package configurations assume the latest versions of Riverbank
-packages are being used (whatever they happen to be).
+Run the ``diff-py-version.py`` script for the new version of Python::
 
+    ./diff-py-version.py --sources /path/to/Python/sources X.Y.Z
 
-Python
-------
-
-Patches
-.......
-
-Note that this is only necessary for versions of Python prior to v3.6.0.
-
-Change to the source directory of the new Python version and run::
-
-    pyqtdeploycli --package python --target android-32 configure
-
-If the patches apply without error then there is nothing to do.
-
-If the patches fail because of cosmetic changes then consider updating the
-code that applies the patches to cope.
-
-Otherwise generate a new set of patches in the patches directory.
+This will generate a number of standard diffs in the current directory.
 
 
 Modules
-.......
+-------
+
+TODO
 
 ``diff`` the ``Lib`` directory, look for any new or removed ``import``
 statements and update the Python standard library meta-data accordingly.
 
 
 pyconfig.h
-..........
+----------
 
-For Windows see if there are any changes to ``PC/pyconfig.h``.  If so then copy
-it to the ``configurations/pyconfig`` directory with an appropriate version
-number.  Edit the file, add ``#define Py_NO_ENABLE_SHARED`` and replace the
-``#define`` for ``HAVE_DYNAMIC_LOADING`` with ``@PY_DYNAMIC_LOADING@``.
+Check the ``PC/pyconfig.h`` diff for any changes.  If there are then copy it to
+the ``configurations/pyconfig`` directory with an appropriate version number.
+Edit the file, add ``#define Py_NO_ENABLE_SHARED`` and replace the ``#define``
+for ``HAVE_DYNAMIC_LOADING`` with ``@PY_DYNAMIC_LOADING@``.
 
-For other platforms ``diff`` the ``pyconfig.h.in`` file to see if there are any
-new configuration items.  Add any new ones to ``pyconfig.py``.
+Check the ``pyconfig.h.in`` diff for any new configuration items.  Add any new
+ones to ``pyconfig.py``.
 
 
 setup.py
-........
+--------
 
-See if there are any changes to ``setup.py`` and update the Python module
+Check the ``setup.py`` diff for any changes and update the Python module
 meta-data accordingly.
 
 
 python.pro
-..........
+----------
+
+TODO
 
 Run ``./configure`` for the new version and inspect the generated ``Makefile``.
 
@@ -84,185 +71,14 @@ Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
 
 
 _bootstrap_external.py
-......................
+----------------------
 
-For Python v3, check if ``Lib/importlib/_bootstrap_external.py`` has any
+For Python v3, check the ``Lib/importlib/_bootstrap_external.py`` diff for any
 changes and update the builder's version if necessary.
 
 
 supported_python_versions.py
-............................
+----------------------------
 
 Update the object describing supported versions if the new version required
 version-specific changes to the meta-data.
-
-
-Qt
---
-
-There should be nothing to do.
-
-
-SIP
----
-
-There should be nothing to do.
-
-
-PyQt5
------
-
-Changes are only required if a new PyQt5 module has been added.
-
-Update the ``pyqt_modules`` entries in the PyQt5 configuration files.  If the
-release supports a new Qt v5.x.0 release (with new modules) then create a new
-section ``[Qt 5.x]``.  If the release supports a new Python module for an
-existing Qt library then update the existing section.
-
-Consider if the ``pyqt_disabled_features`` entry needs updating.  If so then
-also update the QScintilla, PyQt3D, PyQtChart, PyQtDataVisualization and
-PyQtPurchasing configuration files.
-
-Add the new modules to the metadata defined in ``pyqt5.py``
-
-
-PyQt4
------
-
-There should be nothing to do.
-
-
-QScintilla
-----------
-
-There should be nothing to do.
-
-
-PyQt3D
-------
-
-There should be nothing to do.
-
-
-PyQtChart
----------
-
-There should be nothing to do.
-
-
-PyQtDataVisualization
----------------------
-
-There should be nothing to do.
-
-
-Deploying to Android
-====================
-
-Configuring the Environment
----------------------------
-
-To configure the environment (assuming an OS/X host), run::
-
-    export ANDROID_NDK_ROOT=/path/to/android-ndk-r11c
-    export ANDROID_SDK_ROOT=/path/to/android-sdk-macosx
-    export PATH=/path/to/apache-ant-x.y.z/bin:$PATH
-
-To use a specific Android API level (n) rather than the default 9, run::
-
-    export ANDROID_NDK_PLATFORM=android-n
-
-For Python v3.6.0 and later it must be set to 21 as a minimum.
-
-Qt and the Android NDK may not agree on the toolchain version to use.  To force
-Qt to use a particular version, run::
-
-    export ANDROID_NDK_TOOLCHAIN_VERSION=X.Y
-
-
-Building a sysroot
-------------------
-
-To build a new sysroot, run::
-
-    build-sysroot.py --target android-32 --clean --debug --all
-
-To make the sysroot the default, run::
-
-    rm /path/to/sysroot
-    ln -s sysroot-android-32 /path/to/sysroot
-
-
-Creating an Android Virtual Device
-----------------------------------
-
-To start the AVD Manager, run::
-
-    $ANDROID_SDK_ROOT/tools/android avd
-
-For any device ensure that ``Use Host GPU`` is enabled.
-
-
-Building the .apk
------------------
-
-Once the application has been built (i.e. after running ``make``) then run::
-
-    make install INSTALL_ROOT=deploy
-
-To create a debug .apk, run::
-
-    /path/to/X.Y/android_arm7/bin/androiddeployqt \
-            --input android-lib*.so-deployment-settings.json \
-            --output deploy
-
-``QtApp-debug.apk`` can be found in the ``deploy/bin`` directory.
-
-
-Deploying the .apk
-------------------
-
-When the AVD is running, run::
-
-    $ANDROID_SDK_ROOT/platform-tools/adb install QtApp-debug.apk
-
-
-Debugging Tips
---------------
-
-Use ``qDebug()`` in debugging statements so that the output can be seen by
-``adb logcat``.
-
-The adb server can be flakely.  If ``adb devices`` doesn't show anything then
-run::
-
-    $ANDROID_SDK_ROOT/platform-tools/adb kill-server
-    $ANDROID_SDK_ROOT/platform-tools/adb start-server
-
-
-Deploying to iOS
-================
-
-Building a sysroot
-------------------
-
-To build a new sysroot, run::
-
-    build-sysroot.py --target ios-64 --clean --debug --all
-
-To make the sysroot the default, run::
-
-    rm /path/to/sysroot
-    ln -s sysroot-ios-64 /path/to/sysroot
-
-
-Deploying the .app
-------------------
-
-Deployment is done using Xcode.  Make sure any code signing problems are
-resolved (ie. click on ``Fix issues`` in the ``Identity`` section if
-necessary).
-
-To deploy to a device, select::
-
-    Product -> Perform Action -> Run Without Building
