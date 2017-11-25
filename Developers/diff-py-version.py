@@ -224,8 +224,11 @@ diff_files('PC/pyconfig.h', base_version, py_version)
 raw_lib_diff = diff_directories('Lib', base_version, py_version, suffix='.raw')
 
 if py_version.major == 3:
-    diff_files('Lib/importlib/_bootstrap_external.py', base_version,
-            py_version)
+    if int(py_version) >= 0x030500:
+        diff_files('Lib/importlib/_bootstrap_external.py', base_version,
+                py_version)
+    else:
+        diff_files('Lib/importlib/_bootstrap.py', base_version, py_version)
 
 base_version.configure()
 py_version.configure()
