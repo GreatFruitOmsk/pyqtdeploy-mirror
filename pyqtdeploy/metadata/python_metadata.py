@@ -566,7 +566,7 @@ _metadata = {
         PythonModule(max_version=(2, 7, 12),
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'tempfile')),
-        PythonModule(version=(2, 7, 13),
+        PythonModule(min_version=(2, 7, 13), max_version=(2, 7),
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'subprocess', 'tempfile')),
         PythonModule(version=(3, 3),
@@ -2700,8 +2700,8 @@ _metadata = {
 
     'shutil': (
         PythonModule(version=2,
-                deps=('collections', 'errno', 'fnmatch', 'grp', 'os', 'pwd',
-                        'stat', 'tarfile')),
+                deps=('collections', 'errno', 'fnmatch', 'os', 'stat',
+                        'tarfile')),
         PythonModule(min_version=3, max_version=(3, 4),
                 deps=('collections', 'errno', 'fnmatch', 'grp', 'nt', 'os',
                         'pwd', 'stat', 'tarfile')),
@@ -3940,12 +3940,14 @@ _metadata = {
         ExtensionModule(version=2, internal=True,
                 source='_elementtree.c',
                 defines=('win#COMPILED_FROM_DSP',
-                        '!win#HAVE_EXPAT_CONFIG_H', 'USE_PYEXPAT_CAPI'),
+                        '!win#HAVE_EXPAT_CONFIG_H',
+                        'USE_PYEXPAT_CAPI', 'XML_POOR_ENTROPY'),
                 deps='pyexpat', pyd='_elementtree.pyd'),
         ExtensionModule(version=3, internal=True,
                 source='_elementtree.c',
                 defines=('win#COMPILED_FROM_DSP',
-                        '!win#HAVE_EXPAT_CONFIG_H', 'USE_PYEXPAT_CAPI'),
+                        '!win#HAVE_EXPAT_CONFIG_H',
+                        'USE_PYEXPAT_CAPI'),
                 deps=('copy', 'pyexpat', 'xml.etree.ElementPath'),
                 pyd='_elementtree.pyd')),
 
@@ -4729,6 +4731,7 @@ if __name__ == '__main__':
     check_version(2, 7, 11)
     check_version(2, 7, 12)
     check_version(2, 7, 13)
+    check_version(2, 7, 14)
     check_version(3, 3)
     check_version(3, 4, 0)
     check_version(3, 4, 1)

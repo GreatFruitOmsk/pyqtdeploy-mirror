@@ -1092,6 +1092,9 @@ pyconfig = (
     # Define to 1 if you have the <sys/poll.h> header file.
     Config('HAVE_SYS_POLL_H', default=1),
 
+    # Define to 1 if you have the <sys/random.h> header file.
+    Config('HAVE_SYS_RANDOM_H', default=1),
+
     # Define to 1 if you have the <sys/resource.h> header file.
     Config('HAVE_SYS_RESOURCE_H', default=1),
 
