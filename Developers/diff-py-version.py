@@ -259,8 +259,6 @@ lib_f.close()
 
 os.remove(raw_lib_diff)
 
-# Delete the source directories.
-progress("Removing {0}".format(py_source))
-shutil.rmtree(py_source)
+# Delete the base version source directory.
 progress("Removing {0}".format(base_source))
 shutil.rmtree(base_source)
