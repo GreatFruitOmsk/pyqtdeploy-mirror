@@ -1751,7 +1751,12 @@ _metadata = {
                         'struct', 'token', 'tokenize')),
         PythonModule(min_version=(2, 7, 13), max_version=(2, 7),
                 deps=('copy', 'errno', 'locale', 'os', 're', 'struct')),
-        PythonModule(min_version=3, max_version=(3, 4, 5),
+        PythonModule(min_version=3, max_version=(3, 3, 6),
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
+                        'token', 'tokenize')),
+        PythonModule(min_version=(3, 3, 7), max_version=(3, 3),
+                deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct')),
+        PythonModule(min_version=(3, 4), max_version=(3, 4, 5),
                 deps=('copy', 'errno', 'io', 'locale', 'os', 're', 'struct',
                         'token', 'tokenize')),
         PythonModule(min_version=(3, 4, 6), max_version=(3, 4),
@@ -1841,9 +1846,13 @@ _metadata = {
                         'http.server'))),
 
     'http.client': (
-        PythonModule(version=(3, 3),
+        PythonModule(min_version=(3, 3), max_version=(3, 3, 6),
                 deps=('http', 'collections', 'email.message', 'email.parser',
                         'io', 'os', 'socket', '?ssl', 'urllib.parse',
+                        'warnings')),
+        PythonModule(min_version=(3, 3, 7), max_version=(3, 3),
+                deps=('http', 'collections', 'email.message', 'email.parser',
+                        'io', 'os', 're', 'socket', '?ssl', 'urllib.parse',
                         'warnings')),
         PythonModule(min_version=(3, 4), max_version=(3, 4, 3),
                 deps=('http', 'collections', 'email.message', 'email.parser',
@@ -3947,7 +3956,7 @@ _metadata = {
                 source='_elementtree.c',
                 defines=('win#COMPILED_FROM_DSP',
                         '!win#HAVE_EXPAT_CONFIG_H',
-                        'USE_PYEXPAT_CAPI'),
+                        'USE_PYEXPAT_CAPI', 'XML_POOR_ENTROPY'),
                 deps=('copy', 'pyexpat', 'xml.etree.ElementPath'),
                 pyd='_elementtree.pyd')),
 
@@ -4732,7 +4741,8 @@ if __name__ == '__main__':
     check_version(2, 7, 12)
     check_version(2, 7, 13)
     check_version(2, 7, 14)
-    check_version(3, 3)
+    check_version(3, 3, 0)
+    check_version(3, 3, 7)
     check_version(3, 4, 0)
     check_version(3, 4, 1)
     check_version(3, 4, 2)
