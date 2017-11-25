@@ -15,6 +15,11 @@ import tarfile
 class Version:
     """ Encapsulate a version. """
 
+    # The 'Lib' sub-directories to ignore.
+    IGNORED_LIB_DIRS = ('bsddb/test', 'ensurepip', 'idlelib', 'lib-tk',
+            'lib2to3', 'pydoc_data', 'site-packages', 'test', 'tkinter',
+            'turtledemo', 'unittest', 'venv')
+
     def __init__(self, major, minor, patch):
         """ Initialise the object. """
 
@@ -28,6 +33,15 @@ class Version:
         """
 
         return 'Python-' + str(self)
+
+    def configure(self):
+        """ Configure the package. """
+
+        progress("Configuring {0}".format(self.basename()))
+
+        os.chdir(self.basename())
+        os.system('./configure >/dev/null')
+        os.chdir('..')
 
     def unpack(self, sources):
         """ Unpack the source package and return the name of the source
@@ -48,6 +62,12 @@ class Version:
         tar = tarfile.open(package)
         tar.extractall()
         tar.close()
+
+        # Delete those 'Lib' sub-directories that we are not interested in.
+        for d in self.IGNORED_LIB_DIRS:
+            d_path = os.path.join(basename, 'Lib', d)
+            if os.path.isdir(d_path):
+                shutil.rmtree(d_path)
 
         return basename
 
@@ -116,7 +136,7 @@ def progress(message):
     sys.stdout.write(message + "...\n")
 
 
-def diff_dirs(name, base_version, py_version):
+def diff_directories(name, base_version, py_version):
     """ Create a diff between two directories. """
 
     run_diff('-ruN', name, base_version, py_version)
@@ -188,13 +208,18 @@ base_source = base_version.unpack(sources)
 diff_files('setup.py', base_version, py_version)
 diff_files('pyconfig.h.in', base_version, py_version)
 diff_files('PC/pyconfig.h', base_version, py_version)
+diff_directories('Lib', base_version, py_version)
 
 if py_version.major == 3:
     diff_files('Lib/importlib/_bootstrap_external.py', base_version,
             py_version)
 
+base_version.configure()
+py_version.configure()
+diff_files('Makefile', base_version, py_version)
+
 # Delete the source directories.
 progress("Removing {0}".format(py_source))
-#shutil.rmtree(py_source)
+shutil.rmtree(py_source)
 progress("Removing {0}".format(base_source))
-#shutil.rmtree(base_source)
+shutil.rmtree(base_source)

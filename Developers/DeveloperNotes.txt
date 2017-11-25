@@ -9,9 +9,6 @@ developer.
 Updating pyqtdeploy When New New Versions of Python are Released
 ================================================================
 
-These notes assume that immediately prior releases are fully supported by
-pyqtdeploy.
-
 Run the ``diff-py-version.py`` script for the new version of Python::
 
     ./diff-py-version.py --sources /path/to/Python/sources X.Y.Z
@@ -22,10 +19,8 @@ This will generate a number of standard diffs in the current directory.
 Modules
 -------
 
-TODO
-
-``diff`` the ``Lib`` directory, look for any new or removed ``import``
-statements and update the Python standard library meta-data accordingly.
+Check the ``Lib`` diff for any new or removed ``import`` statements and update
+the Python standard library meta-data accordingly.
 
 
 pyconfig.h
@@ -50,24 +45,22 @@ meta-data accordingly.
 python.pro
 ----------
 
-TODO
+Check the ``Makefile`` diff:
 
-Run ``./configure`` for the new version and inspect the generated ``Makefile``.
+    compare the value of ``PARSER_OBJS`` with the value of ``PARSER_SOURCES``
+    in ``python.pro``
 
-Compare the value of ``PARSER_OBJS`` with the value of ``PARSER_SOURCES`` in
-``python.pro``.
+    compare the value of ``OBJECT_OBJS`` with the value of ``OBJECT_SOURCES``
+    in ``python.pro``
 
-Compare the value of ``OBJECT_OBJS`` with the value of ``OBJECT_SOURCES`` in
-``python.pro``.
+    compare the value of ``PYTHON_OBJS`` with the value of ``PYTHON_SOURCES``
+    in ``python.pro`` (ignoring ``frozen.o``)
 
-Compare the value of ``PYTHON_OBJS`` with the value of ``PYTHON_SOURCES`` in
-``python.pro``.  Note that ``frozen.o`` should be ignored.
+    compare the value of ``MODULE_OBJS`` with the value of ``MODULE_SOURCES``
+    in ``python.pro``
 
-Compare the value of ``MODULE_OBJS`` with the value of ``MODULE_SOURCES`` in
-``python.pro``.
-
-Compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
-``python.pro``.
+    compare the value of ``MODOBJS`` with the value of ``MOD_SOURCES`` in
+    ``python.pro``.
 
 
 _bootstrap_external.py
