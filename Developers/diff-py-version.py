@@ -16,9 +16,10 @@ class Version:
     """ Encapsulate a version. """
 
     # The 'Lib' sub-directories to ignore.
-    IGNORED_LIB_DIRS = ('bsddb/test', 'ensurepip', 'idlelib', 'lib-tk',
-            'lib2to3', 'pydoc_data', 'site-packages', 'test', 'tkinter',
-            'turtledemo', 'unittest', 'venv')
+    IGNORED_LIB_DIRS = ('bsddb/test', 'ctypes/test', 'distutils/tests',
+            'ensurepip', 'idlelib', 'lib-tk', 'lib2to3', 'pydoc_data',
+            'site-packages', 'test', 'tkinter', 'turtledemo', 'unittest',
+            'venv')
 
     def __init__(self, major, minor, patch):
         """ Initialise the object. """
@@ -136,25 +137,26 @@ def progress(message):
     sys.stdout.write(message + "...\n")
 
 
-def diff_directories(name, base_version, py_version):
+def diff_directories(name, base_version, py_version, suffix=''):
     """ Create a diff between two directories. """
 
-    run_diff('-ruN', name, base_version, py_version)
+    return run_diff('-ruN', name, base_version, py_version, suffix)
 
 
-def diff_files(name, base_version, py_version):
+def diff_files(name, base_version, py_version, suffix=''):
     """ Create a diff between two files. """
 
-    run_diff('-u', name, base_version, py_version)
+    return run_diff('-u', name, base_version, py_version, suffix)
 
 
-def run_diff(flags, name, base_version, py_version):
-    """ Run a diff command. """
+def run_diff(flags, name, base_version, py_version, suffix):
+    """ Run a diff command and return the name of the file containing the diff.
+    """
 
     name1 = os.path.join(base_version.basename(), name)
     name2 = os.path.join(py_version.basename(), name)
-    output = '{0}-{1}-{2}.diff'.format(os.path.basename(name), base_version,
-            py_version)
+    output = '{0}-{1}-{2}.diff{3}'.format(os.path.basename(name), base_version,
+            py_version, suffix)
 
     try:
         os.remove(output)
@@ -167,6 +169,17 @@ def run_diff(flags, name, base_version, py_version):
 
     if not os.path.exists(output):
         error("'{0}' failed".format(cmd), error_code)
+
+    return output
+
+
+def process_lib_diff(diff, f):
+    """ If a single lib is relevant that write it to a file. """
+
+    for line in diff:
+        if 'import' in line and line[0] in '+-':
+            f.write(''.join(diff))
+            break
 
 
 # Parse the command line.
@@ -208,7 +221,7 @@ base_source = base_version.unpack(sources)
 diff_files('setup.py', base_version, py_version)
 diff_files('pyconfig.h.in', base_version, py_version)
 diff_files('PC/pyconfig.h', base_version, py_version)
-diff_directories('Lib', base_version, py_version)
+raw_lib_diff = diff_directories('Lib', base_version, py_version, suffix='.raw')
 
 if py_version.major == 3:
     diff_files('Lib/importlib/_bootstrap_external.py', base_version,
@@ -217,6 +230,31 @@ if py_version.major == 3:
 base_version.configure()
 py_version.configure()
 diff_files('Makefile', base_version, py_version)
+
+# Filter the 'Lib' diff to exclude anything that doesn't involve 'import'.
+lib_diff = raw_lib_diff[:-4]
+
+progress("Filtering {0}".format(lib_diff))
+
+raw_lib_f = open(raw_lib_diff)
+lib_f = open(lib_diff, 'w')
+
+diff = []
+for line in raw_lib_f.readlines():
+    if line.startswith('diff '):
+        if diff:
+            process_lib_diff(diff, lib_f)
+            diff = []
+
+    diff.append(line)
+
+if diff:
+    process_lib_diff(diff, lib_f)
+
+raw_lib_f.close()
+lib_f.close()
+
+os.remove(raw_lib_diff)
 
 # Delete the source directories.
 progress("Removing {0}".format(py_source))
