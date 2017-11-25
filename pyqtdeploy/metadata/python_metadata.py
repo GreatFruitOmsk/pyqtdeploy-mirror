@@ -3492,7 +3492,16 @@ _metadata = {
                 internal=True,
                 deps=('asyncio', 'functools', 'inspect', 'reprlib', 'socket',
                         'subprocess', 'threading', 'traceback')),
-        PythonModule(min_version=(3, 4, 4), internal=True,
+        PythonModule(min_version=(3, 4, 4), max_version=(3, 5, 3),
+                internal=True,
+                deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
+                        'reprlib', 'socket', 'subprocess', 'threading',
+                        'traceback')),
+        PythonModule(min_version=(3, 5, 4), max_version=(3, 5), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
+                        'os', 'reprlib', 'socket', 'subprocess', 'threading',
+                        'traceback')),
+        PythonModule(min_version=(3, 6), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
                         'reprlib', 'socket', 'subprocess', 'threading',
                         'traceback'))),
@@ -4754,4 +4763,5 @@ if __name__ == '__main__':
     check_version(3, 5, 1)
     check_version(3, 5, 2)
     check_version(3, 5, 3)
+    check_version(3, 5, 4)
     check_version(3, 6, 0)
