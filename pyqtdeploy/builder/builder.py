@@ -203,8 +203,8 @@ class Builder():
 
         # Write the .pro file.
         self._write_qmake(py_version, required_ext, required_libraries,
-                include_dir, python_library, standard_library_dir, job_writer,
-                opt, resource_names)
+                include_dir, python_library, source_dir, standard_library_dir,
+                job_writer, opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -382,7 +382,7 @@ class Builder():
         '.y':       'YACCSOURCES',
     }
 
-    def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, source_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -598,7 +598,6 @@ class Builder():
 
         # Handle any standard library extension modules.
         if len(required_ext) != 0:
-            source_dir = project.path_from_user(project.python_source_dir)
             source_targets = set()
 
             for name, module in required_ext.items():
