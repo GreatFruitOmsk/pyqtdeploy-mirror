@@ -146,14 +146,7 @@ class Builder():
                     project.python_target_stdlib_dir)
 
         # Set the name of the build directory.
-        if build_dir is None:
-            build_dir = project.build_dir
-            if build_dir == '':
-                build_dir = '.'
-
-            build_dir = project.path_from_user(build_dir)
-
-        self._build_dir = build_dir
+        self._build_dir = os.path.abspath(build_dir)
 
         # Remove any build directory if required.
         if clean:

@@ -39,7 +39,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--build-dir', help="the name of the build directory",
-            metavar="DIR")
+            metavar="DIR", default='build')
     parser.add_argument('--include-dir',
             help="the target Python include directory", metavar="DIR")
     parser.add_argument('--interpreter',

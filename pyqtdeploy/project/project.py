@@ -111,8 +111,6 @@ class Project(QObject):
     def set_default_locations(self):
         """ Set the various locations to their default values. """
 
-        self.build_dir = 'build'
-
         self.python_host_interpreter = '$SYSROOT/host/bin/python'
         self.qmake = '$SYSROOT/host/bin/qmake'
 
@@ -448,7 +446,6 @@ class Project(QObject):
         # The other configuration.
         others = root.find('Others')
         if others is not None:
-            project.build_dir = others.get('builddir', '')
             project.qmake = others.get('qmake', '')
 
         # If the default locations are being used then use the current defaults
@@ -624,7 +621,6 @@ class Project(QObject):
 
         if not self.using_default_locations:
             SubElement(root, 'Others', attrib={
-                'builddir': self.build_dir,
                 'qmake': self.qmake})
 
         tree = ElementTree(root)
