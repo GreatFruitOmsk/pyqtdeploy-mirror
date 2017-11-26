@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 6, 1),
+    (3, 6, 2),
     (3, 5, 4),
     (3, 4, 7),
     (3, 3, 7),
@@ -533,8 +533,10 @@ _metadata = {
         PythonModule(version=2, deps=('functools', 'warnings')),
         PythonModule(min_version=3, max_version=(3, 5),
                 deps=('collections', 'functools')),
-        PythonModule(min_version=(3, 6),
-                deps=('abc', 'collections', 'functools'))),
+        PythonModule(min_version=(3, 6), max_version=(3, 6, 1),
+                deps=('abc', 'collections', 'functools')),
+        PythonModule(min_version=(3, 6, 2),
+                deps=('abc', 'collections', '_collections_abc', 'functools'))),
 
     'Cookie':
         PythonModule(version=2,
@@ -2031,11 +2033,16 @@ _metadata = {
                         'functools', 'imp', 'importlib.machinery', 'itertools',
                         'linecache', 'operator', 'os', 're', 'token',
                         'tokenize', 'types', 'warnings')),
-        PythonModule(min_version=(3, 6),
+        PythonModule(min_version=(3, 6), max_version=(3, 6, 1),
                 deps=('ast', 'collections', 'collections.abc', 'dis', 'enum',
                         'functools', 'importlib.machinery', 'itertools',
                         'linecache', 'operator', 'os', 're', 'token',
-                        'tokenize', 'types', 'warnings'))),
+                        'tokenize', 'types', 'warnings')),
+        PythonModule(min_version=(3, 6, 2),
+                deps=('abc', 'ast', 'collections', 'collections.abc', 'dis',
+                        'enum', 'functools', 'importlib.machinery',
+                        'itertools', 'linecache', 'operator', 'os', 're',
+                        'token', 'tokenize', 'types', 'warnings'))),
 
     'io': (
         PythonModule(version=2, deps=('abc', '_io')),
@@ -3047,9 +3054,13 @@ _metadata = {
         PythonModule(min_version=(3, 5, 0), max_version=(3, 5, 1),
                 deps=('abc', 'collections', 'collections.abc', 'functools',
                         're', 'types')),
-        PythonModule(min_version=(3, 5, 2),
+        PythonModule(min_version=(3, 5, 2), max_version=(3, 6, 1),
                 deps=('abc', 'collections', 'collections.abc', 'contextlib',
-                        'functools', 're', 'types'))),
+                        'functools', 're', 'types')),
+        PythonModule(min_version=(3, 6, 2),
+                deps=('abc', 'collections', 'collections.abc',
+                        '_collections_abc', 'contextlib', 'functools', 're',
+                        'types'))),
 
     'unicodedata':
         ExtensionModule(source='unicodedata.c', pyd='unicodedata.pyd'),
