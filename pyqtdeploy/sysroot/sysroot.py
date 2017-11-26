@@ -148,7 +148,7 @@ class Sysroot:
 
         arch = self._target if self._build_for_target else self._host
 
-        return arch.apple_sdk
+        return arch.platform.apple_sdk
 
     @property
     def build_for_target(self):
