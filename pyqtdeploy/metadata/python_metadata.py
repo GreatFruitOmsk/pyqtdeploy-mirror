@@ -24,7 +24,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-__all__ = ['ExtensionModule', 'get_python_metadata']
+__all__ = ['ExtensionModule', 'get_python_metadata',
+        'supported_python_versions']
+
+
+# The latest supported version in each minor branch.
+_supported_branches = (
+    (3, 6, 0),
+    (3, 5, 4),
+    (3, 4, 7),
+    (3, 3, 7),
+    (2, 7, 14))
+
+
+# All supported versions.
+def _get_supported_versions():
+    for major, minor, patch in _supported_branches:
+        for p in range(patch, -1, -1):
+            yield (major, minor, p)
+
+supported_python_versions = tuple(_get_supported_versions())
 
 
 class StdlibModule:
@@ -4743,25 +4762,5 @@ if __name__ == '__main__':
                 print("Unused module '{0}'".format(name))
 
     # Check each supported version.
-    check_version(2, 7, 0)
-    check_version(2, 7, 9)
-    check_version(2, 7, 10)
-    check_version(2, 7, 11)
-    check_version(2, 7, 12)
-    check_version(2, 7, 13)
-    check_version(2, 7, 14)
-    check_version(3, 3, 0)
-    check_version(3, 3, 7)
-    check_version(3, 4, 0)
-    check_version(3, 4, 1)
-    check_version(3, 4, 2)
-    check_version(3, 4, 3)
-    check_version(3, 4, 4)
-    check_version(3, 4, 5)
-    check_version(3, 4, 6)
-    check_version(3, 5, 0)
-    check_version(3, 5, 1)
-    check_version(3, 5, 2)
-    check_version(3, 5, 3)
-    check_version(3, 5, 4)
-    check_version(3, 6, 0)
+    for major, minor, patch in supported_python_versions:
+        check_version(major, minor, patch)

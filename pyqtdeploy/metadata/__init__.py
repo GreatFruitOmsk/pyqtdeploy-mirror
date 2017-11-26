@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,4 +29,3 @@ from .external_libs_metadata import *
 from .pyqt4 import *
 from .pyqt5 import *
 from .python_metadata import *
-from .supported_python_versions import *

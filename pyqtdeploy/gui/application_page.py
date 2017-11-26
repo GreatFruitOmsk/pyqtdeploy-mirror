@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import (QButtonGroup, QCheckBox, QComboBox, QFileDialog,
         QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QRadioButton, QWidget)
 
-from ..metadata import (get_supported_python_version,
-        get_supported_python_version_index, get_supported_python_versions)
+from ..metadata import supported_python_versions
 from .better_form import BetterForm
 from .filename_editor import FilenameEditor
 from .package_editor import PackageEditor
@@ -112,7 +111,9 @@ class ApplicationPage(QWidget):
 
         self._py_version_edit = QComboBox(
                 whatsThis="Select the target Python version.")
-        self._py_version_edit.addItems(get_supported_python_versions())
+        for major, minor, patch in supported_python_versions:
+            self._py_version_edit.addItem(
+                    "v{0}.{1}.{2}".format(major, minor, patch))
         self._py_version_edit.currentIndexChanged.connect(
                 self._py_version_changed)
         options_layout.addRow("Target Python version", self._py_version_edit)
@@ -162,8 +163,7 @@ class ApplicationPage(QWidget):
 
         blocked = self._py_version_edit.blockSignals(True)
         self._py_version_edit.setCurrentIndex(
-                get_supported_python_version_index(
-                        project.python_target_version))
+                supported_python_versions.index(project.python_target_version))
         self._py_version_edit.blockSignals(blocked)
 
         blocked = self._pyqt_version_edit.blockSignals(True)
@@ -184,7 +184,7 @@ class ApplicationPage(QWidget):
     def _py_version_changed(self, idx):
         """ Invoked when the user changes the Python version number. """
 
-        self.project.python_target_version = get_supported_python_version(idx)
+        self.project.python_target_version = supported_python_versions[idx]
         self.project.modified = True
 
         self.python_target_version_changed.emit()

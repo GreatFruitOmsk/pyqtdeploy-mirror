@@ -70,8 +70,7 @@ For Python v3, check the ``Lib/importlib/_bootstrap_external.py`` diff for any
 changes and update the builder's version if necessary.
 
 
-supported_python_versions.py
-----------------------------
+python_metadata.py
+------------------
 
-Update the object describing supported versions if the new version required
-version-specific changes to the meta-data.
+Add the new Python version to the appropriate supported branch.

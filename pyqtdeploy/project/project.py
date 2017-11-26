@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PyQt5.QtCore import QDir, QFileInfo, QObject, pyqtSignal
 
-from ..metadata import get_latest_supported_python_version, get_python_metadata
+from ..metadata import get_python_metadata, supported_python_versions
 from ..platforms import Platform
 from ..user_exception import UserException
 
@@ -101,7 +101,7 @@ class Project(QObject):
         self.other_packages = []
         self.pyqt_modules = []
         self.python_use_platform = ['win']
-        self.python_target_version = get_latest_supported_python_version()
+        self.python_target_version = supported_python_versions[0]
         self.qmake_configuration = ''
         self.standard_library = []
         self.sys_path = ''
@@ -346,6 +346,10 @@ class Project(QObject):
         minor = cls._get_int(python, 'minor', 'Python')
         patch = cls._get_int(python, 'patch', 'Python', default=0)
         project.python_target_version = (major, minor, patch)
+        if project.python_target_version not in supported_python_versions:
+            raise UserException(
+                    "Python v{0}.{1}.{2} is not supported.".format(major,
+                            minor, patch))
 
         # The application specific configuration.
         application = root.find('Application')
