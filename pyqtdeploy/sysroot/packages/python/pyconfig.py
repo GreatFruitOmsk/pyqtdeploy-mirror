@@ -1116,6 +1116,9 @@ pyconfig = (
     # Define to 1 if you have the <sys/syscall.h> header file.
     Config('HAVE_SYS_SYSCALL_H', default=1),
 
+    # Define to 1 if you have the <sys/sysmacros.h> header file.
+    Config('HAVE_SYS_SYSMACROS_H', linux=1),
+
     # Define to 1 if you have the <sys/sys_domain.h> header file.
     Config('HAVE_SYS_SYS_DOMAIN_H', macos=1),
 

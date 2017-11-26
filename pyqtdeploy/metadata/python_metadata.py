@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 6, 2),
+    (3, 6, 3),
     (3, 5, 4),
     (3, 4, 7),
     (3, 3, 7),
@@ -101,8 +101,8 @@ class StdlibModule:
         # directory to add to INCLUDEPATH.
         self.includepath = (includepath, ) if isinstance(includepath, str) else includepath
 
-        # Set if the extension modules is implemented as a .pyd file included
-        # in the Windows installer from python.org.
+        # The name of the extension module if it is implemented as a .pyd file
+        # included in the Windows installer from python.org.
         self.pyd = pyd
 
         # The sequence of additional DLLs needed by the extension module and
@@ -3880,10 +3880,14 @@ _metadata = {
                 deps=('concurrent.futures', 'atexit',
                         'concurrent.futures._base', 'queue', 'threading',
                         'weakref')),
-        PythonModule(min_version=(3, 5), internal=True,
+        PythonModule(min_version=(3, 5), max_version=(3, 6, 2), internal=True,
                 deps=('concurrent.futures', 'atexit',
                         'concurrent.futures._base', 'os', 'queue', 'threading',
-                        'weakref'))),
+                        'weakref')),
+        PythonModule(min_version=(3, 6, 3), internal=True,
+                deps=('concurrent.futures', 'atexit',
+                        'concurrent.futures._base', 'itertools', 'os', 'queue',
+                        'threading', 'weakref'))),
 
     '_crypt':
         ExtensionModule(version=3, internal=True, target='!win',
@@ -3980,11 +3984,16 @@ _metadata = {
                         'distutils.log', 'distutils.util', 'os', 're',
                         'subprocess', 'winreg'))),
 
-    'distutils._msvccompiler':
-        PythonModule(min_version=(3, 5),
+    'distutils._msvccompiler': (
+        PythonModule(min_version=(3, 5), max_version=(3, 6, 2),
                 deps=('distutils.ccompiler', 'distutils.errors',
                         'distutils.log', 'distutils.util', 'itertools', 'os',
                         'shutil', 'stat', 'subprocess', 'winreg')),
+        PythonModule(min_version=(3, 6, 3),
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.util', '_findvs', 'glob',
+                        'itertools', 'os', 'shutil', 'stat', 'subprocess',
+                        'threading', 'winreg'))),
 
     'distutils.versionpredicate':
         PythonModule(
@@ -4058,6 +4067,10 @@ _metadata = {
     'encodings.aliases': (
         PythonModule(version=2, internal=True, deps='encodings'),
         CorePythonModule(version=3, internal=True, deps='encodings')),
+
+    '_findvs':
+        ExtensionModule(min_version=(3, 6, 3), internal=True, target='win',
+                source='../PC/_findvs.cpp', pyd='_findvs.pyd'),
 
     '_functools': (
         ExtensionModule(version=2, internal=True, source='_functoolsmodule.c'),
