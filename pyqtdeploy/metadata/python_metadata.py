@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 6, 0),
+    (3, 6, 1),
     (3, 5, 4),
     (3, 4, 7),
     (3, 3, 7),
@@ -521,10 +521,13 @@ _metadata = {
     'ConfigParser':
         PythonModule(version=2, deps=('collections', 're', 'UserDict')),
 
-    'configparser':
-        PythonModule(version=3,
+    'configparser': (
+        PythonModule(min_version=3, max_version=(3, 6, 0),
                 deps=('collections', 'collections.abc', 'functools', 'io',
                         'itertools', 're', 'warnings')),
+        PythonModule(min_version=(3, 6, 1),
+                deps=('collections', 'collections.abc', 'functools', 'io',
+                        'itertools', 'os', 're', 'warnings'))),
 
     'contextlib': (
         PythonModule(version=2, deps=('functools', 'warnings')),
@@ -2937,14 +2940,13 @@ _metadata = {
 
     'tarfile': (
         PythonModule(version=2,
-                deps=('calendar', 'copy', 'cStringIO', 'errno', 'grp',
-                        'operator', 'pwd', 'os', 're', 'shutil', 'stat',
-                        'struct', 'time', 'warnings')),
+                deps=('calendar', 'copy', 'cStringIO', 'errno', 'operator',
+                        'os', 're', 'shutil', 'stat', 'struct', 'time',
+                        'warnings')),
 
         PythonModule(version=3,
-                deps=('calendar', 'copy', 'errno', 'grp', 'io', 'pwd', 'os',
-                        're', 'shutil', 'stat', 'struct', 'time',
-                        'warnings'))),
+                deps=('calendar', 'copy', 'errno', 'io', 'os', 're', 'shutil',
+                        'stat', 'struct', 'time', 'warnings'))),
 
     'telnetlib': (
         PythonModule(version=2,
@@ -3520,9 +3522,13 @@ _metadata = {
                 deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
                         'os', 'reprlib', 'socket', 'subprocess', 'threading',
                         'traceback')),
-        PythonModule(min_version=(3, 6), internal=True,
+        PythonModule(version=(3, 6, 0), internal=True,
                 deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
                         'reprlib', 'socket', 'subprocess', 'threading',
+                        'traceback')),
+        PythonModule(min_version=(3, 6, 1), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
+                        'os', 'reprlib', 'socket', 'subprocess', 'threading',
                         'traceback'))),
 
     'asyncio.futures': (
