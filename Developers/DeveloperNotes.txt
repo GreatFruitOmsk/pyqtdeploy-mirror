@@ -63,6 +63,13 @@ Check the ``Makefile`` diff:
     ``python.pro``.
 
 
+_bootstrap.py
+-------------
+
+For Python v3, check the ``Lib/importlib/_bootstrap.py`` diff for any
+changes and update the builder's version if necessary.
+
+
 _bootstrap_external.py
 ----------------------
 
