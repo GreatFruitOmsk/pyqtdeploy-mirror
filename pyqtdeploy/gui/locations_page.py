@@ -108,18 +108,6 @@ class LocationsPage(QWidget):
 
         py_target_group.setLayout(py_target_layout)
 
-        others_group = QGroupBox("Other Locations")
-        others_layout = BetterForm()
-
-        self._qmake_edit = FilenameEditor("qmake",
-                placeholderText="qmake executable",
-                whatsThis="The name of the <tt>qmake</tt> executable. This "
-                        "must be on <tt>PATH</tt> or be an absolute pathname.",
-                textEdited=self._qmake_changed)
-        others_layout.addRow("qmake", self._qmake_edit)
-
-        others_group.setLayout(others_layout)
-
         set_defaults = QPushButton("Set defaults",
                 whatsThis="Set the locations to their default values. These "
                         "are those used by <tt>pyqtdeploy-sysroot</tt>.",
@@ -132,13 +120,12 @@ class LocationsPage(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(py_host_group)
         layout.addWidget(py_target_group)
-        layout.addWidget(others_group)
         layout.addStretch()
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
 
-        BetterForm.align_forms(py_host_layout, py_target_layout, others_layout)
+        BetterForm.align_forms(py_host_layout, py_target_layout)
 
     def _update_page(self):
         """ Update the page using the current project. """
@@ -150,7 +137,6 @@ class LocationsPage(QWidget):
         self._target_inc_edit.setText(project.python_target_include_dir)
         self._target_lib_edit.setText(project.python_target_library)
         self._target_stdlib_edit.setText(project.python_target_stdlib_dir)
-        self._qmake_edit.setText(project.qmake)
 
     def _host_interp_changed(self, value):
         """ Invoked when the user edits the host interpreter name. """
@@ -186,13 +172,6 @@ class LocationsPage(QWidget):
         """
 
         self.project.python_target_stdlib_dir = value
-        self.project.using_default_locations = False
-        self.project.modified = True
-
-    def _qmake_changed(self, value):
-        """ Invoked when the user edits the qmake name. """
-
-        self.project.qmake = value
         self.project.using_default_locations = False
         self.project.modified = True
 

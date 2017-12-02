@@ -1402,25 +1402,6 @@ static struct _inittab %s[] = {
 
         self.run(argv, "Unable to freeze files")
 
-    def run_qmake(self, qmake):
-        """ Run qmake. """
-
-        if qmake is None:
-            qmake = os.path.expandvars(self._project.qmake)
-
-        if qmake == '':
-            raise UserException(
-                    "qmake cannot be run because its name has not been set")
-
-        self.run([qmake], "qmake failed", in_build_dir=True)
-
-    def run_make(self):
-        """ Run make. """
-
-        make = self._host.platform.make
-
-        self.run([make], "{0} failed".format(make), in_build_dir=True)
-
     def run(self, argv, error_message, in_build_dir=False):
         """ Execute a command and capture the output. """
 

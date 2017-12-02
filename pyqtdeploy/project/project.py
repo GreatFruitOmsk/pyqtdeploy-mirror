@@ -112,7 +112,6 @@ class Project(QObject):
         """ Set the various locations to their default values. """
 
         self.python_host_interpreter = '$SYSROOT/host/bin/python'
-        self.qmake = '$SYSROOT/host/bin/qmake'
 
         self.python_source_dir = '$SYSROOT/src/Python-$PDY_PY_MAJOR.$PDY_PY_MINOR.$PDY_PY_MICRO'
         self.python_target_include_dir = '$SYSROOT/include/python$PDY_PY_MAJOR.$PDY_PY_MINOR'
@@ -443,11 +442,6 @@ class Project(QObject):
                     ExtensionModule(name, qt, config, sources, defines,
                             includepath, libs))
 
-        # The other configuration.
-        others = root.find('Others')
-        if others is not None:
-            project.qmake = others.get('qmake', '')
-
         # If the default locations are being used then use the current defaults
         # instead of those (possibly out of date) in the project file.
         if project.using_default_locations:
@@ -618,10 +612,6 @@ class Project(QObject):
                 'defines': extension_module.defines,
                 'includepath': extension_module.includepath,
                 'libs': extension_module.libs})
-
-        if not self.using_default_locations:
-            SubElement(root, 'Others', attrib={
-                'qmake': self.qmake})
 
         tree = ElementTree(root)
 
