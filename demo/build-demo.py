@@ -26,13 +26,18 @@
 
 import argparse
 import os
+import subprocess
 import sys
 
 
 def run(args):
     """ Run a command and terminate if it fails. """
 
-    ec = os.system(' '.join(args))
+    try:
+        ec = subprocess.call(' '.join(args), shell=True)
+    except OSError as e:
+        print("Execution failed:", e, file=sys.stderr)
+        ec = 1
 
     if ec:
         sys.exit(ec)
@@ -87,14 +92,23 @@ if build_sysroot:
     run(args)
 
 # Build the demo.
-args = ['pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir]
+run(['pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir,
+            'pyqt-demo.pdy'])
 
-if target == 'ios-64':
-    args.append('--no-make')
+# Run qmake.  Use the qmake left by pyqtdeploy-sysroot.
+qmake = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin', 'qmake'))
 
-args.append('pyqt-demo.pdy')
+os.chdir(build_dir)
+run([qmake])
 
-run(args)
+# Run make. (When targeting iOS we leave it to Xcode.)
+if target.startswith('ios'):
+    pass
+else:
+    # We only support MSVC on Windows.
+    make = 'nmake' if sys.platform == 'win32' else 'make'
+
+    run([make])
 
 # Tell the user where the demo is.
 if target.startswith('android'):
