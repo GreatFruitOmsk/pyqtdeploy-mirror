@@ -48,19 +48,17 @@ from ..windows import get_python_install_path
 TARGET_PLATFORM_NAMES = [p.name for p in Platform.all_platforms]
 
 
-class Builder():
+class Builder:
     """ The builder for a project. """
 
-    def __init__(self, project, timeout, message_handler):
+    def __init__(self, project, target_arch_name, message_handler):
         """ Initialise the builder for a project. """
 
-        super().__init__()
-
         self._project = project
-        self._timeout = timeout * 1000 if timeout > 0 else -1
         self._message_handler = message_handler
 
         self._host = Architecture.architecture()
+        self._target = Architecture.architecture(target_arch_name)
 
     def build(self, opt, nr_resources, clean, build_dir, include_dir, interpreter, python_library, source_dir, standard_library_dir):
         """ Build the project in a given directory.  Raise a UserException if
@@ -146,17 +144,20 @@ class Builder():
                     project.python_target_stdlib_dir)
 
         # Set the name of the build directory.
+        if not build_dir:
+            build_dir = 'build-' + self._target.name
+
         self._build_dir = os.path.abspath(build_dir)
 
         # Remove any build directory if required.
         if clean:
-            native_build_dir = QDir.toNativeSeparators(build_dir)
+            native_build_dir = QDir.toNativeSeparators(self._build_dir)
             self._message_handler.progress_message(
                     "Cleaning {0}".format(native_build_dir))
             shutil.rmtree(native_build_dir, ignore_errors=True)
 
         # Now start the build.
-        self._create_directory(build_dir)
+        self._create_directory(self._build_dir)
 
         # Create the job file and writer.
         job_filename = QDir.toNativeSeparators(temp_dir.path() + '/jobs.csv')
@@ -170,33 +171,35 @@ class Builder():
         # external source.
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
-        self._freeze_bootstrap('bootstrap', py_version, build_dir, temp_dir,
-                job_writer)
+        self._freeze_bootstrap('bootstrap', py_version, self._build_dir,
+                temp_dir, job_writer)
 
         if py_version >= 0x030500:
-            self._freeze_bootstrap('bootstrap_external', py_version, build_dir,
-                    temp_dir, job_writer)
+            self._freeze_bootstrap('bootstrap_external', py_version,
+                    self._build_dir, temp_dir, job_writer)
 
         # Freeze any main application script.
         if project.application_script != '':
-            self._freeze(job_writer, build_dir + '/frozen_main.h',
+            self._freeze(job_writer, self._build_dir + '/frozen_main.h',
                     project.path_from_user(project.application_script),
                     'pyqtdeploy_main', as_c=True)
 
         # Create the pyqtdeploy module version file.
-        version_f = self._create_file(build_dir + '/pyqtdeploy_version.h')
+        version_f = self._create_file(
+                self._build_dir + '/pyqtdeploy_version.h')
         version_f.write(
                 '#define PYQTDEPLOY_HEXVERSION %s\n' % hex(
                         PYQTDEPLOY_HEXVERSION))
         version_f.close()
 
         # Generate the application resource.
-        resource_names = self._generate_resource(build_dir + '/resources',
-                required_py, standard_library_dir, job_writer, nr_resources)
+        resource_names = self._generate_resource(
+                self._build_dir + '/resources', required_py,
+                standard_library_dir, job_writer, nr_resources)
 
         # Write the .pro file.
         self._write_qmake(py_version, required_ext, required_libraries,
-                include_dir, python_library, source_dir, standard_library_dir,
+                include_dir, python_library, standard_library_dir, source_dir,
                 job_writer, opt, resource_names)
 
         # Run the freeze jobs.
@@ -757,9 +760,9 @@ class Builder():
             self._write_used_values(f, used_libs, 'LIBS')
 
         # Add the library files to be added to an Android APK.
-        if android_extra_libs:
+        if android_extra_libs and self._target.platform.name == 'android':
             f.write('\n')
-            f.write('android:ANDROID_EXTRA_LIBS += %s\n' % ' '.join(android_extra_libs))
+            f.write('ANDROID_EXTRA_LIBS += %s\n' % ' '.join(android_extra_libs))
 
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
@@ -1432,7 +1435,7 @@ static struct _inittab %s[] = {
                 lambda: stderr_output.append(process.readAllStandardError()))
 
         process.start(argv[0], argv[1:])
-        finished = process.waitForFinished(self._timeout)
+        finished = process.waitForFinished()
 
         if saved_cwd is not None:
             os.chdir(saved_cwd)

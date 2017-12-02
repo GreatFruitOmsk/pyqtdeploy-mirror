@@ -39,7 +39,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--build-dir', help="the name of the build directory",
-            metavar="DIR", default='build')
+            metavar="DIR")
     parser.add_argument('--include-dir',
             help="the target Python include directory", metavar="DIR")
     parser.add_argument('--interpreter',
@@ -64,10 +64,7 @@ def main():
             help="the target Python standard library directory", metavar="DIR")
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
-    parser.add_argument('--timeout',
-            help="the number of seconds to wait for the build processes to "
-                    "run before timing out",
-            metavar="SECONDS", type=int, default=0)
+    parser.add_argument('--target', help="the target platform"),
     parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose', help="enable verbose progress messages",
@@ -90,7 +87,7 @@ def main():
         if args.sysroot:
             os.environ['SYSROOT'] = os.path.abspath(args.sysroot)
 
-        builder = Builder(Project.load(args.project), args.timeout,
+        builder = Builder(Project.load(args.project), args.target,
                 message_handler)
 
         builder.build(args.opt, args.resources, args.clean,

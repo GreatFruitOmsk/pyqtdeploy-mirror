@@ -61,25 +61,37 @@ target = cmd_line_args.target
 quiet = cmd_line_args.quiet
 verbose = cmd_line_args.verbose
 
+if sources:
+    sources = os.path.abspath(sources)
+else:
+    sources = 'src'
+
+# Pick a default target if none is specified.
+if not target:
+    if sys.platform == 'win32':
+        # Look for a compiler.
+        # TODO
+        pass
+    elif sys.platform == 'darwin':
+        target = 'macos-64'
+    elif sys.platform.startswith('linux'):
+        import struct
+
+        target = 'linux-{0}'.format(8 * struct.calcsize('P'))
+    else:
+        print("Unsupported platform:", sys.platform, file=sys.stderr)
+        sys.exit(2)
+
 # Anchor everything from the directory containing this script.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-sysroot_dir = 'sysroot'
-build_dir = 'build'
-if target:
-    sysroot_dir += '-' + target
-    build_dir += '-' + target
-
-if not sources:
-    sources = 'src'
+sysroot_dir = 'sysroot-' + target
+build_dir = 'build-' + target
 
 # Build sysroot.
 if build_sysroot:
-    args = ['pyqtdeploy-sysroot', '--sysroot', sysroot_dir, '--source-dir',
-            sources]
-
-    if target:
-        args.extend(['--target', target])
+    args = ['pyqtdeploy-sysroot', '--target', target, '--sysroot', sysroot_dir,
+            '--source-dir', sources]
 
     if quiet:
         args.append('--quiet')
@@ -92,8 +104,8 @@ if build_sysroot:
     run(args)
 
 # Build the demo.
-run(['pyqtdeploy-build', '--sysroot', sysroot_dir, '--build-dir', build_dir,
-            'pyqt-demo.pdy'])
+run(['pyqtdeploy-build', '--target', target, '--sysroot', sysroot_dir,
+            '--build-dir', build_dir, 'pyqt-demo.pdy'])
 
 # Run qmake.  Use the qmake left by pyqtdeploy-sysroot.
 qmake = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin', 'qmake'))
