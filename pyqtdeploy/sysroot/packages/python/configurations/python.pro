@@ -279,6 +279,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
             MOD_SOURCES += Modules/_struct.c
         }
     }
+
+    greaterThan(PY_MINOR_VERSION, 5) {
+        MOD_SOURCES += \
+            Modules/_io/winconsoleio.c
+    }
 } else {
     MOD_SOURCES = \
         Modules/threadmodule.c \
