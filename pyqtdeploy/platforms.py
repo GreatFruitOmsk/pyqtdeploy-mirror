@@ -38,19 +38,15 @@ class Platform:
     # The list of all platforms.
     all_platforms = []
 
-    def __init__(self, full_name, name, archs, cpp, qmake_scope, subscopes=()):
+    def __init__(self, full_name, name, archs):
         """ Initialise the object. """
 
         self.full_name = full_name
         self.name = name
-        self.cpp = cpp
-        self.qmake_scope = qmake_scope
 
         # Create the architectures.
-        for a, arch in enumerate(archs):
-            qmake_scope = subscopes[a] if subscopes else qmake_scope
-
-            Architecture(arch, qmake_scope, self)
+        for arch in archs:
+            Architecture(arch, self)
 
         self.all_platforms.append(self)
 
@@ -115,11 +111,10 @@ class Architecture:
     # The list of all architectures.
     all_architectures = []
 
-    def __init__(self, name, qmake_scope, platform):
+    def __init__(self, name, platform):
         """ Initialise the object. """
 
         self.name = name
-        self.qmake_scope = qmake_scope
         self.platform = platform
 
         self.all_architectures.append(self)
@@ -217,8 +212,7 @@ class Android(Platform):
     def __init__(self):
         """ Initialise the object. """
 
-        super().__init__("Android", 'android', ('android-32', ),
-                'defined(Q_OS_ANDROID)', 'android')
+        super().__init__("Android", 'android', ['android-32'])
 
     @property
     def android_api(self):
@@ -264,8 +258,7 @@ class iOS(ApplePlatform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("iOS", 'ios', ('ios-64', ), 'defined(Q_OS_IOS)',
-                'ios')
+        super().__init__("iOS", 'ios', ['ios-64'])
 
         self._original_deployment_target = os.environ.get(
                 'IPHONEOS_DEPLOYMENT_TARGET')
@@ -294,8 +287,7 @@ class Linux(Platform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("Linux", 'linux', ('linux-32', 'linux-64'),
-                '(defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))', 'linux-*')
+        super().__init__("Linux", 'linux', ['linux-32', 'linux-64'])
 
     @property
     def make(self):
@@ -312,8 +304,7 @@ class macOS(ApplePlatform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("macOS", 'macos', ('macos-64', ), 'defined(Q_OS_MAC)',
-                'macx')
+        super().__init__("macOS", 'macos', ['macos-64'])
 
         self._original_deployment_target = os.environ.get(
                 'MACOSX_DEPLOYMENT_TARGET')
@@ -354,10 +345,7 @@ class Windows(Platform):
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("Windows", 'win', ('win-32', 'win-64'),
-                'defined(Q_OS_WIN)', 'win32',
-                ('win32:!contains(QMAKE_TARGET.arch, x86_64)',
-                        'win32:contains(QMAKE_TARGET.arch, x86_64)'))
+        super().__init__("Windows", 'win', ['win-32', 'win-64'])
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """

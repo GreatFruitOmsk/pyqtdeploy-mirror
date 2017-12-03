@@ -28,7 +28,6 @@ import csv
 import os
 import shlex
 import shutil
-import sys
 
 from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
         QFileDevice, QFileInfo, QProcess, QTemporaryDir, QTextCodec)
@@ -125,7 +124,7 @@ class Builder:
                 # than being relative to the project file.
                 interpreter = project.expandvars(
                         project.python_host_interpreter)
-            elif sys.platform == 'win32':
+            elif self._host.platform.name == 'win':
                 # TODO: This doesn't handle 32-bit Python v3.5 and later.
                 interpreter = get_python_install_path(
                         '{0}.{1}'.format(py_major, py_minor)) + 'python'
@@ -380,6 +379,10 @@ class Builder:
 
         f = self._create_file(self._build_dir + '/' +
                 project.get_executable_basename() + '.pro')
+
+        f.write('# Generated for {0} and Python v{1}.{2}.{3}.\n\n'.format(
+                self._target.name, (py_version >> 16),
+                (py_version >> 8) & 0xff, py_version & 0xff))
 
         f.write('TEMPLATE = app\n')
         f.write('\n')
@@ -1054,25 +1057,10 @@ class Builder:
 
         # Check the version of Python.
         f.write('''#include <Python.h>
-
-#if PY_MAJOR_VERSION != {0}
-#error "This code has been generated for Python v3."
-#endif
+#include <QtGlobal>
 
 
-'''.format(py_version >> 16))
-
-        # Check the target platform.
-        platform = self._host.platform
-
-        f.write('''#include <QtGlobal>
-
-#if !{0}
-#error "This code has been generated for {1}."
-#endif
-
-
-'''.format(platform.cpp, platform.full_name))
+''')
 
         if len(inittab) > 0:
             c_inittab = 'extension_modules'
@@ -1104,7 +1092,7 @@ class Builder:
 
         path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
-        if platform.name == 'win' and py_version >= 0x030000:
+        if self._target.platform.name == 'win' and py_version >= 0x030000:
             f.write('''
 
 #include <windows.h>
@@ -1189,7 +1177,7 @@ static struct _inittab %s[] = {
         # On Windows the interpreter name is simply 'python'.  So in order to
         # make the .pdy file more portable we strip any trailing version
         # number.
-        if sys.platform == 'win32':
+        if self._host.platform.name == 'win':
             for i in range(len(interpreter) - 1, -1, -1):
                 if interpreter[i] not in '.0123456789':
                     interpreter = interpreter[:i + 1]
