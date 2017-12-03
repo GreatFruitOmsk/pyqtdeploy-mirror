@@ -363,14 +363,14 @@ class Builder:
             resource_contents.append(out_file)
 
     # The map of non-C/C++ source extensions to qmake variable.
-    _source_extensions = {
-        '.asm':     'MASMSOURCES',
-        '.h':       'HEADERS',
-        '.java':    'JAVASOURCES',
-        '.l':       'LEXSOURCES',
-        '.pyx':     'CYTHONSOURCES',
-        '.y':       'YACCSOURCES',
-    }
+    _source_extensions = (
+        ('.asm',    'MASMSOURCES'),
+        ('.h',      'HEADERS'),
+        ('.java',   'JAVASOURCES'),
+        ('.l',      'LEXSOURCES'),
+        ('.pyx',    'CYTHONSOURCES'),
+        ('.y',      'YACCSOURCES')
+    )
 
     def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, source_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
@@ -754,7 +754,7 @@ class Builder:
             qmake_var = name
 
             if qmake_var == 'SOURCES':
-                for ext, var in cls._source_extensions.items():
+                for ext, var in cls._source_extensions:
                     if value.endswith(ext):
                         qmake_var = var
                         break
