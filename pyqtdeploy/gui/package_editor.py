@@ -358,23 +358,20 @@ class PackageEditor(QGridLayout):
             if isinstance(content, QrcDirectory):
                 self._visualise_contents(content.contents, itm)
 
-    def _package_changed(self, itm, column):
+    def _package_changed(self, itm, col):
         """ Invoked when part of the package changes. """
 
-        if itm.checkState(0) == Qt.Checked:
-            itm.data(0, Qt.UserRole).included = True
-            itm.setExpanded(True)
-        else:
-            self._exclude(itm)
-            itm.setExpanded(False)
+        included = (itm.checkState(0) == Qt.Checked)
+        self._set_items_state(itm, included)
+        itm.setExpanded(included)
 
         self.package_changed.emit()
 
-    def _exclude(self, itm):
-        """ Exclude an item and any children it may have. """
+    def _set_items_state(self, itm, included):
+        """ Set the state of an item and all its children. """
 
         for idx in range(itm.childCount()):
-            self._exclude(itm.child(idx))
+            self._set_items_state(itm.child(idx), included)
 
-        itm.data(0, Qt.UserRole).included = False
-        itm.setCheckState(0, Qt.Unchecked)
+        itm.data(0, Qt.UserRole).included = included
+        itm.setCheckState(0, Qt.Checked if included else Qt.Unchecked)

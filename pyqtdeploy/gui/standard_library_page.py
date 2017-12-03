@@ -82,14 +82,6 @@ class StandardLibraryPage(QSplitter):
 
         stdlib_layout.addWidget(self._stdlib_edit)
 
-        self._autoselect = QCheckBox("Auto-(de)select all sub-packages",
-                whatsThis="When this is checked (or unchecked) then, when a "
-                        "package is checked, all it's sub-packages and "
-                        "modules are automatically checked (or unchecked) as "
-                        "well.")
-
-        stdlib_layout.addWidget(self._autoselect)
-
         stdlib_pane.setLayout(stdlib_layout)
         self.addWidget(stdlib_pane)
 
@@ -210,16 +202,13 @@ class StandardLibraryPage(QSplitter):
         # Get all the names to add or remove.
         names = []
 
-        if self._autoselect.checkState() == Qt.Checked:
-            def add_name(subitm):
-                names.append(subitm._name)
+        def add_name(subitm):
+            names.append(subitm._name)
 
-                for i in range(subitm.childCount()):
-                    add_name(subitm.child(i))
+            for i in range(subitm.childCount()):
+                add_name(subitm.child(i))
 
-            add_name(itm)
-        else:
-            names.append(itm._name)
+        add_name(itm)
 
         if itm.checkState(col) == Qt.Checked:
             # Add the names if they aren't already present.
@@ -233,6 +222,8 @@ class StandardLibraryPage(QSplitter):
                     project.standard_library.remove(name)
                 except ValueError:
                     pass
+
+            itm.setExpanded(False)
 
         self._set_dependencies()
 
