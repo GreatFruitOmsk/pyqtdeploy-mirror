@@ -690,7 +690,7 @@ class Builder:
         f.write('\n')
         f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_used_values(f, used_sources, 'SOURCES')
-        self._write_main(py_version, used_inittab)
+        self._write_main(py_version, used_inittab, used_defines)
         self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
         self._copy_lib_file('pdytools_module.cpp', self._build_dir)
 
@@ -1044,14 +1044,24 @@ exists($$PDY_DLL) {
 
                 resource_contents.append(file_path)
 
-    def _write_main(self, py_version, inittab):
+    def _write_main(self, py_version, inittab, defines):
         """ Create the application specific pyqtdeploy_main.cpp file. """
 
         project = self._project
 
         f = self._create_file(self._build_dir + '/pyqtdeploy_main.cpp')
 
-        # Check the version of Python.
+        # Compilation fails when using GCC 5 when both Py_BUILD_CORE and
+        # HAVE_STD_ATOMIC are defined.  Py_BUILD_CORE gets defined when certain
+        # Python modukes are used.  We simply make sure HAVE_STD_ATOMIC is not
+        # defined.
+        if 'Py_BUILD_CORE' in defines:
+            f.write('''// Py_BUILD_CORE/HAVE_STD_ATOMIC conflict workaround.
+#include <pyconfig.h>
+#undef HAVE_STD_ATOMIC
+
+''')
+
         f.write('''#include <Python.h>
 #include <QtGlobal>
 
