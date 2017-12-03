@@ -710,8 +710,7 @@ class Builder:
         # If we are using the platform Python on Windows then copy in the
         # required DLLs if they can be found.
         if 'win' in project.python_use_platform and used_dlls and py_lib_dir is not None:
-            self._copy_windows_dlls(py_version, py_lib_dir, used_dlls['win'],
-                    f)
+            self._copy_windows_dlls(py_version, py_lib_dir, used_dlls, f)
 
         # Add the project independent post-configuration stuff.
         self._write_embedded_lib_file('post_configuration.pro', f)
@@ -786,20 +785,17 @@ class Builder:
             if module.dlls is not None:
                 dlls.extend(module.dlls)
 
-        f.write('\nwin32 {')
-
         for name in dlls:
-            f.write('\n')
-            f.write('    PDY_DLL = %s/DLLs%d.%d/%s\n' % (py_lib_dir, py_major, py_minor, name))
-            f.write('    exists($$PDY_DLL) {\n')
-            f.write('        CONFIG(debug, debug|release) {\n')
-            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/debug) &\n')
-            f.write('        } else {\n')
-            f.write('            QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/release) &\n')
-            f.write('        }\n')
-            f.write('    }\n')
-
-        f.write('}\n')
+            f.write('''
+PDY_DLL = %s/DLLs%d.%d/%s
+exists($$PDY_DLL) {
+    CONFIG(debug, debug|release) {
+        QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/debug) &
+    } else {
+        QMAKE_POST_LINK += $(COPY_FILE) $$shell_path($$PDY_DLL) $$shell_path($$OUT_PWD/release) &
+    }
+}
+''' % (py_lib_dir, py_major, py_minor, name))
 
     def _write_embedded_lib_file(self, file_name, f):
         """ Write an embedded file from the lib directory. """
