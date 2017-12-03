@@ -4,9 +4,8 @@ syntax: glob
 pyqtdeploy.egg-info
 pyqtdeploy/version.py
 VERSION
-demo/build
 demo/build-*
 demo/src/*
-demo/sysroot
 demo/sysroot-*
+doc/_build
 test/sysroot
