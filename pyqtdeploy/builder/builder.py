@@ -44,10 +44,6 @@ from ..version import PYQTDEPLOY_HEXVERSION
 from ..windows import get_python_install_path
 
 
-# The list of all target platform names.
-TARGET_PLATFORM_NAMES = [p.name for p in Platform.all_platforms]
-
-
 class Builder:
     """ The builder for a project. """
 
@@ -68,6 +64,7 @@ class Builder:
         project = self._project
 
         py_major, py_minor, py_patch = project.python_target_version
+        py_version = (py_major << 16) + (py_minor << 8) + py_patch
 
         # Create a temporary directory which will be removed automatically when
         # this function's objects are garbage collected.
@@ -169,8 +166,6 @@ class Builder:
         # original source.  We continue to use a local copy of _bootstrap.py
         # as it still needs to be frozen and we don't want to depend on an
         # external source.
-        py_version = (py_major << 16) + (py_minor << 8) + py_patch
-
         self._freeze_bootstrap('bootstrap', py_version, self._build_dir,
                 temp_dir, job_writer)
 
@@ -392,14 +387,10 @@ class Builder:
         # Configure the CONFIG and QT values that are project dependent.
         needs_cpp11 = False
         needs_gui = False
-        qmake_qt4 = {}
-        qmake_config4 = {}
-        qmake_qt5 = {}
-        qmake_config5 = {}
-
-        def update_qt_config(qt_config, platform, values):
-            # Update the set of QT or CONFIG values for a particular platform.
-            qt_config.setdefault(platform, set()).update(values)
+        qmake_qt4 = set()
+        qmake_config4 = set()
+        qmake_qt5 = set()
+        qmake_config5 = set()
 
         for pyqt_m in project.pyqt_modules:
             metadata = self._get_pyqt_module_metadata(pyqt_m)
@@ -410,48 +401,21 @@ class Builder:
             if metadata.gui:
                 needs_gui = True
 
-            if metadata.targets:
-                for target in metadata.targets:
-                    update_qt_config(qmake_qt4, target, metadata.qt4)
-                    update_qt_config(qmake_config4, target, metadata.config4)
+            if self._is_targeted(metadata.targets):
+                qmake_qt4.update(metadata.qt4)
+                qmake_config4.update(metadata.config4)
 
-                    update_qt_config(qmake_qt5, target, metadata.qt5)
-                    update_qt_config(qmake_config5, target, metadata.config5)
-            else:
-                update_qt_config(qmake_qt4, '', metadata.qt4)
-                update_qt_config(qmake_config4, '', metadata.config4)
-
-                update_qt_config(qmake_qt5, '', metadata.qt5)
-                update_qt_config(qmake_config5, '', metadata.config5)
+                qmake_qt5.update(metadata.qt5)
+                qmake_config5.update(metadata.config5)
 
         # Extract QT and CONFIG values that not version-specific.
-        qmake_qt45 = {}
-        qmake_config45 = {}
+        qmake_qt45 = qmake_qt4 & qmake_qt5
+        qmake_qt4 -= qmake_qt45
+        qmake_qt5 -= qmake_qt45
 
-        def common_qt_config(target, values_45, values_4, values_5):
-            target_values_4 = values_4.setdefault(target, set())
-            target_values_5 = values_5.setdefault(target, set())
-
-            target_values_45 = target_values_4 & target_values_5
-            target_values_4 -= target_values_45
-            target_values_5 -= target_values_45
-
-            if target_values_45:
-                values_45[target] = target_values_45
-
-            if not target_values_4:
-                del values_4[target]
-
-            if not target_values_5:
-                del values_5[target]
-
-        for target in TARGET_PLATFORM_NAMES:
-            common_qt_config(target, qmake_qt45, qmake_qt4, qmake_qt5)
-            common_qt_config(target, qmake_config45, qmake_config4,
-                    qmake_config5)
-
-        common_qt_config('', qmake_qt45, qmake_qt4, qmake_qt5)
-        common_qt_config('', qmake_config45, qmake_config4, qmake_config5)
+        qmake_config45 = qmake_config4 & qmake_config5
+        qmake_config4 -= qmake_config45
+        qmake_config5 -= qmake_config45
 
         # Generate QT.
         self._write_qt_config(f, 'QT', None, qmake_qt45)
@@ -464,16 +428,18 @@ class Builder:
         # Generate CONFIG.
         config = ['warn_off']
 
-        if project.application_is_console or not needs_gui:
-            config.append('console')
+        if self._target.platform.name == 'win':
+            if project.application_is_console or not needs_gui:
+                config.append('console')
 
         if needs_cpp11:
             config.append('c++11')
 
         f.write('CONFIG += {0}\n'.format(' '.join(config)))
 
-        if not project.application_is_bundle:
-            f.write('CONFIG -= app_bundle\n')
+        if self._target.platform.name == 'macos':
+            if not project.application_is_bundle:
+                f.write('CONFIG -= app_bundle\n')
 
         self._write_qt_config(f, 'CONFIG', None, qmake_config45)
         self._write_qt_config(f, 'CONFIG', 4, qmake_config4)
@@ -482,64 +448,56 @@ class Builder:
         # Modules can share sources so we need to make sure we don't include
         # them more than once.  We might as well handle the other things in the
         # same way.
-        used_qt = {}
-        used_config = {}
-        used_sources = {}
-        used_defines = {}
-        used_includepath = {}
-        used_libs = {}
-        used_inittab = {}
-        used_dlls = {}
+        used_qt = set()
+        used_config = set()
+        used_sources = set()
+        used_defines = set()
+        used_includepath = set()
+        used_libs = set()
+        used_inittab = set()
+        used_dlls = set()
 
         # Handle any static PyQt modules.
-        if len(project.pyqt_modules) > 0:
-            site_packages = standard_library_dir + '/site-packages'
-            pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
+        site_packages = standard_library_dir + '/site-packages'
+        pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
 
-            need_pyqt_dir = True
+        for module in self._get_all_pyqt_modules():
+            # The uic module is pure Python.
+            if module == 'uic':
+                continue
 
-            for module in self._get_all_pyqt_modules():
-                # The uic module is pure Python.
-                if module == 'uic':
-                    continue
+            metadata = self._get_pyqt_module_metadata(module)
 
-                metadata = self._get_pyqt_module_metadata(module)
+            if not self._is_targeted(metadata.targets):
+                continue
 
-                # The sip module is always needed (implicitly or explicitly) if
-                # we have got this far.  We handle it separately as it is in a
-                # different directory.
-                if module == 'sip':
-                    module_path = module
+            # The sip module is always needed (implicitly or explicitly) if we
+            # have got this far.  We handle it separately as it is in a
+            # different directory.
+            if module == 'sip':
+                used_inittab.add(module)
+                used_libs.add('-L' + site_packages)
+            else:
+                used_inittab.add(pyqt_version + '.' + module)
+                used_libs.add('-L' + site_packages + '/' + pyqt_version)
 
-                    self._add_value_for_targets(used_libs,
-                            '-L' + site_packages)
-                else:
-                    module_path = pyqt_version + '.' + module
+            lib_name = '-l' + module
+            if metadata.needs_suffix:
+                # Qt4's qmake thinks -lQtCore etc. always refer to the Qt
+                # libraries so PyQt4 creates static libraries with a suffix.
+                lib_name += '_s'
 
-                    if need_pyqt_dir:
-                        self._add_value_for_targets(used_libs,
-                                '-L' + site_packages + '/' + pyqt_version)
-                        need_pyqt_dir = False
-
-                self._add_value_for_targets(used_inittab, module_path,
-                        metadata.targets)
-
-                lib_name = '-l' + module
-                if metadata.needs_suffix:
-                    # Qt4's qmake thinks -lQtCore etc. always refer to the Qt
-                    # libraries so PyQt4 creates static libraries with a
-                    # suffix.
-                    lib_name += '_s'
-
-                self._add_value_for_targets(used_libs, lib_name,
-                        metadata.targets)
+            used_libs.add(lib_name)
 
         # Handle any other extension modules.
         for other_em in project.other_extension_modules:
             # If the name is scoped then the targets are the outer scopes for
             # the remaining values.
-            targets, value = self._get_targets_and_value(other_em.name)
-            self._add_value_for_targets(used_inittab, value, targets)
+            value = self._get_scoped_value(other_em.name)
+            if value is None:
+                continue
+
+            used_inittab.add(value)
 
             if other_em.qt != '':
                 self._add_compound_scoped_values(used_qt, other_em.qt, False)
@@ -566,7 +524,7 @@ class Builder:
 
         # Configure the target Python interpreter.
         if include_dir != '':
-            self._add_value_for_targets(used_includepath, include_dir)
+            used_includepath.add(include_dir)
 
         if python_library != '':
             fi = QFileInfo(python_library)
@@ -579,127 +537,109 @@ class Builder:
             if lib.startswith('lib'):
                 lib = lib[3:]
 
-            if '.' in lib:
-                self._add_value_for_targets(used_libs,
-                        '-l' + lib.replace('.', ''),
-                        self._resolve_target_expression('win'))
-                self._add_value_for_targets(used_libs, '-l' + lib,
-                        self._resolve_target_expression('!win'))
-            else:
-                self._add_value_for_targets(used_libs, '-l' + lib)
+            if '.' in lib and self._target.platform.name == 'win':
+                lib = lib.replace('.', '')
 
-            self._add_value_for_targets(used_libs, '-L' + py_lib_dir)
+            used_libs.add('-l' + lib)
+            used_libs.add('-L' + py_lib_dir)
         else:
             py_lib_dir = None
 
         # Handle any standard library extension modules.
-        if len(required_ext) != 0:
-            source_targets = set()
+        for name, module in required_ext.items():
+            if not self._is_targeted(module.target):
+                continue
 
-            for name, module in required_ext.items():
-                # Get the list of all applicable targets.
-                module_targets = self._stdlib_extmod_targets(module.target)
+            # See if the extension module should be disabled for a platform
+            # because there are no external libraries to link against.
+            for xlib in project.external_libraries.get(self._target.platform.name, ()):
+                if xlib.name == module.xlib:
+                    if xlib.libs == '':
+                        skip_module = True
 
-                # See if the extension module should be disabled for a platform
-                # because there are no external libraries to link against.
-                for target in module_targets:
-                    for xlib in project.external_libraries.get(target, ()):
-                        if xlib.name == module.xlib:
-                            if xlib.libs == '':
-                                module_targets.remove(target)
+                    break
+            else:
+                skip_module = False
 
-                            break
+            if skip_module:
+                continue
 
-                if len(module_targets) == 0:
-                    # The module is specific to a platform for which we are
-                    # using the python.org Python libraries so ignore it
-                    # completely.
-                    continue
+            used_inittab.add(name)
 
-                self._add_value_for_targets(used_inittab, name, module_targets)
-
-                for source in module.source:
-                    targets, source = self._get_targets_and_value(source,
-                            module_targets)
+            for source in module.source:
+                source = self._get_scoped_value(source)
+                if source is not None:
                     source = self._python_source_file(source_dir, source)
-                    self._add_value_for_targets(used_sources, source, targets)
+                    used_sources.add(source)
 
-                    source_targets.update(targets)
+                    used_includepath.add(source_dir + '/Modules')
 
-                if module.defines is not None:
-                    for define in module.defines:
-                        targets, define = self._get_targets_and_value(define,
-                                module_targets)
-                        self._add_value_for_targets(used_defines, define,
-                                targets)
+            if module.defines is not None:
+                for define in module.defines:
+                    define = self._get_scoped_value(define)
+                    if define is not None:
+                        used_defines.add(define)
 
-                if module.includepath is not None:
-                    for includepath in module.includepath:
-                        targets, includepath = self._get_targets_and_value(
-                                includepath, module_targets)
+            if module.includepath is not None:
+                for includepath in module.includepath:
+                    includepath = self._get_scoped_value(includepath)
+                    if includepath is not None:
                         includepath = self._python_source_file(source_dir,
                                 includepath)
-                        self._add_value_for_targets(used_includepath,
-                                includepath, targets)
+                        used_includepath.add(includepath)
 
-                if module.libs is not None:
-                    for lib in module.libs:
-                        targets, lib = self._get_targets_and_value(lib,
-                                module_targets)
-                        self._add_value_for_targets(used_libs, lib, targets)
+            if module.libs is not None:
+                for lib in module.libs:
+                    lib = self._get_scoped_value(lib)
+                    if lib is not None:
+                        used_libs.add(lib)
 
-                if module.pyd is not None:
-                    self._add_value_for_targets(used_dlls, module, ['win'])
+            if module.pyd is not None and self._target.platform.name == 'win':
+                used_dlls.add(module)
 
-            self._add_value_for_targets(used_includepath,
-                    source_dir + '/Modules', source_targets)
+        if 'win' not in project.python_use_platform and self._target.platform.name == 'win':
+            used_includepath.add(source_dir + '/PC')
 
-            if 'win' not in project.python_use_platform:
-                self._add_value_for_targets(used_includepath,
-                        source_dir + '/PC', ['win'])
-
-        # Handle any required external libraries platform by platform.
+        # Handle any required external libraries.
         android_extra_libs = []
 
-        for platform in Platform.all_platforms:
-            targets = [platform.name]
-            external_libs = project.external_libraries.get(platform.name, [])
+        external_libs = project.external_libraries.get(
+                self._target.platform.name, [])
 
-            for required_lib in required_libraries:
-                libs = ''
+        for required_lib in required_libraries:
+            libs = ''
 
-                for xlib in external_libs:
+            for xlib in external_libs:
+                if xlib.name == required_lib:
+                    defines = xlib.defines
+                    includepath = xlib.includepath
+                    libs = xlib.libs
+                    break
+            else:
+                # Use the defaults.
+                for xlib in external_libraries_metadata:
                     if xlib.name == required_lib:
-                        defines = xlib.defines
-                        includepath = xlib.includepath
-                        libs = xlib.libs
+                        if self._target.platform.name not in project.python_use_platform:
+                            defines = ''
+                            includepath = xlib.includepath
+                            libs = xlib.libs
+
                         break
-                else:
-                    # Use the defaults.
-                    for xlib in external_libraries_metadata:
-                        if xlib.name == required_lib:
-                            if platform.name in self._stdlib_extmod_targets():
-                                defines = ''
-                                includepath = xlib.includepath
-                                libs = xlib.libs
 
-                            break
+            # Check the library is not disabled for this target.
+            if libs != '':
+                if defines != '':
+                    self._add_compound_scoped_values(used_defines, defines,
+                            False)
 
-                # Check the library is not disabled for this platform.
-                if libs != '':
-                    if defines != '':
-                        self._add_compound_scoped_values(used_defines, defines,
-                                False, targets)
+                if includepath != '':
+                    self._add_compound_scoped_values(used_includepath,
+                            includepath, True)
 
-                    if includepath != '':
-                        self._add_compound_scoped_values(used_includepath,
-                                includepath, True, targets)
+                self._add_compound_scoped_values(used_libs, libs, False)
 
-                    self._add_compound_scoped_values(used_libs, libs, False,
-                            targets)
-
-                    if platform.name == 'android':
-                        self._add_android_extra_libs(libs, android_extra_libs)
+                if self._target.platform.name == 'android':
+                    self._add_android_extra_libs(libs, android_extra_libs)
 
         # Specify any project-specific configuration.
         if used_qt:
@@ -747,7 +687,7 @@ class Builder:
         f.write('\n')
         f.write('SOURCES = pyqtdeploy_main.cpp pyqtdeploy_start.cpp pdytools_module.cpp\n')
         self._write_used_values(f, used_sources, 'SOURCES')
-        self._write_main(self._optimised(used_inittab))
+        self._write_main(py_version, used_inittab)
         self._copy_lib_file('pyqtdeploy_start.cpp', self._build_dir)
         self._copy_lib_file('pdytools_module.cpp', self._build_dir)
 
@@ -784,86 +724,45 @@ class Builder:
 
     @classmethod
     def _write_qt_config(cls, f, name, qt_major, values):
-        """ Write the values of QT or CONFIG which may be Qt version and/or
-        target specific.
-        """
-
-        # Do any non-target specific values first.
-        target_values = values.get('')
-        if target_values:
-            cls._write_target_qt_config(f, name, qt_major, '', target_values)
-
-        # Now do any target specific values.
-        for target, target_values in values.items():
-            if target:
-                cls._write_target_qt_config(f, name, qt_major, target,
-                        target_values)
-
-    @classmethod
-    def _write_target_qt_config(cls, f, name, qt_major, target, values):
         """ Write the values of QT or CONFIG which may be Qt version specific.
         """
 
-        if target:
-            f.write('%s {\n' % cls._qmake_scope_for_target(target))
-            target_indent = '    '
-        else:
-            target_indent = ''
-
-        if qt_major is None:
-            vers_indent = target_indent
-        else:
-            vers_indent = target_indent + '    '
-
-            if qt_major == 5:
-                f.write('%sgreaterThan(QT_MAJOR_VERSION, 4) {\n' % target_indent)
+        if values:
+            if qt_major is None:
+                indent = ''
             else:
-                f.write('%slessThan(QT_MAJOR_VERSION, 5) {\n' % target_indent)
+                indent = '    '
 
-        f.write('%s%s += %s\n' % (vers_indent, name, ' '.join(values)))
+                if qt_major == 5:
+                    f.write('greaterThan(QT_MAJOR_VERSION, 4) {\n')
+                else:
+                    f.write('lessThan(QT_MAJOR_VERSION, 5) {\n')
 
-        if qt_major is not None:
-            f.write('%s}\n' % target_indent)
+            f.write('%s%s += %s\n' % (indent, name, ' '.join(values)))
 
-        if target:
-            f.write('}\n')
+            if indent:
+                f.write('}\n')
 
     @classmethod
     def _write_used_values(cls, f, used_values, name):
         """ Write a set of used values to a .pro file. """
 
-        for targets, values in cls._optimised(used_values):
-            if targets:
-                indent = '    '
+        # Sort them for reproduceable output.
+        for value in sorted(used_values):
+            qmake_var = name
 
-                if targets[0][0] == '!':
-                    f.write('!%s {\n' % cls._qmake_scope_for_target(
-                            targets[0][1:]))
-                else:
-                    f.write('%s {\n' % '|'.join(
-                            [cls._qmake_scope_for_target(t)
-                                    for t in targets]))
-            else:
-                indent = ''
+            if qmake_var == 'SOURCES':
+                for ext, var in cls._source_extensions.items():
+                    if value.endswith(ext):
+                        qmake_var = var
+                        break
 
-            for value in values:
-                qmake_var = name
+            elif qmake_var == 'LIBS':
+                # A (strictly unnecessary) bit of pretty printing.
+                if value.startswith('"-framework') and value.endswith('"'):
+                    value = value[1:-1]
 
-                if qmake_var == 'SOURCES':
-                    for ext, var in cls._source_extensions.items():
-                        if value.endswith(ext):
-                            qmake_var = var
-                            break
-
-                elif qmake_var == 'LIBS':
-                    # A (strictly unnecessary) bit of pretty printing.
-                    if value.startswith('"-framework') and value.endswith('"'):
-                        value = value[1:-1]
-
-                f.write('{0}{1} += {2}\n'.format(indent, qmake_var, value))
-
-            if targets:
-                f.write('}\n')
+            f.write('{0} += {1}\n'.format(qmake_var, value))
 
     def _copy_windows_dlls(self, py_version, py_lib_dir, modules, f):
         """ Generate additional qmake commands to install additional Windows
@@ -907,27 +806,6 @@ class Builder:
         f.write('\n')
         f.write(contents.data().decode('latin1'))
 
-    def _stdlib_extmod_targets(self, module_target=None):
-        """ Return the list of targets for any extension module included in the
-        standard library or, optionally, for one particular module.
-        """
-
-        # Get the list of all applicable targets.
-        if module_target:
-            targets = self._resolve_target_expression(module_target)
-        else:
-            targets = list(TARGET_PLATFORM_NAMES)
-
-        # Remove those targets for which we are using the python.org Python
-        # libraries.
-        for plat_name in self._project.python_use_platform:
-            try:
-                targets.remove(plat_name)
-            except ValueError:
-                pass
-
-        return targets
-
     @staticmethod
     def _python_source_file(py_source_dir, rel_path):
         """ Return the absolute name of a file in the Python source tree
@@ -938,23 +816,19 @@ class Builder:
 
         return QFileInfo(file_path).absoluteFilePath()
 
-    def _add_compound_scoped_values(self, used_values, raw, isfilename, targets=None):
+    def _add_compound_scoped_values(self, used_values, raw, isfilename):
         """ Parse a string of space separated possible scoped values and add
-        them to a dict of used values indexed by target.  The values are
-        optionally treated as filenames where they are converted to absolute
-        filenames with UNIX separators and have environment variables expanded.
+        them to a set of used values.  The values are optionally treated as
+        filenames where they are converted to absolute filenames with UNIX
+        separators and have environment variables expanded.
         """
 
         project = self._project
 
-        if targets is None:
-            targets = TARGET_PLATFORM_NAMES
-
-        scoped_value_sets = {}
-
         for scoped_value in self._split_quotes(raw):
-            value_targets, value = self._get_targets_and_value(scoped_value,
-                    targets)
+            value = self._get_scoped_value(scoped_value)
+            if value is None:
+                continue
 
             # Convert potential filenames.
             if isfilename:
@@ -962,32 +836,27 @@ class Builder:
             elif value.startswith('-L'):
                 value = '-L' + project.path_from_user(value[2:])
 
-            self._add_value_for_targets(scoped_value_sets, value,
-                    value_targets)
-
-        for target, values in scoped_value_sets.items():
-            used_values.setdefault(target, set()).update(values)
+            used_values.add(value)
 
     def _add_android_extra_libs(self, libs, android_extra_libs):
         """ Add the shared library files for Android. """
 
         project = self._project
 
-        targets = ['android']
         lib_dir = ''
         lib_so = []
 
         for scoped_value in self._split_quotes(libs):
             # We support the use of scoped values (to be consistent) but it
             # actually makes no sense in this context.
-            value_targets, value = self._get_targets_and_value(scoped_value,
-                    targets)
+            value = self._get_scoped_value(scoped_value)
+            if value is None:
+                continue
 
-            if 'android' in value_targets:
-                if value.startswith('-L'):
-                    lib_dir = project.path_from_user(value[2:])
-                elif value.startswith('-l'):
-                    lib_so.append('lib' + value[2:] + '.so')
+            if value.startswith('-L'):
+                lib_dir = project.path_from_user(value[2:])
+            elif value.startswith('-l'):
+                lib_so.append('lib' + value[2:] + '.so')
 
         if lib_dir != '':
             for lib in lib_so:
@@ -1020,66 +889,55 @@ class Builder:
 
             s = s[i:].lstrip()
 
-    @classmethod
-    def _get_targets_and_value(cls, scoped_value, targets=None):
-        """ Return the 2-tuple of targets and value from a (possibly) scoped
-        value.  If the returning list of targets is empty then the value is not
-        valid.
+    def _get_scoped_value(self, scoped_value):
+        """ Return the value from a (possibly) scoped value or None if the
+        value isn't valid for the target.
         """
-
-        if targets is None:
-            targets = TARGET_PLATFORM_NAMES
 
         parts = scoped_value.split('#', maxsplit=1)
         if len(parts) == 2:
-            target_scope, value = parts
-            target_scopes = cls._resolve_target_expression(target_scope)
+            scope, value = parts
 
-            # The final targets is the intersection of the current targets and
-            # those defined by the scope while taking architectures into
-            # account.
-            final_targets = []
-            for target in target_scopes:
-                if target in targets:
-                    final_targets.append(target)
-                elif '-' in target:
-                    arch = Architecture.architecture(target)
-                    if arch.platform.name in targets:
-                        final_targets.append(arch.name)
-
-            targets = final_targets
+            if not self._is_targeted(scope):
+                value = None
         else:
             # The value is unscoped.
             value = scoped_value
 
-        return targets, value
+        return value
 
-    @staticmethod
-    def _add_value_for_targets(used_values, value, targets=None):
-        """ Add a value to the set of used values for a set of targets. """
+    def _is_targeted(self, targets):
+        """ Returns True if the current target is covered by a set of targets.
+        If the set of targets has a False value then the current target is
+        covered.  If the set of targets is a sequence of platform names then
+        the current target platform must appear in the sequence.  If the set of
+        targets is a string then it is an expression of architecture or
+        platform names which must contain the current target architecture or
+        platform name.
+        """
 
-        # Get the list of relevant targets.
-        if targets is None:
-            targets = TARGET_PLATFORM_NAMES
-
-        # Add the value for each relevant target.
-        for target in targets:
-            used_values.setdefault(target, set()).add(value)
-
-    @staticmethod
-    def _resolve_target_expression(target):
-        """ Convert a target expression to a list of targets. """
-
-        if target[0] == '!':
-            # Note that this assumes that the target is a platform rather than
-            # an architecture.  If this is incorrect then it is a bug in the
-            # metadata somewhere.
-            targets = list(TARGET_PLATFORM_NAMES)
-            targets.remove(target[1:])
+        if targets:
+            if isinstance(targets, str):
+                # String targets can come from the project file (ie. the user)
+                # and so need to be validated.
+                if targets[0] == '!':
+                    # Note that this assumes that the target is a platform
+                    # rather than an architecture.  If this is incorrect then
+                    # it is a bug in the metadata somewhere.
+                    platform = Platform.platform(targets[1:])
+                    covered = (self._target.platform is not platform)
+                elif '-' in targets:
+                    architecture = Architecture.architecture(targets)
+                    covered = (self._target is architecture)
+                else:
+                    platform = Platform.platform(targets)
+                    covered = (self._target.platform is platform)
+            else:
+                covered = (self._target.platform.name in targets)
         else:
-            targets = [target]
+            covered = True
 
-        return targets
+        return covered
 
     def _get_py_module_metadata(self, name):
         """ Get the meta-data for a Python module. """
@@ -1187,26 +1045,39 @@ class Builder:
 
                 resource_contents.append(file_path)
 
-    def _write_main(self, inittab):
+    def _write_main(self, py_version, inittab):
         """ Create the application specific pyqtdeploy_main.cpp file. """
 
         project = self._project
 
         f = self._create_file(self._build_dir + '/pyqtdeploy_main.cpp')
 
+        # Check the version of Python.
         f.write('''#include <Python.h>
-#include <QtGlobal>
 
-''')
+#if PY_MAJOR_VERSION != {0}
+#error "This code has been generated for Python v3."
+#endif
+
+
+'''.format(py_version >> 16))
+
+        # Check the target platform.
+        platform = self._host.platform
+
+        f.write('''#include <QtGlobal>
+
+#if !{0}
+#error "This code has been generated for {1}."
+#endif
+
+
+'''.format(platform.cpp, platform.full_name))
 
         if len(inittab) > 0:
             c_inittab = 'extension_modules'
 
-            f.write('#if PY_MAJOR_VERSION >= 3\n')
-            self._write_inittab(f, inittab, c_inittab, py3=True)
-            f.write('#else\n')
-            self._write_inittab(f, inittab, c_inittab, py3=False)
-            f.write('#endif\n\n')
+            self._write_inittab(f, inittab, c_inittab, py_version)
         else:
             c_inittab = 'NULL'
 
@@ -1233,8 +1104,9 @@ class Builder:
 
         path_dirs = 'path_dirs' if sys_path != '' else 'NULL'
 
-        f.write('''
-#if defined(Q_OS_WIN) && PY_MAJOR_VERSION >= 3
+        if platform.name == 'win' and py_version >= 0x030000:
+            f.write('''
+
 #include <windows.h>
 
 extern int pyqtdeploy_start(int argc, wchar_t **w_argv,
@@ -1247,7 +1119,10 @@ int main(int argc, char **)
 
     return pyqtdeploy_start(argc, w_argv, %s, "%s", %s, %s);
 }
-#else
+''' % (c_inittab, main_module, entry_point, path_dirs))
+        else:
+            f.write('''
+
 extern int pyqtdeploy_start(int argc, char **argv,
         struct _inittab *extension_modules, const char *main_module,
         const char *entry_point, const char **path_dirs);
@@ -1256,115 +1131,42 @@ int main(int argc, char **argv)
 {
     return pyqtdeploy_start(argc, argv, %s, "%s", %s, %s);
 }
-#endif
-''' % (c_inittab, main_module, entry_point, path_dirs,
-       c_inittab, main_module, entry_point, path_dirs))
+''' % (c_inittab, main_module, entry_point, path_dirs))
 
         f.close()
 
     @classmethod
-    def _write_inittab(cls, f, inittab, c_inittab, py3):
+    def _write_inittab(cls, f, inittab, c_inittab, py_version):
         """ Write the Python version specific extension module inittab. """
 
-        if py3:
+        if py_version >= 0x030000:
             init_type = 'PyObject *'
             init_prefix = 'PyInit_'
         else:
             init_type = 'void '
             init_prefix = 'init'
 
-        for targets, names in inittab:
-            if targets:
-                cls._write_cpp_guard(f, targets)
+        # We want reproduceable output.
+        sorted_inittab = sorted(inittab)
 
-            for name in names:
-                base_name = name.split('.')[-1]
+        for name in sorted_inittab:
+            base_name = name.split('.')[-1]
 
-                f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
-                        base_name))
-
-            if targets:
-                f.write('#endif\n')
+            f.write('extern "C" %s%s%s(void);\n' % (init_type, init_prefix,
+                    base_name))
 
         f.write('''
 static struct _inittab %s[] = {
 ''' % c_inittab)
 
-        for targets, names in inittab:
-            if targets:
-                cls._write_cpp_guard(f, targets)
+        for name in sorted_inittab:
+            base_name = name.split('.')[-1]
 
-            for name in names:
-                base_name = name.split('.')[-1]
-
-                f.write('    {"%s", %s%s},\n' % (name, init_prefix, base_name))
-
-            if targets:
-                f.write('#endif\n')
+            f.write('    {"%s", %s%s},\n' % (name, init_prefix, base_name))
 
         f.write('''    {NULL, NULL}
 };
 ''')
-
-    @classmethod
-    def _write_cpp_guard(cls, f, targets):
-        """ Write the C pre-processor guard for some targets. """
-
-        f.write('#if ')
-
-        if targets[0][0] == '!':
-            f.write('!{0}'.format(cls._cpp_for_target(targets[0][1:])))
-        else:
-            f.write(' || '.join([cls._cpp_for_target(t) for t in targets]))
-
-        f.write('\n')
-
-    @staticmethod
-    def _optimised(used_targets):
-        """ Return an optimised (to reduce the amount of generated code) list
-        of a 2-tuple of targets and values.
-        """
-
-        # Generate a reverse dict.
-        by_value = {}
-        for target, values in used_targets.items():
-            for value in values:
-                by_value.setdefault(value, set()).add(target)
-
-        # Reverse again and merge the targets.
-        optimised = {}
-        for value, targets in by_value.items():
-            # Convert the targets to a list in predictable order.
-            targets = sorted(targets)
-
-            # Ignore unless all targets are platform names.
-            for target in targets:
-                if '-' in target:
-                    break
-            else:
-                nr_targets = len(targets)
-                nr_platforms = len(TARGET_PLATFORM_NAMES)
-
-                if nr_targets == nr_platforms:
-                    # The value is unscoped.
-                    targets = []
-                elif nr_targets == nr_platforms - 1:
-                    # Find the missing target.
-                    missing = list(TARGET_PLATFORM_NAMES)
-                    for target in targets:
-                        missing.remove(target)
-
-                    targets = ['!' + missing[0]]
-
-            optimised.setdefault(tuple(targets), set()).add(value)
-
-        # Convert to a data structure that will generate code in a predictable
-        # order with unscoped values first.
-        pretty = []
-        for targets in sorted(optimised.keys()):
-            pretty.append((targets, sorted(optimised[targets])))
-
-        return pretty
 
     @staticmethod
     def _freeze(job_writer, out_file, in_file, name, as_c=False):
@@ -1504,26 +1306,3 @@ static struct _inittab %s[] = {
             raise UserException(
                     "Unable to create the '{0}' directory".format(dir_name),
                     str(e))
-
-    @classmethod
-    def _cpp_for_target(cls, target):
-        """ Return the C pre-processor guard for an architecture or platform.
-        """
-
-        return cls._target_platform(target).cpp
-
-    @classmethod
-    def _qmake_scope_for_target(cls, target):
-        """ Return the C pre-processor guard for an architecture or platform.
-        """
-
-        return cls._target_platform(target).qmake_scope
-
-    @staticmethod
-    def _target_platform(target):
-        """ Return the platform of a target. """
-
-        if '-' in target:
-            return Architecture.architecture(target).platform
-
-        return Platform.platform(target)
