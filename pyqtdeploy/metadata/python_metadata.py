@@ -1814,7 +1814,7 @@ _metadata = {
                         '!_sha512')),
         PythonModule(min_version=(3, 6),
                 deps=('?_hashlib', '!_md5', '!_sha1', '!_sha256',
-                        '!_sha512', '!_blake2', '!_sha3'))),
+                        '!_sha512', '_blake2', '_sha3'))),
 
     'heapq': (
         PythonModule(version=2, deps=('_heapq', 'itertools', 'operator')),

@@ -938,11 +938,6 @@ exists($$PDY_DLL) {
 
         return covered
 
-    def _get_py_module_metadata(self, name):
-        """ Get the meta-data for a Python module. """
-
-        return get_python_metadata(self._project.python_target_version).get(name)
-
     def _get_pyqt_module_metadata(self, module_name):
         """ Get the meta-data for a PyQt module. """
 
