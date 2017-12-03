@@ -122,13 +122,20 @@ else:
 
     run([make])
 
+    if target.startswith('android'):
+        run([make, 'INSTALL_ROOT=deploy', 'install'])
+
+        androiddeployqt = os.path.join('..', sysroot_dir, 'host', 'bin',
+                'androiddeployqt')
+        run([androiddeployqt, '--input',
+                'android-libpyqt-demo.so-deployment-settings.json', '--output',
+                'deploy'])
+
 # Tell the user where the demo is.
 if target.startswith('android'):
-    print("""The libpyqt-demo.so file can be found in the '{0}' directory.
-Run the following commands to generate the APK:
-    cd {0}
-    make INSTALL_ROOT=deploy install
-    androiddeployqt --input android-libpyqt-demo.so-deployment-settings.json --output deploy""".format(build_dir))
+    apk_dir = os.path.join(build_dir, 'deploy', 'bin')
+    print("""The QtApp-debug.apk file can be found in the '{0}'
+directory.  Run adb to install it to a simulator.""".format(apk_dir))
 
 elif target.startswith('ios'):
     print("""The pyqt-demo.xcodeproj file can be found in the '{0}' directory.
@@ -137,6 +144,6 @@ device.""".format(build_dir))
 
 elif target.startswith('win') or sys.platform == 'win32':
     print("TODO")
-else:
 
+else:
     print("The pyqt-demo executable can be found in the '{0}' directory.".format(build_dir))
