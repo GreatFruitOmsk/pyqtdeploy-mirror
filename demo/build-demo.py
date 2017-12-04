@@ -87,6 +87,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 sysroot_dir = 'sysroot-' + target
 build_dir = 'build-' + target
+host_bin_dir = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin'))
 
 # Build sysroot.
 if build_sysroot:
@@ -111,7 +112,7 @@ run(['pyqtdeploy-build', '--target', target, '--sysroot', sysroot_dir,
 qmake = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin', 'qmake'))
 
 os.chdir(build_dir)
-run([qmake])
+run([os.path.join(host_bin_dir, 'qmake')])
 
 # Run make. (When targeting iOS we leave it to Xcode.)
 if target.startswith('ios'):
@@ -124,10 +125,7 @@ else:
 
     if target.startswith('android'):
         run([make, 'INSTALL_ROOT=deploy', 'install'])
-
-        androiddeployqt = os.path.join('..', sysroot_dir, 'host', 'bin',
-                'androiddeployqt')
-        run([androiddeployqt, '--input',
+        run([os.path.join(host_bin_dir, 'androiddeployqt'), '--input',
                 'android-libpyqt-demo.so-deployment-settings.json', '--output',
                 'deploy'])
 
