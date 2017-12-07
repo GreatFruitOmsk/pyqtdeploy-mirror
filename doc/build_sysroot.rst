@@ -20,7 +20,7 @@ which can be used to create a basic system root directory containing a Qt
 installation, host and target Python installations and static versions of
 OpenSSL, sip, PyQt5, PyQt3D, PyQtChart, PyQtDataVisualization, PyQtPurchasing
 and QScintilla.  The script itself requires Python v3.5 or later and runs on
-Windows, OS X and Linux.  It is a work-in-progress and completely unsupported
+Windows, macOS and Linux.  It is a work-in-progress and completely unsupported
 and its name and command line interface *will* change.  If you choose to use it
 then it is recommended that you maintain your own copy.
 

@@ -5,6 +5,7 @@ User Guide
     :maxdepth: 2
 
     introduction
+    v1_differences
     command_line
     windows_dynamic_loading
     pyrcc

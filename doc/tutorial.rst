@@ -92,7 +92,7 @@ For example, lets say that your application is targeted at all supported
 desktop targets and requires SSL support.  On Windows you want to link against
 a copy of the OpenSSL libraries that you have statically compiled and installed
 the header files and libraries in the ``include`` and ``lib`` sub-directories
-of the :envvar:`SYSROOT` directory.  On Linux and OS X you want to dynamically
+of the :envvar:`SYSROOT` directory.  On Linux and macOS you want to dynamically
 link against the system SSL libraries.  Setting the ``INCLUDEPATH`` and
 ``LIBS`` variables to the following values will ensure that the generated code
 will compile as you require on all platforms::
@@ -214,7 +214,7 @@ The tab for defining the application source is shown below.
     module must be installed as ``foo.baz.so`` (or ``foo.baz.pyd``) in the same
     directory as the application executable.
 
-    On OS X an extension module will also be searched for in the ``PlugIns``
+    On macOS an extension module will also be searched for in the ``PlugIns``
     and ``Frameworks`` sub-directories of the directory containing the
     application executable.
 
@@ -242,9 +242,9 @@ The tab for defining the application source is shown below.
     applications to ensure that tracebacks (e.g. about missing modules) are
     captured and displayed.
 
-**Application bundle (OS X)**
+**Application bundle (macOS)**
     is checked if the application should be built as a bundle and only affects
-    OS X applications.  It would normally be unchecked for command line (i.e.
+    macOS applications.  It would normally be unchecked for command line (i.e.
     non-GUI) applications.
 
 **Application Package Directory**
