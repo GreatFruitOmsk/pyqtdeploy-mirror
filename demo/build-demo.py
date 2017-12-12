@@ -109,8 +109,6 @@ run(['pyqtdeploy-build', '--target', target, '--sysroot', sysroot_dir,
             '--build-dir', build_dir, 'pyqt-demo.pdy'])
 
 # Run qmake.  Use the qmake left by pyqtdeploy-sysroot.
-qmake = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin', 'qmake'))
-
 os.chdir(build_dir)
 run([os.path.join(host_bin_dir, 'qmake')])
 
