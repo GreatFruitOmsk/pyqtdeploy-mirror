@@ -57,6 +57,7 @@ extern "C" {
 #define PYQTDEPLOY_FATAL(s)             return NULL
 #define PYQTDEPLOY_RETURN(m)            return (m)
 #define PYQTDEPLOY_PARSE_STR            "U"
+#define CONST_CAST(s)                   s
 
 // The module definition structure.
 static struct PyModuleDef pdytoolsmodule = {
@@ -81,6 +82,7 @@ static struct PyModuleDef pdytoolsmodule = {
 #define PYQTDEPLOY_FATAL(s)             Py_FatalError(s)
 #define PYQTDEPLOY_RETURN(m)
 #define PYQTDEPLOY_PARSE_STR            "S"
+#define CONST_CAST(s)                   const_cast<char *>(s)
 #endif
 
 
@@ -474,16 +476,18 @@ static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
         if (!py_filename)
             return NULL;
 
-        PyObject *module_file = PyObject_CallFunction(open_file, "Os", py_filename, "rb");
+        PyObject *module_file = PyObject_CallFunction(open_file,
+                CONST_CAST("Os"), py_filename, "rb");
+
         if (!module_file)
         {
             Py_DECREF(py_filename);
             return NULL;
         }
 
-        PyObject *module = PyObject_CallFunction(load_module, "OOO(ssi)",
-                py_fqmn, module_file, py_filename, extension_module_extension,
-                "rb", 3);
+        PyObject *module = PyObject_CallFunction(load_module,
+                CONST_CAST("OOO(ssi)"), py_fqmn, module_file, py_filename,
+                extension_module_extension, "rb", 3);
 
         Py_DECREF(module_file);
         Py_DECREF(py_filename);
@@ -799,7 +803,7 @@ static void raise_import_error(const QString &fqmn)
 void pdytools_init_executable_dir(const QString &argv0)
 {
     QString name;
-    PyObject *executable = PySys_GetObject("executable");
+    PyObject *executable = PySys_GetObject(CONST_CAST("executable"));
 
     if (executable && executable != Py_None)
         name = str_to_qstring(executable);
