@@ -1,11 +1,6 @@
 {
     "Description": "Build a static Qt5 from source.",
 
-    "openssl": {
-        "source":           "openssl-1.*.tar.gz",
-        "python_source":    "Python-3.*.tar.xz"
-    },
-
     "qt5": {
         "source":   "qt-everywhere-*-src-5.*.tar.xz"
     }
