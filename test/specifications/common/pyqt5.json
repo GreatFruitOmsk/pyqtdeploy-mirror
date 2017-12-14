@@ -58,6 +58,7 @@
                 "QtSvg", "QtTest", "QtWebChannel", "QtWebSockets", "QtWidgets",
                 "QtX11Extras", "QtXml", "QtXmlPatterns",
                 "_QOpenGLFunctions_2_0"
+        ],
 
         "macos-64#modules":             [
                 "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
