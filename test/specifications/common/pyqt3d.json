@@ -4,6 +4,7 @@
     "qt5": {
         "android-32#qt_dir":    "Qt/*/android_armv7",
         "ios-64#qt_dir":        "Qt/*/ios",
+        "linux-64#qt_dir":      "Qt/*/gcc_64"
         "macos-64#qt_dir":      "Qt/*/clang_64"
     },
 

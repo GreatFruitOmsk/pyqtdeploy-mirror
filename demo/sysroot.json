@@ -10,7 +10,7 @@
         "android#qt_dir":       "Qt/*/android_armv7",
         "ios#qt_dir":           "Qt/*/ios",
 
-        "macos#source":         "qt-everywhere-*-src-5.*.tar.xz",
+        "linux|macos#source":   "qt-everywhere-*-src-5.*.tar.xz",
 
         "android|linux#ssl":    "openssl-runtime",
         "ios#ssl":              "securetransport",
@@ -49,6 +49,10 @@
         "ios|macos#modules":            [
                 "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
                 "QtMacExtras"
+        ],
+        "linux#modules":                [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtX11Extras"
         ],
 
         "source":                   "PyQt5_*-5.*.tar.gz"
