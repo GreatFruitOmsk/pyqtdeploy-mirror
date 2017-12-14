@@ -4,7 +4,7 @@
     "qt5": {
         "android-32#qt_dir":    "Qt/*/android_armv7",
         "ios-64#qt_dir":        "Qt/*/ios",
-        "linux-64#qt_dir":      "Qt/*/gcc_64"
+        "linux-64#qt_dir":      "Qt/*/gcc_64",
         "macos-64#qt_dir":      "Qt/*/clang_64"
     },
 
@@ -48,6 +48,16 @@
                 "QtTest", "QtWebChannel", "QtWebSockets", "QtWidgets", "QtXml",
                 "QtXmlPatterns", "_QOpenGLFunctions_ES2"
         ],
+
+        "linux-64#modules":             [
+                "QtBluetooth", "QtCore", "QtDBus", "QtGui", "QtHelp",
+                "QtLocation", "QtMacExtras", "QtMultimedia",
+                "QtMultimediaWidgets", "QtNetwork", "QtOpenGL",
+                "QtPositioning", "QtPrintSupport", "QtQml", "QtQuick",
+                "QtQuickWidgets", "QtSensors", "QtSerialPort", "QtSql",
+                "QtSvg", "QtTest", "QtWebChannel", "QtWebSockets", "QtWidgets",
+                "QtX11Extras", "QtXml", "QtXmlPatterns",
+                "_QOpenGLFunctions_2_0"
 
         "macos-64#modules":             [
                 "QtBluetooth", "QtCore", "QtGui", "QtHelp", "QtLocation",
