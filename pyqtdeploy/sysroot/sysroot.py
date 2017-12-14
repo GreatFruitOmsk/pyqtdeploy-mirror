@@ -483,6 +483,14 @@ class Sysroot:
 
         return version_nr
 
+    def pip_install(self, package):
+        """ Use pip to install a package in the sysroot site-packages
+        directory.
+        """
+
+        self.run(os.path.join(self.host_bin_dir, self.host_exe('pip')),
+                'install', '--target', self.target_sitepackages_dir, package)
+
     def progress(self, message):
         """ Issue a progress message. """
 

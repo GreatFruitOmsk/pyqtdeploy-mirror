@@ -79,6 +79,10 @@ class PythonPackage(AbstractPackage):
         # sysroot so that they can be referred to in cross-target .pdy files.
         sysroot.make_symlink(interpreter, sysroot.host_python)
 
+        # Do the same for pip.
+        sysroot.make_symlink(interpreter.replace('python', 'pip'),
+                sysroot.host_python.replace('python', 'pip'))
+
         # Build the target installation.
         if self.build_target_from_source:
             sysroot.progress("Building the target Python from source")
@@ -89,8 +93,8 @@ class PythonPackage(AbstractPackage):
                         "Installing an existing Python v{0} as the target Python".format(sysroot.format_version_nr(sysroot.python_version_nr)))
                 self._install_target_from_existing_windows_version(sysroot)
             else:
-                self.error(
-                        "using an existing Python installation is not supported for the {0}".format(sysroot.target_arch_name))
+                sysroot.error(
+                        "using an existing Python installation is not supported for {0}".format(sysroot.target_arch_name))
 
     def configure(self, sysroot):
         """ Complete the configuration of the package. """
