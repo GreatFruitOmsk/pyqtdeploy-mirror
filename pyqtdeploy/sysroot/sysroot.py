@@ -408,6 +408,12 @@ class Sysroot:
         return self._host.platform.name
 
     @property
+    def host_pip(self):
+        """ The pathname of the host pip executable. """
+
+        return os.path.join(self.host_bin_dir, self.host_exe('pip'))
+
+    @property
     def host_python(self):
         """ The pathname of the host Python interpreter. """
 
@@ -488,8 +494,8 @@ class Sysroot:
         directory.
         """
 
-        self.run(os.path.join(self.host_bin_dir, self.host_exe('pip')),
-                'install', '--target', self.target_sitepackages_dir, package)
+        self.run(self.host_pip, 'install', '--target',
+                self.target_sitepackages_dir, package)
 
     def progress(self, message):
         """ Issue a progress message. """

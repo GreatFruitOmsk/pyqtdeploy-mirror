@@ -80,8 +80,9 @@ class PythonPackage(AbstractPackage):
         sysroot.make_symlink(interpreter, sysroot.host_python)
 
         # Do the same for pip.
-        sysroot.make_symlink(interpreter.replace('python', 'pip'),
-                sysroot.host_python.replace('python', 'pip'))
+        pip_dir, pip = os.path.split(interpreter)
+        pip.replace('python', 'pip')
+        sysroot.make_symlink(os.path.join(pip_dir, pip), sysroot.host_pip)
 
         # Build the target installation.
         if self.build_target_from_source:
