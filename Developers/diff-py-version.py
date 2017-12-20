@@ -18,8 +18,8 @@ class Version:
     # The 'Lib' sub-directories to ignore.
     IGNORED_LIB_DIRS = ('bsddb/test', 'ctypes/test', 'distutils/tests',
             'ensurepip', 'idlelib', 'lib-tk', 'lib2to3', 'pydoc_data',
-            'site-packages', 'test', 'tkinter', 'turtledemo', 'unittest',
-            'venv')
+            'site-packages', 'sqlite3/test', 'test', 'tkinter', 'turtledemo',
+            'unittest', 'venv')
 
     def __init__(self, major, minor, patch):
         """ Initialise the object. """

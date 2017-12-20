@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 6, 3),
+    (3, 6, 4),
     (3, 5, 4),
     (3, 4, 7),
     (3, 3, 7),
@@ -3510,11 +3510,16 @@ _metadata = {
                         'asyncio.futures', 'asyncio.log', 'collections.abc',
                         'functools', 'inspect', 'opcode', 'os', 'traceback',
                         'types')),
-        PythonModule(min_version=(3, 6), internal=True,
+        PythonModule(min_version=(3, 6), max_version=(3, 6, 3), internal=True,
                 deps=('asyncio', 'asyncio.base_futures', 'asyncio.compat',
                         'asyncio.events', 'asyncio.log', 'collections.abc',
                         'functools', 'inspect', 'opcode', 'os', 'traceback',
-                        'types'))),
+                        'types')),
+        PythonModule(min_version=(3, 6, 4), internal=True,
+                deps=('asyncio', 'asyncio.base_futures', 'asyncio.compat',
+                        'asyncio.constants', 'asyncio.events', 'asyncio.log',
+                        'collections.abc', 'functools', 'inspect', 'opcode',
+                        'os', 'traceback', 'types'))),
 
     'asyncio.events': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
@@ -3537,10 +3542,15 @@ _metadata = {
                 deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
                         'reprlib', 'socket', 'subprocess', 'threading',
                         'traceback')),
-        PythonModule(min_version=(3, 6, 1), internal=True,
+        PythonModule(min_version=(3, 6, 1), max_version=(3, 6, 3),
+                internal=True,
                 deps=('asyncio', 'asyncio.compat', 'functools', 'inspect',
                         'os', 'reprlib', 'socket', 'subprocess', 'threading',
-                        'traceback'))),
+                        'traceback')),
+        PythonModule(min_version=(3, 6, 4), internal=True,
+                deps=('asyncio', 'asyncio.compat', 'asyncio.constants',
+                        'functools', 'inspect', 'os', 'reprlib', 'socket',
+                        'subprocess', 'threading', 'traceback'))),
 
     'asyncio.futures': (
         PythonModule(min_version=(3, 4, 0), max_version=(3, 4, 1),
