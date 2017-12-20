@@ -79,8 +79,15 @@ class PythonPackage(AbstractPackage):
         # sysroot so that they can be referred to in cross-target .pdy files.
         sysroot.make_symlink(interpreter, sysroot.host_python)
 
-        # Do the same for pip.
-        pip_dir, pip = os.path.split(interpreter)
+        # Do the same for pip taking care of the fact that on Windows in a
+        # non-venv they are in different directories.
+        interpreter_dir, pip = os.path.split(interpreter)
+        pip_dir = interpreter_dir
+
+        if sys.platform == 'win32':
+            if os.path.basename(interpreter_dir) != 'Scripts':
+                pip_dir = os.path.join(interpreter_dir, 'Scripts')
+
         pip.replace('python', 'pip')
         sysroot.make_symlink(os.path.join(pip_dir, pip), sysroot.host_pip)
 
