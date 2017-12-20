@@ -200,19 +200,19 @@ pyconfig = (
     Config('HAVE_CTERMID_R', ios=1, macos=1),
 
     # Define if you have the 'filter' function.
-    Config('HAVE_CURSES_FILTER', default=1, android=None)
+    Config('HAVE_CURSES_FILTER', default=1, android=None),
 
     # Define to 1 if you have the <curses.h> header file.
     Config('HAVE_CURSES_H', default=1, android=None),
 
     # Define if you have the 'has_key' function.
-    Config('HAVE_CURSES_HAS_KEY', default=1, android=None)
+    Config('HAVE_CURSES_HAS_KEY', default=1, android=None),
 
     # Define if you have the 'immedok' function.
-    Config('HAVE_CURSES_IMMEDOK', default=1, android=None)
+    Config('HAVE_CURSES_IMMEDOK', default=1, android=None),
 
     # Define if you have the 'is_pad' function or macro.
-    Config('HAVE_CURSES_IS_PAD', linux=1)
+    Config('HAVE_CURSES_IS_PAD', linux=1),
 
     # Define if you have the 'is_term_resized' function.
     Config('HAVE_CURSES_IS_TERM_RESIZED', default=1, android=None),
@@ -221,16 +221,16 @@ pyconfig = (
     Config('HAVE_CURSES_RESIZETERM', default=1, android=None),
 
     # Define if you have the 'syncok' function.
-    Config('HAVE_CURSES_SYNCOK', default=1, android=None)
+    Config('HAVE_CURSES_SYNCOK', default=1, android=None),
 
     # Define if you have the 'typeahead' function.
-    Config('HAVE_CURSES_TYPEAHEAD', default=1, android=None)
+    Config('HAVE_CURSES_TYPEAHEAD', default=1, android=None),
 
     # Define if you have the 'use_env' function.
-    Config('HAVE_CURSES_USE_ENV', default=1, android=None)
+    Config('HAVE_CURSES_USE_ENV', default=1, android=None),
 
     # Define if you have the 'wchgat' function.
-    Config('HAVE_CURSES_WCHGAT', default=1, android=None)
+    Config('HAVE_CURSES_WCHGAT', default=1, android=None),
 
     # Define if you have the 'resize_term' function.
     Config('HAVE_CURSES_RESIZE_TERM', default=1, android=None),
