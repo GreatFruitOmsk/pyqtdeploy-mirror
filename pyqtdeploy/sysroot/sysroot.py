@@ -302,7 +302,7 @@ class Sysroot:
 
         self.error("'{0}' must be installed on PATH".format(exe))
 
-    def find_file(self, name):
+    def find_file(self, name, required=True):
         """ Find a file (or directory).  If the name is relative then it is
         relative to the directory specified by the --source-dir command line
         option.  If this is not specified then the directory containing the
@@ -323,11 +323,14 @@ class Sysroot:
                 self.error(
                         "'{0}' matched several files and directories".format(
                                 name))
-        else:
+
+            return os.path.normpath(names[0])
+
+        if required:
             self.error(
                     "nothing matching '{0}' could not be found".format(name))
 
-        return os.path.normpath(names[0])
+        return None
 
     def find_package(self, name, required=True):
         """ Return the package object for the given name or None if the package

@@ -27,18 +27,24 @@
 from ... import AbstractPackage, PackageOption
 
 
-class rbtoolsPackage(AbstractPackage):
-    """ The rbtools package. """
+class pipPackage(AbstractPackage):
+    """ The pip meta-package. """
 
     # The package-specific options.
     options = [
-        PackageOption('package', str, required=True,
-                help="The rbtools pip-installable package."),
+        PackageOption('packages', list, required=True,
+                help="The packages to be installed by pip."),
     ]
 
     def build(self, sysroot):
-        """ Build rbtools for the target. """
+        """ Install the packages. """
 
-        sysroot.progress("Installing rbtools")
+        for package in self.packages:
+            sysroot.progress("Installing {0}".format(package))
 
-        sysroot.pip_install(sysroot.find_file(self.package))
+            package_file = sysroot.find_file(package, required=False)
+            if package_file is None:
+                # Assume the package is remote and pip will be able to find it.
+                package_file = package
+
+            sysroot.pip_install(package_file)
