@@ -58,6 +58,7 @@ DEFINES += VPATH=\\\".\\\"
 DEFINES += PREFIX=\\\"/\\\"
 DEFINES += EXEC_PREFIX=\\\"/\\\"
 DEFINES += PYTHONPATH=\\\"/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
+DEFINES += WITH_PYMALLOC=\\\"1\\\"
 
 INCLUDEPATH += . Include
 
@@ -67,9 +68,13 @@ win32 {
 } else {
     ios|macx {
         DEFINES += PLATFORM=\\\"darwin\\\"
+        DEFINES += MULTIARCH=\\\"darwin\\\"
     } else {
         DEFINES += PLATFORM=\\\"linux\\\"
+        DEFINES += MULTIARCH=\\\"x86_64-linux-gnu\\\"
     }
+
+    DEFINES += ABIFLAGS=\\\"m\\\"
 
     QMAKE_CFLAGS_RELEASE = -O3
     QMAKE_CFLAGS += -fwrapv
