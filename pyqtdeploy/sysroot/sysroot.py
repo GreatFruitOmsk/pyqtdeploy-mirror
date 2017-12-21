@@ -611,6 +611,13 @@ class Sysroot:
         return py_platform
 
     @property
+    def target_py_stdlib_dir(self):
+        """ The name of the directory containing target Python standard
+        library. """
+
+        return os.path.join(self.target_lib_dir, self._py_subdir)
+
+    @property
     def target_sip_dir(self):
         """ The name of the directory containing the target .sip files. """
 

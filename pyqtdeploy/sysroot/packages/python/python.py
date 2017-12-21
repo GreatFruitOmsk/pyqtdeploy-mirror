@@ -189,6 +189,36 @@ class PythonPackage(AbstractPackage):
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
+        # Create a platform-specific dummy _sysconfigdata module.  This allows
+        # the sysconfig module to work.  If necessary we can populate it with
+        # genuinely useful information if people ask for it.
+        if sysroot.target_platform_name != 'win':
+            self._create_sysconfigdata(sysroot)
+
+    def _create_sysconfigdata(self, sysroot):
+        """ Create the _sysconfigdata module. """
+
+        # The names must match those used in python.pro.  On macOS and Linux
+        # they are chosen to match those used by a default build.  On Android
+        # and iOS they are chosen to be unique so that they can have separate
+        # entries in the Python meta-data.
+        scd_names = {
+            'android':  'linux_android',
+            'ios':      'darwin_ios',
+            'macos':    'darwin_darwin',
+            'linux':    'linux_x86_64-linux-gnu',
+        }
+
+        scd_name = '_sysconfigdata_m_' + scd_names[sysroot.target_platform_name]
+        scd_path = os.path.join(sysroot.target_py_stdlib_dir, scd_name)
+        scd = sysroot.create_file(scd_path)
+        scd.write('''# Automatically generated.
+
+build_time_vars = {
+}
+''')
+        scd.close()
+
     def _install_target_from_existing_windows_version(self, sysroot):
         """ Install the target Python from an existing installation on Windows.
         """ 
