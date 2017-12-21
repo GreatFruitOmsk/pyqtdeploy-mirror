@@ -66,10 +66,19 @@ win32 {
     DEFINES += PLATFORM=\\\"win32\\\"
     INCLUDEPATH += PC
 } else {
-    ios|macx {
+    android {
+        DEFINES += PLATFORM=\\\"linux\\\"
+        DEFINES += MULTIARCH=\\\"android\\\"
+    }
+    ios {
+        DEFINES += PLATFORM=\\\"darwin\\\"
+        DEFINES += MULTIARCH=\\\"ios\\\"
+    }
+    macx {
         DEFINES += PLATFORM=\\\"darwin\\\"
         DEFINES += MULTIARCH=\\\"darwin\\\"
-    } else {
+    }
+    linux-* {
         DEFINES += PLATFORM=\\\"linux\\\"
         DEFINES += MULTIARCH=\\\"x86_64-linux-gnu\\\"
     }

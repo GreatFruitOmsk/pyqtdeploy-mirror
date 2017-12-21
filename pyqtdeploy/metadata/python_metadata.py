@@ -2912,8 +2912,12 @@ _metadata = {
                 deps=('os', '_osx_support', 'pprint', 're', '_sysconfigdata',
                         'types', 'warnings')),
         PythonModule(min_version=(3, 6),
-                deps=('os', '_osx_support', 'pprint', 're', 'types',
-                        'warnings'))),
+                deps=('os', '_osx_support', 'pprint', 're',
+                        '_sysconfigdata_m_linux_android',
+                        '_sysconfigdata_m_darwin_darwin',
+                        '_sysconfigdata_m_darwin_ios',
+                        '_sysconfigdata_m_linux_x86_64-linux-gnu',
+                        'types', 'warnings'))),
 
     'subprocess': (
         PythonModule(version=2,
@@ -4634,6 +4638,18 @@ _metadata = {
 
     '_sysconfigdata':
         PythonModule(max_version=(3, 5), internal=True),
+
+    '_sysconfigdata_m_linux_android':
+        PythonModule(min_version=(3, 6), internal=True, target='android'),
+
+    '_sysconfigdata_m_darwin_ios':
+        PythonModule(min_version=(3, 6), internal=True, target='ios'),
+
+    '_sysconfigdata_m_darwin_darwin':
+        PythonModule(min_version=(3, 6), internal=True, target='macos'),
+
+    '_sysconfigdata_m_linux_x86_64-linux-gnu':
+        PythonModule(min_version=(3, 6), internal=True, target='linux'),
 
     '_tracemalloc':
         CoreExtensionModule(min_version=(3, 4), internal=True),
