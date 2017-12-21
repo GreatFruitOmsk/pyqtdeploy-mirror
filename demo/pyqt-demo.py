@@ -7,6 +7,7 @@
 
 
 import sys
+import sysconfig
 
 from PyQt5.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
@@ -107,6 +108,7 @@ class Model(QStandardItemModel):
         self.setHorizontalHeaderLabels(["Name", "Value"])
 
         # Populate the model.
+        self.add_value("Platform", sysconfig.get_platform())
         self.add_value("PyQt version", PYQT_VERSION_STR)
         self.add_value("Python version", self.from_hexversion(sys.hexversion))
         self.add_value("Qt version", QT_VERSION_STR)
