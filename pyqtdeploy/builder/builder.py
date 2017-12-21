@@ -83,6 +83,9 @@ class Builder:
         for name in required_modules.keys():
             module = metadata[name]
 
+            if module.target and not self._is_targeted(module.target):
+                continue
+
             if module.source is None:
                 required_py[name] = module
             elif not module.core:
