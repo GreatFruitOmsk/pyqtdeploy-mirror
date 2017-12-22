@@ -209,7 +209,8 @@ class PythonPackage(AbstractPackage):
             'linux':    'linux_x86_64-linux-gnu',
         }
 
-        scd_name = '_sysconfigdata_m_' + scd_names[sysroot.target_platform_name]
+        scd_name = '_sysconfigdata_m_{0}.py'.format(
+                scd_names[sysroot.target_platform_name])
         scd_path = os.path.join(sysroot.target_py_stdlib_dir, scd_name)
         scd = sysroot.create_file(scd_path)
         scd.write('''# Automatically generated.
