@@ -25,6 +25,7 @@
 
 
 import csv
+import glob
 import os
 import shlex
 import shutil
@@ -350,15 +351,28 @@ class Builder:
 
         # By sorting the names we ensure parents are handled before children.
         for name in sorted(required_py.keys()):
-            name_path = name.replace('.', '/')
+            module = required_py[name]
+            suffix = '/__init__.py' if module.modules is not None else '.py'
 
-            if required_py[name].modules is None:
-                in_file = name_path + '.py'
-                out_file = name_path + '.pyo'
+            # Resolve any patterns.
+            if '*' in name:
+                pattern = os.path.join(standard_library_dir,
+                        name.replace('.', os.sep) + suffix)
+                modules = glob.glob(pattern)
+
+                if len(modules) != 1:
+                    raise UserException(
+                            "'{0}' must match exactly one module".format(name))
+
+                name_path = modules[0][len(standard_library_dir) + 1:-len(suffix)].replace(os.sep, '/')
             else:
-                in_file = name_path + '/__init__.py'
-                out_file = name_path + '/__init__.pyo'
+                name_path = name.replace('.', '/')
+
+            if module.modules is not None:
                 self._create_directory(resources_dir + '/' + name_path)
+
+            in_file = name_path + suffix
+            out_file = in_file + 'o'
 
             self._freeze(job_writer, resources_dir + '/' + out_file,
                     standard_library_dir + '/' + in_file, in_file)
