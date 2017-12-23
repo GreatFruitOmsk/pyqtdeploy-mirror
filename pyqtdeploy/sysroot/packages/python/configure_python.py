@@ -62,8 +62,9 @@ def configure_python(dynamic_loading, sysroot):
     if sysroot.target_platform_name == 'win':
         sysroot.progress("Installing {0}".format(pyconfig_h_dst_file))
 
-        pyconfig_h_src_file = sysroot.get_embedded_file_for_version(py_version,
-                __file__, 'configurations', 'pyconfig')
+        pyconfig_h_src_file = sysroot.get_embedded_file_for_version(
+                sysroot.python_version_nr, __file__, 'configurations',
+                'pyconfig')
 
         sysroot.copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
                 macros={

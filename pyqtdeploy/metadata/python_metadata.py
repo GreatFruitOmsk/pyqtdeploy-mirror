@@ -4507,7 +4507,7 @@ _metadata = {
         ExtensionModule(version=3, internal=True, source='_pickle.c'),
 
     'posixpath':
-        PythonModule(internal=True, target='!win',
+        PythonModule(internal=True,
                 deps=('genericpath', 'os', 'pwd', 're', 'stat', 'warnings')),
 
     '_posixsubprocess':

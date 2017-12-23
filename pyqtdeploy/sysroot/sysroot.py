@@ -505,7 +505,8 @@ class Sysroot:
 
         self._message_handler.progress_message(message)
 
-    def py_windows_install_path(self):
+    @property
+    def python_windows_install_path(self):
         """ The name of the directory caontaining the root of the Python
         installation directory for an existing installation.  It must not be
         called on a non-Windows platform.

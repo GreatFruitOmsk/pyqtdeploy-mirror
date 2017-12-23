@@ -25,6 +25,7 @@
 
 
 import os
+import shutil
 import sys
 
 from .... import AbstractPackage, PackageOption
@@ -81,15 +82,15 @@ class PythonPackage(AbstractPackage):
 
         # Do the same for pip taking care of the fact that on Windows in a
         # non-venv they are in different directories.
-        interpreter_dir, pip = os.path.split(interpreter)
+        interpreter_dir, interpreter_name = os.path.split(interpreter)
         pip_dir = interpreter_dir
 
         if sys.platform == 'win32':
             if os.path.basename(interpreter_dir) != 'Scripts':
                 pip_dir = os.path.join(interpreter_dir, 'Scripts')
 
-        pip.replace('python', 'pip')
-        sysroot.make_symlink(os.path.join(pip_dir, pip), sysroot.host_pip)
+        pip_name = interpreter_name.replace('python', 'pip')
+        sysroot.make_symlink(os.path.join(pip_dir, pip_name), sysroot.host_pip)
 
         # Build the target installation.
         if self.build_target_from_source:
@@ -159,10 +160,10 @@ class PythonPackage(AbstractPackage):
         and return the absolute pathname of the interpreter.
         """
 
-        install_path = sysroot.py_windows_install_path
+        install_path = sysroot.python_windows_install_path
 
         # Copy the DLL.
-        dll = 'python' + self._major_minor(sysroot).remove('.')  + '.dll'
+        dll = 'python' + self._major_minor(sysroot).replace('.', '') + '.dll'
         shutil.copyfile(os.path.join(install_path, dll),
                 os.path.join(sysroot.host_bin_dir, dll))
 
@@ -224,7 +225,7 @@ build_time_vars = {
         """ Install the target Python from an existing installation on Windows.
         """ 
 
-        install_path = sysroot.py_windows_install_path
+        install_path = sysroot.python_windows_install_path
 
         py_major, py_minor, _ = sysroot.decode_version_nr(
                 sysroot.python_version_nr)
