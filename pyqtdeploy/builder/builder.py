@@ -393,6 +393,7 @@ class Builder:
         """ Create the .pro file for qmake. """
 
         project = self._project
+        target_platform = self._target.platform.name
 
         f = self._create_file(self._build_dir + '/' +
                 project.get_executable_basename() + '.pro')
@@ -448,7 +449,7 @@ class Builder:
         # Generate CONFIG.
         config = ['warn_off']
 
-        if self._target.platform.name == 'win':
+        if target_platform == 'win':
             if project.application_is_console or not needs_gui:
                 config.append('console')
 
@@ -457,7 +458,7 @@ class Builder:
 
         f.write('CONFIG += {0}\n'.format(' '.join(config)))
 
-        if self._target.platform.name == 'macos':
+        if target_platform == 'macos':
             if not project.application_is_bundle:
                 f.write('CONFIG -= app_bundle\n')
 
@@ -557,7 +558,7 @@ class Builder:
             if lib.startswith('lib'):
                 lib = lib[3:]
 
-            if '.' in lib and self._target.platform.name == 'win':
+            if '.' in lib and target_platform == 'win':
                 lib = lib.replace('.', '')
 
             used_libs.add('-l' + lib)
@@ -572,7 +573,7 @@ class Builder:
 
             # See if the extension module should be disabled for a platform
             # because there are no external libraries to link against.
-            for xlib in project.external_libraries.get(self._target.platform.name, ()):
+            for xlib in project.external_libraries.get(target_platform, ()):
                 if xlib.name == module.xlib:
                     if xlib.libs == '':
                         skip_module = True
@@ -614,17 +615,16 @@ class Builder:
                     if lib is not None:
                         used_libs.add(lib)
 
-            if module.pyd is not None and self._target.platform.name == 'win':
+            if module.pyd is not None and target_platform == 'win':
                 used_dlls.add(module)
 
-        if 'win' not in project.python_use_platform and self._target.platform.name == 'win':
+        if 'win' not in project.python_use_platform and target_platform == 'win':
             used_includepath.add(source_dir + '/PC')
 
         # Handle any required external libraries.
         android_extra_libs = []
 
-        external_libs = project.external_libraries.get(
-                self._target.platform.name, [])
+        external_libs = project.external_libraries.get(target_platform, [])
 
         for required_lib in required_libraries:
             libs = ''
@@ -639,10 +639,10 @@ class Builder:
                 # Use the defaults.
                 for xlib in external_libraries_metadata:
                     if xlib.name == required_lib:
-                        if self._target.platform.name not in project.python_use_platform:
+                        if target_platform not in project.python_use_platform:
                             defines = ''
                             includepath = xlib.includepath
-                            libs = xlib.libs
+                            libs = xlib.get_libs(target_platform)
 
                         break
 
@@ -658,7 +658,7 @@ class Builder:
 
                 self._add_compound_scoped_values(used_libs, libs, False)
 
-                if self._target.platform.name == 'android':
+                if target_platform == 'android':
                     self._add_android_extra_libs(libs, android_extra_libs)
 
         # Specify any project-specific configuration.
@@ -720,7 +720,7 @@ class Builder:
             self._write_used_values(f, used_libs, 'LIBS')
 
         # Add the library files to be added to an Android APK.
-        if android_extra_libs and self._target.platform.name == 'android':
+        if android_extra_libs and target_platform == 'android':
             f.write('\n')
             f.write('ANDROID_EXTRA_LIBS += %s\n' % ' '.join(android_extra_libs))
 

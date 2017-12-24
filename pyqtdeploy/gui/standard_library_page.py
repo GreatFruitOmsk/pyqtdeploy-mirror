@@ -323,7 +323,7 @@ class _PlatformGui(QWidget):
             else:
                 defs.setText('')
                 incp.setText(extlib.includepath)
-                libs.setText(extlib.libs)
+                libs.setText(extlib.get_libs(platform_name))
 
         model.blockSignals(blocked)
 
@@ -383,7 +383,8 @@ class _PlatformGui(QWidget):
             if prj_extlib.name == extlib.name:
                 break
         else:
-            prj_extlib = ExternalLibrary(extlib.name, '', '', extlib.libs)
+            prj_extlib = ExternalLibrary(extlib.name, '', '',
+                    extlib.get_libs(platform_name))
             external_libs.append(prj_extlib)
             project.external_libraries[platform_name] = external_libs
 
@@ -398,7 +399,7 @@ class _PlatformGui(QWidget):
             prj_extlib.libs = text
 
         # If the project entry corresponds to the default then remove it.
-        if prj_extlib.defines == '' and prj_extlib.includepath == '' and prj_extlib.libs == extlib.libs:
+        if prj_extlib.defines == '' and prj_extlib.includepath == '' and prj_extlib.libs == extlib.get_libs(platform_name):
             external_libs.remove(prj_extlib)
             if len(external_libs) == 0:
                 del project.external_libraries[platform_name]

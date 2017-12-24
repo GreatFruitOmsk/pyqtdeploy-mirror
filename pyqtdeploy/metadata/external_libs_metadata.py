@@ -1,4 +1,4 @@
-# Copyright (c) 2015, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,16 +42,34 @@ class ExternalLibraryMetadata:
         self.includepath = '$SYSROOT/include'
 
         # The default LIBS to add to the .pro file.
-        self.libs = '-L$SYSROOT/lib ' + libs
+        self._libs = libs
 
         # The name of the library as presented to the user.
         self.user_name = user_name
+
+    def get_libs(self, target):
+        """ Get the target specific libs. """
+
+        if isinstance(self._libs, str):
+            # The libs are not target specific.
+            libs = self._libs
+        else:
+            # See if there is a target specific value.
+            libs = self._libs.get(target)
+
+            if libs is None:
+                # Get the default value.
+                libs = self._libs.get('')
+
+        return '-L$SYSROOT/lib ' + libs
 
 
 # The meta-data for each external library that might be needed by the Python
 # standard library.
 external_libraries_metadata = (
-    ExternalLibraryMetadata('ssl', '-lssl -lcrypto', "SSL encryption"),
+    ExternalLibraryMetadata('ssl',
+            {'win': '-lssleay32 -llibeay32', '': '-lssl -lcrypto'},
+            "SSL encryption"),
     ExternalLibraryMetadata('bz2', '-lbz2', "bz2 compression"),
     ExternalLibraryMetadata('lzma', '-llzma', "LZMA compression"),
     ExternalLibraryMetadata('bsddb', '-ldb', "BSD db database"),
