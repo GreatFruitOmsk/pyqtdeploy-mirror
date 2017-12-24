@@ -649,40 +649,50 @@ class Sysroot:
         directory (not it's pathname) is returned.
         """
 
+        # Windows (maybe just 32-bits) has a problem extracting the Qt source
+        # archive (maybe the long pathnames).  As a work around we extract it
+        # to the directory containing the archive and then move it later.
+        archive_dir, archive_name = os.path.split(archive)
+        original_cwd = os.getcwd()
+        os.chdir(archive_dir)
+
         # Unpack the archive.
         try:
-            shutil.unpack_archive(archive)
+            shutil.unpack_archive(archive_name)
         except Exception as e:
             self.error("unable to unpack {0}".format(archive), detail=str(e))
 
         # Assume that the name of the extracted directory is the same as the
         # archive without the extension.
-        archive_dir = None
-        archive_file = os.path.basename(archive)
+        archive_root = None
         for _, extensions, _ in shutil.get_unpack_formats():
             for ext in extensions:
-                if archive_file.endswith(ext):
-                    archive_dir = archive_file[:-len(ext)]
+                if archive_name.endswith(ext):
+                    archive_root = archive_name[:-len(ext)]
                     break
 
-            if archive_dir:
+            if archive_root:
                 break
         else:
             # This should never happen if we have got this far.
             self.error("'{0}' has an unknown extension".format(archive))
 
         # Validate the assumption by checking the expected directory exists.
-        if not os.path.isdir(archive_dir):
+        if not os.path.isdir(archive_root):
             self.error(
-                    "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_dir))
+                    "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_root))
+
+        # Move the extracted archive.
+        os.rename(archive_root, os.path.join(original_cwd, archive_root))
+        os.chdir(original_cwd)
 
         # Change to the extracted directory if required.
         if chdir:
-            os.chdir(archive_dir)
+            os.chdir(archive_root)
 
         # Return the directory name which the package plugin will often use to
         # extract version information.
-        return archive_dir
+        return archive_root
 
     def verbose(self, message):
         """ Issue a verbose progress message. """
