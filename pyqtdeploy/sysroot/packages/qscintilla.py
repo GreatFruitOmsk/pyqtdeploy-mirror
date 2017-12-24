@@ -49,7 +49,8 @@ class QScintillaPackage(AbstractPackage):
 
         # Build the static C++ library.
         os.chdir('Qt4Qt5')
-        sysroot.run(sysroot.host_qmake, 'CONFIG+=staticlib')
+        sysroot.run(sysroot.host_qmake, 'CONFIG+=staticlib',
+                'DEFINES+=SCI_NAMESPACE')
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
         os.chdir('..')
