@@ -7,16 +7,16 @@
     },
 
     "qt5": {
-        "android#qt_dir":       "Qt/*/android_armv7",
-        "ios#qt_dir":           "Qt/*/ios",
+        "android#qt_dir":           "Qt/*/android_armv7",
+        "ios#qt_dir":               "Qt/*/ios",
 
-        "linux|macos#source":   "qt-everywhere-*-src-5.*.tar.xz",
+        "linux|macos|win#source":   "qt-everywhere-*-src-5.*.tar.xz",
 
-        "android|linux#ssl":    "openssl-runtime",
-        "ios#ssl":              "securetransport",
-        "macos|win#ssl":        "openssl-linked",
+        "android|linux#ssl":        "openssl-runtime",
+        "ios#ssl":                  "securetransport",
+        "macos|win#ssl":            "openssl-linked",
 
-        "static_msvc_runtime":  true
+        "static_msvc_runtime":      true
     },
 
     "python": {
@@ -50,9 +50,16 @@
                 "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
                 "QtMacExtras"
         ],
+
         "linux#modules":                [
                 "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
                 "QtX11Extras"
+        ],
+
+        "win#disabled_features":        ["PyQt_Desktop_OpenGL"],
+        "win#modules":                  [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtWinExtras"
         ],
 
         "source":                   "PyQt5_*-5.*.tar.gz"

@@ -69,9 +69,9 @@ else:
 # Pick a default target if none is specified.
 if not target:
     if sys.platform == 'win32':
-        # Look for a compiler.
-        # TODO
-        pass
+        # Look for a 64-bit compiler.
+        arch = '64' if os.environ.get('Platform') == 'X64' else '32'
+        target = 'win-' + arch
     elif sys.platform == 'darwin':
         target = 'macos-64'
     elif sys.platform.startswith('linux'):
@@ -139,7 +139,7 @@ Run Xcode to build the app and run it in the simulator or deploy it to a
 device.""".format(build_dir))
 
 elif target.startswith('win') or sys.platform == 'win32':
-    print("TODO")
+    print("The pyqt-demo executable can be found in the '{0}' directory.".format(os.path.join(build_dir, 'release')))
 
 else:
     print("The pyqt-demo executable can be found in the '{0}' directory.".format(build_dir))
