@@ -260,8 +260,12 @@ class Sysroot:
 
             self.verbose("Deleting {0}".format(name))
 
+            # Windows has a 256 character limit on file names which we can hit.
+            # The Microsoft work around is to prepend a magic string.
+            name_hack = '\\\\?\\' + name if sys.platform == 'win32' else name
+
             try:
-                shutil.rmtree(name)
+                shutil.rmtree(name_hack)
             except Exception as e:
                 self.error("unable to remove directory {0}.".format(name),
                         detail=str(e))
