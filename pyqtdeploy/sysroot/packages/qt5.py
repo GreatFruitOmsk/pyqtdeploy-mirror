@@ -114,8 +114,21 @@ class Qt5Package(AbstractPackage):
 
             new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
 
-            # TODO: look in the registry for the Python v2.7 directory.
-            new_path.insert(0, 'C:\\Python27')
+            # Look in the registry for a Python v2.7 installation.
+            import winreg
+
+            subkey = r'Software\Python\PythonCore\2.7\InstallPath'
+
+            try:
+                py_27 = winreg.QueryValue(winreg.HKEY_CURRENT_USER, subkey)
+            except FileNotFoundError:
+                try:
+                    py_27 = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                            subkey)
+                except FileNotFoundError:
+                    sysroot.error("a source build of Qt on Windows requires Python v2.7 to be installed (but not on PATH)")
+
+            new_path.insert(0, py_27)
 
             os.environ['PATH'] = ';'.join(new_path)
 
@@ -156,6 +169,9 @@ class Qt5Package(AbstractPackage):
                 if sysroot.find_package('openssl', required=False) is not None:
                     args.extend(['-I', sysroot.target_include_dir])
                     args.extend(['-L', sysroot.target_lib_dir])
+
+                if sys.platform == 'win32':
+                    args.append('OPENSSL_LIBS=-lssleay32 -llibeay32 -lGdi32')
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')
