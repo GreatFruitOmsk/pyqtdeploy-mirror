@@ -1,0 +1,8 @@
+{
+    "Description": "Build a static OpenSSL.",
+
+    "openssl": {
+        "source":           "openssl-1.*.tar.gz",
+        "python_source":    "Python-3.*.tar.xz"
+    }
+}
