@@ -321,7 +321,7 @@ class _PlatformGui(QWidget):
                     libs.setText(prj_extlib.libs)
                     break
             else:
-                defs.setText('')
+                defs.setText(extlib.defines)
                 incp.setText(extlib.includepath)
                 libs.setText(extlib.get_libs(platform_name))
 
@@ -399,7 +399,7 @@ class _PlatformGui(QWidget):
             prj_extlib.libs = text
 
         # If the project entry corresponds to the default then remove it.
-        if prj_extlib.defines == '' and prj_extlib.includepath == '' and prj_extlib.libs == extlib.get_libs(platform_name):
+        if prj_extlib.defines == extlib.defines and prj_extlib.includepath == extlib.includepath and prj_extlib.libs == extlib.get_libs(platform_name):
             external_libs.remove(prj_extlib)
             if len(external_libs) == 0:
                 del project.external_libraries[platform_name]

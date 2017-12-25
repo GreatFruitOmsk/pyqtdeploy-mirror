@@ -627,7 +627,7 @@ class Builder:
         external_libs = project.external_libraries.get(target_platform, [])
 
         for required_lib in required_libraries:
-            libs = ''
+            defines = includepath = libs = ''
 
             for xlib in external_libs:
                 if xlib.name == required_lib:
@@ -640,26 +640,30 @@ class Builder:
                 for xlib in external_libraries_metadata:
                     if xlib.name == required_lib:
                         if target_platform not in project.python_use_platform:
-                            defines = ''
+                            defines = xlib.defines
                             includepath = xlib.includepath
                             libs = xlib.get_libs(target_platform)
 
                         break
 
             # Check the library is not disabled for this target.
+            enabled = False
+
+            if defines != '':
+                self._add_compound_scoped_values(used_defines, defines, False)
+                enabled = True
+
+            if includepath != '':
+                self._add_compound_scoped_values(used_includepath, includepath,
+                        True)
+                enabled = True
+
             if libs != '':
-                if defines != '':
-                    self._add_compound_scoped_values(used_defines, defines,
-                            False)
-
-                if includepath != '':
-                    self._add_compound_scoped_values(used_includepath,
-                            includepath, True)
-
                 self._add_compound_scoped_values(used_libs, libs, False)
+                enabled = True
 
-                if target_platform == 'android':
-                    self._add_android_extra_libs(libs, android_extra_libs)
+            if enabled and target_platform == 'android':
+                self._add_android_extra_libs(libs, android_extra_libs)
 
         # Specify any project-specific configuration.
         if used_qt:

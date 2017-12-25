@@ -32,11 +32,14 @@ class ExternalLibraryMetadata:
     standard library.
     """
 
-    def __init__(self, name, libs, user_name):
+    def __init__(self, name, libs, user_name, defines=''):
         """ Initialise the object. """
 
         # The well known internal identifier of the library.
         self.name = name
+
+        # The default DEFINES to add to the .pro file.
+        self.defines = defines
 
         # The default INCLUDEPATH to add to the .pro file.
         self.includepath = '$SYSROOT/include'
