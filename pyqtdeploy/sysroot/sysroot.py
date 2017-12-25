@@ -418,11 +418,15 @@ class Sysroot:
     def host_pip(self):
         """ The pathname of the host pip executable. """
 
+        self._check_python_package()
+
         return os.path.join(self.host_bin_dir, self.host_exe('pip'))
 
     @property
     def host_python(self):
         """ The pathname of the host Python interpreter. """
+
+        self._check_python_package()
 
         return os.path.join(self.host_bin_dir, self.host_exe('python'))
 
@@ -716,6 +720,12 @@ class Sysroot:
         major, minor, _ = self.decode_version_nr(self.python_version_nr)
 
         return 'python' + str(major) + '.' + str(minor)
+
+    def _check_python_package(self):
+        """ Check that the Python package plugin has been run. """
+
+        if self._python_version_nr is None:
+            self._missing_package('python')
 
     def _missing_package(self, name):
         """ Raise an exception about a missing package. """
