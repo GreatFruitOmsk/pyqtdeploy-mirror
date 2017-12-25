@@ -2,7 +2,6 @@
 
 import glob
 import os
-import struct
 import subprocess
 import sys
 
@@ -102,15 +101,15 @@ class TargetSpecifications:
         """ Return the default target for this platform. """
 
         if sys.platform.startswith('linux'):
-            main_target = 'linux'
+            target = 'linux-64'
         elif sys.platform == 'win32':
-            main_target = 'win'
+            target = 'win-{0}'.format(64 if os.environ.get('Platform') == 'X64' else 32)
         elif sys.platform == 'darwin':
-            main_target = 'macos'
+            target = 'macos-64'
         else:
             raise UserException("unsupported host platform")
 
-        return '{0}-{1}'.format(main_target, 8 * struct.calcsize('P'))
+        return target
 
 
 if __name__ == '__main__':
