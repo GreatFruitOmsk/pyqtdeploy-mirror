@@ -4499,9 +4499,11 @@ _metadata = {
     '_operator':
         CoreExtensionModule(min_version=(3, 4), internal=True),
 
-    '_osx_support':
+    '_osx_support': (
         PythonModule(internal=True, deps=('contextlib', 'os', 're'),
-                target='macos'),
+                target='ios'),
+        PythonModule(internal=True, deps=('contextlib', 'os', 're'),
+                target='macos')),
 
     '_pickle':
         ExtensionModule(version=3, internal=True, source='_pickle.c'),
