@@ -5,7 +5,6 @@ User Guide
     :maxdepth: 2
 
     introduction
-    v1_differences
     overview
     sysroot
     pyqtdeploy
