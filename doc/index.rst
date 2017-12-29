@@ -6,7 +6,10 @@ User Guide
 
     introduction
     v1_differences
-    command_line
+    overview
+    sysroot
+    pyqtdeploy
+    building
     windows_dynamic_loading
     pyrcc
     pdytools_module
