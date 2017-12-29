@@ -64,7 +64,7 @@ def main():
             help="the target Python standard library directory", metavar="DIR")
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
-    parser.add_argument('--target', help="the target platform"),
+    parser.add_argument('--target', help="the target architecture"),
     parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose', help="enable verbose progress messages",

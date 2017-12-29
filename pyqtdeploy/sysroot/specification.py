@@ -38,7 +38,7 @@ from .abstract_package import AbstractPackage
 class Specification:
     """ Encapsulate the specification of a system root directory. """
 
-    def __init__(self, spec_file, plugin_path, target):
+    def __init__(self, spec_file, plugin_dirs, target):
         """ Initialise the object. """
 
         self.specification_file = os.path.abspath(spec_file)
@@ -69,11 +69,10 @@ class Specification:
                 plugin = None
 
                 # Search any user specified directories.
-                if plugin_path:
-                    for plugin_dir in plugin_path.split(os.pathsep):
-                        plugin = self._plugin_from_file(name, plugin_dir)
-                        if plugin is not None:
-                            break
+                for plugin_dir in plugin_dirs:
+                    plugin = self._plugin_from_file(name, plugin_dir)
+                    if plugin is not None:
+                        break
 
                 # Search the included plugin packages.
                 if plugin is None:

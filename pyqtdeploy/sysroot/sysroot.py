@@ -45,7 +45,7 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_path, source_dir, target_arch_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_dirs, source_dir, target_arch_name, message_handler):
         """ Initialise the object. """
 
         self._host = Architecture.architecture()
@@ -57,7 +57,7 @@ class Sysroot:
         self.sysroot_dir = os.path.abspath(sysroot_dir)
         self._build_dir = os.path.join(self.sysroot_dir, 'build')
 
-        self._specification = Specification(sysroot_json, plugin_path,
+        self._specification = Specification(sysroot_json, plugin_dirs,
                 self._target)
         self._message_handler = message_handler
 

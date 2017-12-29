@@ -39,22 +39,22 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--no-clean',
-            help="do not remove the temporary build directory to make debugging package plugins easier",
+            help="do not remove the temporary build directory",
             action='store_true')
     parser.add_argument('--options',
             help="show the options available for the packages",
             action='store_true')
     parser.add_argument('--package', help="the package name to build",
             action='append')
-    parser.add_argument('--plugin-path',
-            help="the directories searched for package plugins",
-            metavar="PATH")
+    parser.add_argument('--plugin-dir',
+            help="search a directory for package plugins", metavar="DIR",
+            action='append')
     parser.add_argument('--source-dir',
             help="the default directory containing the source archives",
             metavar="DIR")
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
-    parser.add_argument('--target', help="the target platform"),
+    parser.add_argument('--target', help="the target architecture"),
     parser.add_argument('--quiet', help="disable progress messages",
             action='store_true')
     parser.add_argument('--verbose', help="enable verbose progress messages",
