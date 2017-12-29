@@ -8,4 +8,5 @@ demo/build-*
 demo/src/*
 demo/sysroot-*
 doc/_build
+doc/html
 test/sysroot
