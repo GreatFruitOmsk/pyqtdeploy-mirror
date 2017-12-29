@@ -2,9 +2,9 @@ What is :program:`pyqtdeploy`?
 ==============================
 
 :program:`pyqtdeploy` is a tool that, in conjunction with other tools provided
-with Qt, enables the deployment of PyQt4 and PyQt5 applications written with
-Python v2.7 or Python v3.3 or later.  It supports deployment to desktop
-platforms (Linux, Windows and macOS) and to mobile platforms (iOS and Android).
+with Qt, enables the deployment of PyQt applications written with Python v2.7
+or Python v3.3 or later.  It supports deployment to desktop platforms (Linux,
+Windows and macOS) and to mobile platforms (iOS and Android).
 
 Normally you would create statically compiled versions of the Python
 interpreter library, any third party extension modules, PyQt and Qt.  This way
@@ -37,17 +37,19 @@ application requires and the parts of the Python standard library that should
 also be included.  This information is stored in a :program:`pyqtdeploy`
 project file.
 
-A companion program :program:`pyqtdeploycli` can be run from the command line
-(or a shell script or batch file) to generate the C++ code from a project file.
-:program:`pyqtdeploycli` also provides support for compiling certain packages
-(e.g. Python itself and PyQt) both natively and cross-compiling by providing
-configuration files that can be used by those package's build systems.
-
-:program:`pyqtdeploy` does not perform auto-discovery of Python standard
+:program:`pyqtdeploy` does not (yet) perform auto-discovery of Python standard
 library modules or third party modules to be included with the application.
 You must specify these yourself.  However it does understand the
 inter-dependencies within the standard library, so you only need to specify
 those packages that your application explicitly imports.
+
+A companion program :program:`pyqtdeploy-build` can be run from the command
+line (or a shell script or batch file) to generate the C++ code from a project
+file.
+
+Another companion program :program:`pyqtdeploy-sysroot` provides support for
+creating a system root directory containing target-specific installations of
+certain packages (e.g. Python itself and PyQt).
 
 .. note::
 

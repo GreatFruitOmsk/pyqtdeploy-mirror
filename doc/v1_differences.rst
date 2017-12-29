@@ -5,6 +5,9 @@ There have been a number of changes to :program:`pyqtdeploy` since v1.  Most of
 these changes are related to the supporting tools rather than the GUI.  Project
 files created for v1 are automatically updated by later versions.
 
+Python v3.6 or later is required for Android targets, support for earlier
+versions has been removed.
+
 v1 recommended a directory structure to adopt when assembling the various parts
 of a deployable application.  This was refered to as the *sysroot* directory.
 An unsupported script, :program:`build-sysroot.py`, was provided that created

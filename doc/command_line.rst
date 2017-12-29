@@ -16,114 +16,50 @@ By convention project files have a ``.pdy`` extension.
 This will open the ``myproject.pdy`` project creating it if necessary.
 
 
-.. program:: pyqtdeploycli
+.. program:: pyqtdeploy-build
 
-:program:`pyqtdeploycli`
-------------------------
+:program:`pyqtdeploy-build`
+---------------------------
 
-:program:`pyqtdeploycli` implements a number of modes of operation that are
-usually used in automated build scripts.  These modes are invoked by specifying
-an *action* as the only positional argument on the command line.  The behaviour
-of an action may be modified by additional command line options.
-
-The supported actions are:
-
-.. cmdoption:: build
-
-    This will build all the source code, include the :program:`qmake` ``.pro``
-    files, needed to create the application.  The next step in the full build
-    process would be to run :program:`qmake`.
-
-.. cmdoption:: configure
-
-    This will create a configuration file for compiling a particular package
-    for a particular target platform.  The configuration file is used by the
-    package's build system to create the package's Python bindings.
-
-    Configuration files are intended as a basis which will be fine for most
-    cases.  However you should check that they are appropriate for your
-    particular case and modify them if necessary.
-
-.. cmdoption:: install
-
-    .. versionadded:: 1.2
-
-    This will compile (if necessary) and install a particular package for a
-    particular target platform.  It is assumed that the recommended directory
-    structure described in :ref:`ref-directory-structure` is being used.
-
-    At the moment only the ``python`` package for the ``win`` target is
-    supported.  It is assumed that you have installed Python using one of the
-    Windows installers from ``python.org``.
-
-.. cmdoption:: show-packages
-
-    This will display a list of packages that :program:`pyqtdeploycli` can
-    create configuration files for.
-
-.. cmdoption:: show-targets
-
-    This will display a list of targets that :program:`pyqtdeploycli` can
-    create configuration files for.
-
-.. cmdoption:: show-version
-
-    This will display the version number.
+:program:`pyqtdeploy-build` generates the target-specific source code,
+including the :program:`qmake` ``.pro`` files, needed to create the
+application.  The next step in the full build process would be to run
+:program:`qmake`.
 
 The full set of command line options is:
 
-.. cmdoption:: -h, --help
+.. option:: -h, --help
 
-    This will display a summary of the command line actions and options.
+    This will display a summary of the command line options.
 
-.. cmdoption:: --android-api LEVEL
+.. option:: --build-dir DIR
 
-    .. versionadded:: 1.3
+    ``DIR`` is the name of the directory where all the application source code
+    will be placed.  The default value is ``build-`` followed by a
+    target-specific suffix.
 
-    When used with the :option:`configure` action to configure the ``python``
-    package for the ``android`` target this specifies the Android API level.
-    The default value is obtained from the value of the
-    :envvar:`ANDROID_NDK_PLATFORM` environment variable.  If this is not set
-    then ``9`` is used which is the default level used by Qt.
+.. option:: --include-dir DIR
 
-.. cmdoption:: --disable-patches
+    ``DIR`` is the name of the directory containing the target Python
+    installation's ``Python.h`` file.  It overrides any value specified in the
+    project file.
 
-    .. versionadded:: 1.2
+.. option:: --interpreter EXECUTABLE
 
-    When used with the :option:`configure` action to configure the ``python``
-    package this specifies that the Python source code will not be patched.
-    The default is to enable the patching of the Python source code for Android
-    based targets.  Use this option when you want to apply your own set of
-    patches, or if you are using an NDK (such as `CrystaX NDK
-    <https://www.crystax.net>`__) that doesn't require the Python source code
-    to be patched at all.
+    ``EXECUTABLE`` is the **host** Python interpreter used to compile all of
+    the Python modules used by the application.  It overrides any value
+    specified in the project file.
 
-.. cmdoption:: --enable-dynamic-loading
+.. option:: --no-clean
 
-    When used with the :option:`configure` action to configure the ``python``
-    package this specifies that the Python interpreter will have dynamic
-    loading enabled.  The default is to disable dynamic loading.
+    Normally the build directory is deleted and re-created before starting a
+    new build.  Specifying this option leaves any existing build directory as
+    it is before starting a new build.
 
-.. cmdoption:: --include-dir
+.. option:: --opt LEVEL
 
-    .. versionadded:: 1.2
-
-    When used with the :option:`build` action this specifies the name of the
-    directory containing the target Python installation's ``Python.h`` file.
-    It overrides any value specified in the project file.
-
-.. cmdoption:: --interpreter
-
-    .. versionadded:: 1.2
-
-    When used with the :option:`build` action this specifies the **host**
-    Python interpreter used to compile all of the Python modules used by the
-    application.  It overrides any value specified in the project file.
-
-.. cmdoption:: --opt LEVEL
-
-    When used with the :option:`build` action this specifies the level of
-    optimisation performed when freezing Python source files:
+    ``LEVEL`` is the level of optimisation performed when freezing Python
+    source files:
 
     0 - no optimisation is done
 
@@ -133,133 +69,135 @@ The full set of command line options is:
 
     The default is ``2``.
 
-.. cmdoption:: --output OUTPUT
+.. option:: --python-library LIB
 
-    When used with the :option:`build` action this specifies the name of the
-    build directory where all the application source code will be placed.  By
-    default the directory defined in the project file is used.
+    ``LIB`` is the name of the target Python interpreter library.  It overrides
+    any value specified in the project file.
 
-    When used with the :option:`configure` action this specifies the name of
-    the configuration file that is created.  By default the file is called
-    ``package-target.cfg`` (where *package* is the name of the package and
-    *target* is the name of the target platform) and placed in the current
-    directory.
+.. option:: --resources NUMBER
 
-.. cmdoption:: --package PACKAGE
+    ``NUMBER`` is the number of Qt ``.qrc`` resource files that are generated.
+    On Windows, MSVC cannot cope with very large resource files and complains
+    of a lack of heap space.  If you run into this problem then try increasing
+    the the number of resource files generated.
 
-    This is required by the :option:`configure` and :option:`install` actions
-    to specify the package.
+.. option:: --source-dir DIR
 
-.. cmdoption:: --project FILE
-
-    This is required by the :option:`build` action to specify the project file.
-
-.. cmdoption:: --python-library
-
-    .. versionadded:: 1.2
-
-    When used with the :option:`build` action this specifies the name of the
-    target Python interpreter library.  It overrides any value specified in the
-    project file.
-
-.. cmdoption:: --resources NUMBER
-
-    When used with the :option:`build` action this specifies the number of Qt
-    ``.qrc`` resource files that are generated.  On Windows, MSVC cannot cope
-    with very large resource files and complains of a lack of heap space.  If
-    you run into this problem then try increasing the the number of resource
-    files generated.
-
-.. cmdoption:: --source-dir
-
-    .. versionadded:: 1.2
-
-    When used with the :option:`build` action this specifies the name of the
-    directory containing the Python source code.  It overrides any value
-    specified in the project file.
-
-.. cmdoption:: --standard-library-dir
-
-    .. versionadded:: 1.2
-
-    When used with the :option:`build` action this specifies the name of the
-    directory containing the target Python interpreter's standard library.  It
+    ``DIR`` is the name of the directory containing the Python source code.  It
     overrides any value specified in the project file.
 
-.. cmdoption:: --sysroot
+.. option:: --standard-library-dir DIR
 
-    .. versionadded:: 1.2
+    ``DIR`` is the name of the directory containing the target Python
+    interpreter's standard library.  It overrides any value specified in the
+    project file.
 
-    When used with the :option:`install` action this specifies the name of the
-    system image root directory as recommended in
-    :ref:`ref-directory-structure`.
+.. option:: --sysroot DIR
 
-.. cmdoption:: --system-python VERSION
+    ``DIR`` is the name of the system image root directory.  The
+    :envvar:`SYSROOT` environment variable is set to ``DIR`` during the build.
 
-    .. versionadded:: 1.2
+.. option:: --target TARGET
 
-    When used with the :option:`install` action to install the ``python``
-    package this specifies the version number of Python to use.  Only the major
-    and minor version numbers need be specified (e.g. ``3.5``).
+    ``TARGET`` is the target architecture.  By default the host architecture is
+    used.  The full architecture consists of the platform (``android``,
+    ``ios``, ``linux``, ``macos`` or ``win``) and the target word size
+    separated by a ``-``.  For example ``android-32``, ``macos-64``.  Note that
+    not all platform/word size combinations are supported.
 
-.. cmdoption:: --target TARGET
+.. option:: --quiet
 
-    This is used with the :option:`configure` and :option:`install` actions to
-    specify the target platform.  By default the host platform is used.  The
-    full target consists of the base target and an optional target variant
-    (usually related to the target's word size).  The supported base targets
-    are ``linux``, ``win``, ``osx``, ``ios`` and ``android``.  The
-    :option:`show-targets` action will list the supported targets including the
-    target variants.
+    This specifies that progress messages should be disabled.
 
-.. cmdoption:: --timeout SECONDS
+.. option:: --verbose
 
-    .. versionadded:: 1.3.2
+    This specifies that additional progress messages should be enabled.
 
-    When used with the :option:`build` action this specifies the number of
-    seconds to wait for build processes to run before timing out.  The default
-    value is 30.
+.. option:: -V, --version
 
-.. cmdoption:: --quiet
+    This specifies that the version number should be displayed on ``stdout``.
+    The program will then terminate.
 
-    This is used with the :option:`build` action to specify that progress
-    messages should be disabled.
+.. option:: project
 
-.. cmdoption:: --verbose
-
-    This is used with the :option:`build` action to specify that additional
-    progress messages should be enabled.
+    ``project`` is the name of the project file created with
+    :program:`pyqtdeploy`.
 
 
-Examples
---------
+.. program:: pyqtdeploy-sysroot
 
-::
+:program:`pyqtdeploy-sysroot`
+-----------------------------
 
-    pyqtdeploycli --output /tmp/build --project myproject.pdy --quiet build
+:program:`pyqtdeploy-sysroot` is used to create a target-specific system root
+directory (*sysroot*) containing the target Python installation and any
+external packages and extension modules used by the application.
 
-The code for the application described by the ``myproject.pdy`` project file
-will be created in the ``/tmp/build`` directory.  All progress messages will be
-disabled.
+The full set of command line options is:
 
-::
+.. option:: -h, --help
 
-    pyqtdeploycli --package pyqt5 configure
+    This will display a summary of the command line options.
 
-If this command was run on a Linux system then a configuration file for
-building PyQt5 for Linux, called ``pyqt5-linux.cfg``, would be created in the
-current directory.
+.. option:: --no-clean
 
-::
+    A temporary build directory (called ``build`` in the sysroot) is created in
+    order to build the required packages.  Normally this is removed
+    automatically after all packages have been built.  Specifying this option
+    leaves the build directory as it is to make debugging package plugins
+    easier.
 
-    pyqtdeploycli --package pyqt4 --target android configure
+.. option:: --options
 
-A configuration file for building PyQt4 for Android, called
-``pyqt4-android.cfg`` will be created in the current directory.
+    This causes the configurable options of each package specified in the JSON
+    file to be displayed on ``stdout``.  The program will then terminate.
 
-::
+.. option:: --package PACKAGE
 
-    pyqtdeploycli --output /tmp/pyqt.config --package pyqt5 --target ios configure
+    ``PACKAGE`` is the name of the package (specified in the JSON file) that
+    will be built.  It may be used more than once to build multiple packages.
+    If the option is not specified then all packages specified in the JSON file
+    will be built.
 
-A configuration file for building PyQt5 for iOS, called ``pyqt.config`` will be
-created in the ``/tmp`` directory.
+.. option:: --plugin-dir DIR
+
+    ``DIR`` is added to the list of directories that are searched for package
+    plugins.  It may be used more than once to search multiple directories.
+    All directories specified in this way will be searched before those
+    directories (internal to :program:`pyqtdeploy-sysroot`) searched by
+    default.
+
+.. option:: --source-dir DIR
+
+    ``DIR`` is the name of the directory containing the source archives used to
+    build the packages specified in the JSON file.
+
+.. option:: --sysroot DIR
+
+    ``DIR`` is the name of the system root directory.  The default value is
+    ``sysroot-`` followed by a target-specific suffix.  Unless the
+    :option:`--package` option is specified any existing sysroot will first be
+    removed and re-created.
+
+.. option:: --target TARGET
+
+    ``TARGET`` is the target architecture.  By default the host architecture is
+    used.
+
+.. option:: --quiet
+
+    This specifies that progress messages should be disabled.
+
+.. option:: --verbose
+
+    This specifies that additional progress messages should be enabled.
+
+.. option:: -V, --version
+
+    This specifies that the version number should be displayed on ``stdout``.
+    The program will then terminate.
+
+.. option:: json
+
+    ``json`` is the name of a JSON text file that specifies each package to be
+    included in the sysroot and how they are to be configured.
