@@ -37,7 +37,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         open_file as fu_open_file, parse_version as fu_parse_version)
 from ..platforms import Architecture
 from ..user_exception import UserException
-from ..windows import get_python_install_path
+from ..windows import get_py_install_path
 
 from .specification import Specification
 
@@ -379,6 +379,17 @@ class Sysroot:
 
         return fu_get_embedded_file_for_version(version, root, *subdirs)
 
+    def get_python_install_path(self, version=None):
+        """ Return the name of the directory containing the root of the Python
+        installation directory for an existing installation.  It must not be
+        called on a non-Windows platform.
+        """
+
+        if version is None:
+            version = self.python_version_nr
+
+        return get_py_install_path(version, self._target)
+
     @property
     def host_arch_name(self):
         """ The name of the host architecture. """
@@ -514,23 +525,8 @@ class Sysroot:
         self._message_handler.progress_message(message)
 
     @property
-    def python_windows_install_path(self):
-        """ The name of the directory caontaining the root of the Python
-        installation directory for an existing installation.  It must not be
-        called on a non-Windows platform.
-        """
-
-        major, minor, _ = self.decode_version_nr(self.python_version_nr)
-
-        reg_version = str(major) + '.' + str(minor)
-        if self.python_version_nr >= 0x030500 and self._target.name.endswith('-32'):
-            reg_version += '-32'
-
-        return get_python_install_path(reg_version)
-
-    @property
     def python_version_nr(self):
-        """ The Python version being targetted. """
+        """ The Python version being targeted. """
 
         if self._python_version_nr is None:
             self._missing_package('python')
@@ -539,7 +535,7 @@ class Sysroot:
 
     @python_version_nr.setter
     def python_version_nr(self, version_nr):
-        """ The setter for the Python version being targetted. """
+        """ The setter for the Python version being targeted. """
 
         self._python_version_nr = version_nr
 

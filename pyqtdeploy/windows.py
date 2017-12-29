@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Riverbank Computing Limited
+# Copyright (c) 2017, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,13 +27,18 @@
 from .user_exception import UserException
 
 
-def get_python_install_path(reg_version):
+def get_py_install_path(version, target):
     """ Return the name of the directory containing the root of the Python
-    installation directory for a particular version.  It must not be called on
-    a non-Windows platform.
+    installation directory for a particular version and target.  It must not be
+    called on a non-Windows platform.
     """
 
     from winreg import HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, QueryValue
+
+    reg_version = '{0}.{1}'.format((version >> 16) & 0xff,
+            (version >> 8) & 0xff)
+    if version >= 0x030500 and target.name.endswith('-32'):
+        reg_version += '-32'
 
     sub_key_user = 'Software\\Python\\PythonCore\\{}\\InstallPath'.format(
             reg_version)

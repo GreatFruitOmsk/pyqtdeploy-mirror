@@ -41,7 +41,7 @@ from ..project import QrcDirectory
 from ..platforms import Architecture, Platform
 from ..user_exception import UserException
 from ..version import PYQTDEPLOY_HEXVERSION
-from ..windows import get_python_install_path
+from ..windows import get_py_install_path
 
 
 class Builder:
@@ -129,9 +129,8 @@ class Builder:
                 interpreter = project.expandvars(
                         project.python_host_interpreter)
             elif self._host.platform.name == 'win':
-                # TODO: This doesn't handle 32-bit Python v3.5 and later.
-                interpreter = get_python_install_path(
-                        '{0}.{1}'.format(py_major, py_minor)) + 'python'
+                interpreter = get_py_install_path(
+                        project.python_target_version, self._target) + 'python'
             else:
                 interpreter = 'python{0}.{1}'.format(py_major, py_minor)
 

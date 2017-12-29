@@ -160,7 +160,7 @@ class PythonPackage(AbstractPackage):
         and return the absolute pathname of the interpreter.
         """
 
-        install_path = sysroot.python_windows_install_path
+        install_path = sysroot.get_python_install_path()
 
         # Copy the DLL.
         dll = 'python' + self._major_minor(sysroot).replace('.', '') + '.dll'
@@ -225,7 +225,7 @@ build_time_vars = {
         """ Install the target Python from an existing installation on Windows.
         """ 
 
-        install_path = sysroot.python_windows_install_path
+        install_path = sysroot.get_python_install_path()
 
         py_major, py_minor, _ = sysroot.decode_version_nr(
                 sysroot.python_version_nr)

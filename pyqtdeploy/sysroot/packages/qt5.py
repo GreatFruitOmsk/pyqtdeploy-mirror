@@ -115,19 +115,7 @@ class Qt5Package(AbstractPackage):
             new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
 
             # Look in the registry for a Python v2.7 installation.
-            import winreg
-
-            subkey = r'Software\Python\PythonCore\2.7\InstallPath'
-
-            try:
-                py_27 = winreg.QueryValue(winreg.HKEY_CURRENT_USER, subkey)
-            except FileNotFoundError:
-                try:
-                    py_27 = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                            subkey)
-                except FileNotFoundError:
-                    sysroot.error("a source build of Qt on Windows requires Python v2.7 to be installed (but not on PATH)")
-
+            py27 = sysroot.get_python_install_path(0x020700)
             new_path.insert(0, py_27)
 
             os.environ['PATH'] = ';'.join(new_path)
