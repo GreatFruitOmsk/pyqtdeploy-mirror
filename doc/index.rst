@@ -6,6 +6,7 @@ User Guide
 
     introduction
     overview
+    demo
     sysroot
     pyqtdeploy
     building
@@ -13,5 +14,3 @@ User Guide
     pyrcc
     pdytools_module
     tutorial
-    static_builds
-    build_sysroot

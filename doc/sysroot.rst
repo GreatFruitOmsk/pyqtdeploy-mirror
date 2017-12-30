@@ -1,3 +1,5 @@
+.. _ref-building-a-sysroot:
+
 .. program:: pyqtdeploy-sysroot
 
 Building a System Root Directory

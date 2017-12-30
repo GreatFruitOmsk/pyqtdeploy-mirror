@@ -8,10 +8,10 @@ Windows and macOS) and to mobile platforms (iOS and Android).
 
 Normally you would create statically compiled versions of the Python
 interpreter library, any third party extension modules, PyQt and Qt.  This way
-your application has no external dependencies.  In fact this approach is
-required when deploying to iOS.  However there is nothing to stop you using
-shared versions of any of these components in order to reduce the size of the
-application, but at the cost of increasing the complexity of the deployment.
+your application has no external dependencies.  However there is nothing to
+stop you using shared versions of any of these components in order to reduce
+the size of the application, but at the cost of increasing the complexity of
+the deployment.
 
 :program:`pyqtdeploy` itself requires PyQt5 and Python v3.5 or later.
 
@@ -25,17 +25,15 @@ interpreter library that uses the Python import mechanism to enable access to
 the embedded frozen modules in a similar way that Python supports the packaging
 of modules in zip files.
 
-Finally :program:`pyqtdeploy` generates a Qt ``.pro`` file that describes all
-the generated C++ code.  From this Qt's :program:`qmake` tool is used to
-generate a platform-specific ``Makefile`` which will then generate a single
-executable.  Further Qt and/or platform specific tools can then be used to
-convert the executable to a platform specific deployable package.
+Finally :program:`pyqtdeploy` generates a target-specific Qt ``.pro`` file that
+describes all the generated C++ code.  From this Qt's :program:`qmake` tool is
+used to generate a ``Makefile`` which will then generate a single executable.
+Further Qt and/or platform specific tools can then be used to convert the
+executable to a target-specific deployable package.
 
-When run :program:`pyqtdeploy` presents a GUI that allows the modules that make
-up the application to be specified, along with the PyQt components that the
-application requires and the parts of the Python standard library that should
-also be included.  This information is stored in a :program:`pyqtdeploy`
-project file.
+When run :program:`pyqtdeploy` presents a GUI that allows all the separate
+components to be specified.  This information is stored in a
+:program:`pyqtdeploy` project file.
 
 :program:`pyqtdeploy` does not (yet) perform auto-discovery of Python standard
 library modules or third party modules to be included with the application.
@@ -60,8 +58,8 @@ certain packages (e.g. Python itself and PyQt).
     problems.  You have been warned!
 
 
-Differences from :program:`pyqtdeploy` v1
------------------------------------------
+Differences from Version 1
+--------------------------
 
 There have been a number of changes to :program:`pyqtdeploy` since v1.  Most of
 these changes are related to the supporting tools rather than the GUI.  Project
@@ -121,5 +119,5 @@ Installation
     pip3 install pyqtdeploy
 
 :program:`pyqtdeploy` requires
-`PyQt5 <http://www.riverbankcomputing.com/software/pyqt/download5>`_ to be
+`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`_ to be
 installed.  This is not installed automatically.

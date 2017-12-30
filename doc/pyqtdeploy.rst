@@ -1,3 +1,5 @@
+.. _ref-creating-a-project:
+
 .. program:: pyqtdeploy
 
 Creating a :program:`pyqtdeploy` Project

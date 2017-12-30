@@ -1,4 +1,6 @@
-.. program:: pyqtdeploy
+.. _ref-building-an-application:
+
+.. program:: pyqtdeploy-build
 
 Building the Application
 ========================
