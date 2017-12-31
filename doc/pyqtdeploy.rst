@@ -322,6 +322,8 @@ installed.
 :program:`pyqt-demo` does not use any additional Python packages.
 
 
+.. _ref-other-extension-modules:
+
 Adding Other Extension Modules
 ------------------------------
 

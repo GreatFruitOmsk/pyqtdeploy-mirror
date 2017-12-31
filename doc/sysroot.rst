@@ -5,15 +5,49 @@
 Building a System Root Directory
 ================================
 
-TODO
+:program:`pyqtdeploy-sysroot` is used to create a target-specific system root
+directory (*sysroot*) containing the target Python installation and any
+third-party components required by the application.  It's use is optional but
+highly recommended.
+
+:program:`pyqtdeploy-sysroot` is actually a wrapper around a number of
+component plugins.  A plugin, written in Python, is responsible for building
+and/or installing (in the sysroot) an individual component.  It would normally
+be a Python package or extension module but could just as easily be a
+supporting library.
+
+A sysroot is defined by a JSON sysroot specification file.  This contains an
+object for each component to build and/or install.  The attributes of an
+object determine how the component is configured.  Component and attribute
+names may be scoped in the same way as :program:`qmake` variables (described in
+:ref:`ref-other-extension-modules`) so that components can be included and
+configured on a target by target basis.
+
+The components are built and/or installed in the order in which their objects
+appear in the specification file.
+
+An API is provided to allow you to develop your own component plugins.  If you
+develop a plugin for a commonly used component then please consider
+contributing it so that it can be included in a future release of
+:program:`pyqtdeploy`.
+
+TODO - building a spec file from scratch
+
+
+Standard Component Plugins
+--------------------------
+
+TODO - describe what comes as standard
+
+
+The :program:`pyqt-demo` Sysroot
+--------------------------------
+
+TODO - walk through the demo spec
 
 
 The Command Line
 ----------------
-
-:program:`pyqtdeploy-sysroot` is used to create a target-specific system root
-directory (*sysroot*) containing the target Python installation and any
-external packages and extension modules used by the application.
 
 The full set of command line options is:
 
@@ -81,5 +115,11 @@ The full set of command line options is:
 
 .. option:: json
 
-    ``json`` is the name of a JSON text file that specifies each package to be
-    included in the sysroot and how they are to be configured.
+    ``json`` is the name of a JSON specification file that defines each package
+    to be included in the sysroot and how each is to be configured.
+
+
+Writing A Component Plugin
+--------------------------
+
+TODO - describe the API
