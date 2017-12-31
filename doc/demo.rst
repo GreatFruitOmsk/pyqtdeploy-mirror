@@ -29,6 +29,19 @@ running on macOS is shown below.
     :align: center
     :scale: 50
 
+The demo chooses to implement support for SSL for both Python and Qt in ways
+that differ between target platforms.  These are summarised in the table below.
+
+======== ================================== ===================================
+Platform Python                             Qt
+======== ================================== ===================================
+Android  Bundled dynamically linked OpenSSL Bundled dynamically linked OpenSSL
+iOS      Unsupported                        Dynamically linked Secure Transport
+Linux    Dynamically linked OpenSSL         Dynamically linked OpenSSL
+macOS    Statically linked OpenSSL          Statically linked OpenSSL
+Windows  Statically linked OpenSSL          Statically linked OpenSSL
+======== ================================== ===================================
+
 Before building the demo you must first populate the ``src`` directory with
 appropriate source archives for the following packages:
 
