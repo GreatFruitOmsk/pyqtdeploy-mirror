@@ -56,7 +56,7 @@ class Builder:
         self._host = Architecture.architecture()
         self._target = Architecture.architecture(target_arch_name)
 
-    def build(self, opt, nr_resources, clean, build_dir, include_dir, interpreter, python_library, source_dir, standard_library_dir):
+    def build(self, opt, nr_resources, clean, sysroot, build_dir, include_dir, interpreter, python_library, source_dir, standard_library_dir):
         """ Build the project in a given directory.  Raise a UserException if
         there is an error.
         """
@@ -65,6 +65,14 @@ class Builder:
 
         py_major, py_minor, py_patch = project.python_target_version
         py_version = (py_major << 16) + (py_minor << 8) + py_patch
+
+        # Set $SYSROOT.  An explicit sysroot will override any existing value.
+        if sysroot:
+            os.environ['SYSROOT'] = os.path.abspath(sysroot)
+        elif 'SYSROOT' not in os.environ:
+            # Provide a default.
+            os.environ['SYSROOT'] = os.path.abspath(
+                    'sysroot-' + self._target.name)
 
         # Create a temporary directory which will be removed automatically when
         # this function's objects are garbage collected.

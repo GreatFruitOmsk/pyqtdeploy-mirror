@@ -25,7 +25,6 @@
 
 
 import argparse
-import os
 
 from . import (Builder, MessageHandler, Project, PYQTDEPLOY_RELEASE,
         UserException)
@@ -84,13 +83,10 @@ def main():
         return 2
 
     try:
-        if args.sysroot:
-            os.environ['SYSROOT'] = os.path.abspath(args.sysroot)
-
         builder = Builder(Project.load(args.project), args.target,
                 message_handler)
 
-        builder.build(args.opt, args.resources, args.clean,
+        builder.build(args.opt, args.resources, args.clean, args.sysroot,
                 build_dir=args.build_dir, include_dir=args.include_dir,
                 interpreter=args.interpreter,
                 python_library=args.python_library, source_dir=args.source_dir,
