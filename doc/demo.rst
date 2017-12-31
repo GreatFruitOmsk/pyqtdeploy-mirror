@@ -27,6 +27,7 @@ running on macOS is shown below.
 
 .. image:: /images/pyqt-demo.png
     :align: center
+    :scale: 50
 
 Before building the demo you must first populate the ``src`` directory with
 appropriate source archives for the following packages:
