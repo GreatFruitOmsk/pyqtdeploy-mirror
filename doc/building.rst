@@ -24,8 +24,8 @@ The demo's :program:`build-demo.py` script takes care of (almost) all of this
 process automatically.
 
 
-Command Line Options
---------------------
+The Command Line
+----------------
 
 The full set of command line options is:
 

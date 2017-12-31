@@ -9,13 +9,17 @@ a demo application called :program:`pyqt-demo` which can be found in the
 The demo consists of:
 
 - ``pyqt-demo.py`` which is the source code of the demo
+
 - ``sysroot.json`` which is the sysroot specification used by
   :program:`pyqtdeploy-sysroot` to build a target-specific sysroot
+
 - ``pyqt-demo.pdy`` which is the :program:`pyqtdeploy` project file describing
   the application and its components
+
 - ``build-demo.py`` which is a simple script to run
   :program:`pyqtdeploy-sysroot` and :program:`pyqtdeploy-build` to create the
   demo executable
+
 - ``src`` which is a directory which must contain the source archives of all
   the components that will be built by :program:`pyqtdeploy-sysroot`.
 

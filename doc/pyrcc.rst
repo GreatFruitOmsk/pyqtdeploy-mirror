@@ -52,8 +52,6 @@ called ``qml``, we can then extend the code above as follows::
 Support for PEP 302 Optional Import Hooks
 -----------------------------------------
 
-.. versionadded:: 1.2
-
 Internally a deployed application contains a `PEP 302
 <https://www.python.org/dev/peps/pep-0302/>`__ compatible module importer (i.e.
 finder and loader) that handles modules embedded in the executable by

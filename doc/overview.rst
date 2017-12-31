@@ -28,9 +28,11 @@ by a ``-``.  Note that not all platform/word size combinations are supported.
 
 - :program:`qmake` is the Qt build system that supports cross-compilation to
   multiple targets.
+
 - :program:`rcc` is a utility that converts arbitrary files in C++ code that
   implements an embedded filesystem that can be linked as part of an
   application.
+
 - The :program:`QtCore` library implements file access APIs that recognise file
   and directory names that refer to the contents of the embedded filesystem
   created with :program:`rcc`.  :program:`pyqtdeploy` implements import hooks
@@ -53,10 +55,13 @@ installation for this it has a number of disadvantages:
 - Different applications may have requirements for different versions of a
   third-party package making it difficult to share the same Python
   installation.
+
 - Your application may require components (including the Python interpreter
   itself) to be configured differently.
+
 - A standard Python installation will contain dynamically linked extension
   modules but you may want to use statically linked versions.
+
 - It cannot be used when targeting a non-native platform.
 
 Experience has shown that it is easier to keep all of these components separate
@@ -72,13 +77,16 @@ The steps required to develop a deployable application are as follows:
 
 - Develop and test the application as normal using a native Python
   installation containing the required third-party components.
+
 - Identify the third-party components that are required and build a
   target-specific sysroot.  See :ref:`ref-building-a-sysroot` to learn how to
   use :program:`pyqtdeploy-sysroot` to do this.
+
 - Create a project file for the application that identifies the application's
   source code and all the components used by the application and their
   locations.  See :ref:`ref-creating-a-project` to learn how to use
   :program:`pyqtdeploy` to do this.
+
 - Freeze the Python modules and generate a :program:`qmake` ``.pro`` file in a
   target-specific build directory.  The ``.pro`` file will reference all of the
   required components in the associated sysroot.  Run :program:`qmake` and then

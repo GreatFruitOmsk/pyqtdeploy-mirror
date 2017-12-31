@@ -3,8 +3,6 @@
 Windows and Dynamic Loading of Extension Modules
 ================================================
 
-.. program:: pyqtdeploycli
-
 If an application makes use of C/C++ extension modules that would normally be
 loaded dynamically by the Python interpreter library then you can often choose
 to build a static version of the extension module and link it directly with the
@@ -21,9 +19,7 @@ interpreter library with the deployed application.)
 
 Building the Python interpreter DLL on Windows is not particularly
 straightforward, especially if you want to customise it for your specific
-needs.  It is strongly recommended that you always use a copy of the Python
-interpreter DLL (and associated extension modules) that is installed by the
-binary installer file from ``python.org``.  The :option:`install` action of
-:program:`pyqtdeploycli` will copy the required parts of a standard Python
-installation into the recommended directory structure described in
-:ref:`ref-directory-structure`.
+needs.  It is strongly recommended that (if need to dynamically load extension
+modules) you always use a copy of the Python interpreter DLL (and associated
+extension modules) that is installed by the binary installer file from
+``python.org``.

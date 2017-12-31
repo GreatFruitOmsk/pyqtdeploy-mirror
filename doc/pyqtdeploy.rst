@@ -5,116 +5,13 @@
 Creating a :program:`pyqtdeploy` Project
 ========================================
 
-TODO
-
-:program:`pyqtdeploy` is itself deployable and the root of the source package
-contains an appropriate ``pyqtdeploy.pdy`` project file.  In this section we
-use this as the basis of explaining :program:`pyqtdeploy`'s graphical user
-interface.  (Also included is a corresponding ``pyqtdeploycli.pdy`` project
-file for :program:`pyqtdeploycli`.  This demonstrates the deployment of a
-non-GUI application.)
-
-
-.. _ref-directory-structure:
-
-Choosing a Directory Structure
-------------------------------
-
-In order to deploy an application you have to assemble the various parts, e.g.
-target specific versions of Python, PyQt and sip.  In deciding how to organise
-this you might consider the following:
-
-- consistency so that you can easily find things
-
-- avoiding hardcoded paths in project files to make it easier to share them
-  with other developers
-
-- supporting multiple targets and easily switching between them.  For example
-  you may be developing a mobile application that will be deployed to iOS and
-  Android but are doing the main development and testing under Linux.
-
-We now describe a directory structure that addresses these issues.  It is only
-a recommendation and not a requirement.  Note that (with care) it is possble to
-create project files that are portable between all supported platforms.
-
-There is a top-level directory called ``pyqtdeploy``.  Everything else will be
-placed in this directory or one of its sub-directories.  It does not matter
-where this directory is in the filesystem.  You may create it in your home
-directory or you may place it in a location where it can be shared with other
-users.  Once it is set up there is no need for it to be updated as part of the
-process of deploying an application.  In other words, a shared ``pyqtdeploy``
-directory can be read-only for all users.
-
-Within the ``pyqtdeploy`` directory we create a system root directory for each
-target we are deploying to.  For example we might create directories called
-``sysroot-linux``, ``sysroot-ios`` and ``sysroot-android``.  We can use an
-environment variable to point to the particular target system root directory we
-wish to use.  If we then use that environment variable in the project file then
-we can switch between targets without having to update the project file and so
-makes it possible to share the project file with other users.
-
-:program:`pyqtdeploy` has the option to run :program:`qmake` which itself is
-target-specific and may be installed in different locations for different
-users.  We therefore create a symbolic link in each target-specific system root
-directory that points to the corresponding target-specific Qt installation.
-For example if you have installed the combined iOS and Android Qt binary
-installer in its default location then the iOS Qt directory will be
-``$HOME/QtX.Y.Z/X.Y/ios`` and the Android Qt directory will be
-``$HOME/QtX.Y.Z/X.Y/android_arm7`` (where ``X.Y.Z`` is the version number of
-Qt).
-
-This approach can be extended further by creating a symbolic link to the target
-specific system root directory and setting the environment variable to the
-location of the symbolic link.  To switch between targets you then just change
-the destination of the symbolic link.  If you develop with multiple terminal
-windows open then this has the advantage is that you only need to make the one
-change and it will take effect in all terminals - otherwise you need to
-remember to update the environment variable in each of your terminals.
-
-Throughout this documentation it is assumed that you have set an environment
-variable :envvar:`SYSROOT` which points to your target specific root directory
-(possibly via a symbolic link).
-
-
-Scoped :program:`qmake` Variables
----------------------------------
-
-A :program:`pyqtdeploy` project has several places where it is possible to
-enter the values of certain :program:`qmake` variables (specifically ``QT``,
-``CONFIG``, ``SOURCES``, ``DEFINES``, ``INCLUDEPATH`` and ``LIBS``) which will
-then be included in the generated ``.pro`` file.  :program:`pyqtdeploy` goes to
-some trouble to make it possible to create project files that can be used
-without modification across all supported host platforms.
-
-To this end the values of these :program:`qmake` variables may be *scoped* with
-any supported :program:`qmake` scope.  The most common requirement is to
-distinguish between Windows and non-Windows targets, therefore the most common
-scopes used will be ``win32`` and ``!win32``.
-
-The scope is specified immediately before the value and separated by a ``#``.
-For example, lets say that your application is targeted at all supported
-desktop targets and requires SSL support.  On Windows you want to link against
-a copy of the OpenSSL libraries that you have statically compiled and installed
-the header files and libraries in the ``include`` and ``lib`` sub-directories
-of the :envvar:`SYSROOT` directory.  On Linux and macOS you want to dynamically
-link against the system SSL libraries.  Setting the ``INCLUDEPATH`` and
-``LIBS`` variables to the following values will ensure that the generated code
-will compile as you require on all platforms::
-
-    INCLUDEPATH     win32#$SYSROOT/include
-    LIBS            win32#$SYSROOT/lib -lssl -lcrypto
-
-
-Creating a :program:`pyqtdeploy` Project
-----------------------------------------
-
 The first stage of deploying a PyQt application is to create a
 :program:`pyqtdeploy` project for it by running::
 
-    pyqtdeploy myproject.pdy
+    pyqtdeploy pyqt-demo.pdy
 
 This will create a new project, or open an exiting one if the file
-``myproject.pdy`` already exists.  A project is simply a file with a ``.pdy``
+``pyqt-demo.pdy`` already exists.  A project is simply a file with a ``.pdy``
 extension.
 
 A GUI will be displayed which consists of a ``File`` menu and a set of tabbed
@@ -123,9 +20,6 @@ building.
 
 The ``File`` menu contains the usual set of options to create a new project,
 open an existing project, save a project and rename a project.
-
-For the remainder of this tutorial we will use the ``pyqtdeploy.pdy`` project
-file included in the root of the source package.
 
 
 Defining the Application Source
@@ -145,7 +39,8 @@ Python applications are usually structured in one of the following ways:
   the package and the name of a callable within the module separated by a
   ``:``.
 
-:program:`pyqtdeploy` itself uses the :mod:`setuptools` based structure.
+:program:`pyqt-demo` is a single standalone script.  :program:`pyqtdeploy`
+itself uses the :mod:`setuptools` based structure.
 
 The tab for defining the application source is shown below.
 
@@ -167,14 +62,14 @@ The tab for defining the application source is shown below.
     .. note::
         Whenever a file or directory is specified, :program:`pyqtdeploy` always
         saves its name relative to the directory containing the project file if
-        possible.  In this particular example the ``pyqtdeploy`` package
-        directory is in the same directory as the ``pyqtdeploy.pdy`` project
-        file.  Also, whenever a file or directory name is entered,
-        :program:`pyqtdeploy` allows the embedding of environment variables
-        which will be expanded when necessary.  The :envvar:`PDY_PY_MAJOR`,
-        :envvar:`PDY_PY_MINOR` and :envvar:`PDY_PY_MICRO` pseudo-environment
-        variables can also be used which will be expanded to the relevant
-        parts of the target Python version.
+        possible.  In this particular example the ``pyqt-demo.py`` script is in
+        the same directory as the ``pyqt-demo.pdy`` project file.  Also,
+        whenever a file or directory name is entered, :program:`pyqtdeploy`
+        allows the embedding of environment variables which will be expanded
+        when necessary.  The :envvar:`PDY_PY_MAJOR`, :envvar:`PDY_PY_MINOR` and
+        :envvar:`PDY_PY_MICRO` pseudo-environment variables can also be used
+        which will be expanded to the relevant parts of the target Python
+        version.
 
 **Entry Point**
     is used to specify the entry point of a :mod:`setuptools`-based
@@ -185,9 +80,8 @@ The tab for defining the application source is shown below.
     is used to specify additional directories, ZIP files and eggs that will be
     added to :data:`sys.path`.  By default :program:`pyqtdeploy` generates an
     application that does not support the importing of packages or extension
-    modules that are not embedded in the application.  Indeed, some platforms
-    specifically disallow this.  However there are circumstances where this
-    ability is desired:
+    modules that are not embedded in the application.  However there are
+    circumstances where this ability is desired:
 
     - you need to use an extension module that does not support being
       statically compiled
@@ -228,15 +122,14 @@ The tab for defining the application source is shown below.
     .. note::
         If you wish to allow the importing of external extension modules then
         you will also need to ensure that Python has been built with this
-        enabled.  See the :option:`--enable-dynamic-loading` option of the
-        :option:`configure` action.
+        enabled.
 
 **Target Python version**
     is used to specify version of Python that you are targetting.
 
 **Target PyQt version**
     is used to specify that the application is either a PyQt4 or a PyQt5
-    application.
+    application.  This is ignored if the application doesn't use PyQt.
 
 **Use console (Windows)**
     is checked if the application should use a console.  Specifically it adds
@@ -249,7 +142,7 @@ The tab for defining the application source is shown below.
 
 **Application bundle (macOS)**
     is checked if the application should be built as a bundle and only affects
-    macOS applications.  It would normally be unchecked for command line (i.e.
+    macOS targets.  It would normally be unchecked for command line (i.e.
     non-GUI) applications.
 
 **Application Package Directory**
@@ -314,7 +207,7 @@ Any text entered here is added to the end of the ``.pro`` file generated by
 Defining the PyQt Modules
 -------------------------
 
-The tab for defining the PyQt modules used by the application is shown below.
+The tab for defining any PyQt modules used by the application is shown below.
 If the application is a PyQt4 application then the PyQt4 modules will be shown
 instead.
 
@@ -322,13 +215,12 @@ instead.
     :align: center
     :scale: 50
 
-Simply check all the PyQt modules that are used.
+Simply check all the PyQt modules that are imported by the application.
 
 :program:`pyqtdeploy` understands the dependencies between the different PyQt
 modules and will automatically check any additional modules that are required.
-Therefore the same effect could have been achieved by only specifying the
-:mod:`~PyQt5.QtWidgets` module.  However it is better to explicitly specify all
-the modules imported directly by the application.
+It is recommended that modules explicitly imported by the application are
+checked even if they are also implicity imported.
 
 .. note::
     These modules must be compiled statically.  If you plan to use a separately
@@ -358,44 +250,48 @@ application is shown below.
     - *unchecked* meaning it is not needed by the application.
 
     You should always check a package if the application explicitly imports it,
-    even if it is already shown as partially checked.
+    even if it is already shown as partially checked.  When a package is
+    checked (or unchecked) then any sub-packages are automatically checked (or
+    unchecked).
 
-    Here we have checked the :mod:`argparse` module and the :mod:`_thread`,
-    :mod:`abc`, :mod:`array`, :mod:`atexit` and :mod:`calendar` modules have
-    been partially checked automatically.
-
-**Auto-(de)select all sub-packages**
-    is used to specify that, when a package is explicitly imported, all of its
-    sub-packages and modules are also automatically explicitly imported.
-
-**Use standard Python shared library**
-    is used to specify, on a per-platform basis, if the standard Python shared
-    library is to be used instead of a specially compiled shared or static
-    library.  When selected :program:`pyqtdeploy` assumes that all of the
-    Python standard library that is implemented as C extension modules is
-    implemented in the shared library.  The default is to enable this for
-    Windows.  See also :ref:`ref-win-dynload`
-
-**Enable optional SSL support**
-    is used to specify if the application requires SSL support to be enabled.
-    Several packages in the Python standard library will enable SSL related
-    functionality if it is available - even if your application doesn't itself
-    import the :mod:`ssl` module.  Note that you still have to provide
-    appropriately compiled SSL libraries and header files.
+    Here we have checked the :mod:`ssl` and :mod:`sysconfig` modules and the
+    :mod:`socket`, :mod:`stat`, :mod:`string`, :mod:`struct` and
+    :mod:`subprocess` modules (amongst others) have been partially checked
+    automatically.
 
 The remaining part of the tab relates to non-system libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
-standard library that wrap them.  If a library is required, because a package
-that uses it is required, then the entry for the library will be enabled.  The
-corresponding ``DEFINES``, ``INCLUDEPATH`` and ``LIBS`` fields will also be
-editable allowing those values to be set appropriately.  For example, if you
-have built a static copy of the library then you may need to specify the
-location of the library's header files in the ``INCLUDEPATH`` field and add a
-``-L`` flag to the ``LIBS`` field if the library is not installed in locations
-that will be found automatically by the compiler and linker.
+standard library that wrap them.  A tab is provided for each target platform so
+that a library can be handled in a platform-specific manner.  If a library is
+required, because a package that uses it is required, then the entry for the
+library will be enabled.  The corresponding ``DEFINES``, ``INCLUDEPATH`` and
+``LIBS`` fields will also be editable allowing those values to be set
+appropriately.  If all of those fields are left blank then the external library
+is effectively disabled.  This can be useful if, for example, the original
+Python package is written to use an external library if it is available but to
+fall back to another implementation if not.
 
-:program:`pyqtdeploy` does not import any package from the standard library
-that uses any of these libraries and so they are all disabled.
+For example, if you have built a static copy of the library
+then you may need to specify the location of the library's header files in the
+``INCLUDEPATH`` field and add a ``-L`` flag to the ``LIBS`` field if the
+library is not installed in locations that will be found automatically by the
+compiler and linker.
+
+:program:`pyqt-demo` imports the :mod:`ssl` module from the standard library
+and so the corresponding entry is enabled.  On macOS :program:`pyqt-demo` links
+against a static version of OpenSSL.  We use ``INCLUDEPATH`` to specify where
+:program:`pyqtdeploy-sysroot` has installed the OpenSSL header files.  Because
+the OpenSSL libraries are statically linked as part of the static build of Qt,
+there is no need to specify a value for ``LIBS``.  You should click on the
+other platform tabs to see how SSL is configured for those.
+
+**Use standard Python shared library**
+    is used to specify if the standard Python shared library is to be used
+    instead of a specially compiled shared or static library.  When selected
+    :program:`pyqtdeploy` assumes that all of the Python standard library that
+    is implemented as C extension modules is implemented in the shared library.
+    The default is to enable this for Windows.  See also
+    :ref:`ref-win-dynload`.
 
 
 .. _ref-other-packages:
@@ -423,7 +319,7 @@ Python interpreter, i.e. the interpreter being used to develop the application,
 where all the additional packages required by your application are already
 installed.
 
-:program:`pyqtdeploy` does not use any additional Python packages.
+:program:`pyqt-demo` does not use any additional Python packages.
 
 
 Adding Other Extension Modules
@@ -478,10 +374,28 @@ extension modules typically made up of a single source file.
     extension module has already been compiled then this is used to link it
     with the application.
 
+:program:`pyqtdeploy` goes to some trouble to make it possible to create
+project files that can be used without modification across all supported
+targets.  To this end the values of these :program:`qmake` variables may be
+*scoped* with any supported target architecture or platform name.
+
+The scope is specified immediately before the value and separated by a ``#``.
+A scope can take one of the following forms (where *target* is either a target
+architecture or platform):
+
+- *target* where the value applies for the specified target only
+
+- *!target* where the values applies to all targets except the one specified
+
+- *target|target* where the value applies to all of the targets specified.
+
+The most common requirement is to distinguish between Windows and non-Windows
+targets, therefore the most common scopes used will be ``win`` and ``!win``.
+
 To edit the list just double-click on the entry to modify or delete.  To add a
 new entry just double-click the list after the last entry.
 
-:program:`pyqtdeploy` does not use any additional C extension modules.
+:program:`pyqt-demo` does not use any additional C extension modules.
 
 
 Defining File and Directory Locations
@@ -506,70 +420,36 @@ The tab for defining the locations of various files and directories needed by
     :program:`pyqtdeploy` will use a platform-specific default.  On Windows it
     will inspect the registry to try and find the required version of Python,
     on other platforms it assumes that the required version is on
-    :envvar:`PATH`.  It can be overridden by the :option:`--interpreter`
-    command line option of :program:`pyqtdeploycli`.
+    :envvar:`PATH`.  It can be overridden by the
+    :option:`--interpreter <pyqtdeploy-build --interpreter>` command line
+    option of :program:`pyqtdeploy-build`.
 
 **Source directory**
     is used to specify the name of the directory containing the Python source
-    code.  It can be overridden by the :option:`--source-dir` command line
-    option of :program:`pyqtdeploycli`.
+    code.  It can be overridden by the
+    :option:`--source-dir <pyqtdeploy-build --source-dir>` command line option
+    of :program:`pyqtdeploy-build`.
 
 **Include directory**
     is used to specify the name of the directory containing the target Python
     installation's ``Python.h`` file.  It can be overridden by the
-    :option:`--include-dir` command line option of :program:`pyqtdeploycli`.
+    :option:`--include-dir <pyqtdeploy-build --include-dir>` command line
+    option of :program:`pyqtdeploy-build`.
 
 **Python library**
     is used to specify the name of the target Python interpreter library.  Note
     that in this example the library is specified as a UNIX archive, however
     :program:`pyqtdeploy` will interpret it correctly on Windows.  It can be
-    overridden by the :option:`--python-library` command line option of
-    :program:`pyqtdeploycli`.
+    overridden by the
+    :option:`--python-library <pyqtdeploy-build --python-library>` command line
+    option of :program:`pyqtdeploycli`.
 
 **Standard library directory**
     is used to specify the name of the directory containing the target Python
     interpreter's standard library.  It can be overridden by the
-    :option:`--standard-library-dir` command line option of
-    :program:`pyqtdeploycli`.
+    :option:`--standard-library-dir <pyqtdeploy-build --standard-library-dir>`
+    command line option of :program:`pyqtdeploy-build`.
 
-**Build directory**
-    is used to specify the name of the directory into which all the code
-    generated by :program:`pyqtdeploy` will be placed.  It will be created
-    automatically if necessary.  It can be overridden by the :option:`--output`
-    command line option of :program:`pyqtdeploycli`.
-
-**qmake**
-    is used to specify the name of the :program:`qmake` executable that is
-    optionally used to build a ``Makefile`` for the application.
-
-
-Creating a Deployable Package
------------------------------
-
-Assuming you have built the application code and the :program:`qmake` ``.pro``
-file, the build directory will now contain the source of (as far as
-:program:`qmake` is concerned) a Qt based C++ application.  To convert this
-into a deployable application you must follow the appropriate Qt documentation
-for compiling and packaging for your target platform.
-
-For desktop platforms this is probably as simple as running :program:`qmake`
-followed by :program:`make` (or :program:`nmake` on Windows).
-
-.. note::
-    Make sure the version of :program:`qmake` used is the same as the one used
-    to build PyQt.
-
-For mobile platforms this will be considerably more complicated.
-
-
-The Command Line
-----------------
-
-:program:`pyqtdeploy` takes a single optional argument which is the name of a
-project file to edit as follows::
-
-    pyqtdeploy myproject.pdy
-
-By convention project files have a ``.pdy`` extension.
-
-This will open the ``myproject.pdy`` project creating it if necessary.
+**Set defaults**
+    is used to restore all the other fields to their default values.  Those
+    values correspond to the values used by :program:`pyqtdeploy-sysroot`.
