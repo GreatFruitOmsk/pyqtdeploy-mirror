@@ -55,9 +55,7 @@ class StdlibModule:
         # Set if the module is internal.
         self.internal = internal
 
-        # The target platform of the module.  Note that the code assumes that
-        # this will be an empty string, a single platform or the logical-not of
-        # a single platform.
+        # The target platform(s) of the module.
         self.target = target
 
         # The sequence of modules that this one is dependent on.
@@ -4499,11 +4497,9 @@ _metadata = {
     '_operator':
         CoreExtensionModule(min_version=(3, 4), internal=True),
 
-    '_osx_support': (
+    '_osx_support':
         PythonModule(internal=True, deps=('contextlib', 'os', 're'),
-                target='ios'),
-        PythonModule(internal=True, deps=('contextlib', 'os', 're'),
-                target='macos')),
+                target='ios|macos'),
 
     '_pickle':
         ExtensionModule(version=3, internal=True, source='_pickle.c'),

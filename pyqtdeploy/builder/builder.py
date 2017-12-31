@@ -937,6 +937,13 @@ exists($$PDY_DLL) {
 
         if targets:
             if isinstance(targets, str):
+                # See if the string is a '|' separated list of targets.
+                targets = targets.split('|')
+                if len(targets) == 1:
+                    # There was no '|' so restore the original string.
+                    targets = targets[0]
+
+            if isinstance(targets, str):
                 # String targets can come from the project file (ie. the user)
                 # and so need to be validated.
                 if targets[0] == '!':
