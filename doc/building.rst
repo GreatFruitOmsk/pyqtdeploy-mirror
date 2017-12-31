@@ -5,16 +5,27 @@
 Building the Application
 ========================
 
-TODO
+:program:`pyqtdeploy-build` uses the project file created by
+:program:`pyqtdeploy` to generate the target-specific source code, including
+the :program:`qmake` ``.pro`` files, needed to create the application.  The
+simplest invocation is::
+
+    pyqtdeploy-build pyqt-demo.pdy
+
+The next step in the full build process would be to change to the build
+directory and run :program:`qmake`.  The final step is target-specific.  For
+Linux, macOS and Windows targets it is only necessary to run :program:`make`
+(or :program:`nmake` in the case of Windows).  For an Android target it is
+necessary to run :program:`make` and Qt's :program:`androiddeployqt` utility.
+For an iOS target :program:`qmake` generates an Xcode project file.  Xcode is
+then used to perform the final build.
+
+The demo's :program:`build-demo.py` script takes care of (almost) all of this
+process automatically.
 
 
-The Command Line
-----------------
-
-:program:`pyqtdeploy-build` generates the target-specific source code,
-including the :program:`qmake` ``.pro`` files, needed to create the
-application.  The next step in the full build process would be to run
-:program:`qmake`.
+Command Line Options
+--------------------
 
 The full set of command line options is:
 
@@ -85,7 +96,10 @@ The full set of command line options is:
 .. option:: --sysroot DIR
 
     ``DIR`` is the name of the system image root directory.  The
-    :envvar:`SYSROOT` environment variable is set to ``DIR`` during the build.
+    :envvar:`SYSROOT` environment variable is set to ``DIR`` during the build
+    replacing any existing value.  The default value is ``sysroot-`` followed
+    by a target-specific suffix, but this is not set if the :envvar:`SYSROOT`
+    environment variable already has a value.
 
 .. option:: --target TARGET
 
@@ -107,5 +121,5 @@ The full set of command line options is:
 
 .. option:: project
 
-    ``project`` is the name of the project file created with
+    ``project`` is the name of the project file created by
     :program:`pyqtdeploy`.
