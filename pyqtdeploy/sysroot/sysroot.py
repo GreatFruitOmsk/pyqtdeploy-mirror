@@ -133,6 +133,44 @@ class Sysroot:
         return packages
 
     ###########################################################################
+    # The following are part of the public API for package plugins that are
+    # distributed as part of pyqtdeploy.  Therefore they are not documented.
+    ###########################################################################
+
+    @staticmethod
+    def copy_embedded_file(src_name, dst_name, macros={}):
+        """ Copy an embedded text file to a destination file.  src_name is the
+        name of the source file.  dst_name is the name of the destination file.
+        macros is an optional dictionary of key/value string macros and
+        instances of each key are replaced by the corresponding value.  A
+        UserException is raised if there was an error.
+        """
+
+        fu_copy_embedded_file(src_name, dst_name, macros)
+
+    @staticmethod
+    def get_embedded_dir(root, *subdirs):
+        """ Return a QDir corresponding to an embedded directory.  root is the
+        root directory and will be the __file__ attribute of a pyqtdeploy
+        module.  subdirs is a sequence of sub-directories from the root.
+        Return None if no such directory exists.
+        """
+
+        return fu_get_embedded_dir(root, *subdirs)
+
+    @staticmethod
+    def get_embedded_file_for_version(version, root, *subdirs):
+        """ Return the absolute file name in an embedded directory of a file
+        that is the most appropriate for a particular version.  version is the
+        encoded version.  root is the root directory and will be the __file__
+        attribute of a pyqtdeploy module.  subdirs is a sequence of
+        sub-directories from the root.  An empty string is returned if the
+        version is not supported.
+        """
+
+        return fu_get_embedded_file_for_version(version, root, *subdirs)
+
+    ###########################################################################
     # The following make up the public API to be used by package plugins.
     ###########################################################################
 
@@ -203,17 +241,6 @@ class Sysroot:
         except Exception as e:
             self.error("unable to copy directory {0}".format(src),
                     detail=str(e))
-
-    @staticmethod
-    def copy_embedded_file(src_name, dst_name, macros={}):
-        """ Copy an embedded text file to a destination file.  src_name is the
-        name of the source file.  dst_name is the name of the destination file.
-        macros is an optional dictionary of key/value string macros and
-        instances of each key are replaced by the corresponding value.  A
-        UserException is raised if there was an error.
-        """
-
-        fu_copy_embedded_file(src_name, dst_name, macros)
 
     @staticmethod
     def create_file(name):
@@ -356,28 +383,6 @@ class Sysroot:
         """ Convert an encoded version number to a string. """
 
         return '.'.join([str(v) for v in cls.decode_version_nr(version_nr)])
-
-    @staticmethod
-    def get_embedded_dir(root, *subdirs):
-        """ Return a QDir corresponding to an embedded directory.  root is the
-        root directory and will be the __file__ attribute of a pyqtdeploy
-        module.  subdirs is a sequence of sub-directories from the root.
-        Return None if no such directory exists.
-        """
-
-        return fu_get_embedded_dir(root, *subdirs)
-
-    @staticmethod
-    def get_embedded_file_for_version(version, root, *subdirs):
-        """ Return the absolute file name in an embedded directory of a file
-        that is the most appropriate for a particular version.  version is the
-        encoded version.  root is the root directory and will be the __file__
-        attribute of a pyqtdeploy module.  subdirs is a sequence of
-        sub-directories from the root.  An empty string is returned if the
-        version is not supported.
-        """
-
-        return fu_get_embedded_file_for_version(version, root, *subdirs)
 
     def get_python_install_path(self, version=None):
         """ Return the name of the directory containing the root of the Python
