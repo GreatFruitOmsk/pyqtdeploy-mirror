@@ -32,7 +32,7 @@ class pipComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('packages', list, required=True,
+        ComponentOption('packages', type=list, required=True,
                 help="The packages to be installed by pip."),
     ]
 

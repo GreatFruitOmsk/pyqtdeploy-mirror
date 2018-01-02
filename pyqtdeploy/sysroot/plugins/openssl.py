@@ -36,9 +36,9 @@ class OpenSSLComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('python_source', str,
+        ComponentOption('python_source',
                 help="The archive of the Python source code containing patches to build OpenSSL on macOS."),
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the OpenSSL source code."),
     ]
 

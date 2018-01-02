@@ -34,7 +34,7 @@ class SIPComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the SIP source code."),
     ]
 

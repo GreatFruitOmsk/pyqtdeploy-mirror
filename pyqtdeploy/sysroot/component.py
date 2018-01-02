@@ -46,7 +46,7 @@ class ComponentBase(ABC):
 class ComponentOption:
     """ Encapsulate an option for the component in the specification file. """
 
-    def __init__(self, name, type, required=False, default=None, values=None, help=None):
+    def __init__(self, name, type=str, required=False, default=None, values=None, help=''):
         """ Initialise the object. """
 
         self.name = name

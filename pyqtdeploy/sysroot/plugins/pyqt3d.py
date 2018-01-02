@@ -34,7 +34,7 @@ class PyQt3DComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the PyQt3D source code."),
     ]
 

@@ -38,13 +38,13 @@ class PythonComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('build_host_from_source', bool,
+        ComponentOption('build_host_from_source', type=bool,
                 help="Build the host Python from source code rather than use an existing installation."),
-        ComponentOption('build_target_from_source', bool,
+        ComponentOption('build_target_from_source', type=bool,
                 help="Build the target Python from source code rather than use an existing installation."),
-        ComponentOption('dynamic_loading', bool,
+        ComponentOption('dynamic_loading', type=bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the Python source code."),
     ]
 

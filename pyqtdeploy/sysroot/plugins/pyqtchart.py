@@ -34,7 +34,7 @@ class PyQtChartComponent(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the PyQtChart source code."),
     ]
 

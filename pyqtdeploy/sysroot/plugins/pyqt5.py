@@ -34,11 +34,11 @@ class PyQt5Component(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('disabled_features', list,
+        ComponentOption('disabled_features', type=list,
                 help="The features that are disabled."),
-        ComponentOption('modules', list, required=True,
+        ComponentOption('modules', type=list, required=True,
                 help="The extension modules to be built."),
-        ComponentOption('source', str, required=True,
+        ComponentOption('source', required=True,
                 help="The archive containing the PyQt5 source code."),
     ]
 

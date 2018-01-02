@@ -35,21 +35,21 @@ class Qt5Component(ComponentBase):
 
     # The component options.
     options = [
-        ComponentOption('configure_options', list,
+        ComponentOption('configure_options', type=list,
                 help="The additional options to be passed to 'configure' when building from source."),
-        ComponentOption('disabled_features', list,
+        ComponentOption('disabled_features', type=list,
                 help="The features that are disabled when building from source."),
-        ComponentOption('qt_dir', str,
+        ComponentOption('qt_dir',
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
-        ComponentOption('ssl', str,
+        ComponentOption('ssl',
                 values=['openssl-linked', 'openssl-runtime',
                         'securetransport'],
                 help="Enable SSL support."),
-        ComponentOption('skip', list,
+        ComponentOption('skip', type=list,
                 help="The Qt modules to skip when building from source."),
-        ComponentOption('source', str,
+        ComponentOption('source',
                 help="The archive containing the Qt5 source code if an existing installation is not to be used."),
-        ComponentOption('static_msvc_runtime', bool,
+        ComponentOption('static_msvc_runtime', type=bool,
                 help="Set if the MSVC runtime should be statically linked."),
     ]
 

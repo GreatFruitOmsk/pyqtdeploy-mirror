@@ -15,3 +15,11 @@ h2 a:visited {
 .classtable {
     width: 100%;
 }
+
+th.field-name {
+    background: none;
+}
+
+th.head {
+    background: lightgray;
+}

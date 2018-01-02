@@ -120,7 +120,7 @@ The full set of command line options is:
     configured.
 
 
-Writing A Component Plugin
+Writing a Component Plugin
 --------------------------
 
 A component plugin is a Python module that defines a sub-class of
@@ -130,18 +130,52 @@ re-implement the :py:meth:`~pyqtdeploy.ComponentBase.configure` method.  It
 should also include a class attribute called
 :py:attr:`~pyqtdeploy.ComponentBase.options` which is a sequence of
 :py:class:`pyqtdeploy.ComponentOption` instances that describe each of the
-component's configurable options.
+component's configurable options.  It does not matter what the name of the
+class is.
 
 .. py:module:: pyqtdeploy
 
 .. py:class:: ComponentBase
 
+    This is the base class of all component plugins.
+
     .. py:attribute:: options
+
+        This class attribute is a sequence of
+        :py:class:`~pyqtdeploy.ComponentOption` instances describing the
+        component's configurable options.
 
     .. py:method:: build(sysroot)
 
+        This abstract method is re-implemented to build the component.
+
+        :param Sysroot sysroot:  the sysroot being built.
+
     .. py:method:: configure(sysroot)
 
-.. py:class:: ComponentOption(name, type, required=False, default=None, values=None, help=None)
+        This method is re-implemented to configure the component.  A component
+        will always be configured even if it does not get built.
+
+        :param Sysroot sysroot:  the sysroot being configured.
+
+.. py:class:: ComponentOption(name, type=str, required=False, default=None, values=None, help='')
+
+    This class implements an option used to configure the component.  An option
+    can be specified as an attribute of the component's object in the sysroot
+    specification file.  An instance of the component plugin will contain an
+    attribute for each option whose value is that specified in the sysroot
+    specification file (or an appropriate default if it was omitted).
+
+    :param str name: the name of the option.
+    :param type type: the type of the option (either ``bool``, ``int``,
+        ``list`` or ``str``).
+    :param bool required: ``True`` if a value for the option is required.
+    :param default: the default value of the option.
+    :param values: the possible values of the option.
+    :param str help: the help text displayed by the
+        :option:`--options <pyqtdeploy-sysroot --options>` option of
+        :program:`pyqtdeploy-sysroot`.
 
 .. py:class:: Sysroot
+
+    This class encapsulates a sysroot as seen by a component plugin.
