@@ -304,12 +304,12 @@ class Sysroot:
                         detail=str(e))
 
     @staticmethod
-    def error(text, detail=''):
+    def error(message, detail=''):
         """ Raise an exception that will report an error is a user friendly
         manner.
         """
 
-        raise UserException(text, detail=detail)
+        raise UserException(message, detail=detail)
 
     def extract_version_nr(self, name):
         """ Return an encoded version number from the name of a file or
@@ -390,16 +390,16 @@ class Sysroot:
 
         return '.'.join([str(v) for v in cls.decode_version_nr(version_nr)])
 
-    def get_python_install_path(self, version=None):
+    def get_python_install_path(self, version_nr=None):
         """ Return the name of the directory containing the root of the Python
         installation directory for an existing installation.  It must not be
         called on a non-Windows platform.
         """
 
-        if version is None:
-            version = self.target_py_version_nr
+        if version_nr is None:
+            version_nr = self.target_py_version_nr
 
-        return get_py_install_path(version, self._target)
+        return get_py_install_path(version_nr, self._target)
 
     @property
     def host_arch_name(self):
@@ -494,8 +494,8 @@ class Sysroot:
 
     @staticmethod
     def open_file(name):
-        """ Open an existing text file.  A UserException is raised if there was
-        an error.
+        """ Open an existing text file and return the file object.  A
+        UserException is raised if there was an error.
         """
 
         return fu_open_file(name)
@@ -586,25 +586,6 @@ class Sysroot:
         return self._py_subdir + 'm'
 
     @property
-    def target_py_platform(self):
-        """ The name of the target Python platform (as known by PyQt's
-        configure.py).
-        """
-
-        # Note that this is a bit of a hack because configure.py doesn't
-        # distinguish between Android and Linux or iOS and macOS.
-        py_platform = self.target_platform_name
-
-        if py_platform == 'android':
-            py_platform = 'linux'
-        elif py_platform in ('ios', 'macos'):
-            py_platform = 'darwin'
-        elif py_platform == 'win':
-            py_platform = 'win32'
-
-        return py_platform
-
-    @property
     def target_py_stdlib_dir(self):
         """ The name of the directory containing target Python standard
         library. """
@@ -625,6 +606,25 @@ class Sysroot:
         """ The setter for the Python version being targeted. """
 
         self._target_py_version_nr = version_nr
+
+    @property
+    def target_pyqt_platform(self):
+        """ The name of the target Python platform (as known by PyQt's
+        configure.py).
+        """
+
+        # Note that this is a bit of a hack because configure.py doesn't
+        # distinguish between Android and Linux or iOS and macOS.
+        py_platform = self.target_platform_name
+
+        if py_platform == 'android':
+            py_platform = 'linux'
+        elif py_platform in ('ios', 'macos'):
+            py_platform = 'darwin'
+        elif py_platform == 'win':
+            py_platform = 'win32'
+
+        return py_platform
 
     @property
     def target_sip_dir(self):

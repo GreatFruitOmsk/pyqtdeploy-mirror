@@ -120,7 +120,9 @@ def copy_embedded_file(src_name, dst_name, macros={}):
 
 
 def create_file(file_name):
-    """ Create a text file.  file_name is the name of the file. """
+    """ Create a text file and return the file object.  file_name is the name
+    of the file.
+    """
 
     try:
         return open(file_name, 'wt', encoding='UTF-8')

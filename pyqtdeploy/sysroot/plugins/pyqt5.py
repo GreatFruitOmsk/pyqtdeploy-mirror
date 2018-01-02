@@ -69,7 +69,7 @@ pyqt_module_dir = {4}
 pyqt_sip_dir = {5}
 [Qt 5.0]
 pyqt_modules = {6}
-'''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
+'''.format(sysroot.target_pyqt_platform, sysroot.target_py_include_dir,
                 sysroot.target_lib_dir, sysroot.target_py_lib,
                 sysroot.target_sitepackages_dir,
                 os.path.join(sysroot.target_sip_dir, 'PyQt5'),
