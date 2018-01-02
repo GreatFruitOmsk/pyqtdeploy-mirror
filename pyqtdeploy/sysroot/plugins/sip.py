@@ -50,7 +50,7 @@ class SIPComponent(ComponentBase):
     def _build_code_generator(self, sysroot, archive):
         """ Build the code generator for the host. """
 
-        sysroot.build_for_target = False
+        sysroot.building_for_target = False
 
         sysroot.unpack_archive(archive)
 
@@ -64,7 +64,7 @@ class SIPComponent(ComponentBase):
         sysroot.run(sysroot.host_make, 'install')
         os.chdir('..')
 
-        sysroot.build_for_target = True
+        sysroot.building_for_target = True
 
     def _build_module(self, sysroot, archive):
         """ Build the static module for the target. """

@@ -63,10 +63,10 @@ class Sysroot:
 
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
 
-        self._python_version_nr = None
+        self._target_py_version_nr = None
 
         self._target.configure()
-        self._build_for_target = True
+        self._building_for_target = True
 
     def build_components(self, component_names, no_clean):
         """ Build a sequence of components.  If no names are given then create
@@ -184,20 +184,20 @@ class Sysroot:
     def apple_sdk(self):
         """ The Apple SDK to use. """
 
-        arch = self._target if self._build_for_target else self._host
+        arch = self._target if self._building_for_target else self._host
 
         return arch.platform.apple_sdk
 
     @property
-    def build_for_target(self):
+    def building_for_target(self):
         """ This is set if building (ie. compiling and linking) for the target
         architecture.  Otherwise build for the host.  The default is True.
         """
 
-        return self._build_for_target
+        return self._building_for_target
 
-    @build_for_target.setter
-    def build_for_target(self, value):
+    @building_for_target.setter
+    def building_for_target(self, value):
         """ Set to build (ie. compile and link) for the target architecture.
         Otherwise build for the host.
         """
@@ -209,7 +209,13 @@ class Sysroot:
             self._target.deconfigure()
             self._host.configure()
 
-        self._build_for_target = value
+        self._building_for_target = value
+
+    @property
+    def components(self):
+        """ The sequence of component names in the sysroot specification. """
+
+        return self._specification.components
 
     def copy_file(self, src, dst):
         """ Copy a file. """
@@ -244,8 +250,8 @@ class Sysroot:
 
     @staticmethod
     def create_file(name):
-        """ Create a text file.  A UserException is raised if there was an
-        error.
+        """ Create a text file and return the file object.  A UserException is
+        raised if there was an error.
         """
 
         return fu_create_file(name)
@@ -320,10 +326,25 @@ class Sysroot:
 
         return version_nr
 
-    def find_exe(self, exe):
+    def find_component(self, name, required=True):
+        """ Return the component object for the given name or None if the
+        component isn't specified.  If it is not specified and it is required
+        then raise an exception.
+        """
+
+        for component in self.components:
+            if component.name == name:
+                return component
+
+        if required:
+            self._missing_component(name)
+
+        return None
+
+    def find_exe(self, name):
         """ Return the absolute pathname of an executable located on PATH. """
 
-        host_exe = self.host_exe(exe)
+        host_exe = self.host_exe(name)
 
         for d in os.environ.get('PATH', '').split(os.pathsep):
             exe_path = os.path.join(d, host_exe)
@@ -331,7 +352,7 @@ class Sysroot:
             if os.access(exe_path, os.X_OK):
                 return exe_path
 
-        self.error("'{0}' must be installed on PATH".format(exe))
+        self.error("'{0}' must be installed on PATH".format(name))
 
     def find_file(self, name, required=True):
         """ Find a file (or directory).  If the name is relative then it is
@@ -363,21 +384,6 @@ class Sysroot:
 
         return None
 
-    def find_component(self, name, required=True):
-        """ Return the component object for the given name or None if the
-        component isn't specified.  If it is not specified and it is required
-        then raise an exception.
-        """
-
-        for component in self.components:
-            if component.name == name:
-                return component
-
-        if required:
-            self._missing_component(name)
-
-        return None
-
     @classmethod
     def format_version_nr(cls, version_nr):
         """ Convert an encoded version number to a string. """
@@ -391,7 +397,7 @@ class Sysroot:
         """
 
         if version is None:
-            version = self.python_version_nr
+            version = self.target_py_version_nr
 
         return get_py_install_path(version, self._target)
 
@@ -494,13 +500,6 @@ class Sysroot:
 
         return fu_open_file(name)
 
-    @property
-    def components(self):
-        """ The sequence of component names used in the sysroot specification.
-        """
-
-        return self._specification.components
-
     def parse_version_nr(version_str):
         """ Return an encoded version number from a string.  version_str is the
         string.  An exception is raised if a version number could not be
@@ -528,21 +527,6 @@ class Sysroot:
         """ Issue a progress message. """
 
         self._message_handler.progress_message(message)
-
-    @property
-    def python_version_nr(self):
-        """ The Python version being targeted. """
-
-        if self._python_version_nr is None:
-            self._missing_component('python')
-
-        return self._python_version_nr
-
-    @python_version_nr.setter
-    def python_version_nr(self, version_nr):
-        """ The setter for the Python version being targeted. """
-
-        self._python_version_nr = version_nr
 
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
@@ -626,6 +610,21 @@ class Sysroot:
         library. """
 
         return os.path.join(self.target_lib_dir, self._py_subdir)
+
+    @property
+    def target_py_version_nr(self):
+        """ The Python version being targeted. """
+
+        if self._target_py_version_nr is None:
+            self._missing_component('python')
+
+        return self._target_py_version_nr
+
+    @target_py_version_nr.setter
+    def target_py_version_nr(self, version_nr):
+        """ The setter for the Python version being targeted. """
+
+        self._target_py_version_nr = version_nr
 
     @property
     def target_sip_dir(self):
@@ -718,14 +717,14 @@ class Sysroot:
     def _py_subdir(self):
         """ The name of a version-specific Python sub-directory. """
 
-        major, minor, _ = self.decode_version_nr(self.python_version_nr)
+        major, minor, _ = self.decode_version_nr(self.target_py_version_nr)
 
         return 'python' + str(major) + '.' + str(minor)
 
     def _check_python_component(self):
         """ Check that the Python component plugin has been run. """
 
-        if self._python_version_nr is None:
+        if self._target_py_version_nr is None:
             self._missing_component('python')
 
     def _missing_component(self, name):

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ from .pyconfig import generate_pyconfig_h
 def configure_python(dynamic_loading, sysroot):
     """ Configure a Python source directory for a particular target. """
 
-    py_version_str = sysroot.format_version_nr(sysroot.python_version_nr)
+    py_version_str = sysroot.format_version_nr(sysroot.target_py_version_nr)
     py_major, py_minor, py_patch = sysroot.decode_version_nr(
-            sysroot.python_version_nr)
+            sysroot.target_py_version_nr)
 
     sysroot.progress(
             "Configuring Python v{0} for {1}".format(py_version_str,
@@ -63,7 +63,7 @@ def configure_python(dynamic_loading, sysroot):
         sysroot.progress("Installing {0}".format(pyconfig_h_dst_file))
 
         pyconfig_h_src_file = sysroot.get_embedded_file_for_version(
-                sysroot.python_version_nr, __file__, 'configurations',
+                sysroot.target_py_version_nr, __file__, 'configurations',
                 'pyconfig')
 
         sysroot.copy_embedded_file(pyconfig_h_src_file, pyconfig_h_dst_file,
