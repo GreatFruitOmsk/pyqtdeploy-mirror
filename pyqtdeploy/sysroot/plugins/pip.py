@@ -24,10 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class pipComponent(AbstractComponent):
+class pipComponent(ComponentBase):
     """ The pip meta-component. """
 
     # The component options.

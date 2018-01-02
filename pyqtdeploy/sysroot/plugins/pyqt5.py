@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class PyQt5Component(AbstractComponent):
+class PyQt5Component(ComponentBase):
     """ The PyQt5 component. """
 
     # The component options.

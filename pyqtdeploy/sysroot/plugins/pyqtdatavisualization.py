@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class PyQtDataVisualizationComponent(AbstractComponent):
+class PyQtDataVisualizationComponent(ComponentBase):
     """ The PyQtDataVisualization component. """
 
     # The component options.

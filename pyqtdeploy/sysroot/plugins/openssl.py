@@ -28,10 +28,10 @@ import glob
 import os
 import sys
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class OpenSSLComponent(AbstractComponent):
+class OpenSSLComponent(ComponentBase):
     """ The OpenSSL component. """
 
     # The component options.

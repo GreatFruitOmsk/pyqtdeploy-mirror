@@ -32,7 +32,7 @@ import shutil
 from collections import OrderedDict
 
 from ..user_exception import UserException
-from .abstract_component import AbstractComponent
+from .component import ComponentBase
 
 
 class Specification:
@@ -114,7 +114,7 @@ class Specification:
                         self._parse_options(config, options, component,
                                 spec_file)
 
-                    if cls is AbstractComponent:
+                    if cls is ComponentBase:
                         break
 
                 unused = config.keys()
@@ -198,7 +198,7 @@ class Specification:
 
         for component_type in plugin_module.__dict__.values():
             if isinstance(component_type, type):
-                if issubclass(component_type, AbstractComponent):
+                if issubclass(component_type, ComponentBase):
                     # Make sure the type is defined in the plugin and not
                     # imported by it.  Allow for a plugin implemented as a
                     # sub-package.
@@ -287,7 +287,7 @@ class Specification:
                         if widths[1] < name_len:
                             widths[1] = name_len
 
-                if cls is AbstractComponent:
+                if cls is ComponentBase:
                     break
 
             options[component.name] = component_options

@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class QScintillaComponent(AbstractComponent):
+class QScintillaComponent(ComponentBase):
     """ The QScintilla component. """
 
     # The component options.

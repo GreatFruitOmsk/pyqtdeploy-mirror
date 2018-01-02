@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class PyQt3DComponent(AbstractComponent):
+class PyQt3DComponent(ComponentBase):
     """ The PyQt3D component. """
 
     # The component options.

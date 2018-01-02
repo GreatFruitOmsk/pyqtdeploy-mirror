@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class PyQtChartComponent(AbstractComponent):
+class PyQtChartComponent(ComponentBase):
     """ The PyQtChart component. """
 
     # The component options.

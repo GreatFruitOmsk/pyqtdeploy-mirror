@@ -28,12 +28,12 @@ import os
 import shutil
 import sys
 
-from .... import AbstractComponent, ComponentOption
+from .... import ComponentBase, ComponentOption
 
 from .configure_python import configure_python
 
 
-class PythonComponent(AbstractComponent):
+class PythonComponent(ComponentBase):
     """ The host and target Python component. """
 
     # The component options.

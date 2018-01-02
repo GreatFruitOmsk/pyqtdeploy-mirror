@@ -33,5 +33,5 @@ from .user_exception import UserException
 from .version import PYQTDEPLOY_RELEASE
 
 
-# These are for the component plugins.
-from .sysroot import AbstractComponent, ComponentOption
+# These are for component plugins.
+from .sysroot import ComponentBase, ComponentOption

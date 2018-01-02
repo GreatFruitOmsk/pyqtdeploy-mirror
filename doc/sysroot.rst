@@ -123,4 +123,25 @@ The full set of command line options is:
 Writing A Component Plugin
 --------------------------
 
-TODO - describe the API
+A component plugin is a Python module that defines a sub-class of
+:py:class:`pyqtdeploy.ComponentBase`.  The sub-class must re-implement the
+:py:meth:`~pyqtdeploy.ComponentBase.build` method and may also
+re-implement the :py:meth:`~pyqtdeploy.ComponentBase.configure` method.  It
+should also include a class attribute called
+:py:attr:`~pyqtdeploy.ComponentBase.options` which is a sequence of
+:py:class:`pyqtdeploy.ComponentOption` instances that describe each of the
+component's configurable options.
+
+.. py:module:: pyqtdeploy
+
+.. py:class:: ComponentBase
+
+    .. py:attribute:: options
+
+    .. py:method:: build(sysroot)
+
+    .. py:method:: configure(sysroot)
+
+.. py:class:: ComponentOption(name, type, required=False, default=None, values=None, help=None)
+
+.. py:class:: Sysroot

@@ -24,6 +24,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the component API.
-from .abstract_component import AbstractComponent, ComponentOption
+# Publish the sub-package's API.
+from .component import ComponentBase, ComponentOption
 from .sysroot import Sysroot

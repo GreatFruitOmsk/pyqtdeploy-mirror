@@ -27,10 +27,10 @@
 import os
 import sys
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class Qt5Component(AbstractComponent):
+class Qt5Component(ComponentBase):
     """ The Qt5 component. """
 
     # The component options.

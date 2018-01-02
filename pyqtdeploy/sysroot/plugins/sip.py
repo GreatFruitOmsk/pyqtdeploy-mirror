@@ -26,10 +26,10 @@
 
 import os
 
-from ... import AbstractComponent, ComponentOption
+from ... import ComponentBase, ComponentOption
 
 
-class SIPComponent(AbstractComponent):
+class SIPComponent(ComponentBase):
     """ The SIP component. """
 
     # The component options.
