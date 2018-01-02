@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,55 +26,46 @@
 
 import os
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class QScintillaPackage(AbstractPackage):
-    """ The QScintilla package. """
+class PyQtPurchasingComponent(AbstractComponent):
+    """ The PyQtPurchasing component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('source', str, required=True,
-                help="The archive containing the QScintilla source code."),
+        ComponentOption('source', str, required=True,
+                help="The archive containing the PyQtPurchasing source code."),
     ]
 
     def build(self, sysroot):
-        """ Build QScintilla for the target. """
+        """ Build PyQtPurchasing for the target. """
 
-        sysroot.progress("Building QScintilla")
+        sysroot.progress("Building PyQtPurchasing")
 
         # Unpack the source.
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
-        # Build the static C++ library.
-        os.chdir('Qt4Qt5')
-        sysroot.run(sysroot.host_qmake, 'CONFIG+=staticlib',
-                'DEFINES+=SCI_NAMESPACE')
-        sysroot.run(sysroot.host_make)
-        sysroot.run(sysroot.host_make, 'install')
-        os.chdir('..')
-
-        # Build the static Python bindings.
-        os.chdir('Python')
-
         # Create a configuration file.
-        cfg = '''py_inc_dir = {0}
-py_pylib_dir = {1}
-py_pylib_lib = {2}
-py_sip_dir = {3}
+        cfg = '''py_platform = {0}
+py_inc_dir = {1}
+py_pylib_dir = {2}
+py_pylib_lib = {3}
+py_sip_dir = {4}
 [PyQt 5]
-module_dir = {4}
-'''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
-                sysroot.target_py_lib, sysroot.target_sip_dir,
+module_dir = {5}
+'''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
+                sysroot.target_lib_dir, sysroot.target_py_lib,
+                sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
-        disabled_features = sysroot.find_package('pyqt5').disabled_features
+        disabled_features = sysroot.find_component('pyqt5').disabled_features
         if disabled_features:
             cfg += 'pyqt_disabled_features = {0}\n'.format(
                     ' '.join(disabled_features))
 
-        cfg_name = 'qscintilla-' + sysroot.target_arch_name + '.cfg'
+        cfg_name = 'pyqtpurchasing-' + sysroot.target_arch_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)
@@ -83,7 +74,7 @@ module_dir = {4}
         args = [sysroot.host_python, 'configure.py', '--static', '--qmake',
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
             '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
-            cfg_name, '--sip', sysroot.host_sip, '-c', '--pyqt', 'PyQt5']
+            cfg_name, '--sip', sysroot.host_sip, '-c']
 
         if sysroot.verbose_enabled:
             args.append('--verbose')

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-# Publish the sub-package's API.
-from .abstract_package import AbstractPackage, PackageOption
+# Publish the component API.
+from .abstract_component import AbstractComponent, ComponentOption
 from .sysroot import Sysroot

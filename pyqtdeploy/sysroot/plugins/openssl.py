@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,17 +28,17 @@ import glob
 import os
 import sys
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class OpenSSLPackage(AbstractPackage):
-    """ The OpenSSL package. """
+class OpenSSLComponent(AbstractComponent):
+    """ The OpenSSL component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('python_source', str,
+        ComponentOption('python_source', str,
                 help="The archive of the Python source code containing patches to build OpenSSL on macOS."),
-        PackageOption('source', str, required=True,
+        ComponentOption('source', str, required=True,
                 help="The archive containing the OpenSSL source code."),
     ]
 
@@ -51,7 +51,7 @@ class OpenSSLPackage(AbstractPackage):
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
-        # We require OpenSSL v1.0.* as Qt does.
+        # We require OpenSSL v1.0.* as Python does.
         major = minor = None
         name = os.path.basename(os.getcwd())
         name_parts = name.split('-')

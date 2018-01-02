@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -68,21 +68,21 @@ class Sysroot:
         self._target.configure()
         self._build_for_target = True
 
-    def build_packages(self, package_names, no_clean):
-        """ Build a sequence of packages.  If no names are given then create
+    def build_components(self, component_names, no_clean):
+        """ Build a sequence of components.  If no names are given then create
         the system image root directory and build everything.  Raise a
         UserException if there is an error.
         """
 
-        # Allow the packages to configure themselves even if they are not being
-        # built.
-        for package in self.packages:
-            package.configure(self)
+        # Allow the components to configure themselves even if they are not
+        # being built.
+        for component in self.components:
+            component.configure(self)
 
-        if package_names:
-            packages = self._packages_from_names(package_names)
+        if component_names:
+            components = self._components_from_names(component_names)
         else:
-            packages = self.packages
+            components = self.components
             self.create_dir(self.sysroot_dir, empty=True)
             os.makedirs(self.host_bin_dir)
             os.makedirs(self.target_include_dir)
@@ -93,10 +93,10 @@ class Sysroot:
         self.create_dir(self._build_dir, empty=True)
         cwd = os.getcwd()
 
-        # Build the packages.
-        for package in packages:
+        # Build the components.
+        for component in components:
             os.chdir(self._build_dir)
-            package.build(self)
+            component.build(self)
 
         # Remove the build directory if requested.
         os.chdir(cwd)
@@ -104,36 +104,36 @@ class Sysroot:
         if not no_clean:
             self.delete_dir(self._build_dir)
 
-    def show_options(self, package_names):
-        """ Show the options for a sequence of packages.  If no names are given
-        then show the options of all packages.  Raise a UserException if there
-        is an error.
+    def show_options(self, component_names):
+        """ Show the options for a sequence of components.  If no names are
+        given then show the options of all components.  Raise a UserException
+        if there is an error.
         """
 
-        if package_names:
-            packages = self._packages_from_names(package_names)
+        if component_names:
+            components = self._components_from_names(component_names)
         else:
-            packages = self.packages
+            components = self.components
 
-        self._specification.show_options(packages, self._message_handler)
+        self._specification.show_options(components, self._message_handler)
 
-    def _packages_from_names(self, package_names):
-        """ Return a sequence of packages from a sequence of names. """
+    def _components_from_names(self, component_names):
+        """ Return a sequence of components from a sequence of names. """
 
-        packages = []
+        components = []
 
-        for name in package_names:
-            for package in self.packages:
-                if package.name == name:
-                    packages.append(package)
+        for name in component_names:
+            for component in self.components:
+                if component.name == name:
+                    components.append(component)
                     break
             else:
-                self.error("unkown package '{0}'".format(name))
+                self.error("unkown component '{0}'".format(name))
 
-        return packages
+        return components
 
     ###########################################################################
-    # The following are part of the public API for package plugins that are
+    # The following are part of the public API for component plugins that are
     # distributed as part of pyqtdeploy.  Therefore they are not documented.
     ###########################################################################
 
@@ -171,7 +171,7 @@ class Sysroot:
         return fu_get_embedded_file_for_version(version, root, *subdirs)
 
     ###########################################################################
-    # The following make up the public API to be used by package plugins.
+    # The following make up the public API to be used by component plugins.
     ###########################################################################
 
     @property
@@ -363,18 +363,18 @@ class Sysroot:
 
         return None
 
-    def find_package(self, name, required=True):
-        """ Return the package object for the given name or None if the package
-        isn't specified.  If it is not specified and it is required then raise
-        an exception.
+    def find_component(self, name, required=True):
+        """ Return the component object for the given name or None if the
+        component isn't specified.  If it is not specified and it is required
+        then raise an exception.
         """
 
-        for package in self.packages:
-            if package.name == name:
-                return package
+        for component in self.components:
+            if component.name == name:
+                return component
 
         if required:
-            self._missing_package(name)
+            self._missing_component(name)
 
         return None
 
@@ -434,7 +434,7 @@ class Sysroot:
     def host_pip(self):
         """ The pathname of the host pip executable. """
 
-        self._check_python_package()
+        self._check_python_component()
 
         return os.path.join(self.host_bin_dir, self.host_exe('pip'))
 
@@ -442,7 +442,7 @@ class Sysroot:
     def host_python(self):
         """ The pathname of the host Python interpreter. """
 
-        self._check_python_package()
+        self._check_python_component()
 
         return os.path.join(self.host_bin_dir, self.host_exe('python'))
 
@@ -459,7 +459,7 @@ class Sysroot:
         sip = os.path.join(self.host_bin_dir, self.host_exe('sip'))
 
         if not os.path.exists(sip):
-            self._missing_package('sip')
+            self._missing_component('sip')
 
         return sip
 
@@ -495,11 +495,11 @@ class Sysroot:
         return fu_open_file(name)
 
     @property
-    def packages(self):
-        """ The sequence of package names used in the sysroot specification.
+    def components(self):
+        """ The sequence of component names used in the sysroot specification.
         """
 
-        return self._specification.packages
+        return self._specification.components
 
     def parse_version_nr(version_str):
         """ Return an encoded version number from a string.  version_str is the
@@ -534,7 +534,7 @@ class Sysroot:
         """ The Python version being targeted. """
 
         if self._python_version_nr is None:
-            self._missing_package('python')
+            self._missing_component('python')
 
         return self._python_version_nr
 
@@ -699,8 +699,8 @@ class Sysroot:
         if chdir:
             os.chdir(archive_root)
 
-        # Return the directory name which the package plugin will often use to
-        # extract version information.
+        # Return the directory name which the component plugin will often use
+        # to extract version information.
         return archive_root
 
     def verbose(self, message):
@@ -722,13 +722,13 @@ class Sysroot:
 
         return 'python' + str(major) + '.' + str(minor)
 
-    def _check_python_package(self):
-        """ Check that the Python package plugin has been run. """
+    def _check_python_component(self):
+        """ Check that the Python component plugin has been run. """
 
         if self._python_version_nr is None:
-            self._missing_package('python')
+            self._missing_component('python')
 
-    def _missing_package(self, name):
-        """ Raise an exception about a missing package. """
+    def _missing_component(self, name):
+        """ Raise an exception about a missing component. """
 
         self.error("the sysroot specification must contain an entry for '{0}' before anything that depends on it".format(name))

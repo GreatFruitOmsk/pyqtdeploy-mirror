@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,23 +28,23 @@ import os
 import shutil
 import sys
 
-from .... import AbstractPackage, PackageOption
+from .... import AbstractComponent, ComponentOption
 
 from .configure_python import configure_python
 
 
-class PythonPackage(AbstractPackage):
-    """ The host and target Python package. """
+class PythonComponent(AbstractComponent):
+    """ The host and target Python component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('build_host_from_source', bool,
+        ComponentOption('build_host_from_source', bool,
                 help="Build the host Python from source code rather than use an existing installation."),
-        PackageOption('build_target_from_source', bool,
+        ComponentOption('build_target_from_source', bool,
                 help="Build the target Python from source code rather than use an existing installation."),
-        PackageOption('dynamic_loading', bool,
+        ComponentOption('dynamic_loading', bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
-        PackageOption('source', str, required=True,
+        ComponentOption('source', str, required=True,
                 help="The archive containing the Python source code."),
     ]
 
@@ -55,7 +55,7 @@ class PythonPackage(AbstractPackage):
         archive = sysroot.find_file(self.source)
         old_wd = os.getcwd()
         os.chdir(sysroot.target_src_dir)
-        package_name = sysroot.unpack_archive(archive, chdir=False)
+        sysroot.unpack_archive(archive, chdir=False)
         os.chdir(old_wd)
 
         # Build the host installation.
@@ -106,7 +106,7 @@ class PythonPackage(AbstractPackage):
                         "using an existing Python installation is not supported for {0}".format(sysroot.target_arch_name))
 
     def configure(self, sysroot):
-        """ Complete the configuration of the package. """
+        """ Complete the configuration of the component. """
 
         archive = sysroot.find_file(self.source)
         version_nr = sysroot.extract_version_nr(archive)

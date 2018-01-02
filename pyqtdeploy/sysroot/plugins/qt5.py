@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,29 +27,29 @@
 import os
 import sys
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class Qt5Package(AbstractPackage):
-    """ The Qt5 package. """
+class Qt5Component(AbstractComponent):
+    """ The Qt5 component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('configure_options', list,
+        ComponentOption('configure_options', list,
                 help="The additional options to be passed to 'configure' when building from source."),
-        PackageOption('disabled_features', list,
+        ComponentOption('disabled_features', list,
                 help="The features that are disabled when building from source."),
-        PackageOption('qt_dir', str,
+        ComponentOption('qt_dir', str,
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
-        PackageOption('ssl', str,
+        ComponentOption('ssl', str,
                 values=['openssl-linked', 'openssl-runtime',
                         'securetransport'],
                 help="Enable SSL support."),
-        PackageOption('skip', list,
+        ComponentOption('skip', list,
                 help="The Qt modules to skip when building from source."),
-        PackageOption('source', str,
+        ComponentOption('source', str,
                 help="The archive containing the Qt5 source code if an existing installation is not to be used."),
-        PackageOption('static_msvc_runtime', bool,
+        ComponentOption('static_msvc_runtime', bool,
                 help="Set if the MSVC runtime should be statically linked."),
     ]
 
@@ -154,7 +154,7 @@ class Qt5Package(AbstractPackage):
             elif self.ssl == 'openssl-linked':
                 args.append('-openssl-linked')
 
-                if sysroot.find_package('openssl', required=False) is not None:
+                if sysroot.find_component('openssl', required=False) is not None:
                     args.extend(['-I', sysroot.target_include_dir])
                     args.extend(['-L', sysroot.target_lib_dir])
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,16 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--component', help="the component name to build",
+            action='append')
     parser.add_argument('--no-clean',
             help="do not remove the temporary build directory",
             action='store_true')
     parser.add_argument('--options',
-            help="show the options available for the packages",
+            help="show the options available for the components",
             action='store_true')
-    parser.add_argument('--package', help="the package name to build",
-            action='append')
     parser.add_argument('--plugin-dir',
-            help="search a directory for package plugins", metavar="DIR",
+            help="search a directory for component plugins", metavar="DIR",
             action='append')
     parser.add_argument('--source-dir',
             help="the default directory containing the source archives",
@@ -61,7 +61,7 @@ def main():
             action='store_true')
     parser.add_argument('-V', '--version', action='version',
             version=PYQTDEPLOY_RELEASE)
-    parser.add_argument('json',
+    parser.add_argument('specification',
             help="JSON specification of the system image root directory")
 
     args = parser.parse_args()
@@ -74,13 +74,13 @@ def main():
         if not sysroot_dir:
             sysroot_dir = os.environ.get('SYSROOT')
 
-        sysroot = Sysroot(sysroot_dir, args.json, args.plugin_path,
+        sysroot = Sysroot(sysroot_dir, args.specification, args.plugin_path,
                 args.source_dir, args.target, message_handler)
 
         if args.options:
-            sysroot.show_options(args.package)
+            sysroot.show_options(args.component)
         else:
-            sysroot.build_packages(args.package, args.no_clean)
+            sysroot.build_components(args.component, args.no_clean)
     except UserException as e:
         message_handler.exception(e)
         return 1

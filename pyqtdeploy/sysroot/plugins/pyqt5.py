@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,19 +26,19 @@
 
 import os
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class PyQt5Package(AbstractPackage):
-    """ The PyQt5 package. """
+class PyQt5Component(AbstractComponent):
+    """ The PyQt5 component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('disabled_features', list,
+        ComponentOption('disabled_features', list,
                 help="The features that are disabled."),
-        PackageOption('modules', list, required=True,
+        ComponentOption('modules', list, required=True,
                 help="The extension modules to be built."),
-        PackageOption('source', str, required=True,
+        ComponentOption('source', str, required=True,
                 help="The archive containing the PyQt5 source code."),
     ]
 
@@ -99,7 +99,7 @@ pyqt_modules = {6}
         sysroot.run(sysroot.host_make, 'install')
 
     def configure(self, sysroot):
-        """ Complete the configuration of the package. """
+        """ Complete the configuration of the component. """
 
-        if not sysroot.find_package('qt5').ssl:
+        if not sysroot.find_component('qt5').ssl:
             self.disabled_features.append('PyQt_SSL')

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,5 +33,5 @@ from .user_exception import UserException
 from .version import PYQTDEPLOY_RELEASE
 
 
-# These are for the package plugins.
-from .sysroot import AbstractPackage, PackageOption
+# These are for the component plugins.
+from .sysroot import AbstractComponent, ComponentOption

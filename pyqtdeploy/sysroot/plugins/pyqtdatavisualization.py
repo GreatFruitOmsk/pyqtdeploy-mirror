@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,22 +26,22 @@
 
 import os
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class PyQt3DPackage(AbstractPackage):
-    """ The PyQt3D package. """
+class PyQtDataVisualizationComponent(AbstractComponent):
+    """ The PyQtDataVisualization component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('source', str, required=True,
-                help="The archive containing the PyQt3D source code."),
+        ComponentOption('source', str, required=True,
+                help="The archive containing the PyQtDataVisualization source code."),
     ]
 
     def build(self, sysroot):
-        """ Build PyQt3D for the target. """
+        """ Build PyQtDataVisualization for the target. """
 
-        sysroot.progress("Building PyQt3D")
+        sysroot.progress("Building PyQtDataVisualization")
 
         # Unpack the source.
         archive = sysroot.find_file(self.source)
@@ -60,12 +60,12 @@ module_dir = {5}
                 sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
-        disabled_features = sysroot.find_package('pyqt5').disabled_features
+        disabled_features = sysroot.find_component('pyqt5').disabled_features
         if disabled_features:
             cfg += 'pyqt_disabled_features = {0}\n'.format(
                     ' '.join(disabled_features))
 
-        cfg_name = 'pyqt3d-' + sysroot.target_arch_name + '.cfg'
+        cfg_name = 'pyqtdatavisualization-' + sysroot.target_arch_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)

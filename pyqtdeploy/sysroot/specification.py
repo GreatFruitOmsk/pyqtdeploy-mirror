@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ import shutil
 from collections import OrderedDict
 
 from ..user_exception import UserException
-from .abstract_package import AbstractPackage
+from .abstract_component import AbstractComponent
 
 
 class Specification:
@@ -43,7 +43,7 @@ class Specification:
 
         self.specification_file = os.path.abspath(spec_file)
 
-        self.packages = []
+        self.components = []
 
         # Load the JSON file.
         with open(spec_file) as f:
@@ -65,7 +65,7 @@ class Specification:
                 if name is None:
                     continue
 
-                # Find the package's plugin.
+                # Find the component's plugin.
                 plugin = None
 
                 # Search any user specified directories.
@@ -79,7 +79,7 @@ class Specification:
                     # The name of the package root.
                     package_root = '.'.join(__name__.split('.')[:-1])
 
-                    for package in ('.packages', '.packages.contrib'):
+                    for package in ('.plugins', '.plugins.contrib'):
                         plugin = self._plugin_from_package(name, package,
                                 package_root)
                         if plugin is not None:
@@ -89,9 +89,9 @@ class Specification:
                                 "unable to find a plugin for '{0}'".format(
                                         name))
 
-                # Create the package plugin.
-                package = plugin()
-                setattr(package, 'name', name)
+                # Create the component plugin.
+                component = plugin()
+                setattr(component, 'name', name)
 
                 # Remove values unrelated to the target.
                 if not isinstance(value, dict):
@@ -107,13 +107,14 @@ class Specification:
                     # The value is relevant so save it.
                     config[opt_name] = opt_value
 
-                # Parse the package-specific options.
+                # Parse the component-specific options.
                 for cls in plugin.__mro__:
                     options = cls.__dict__.get('options')
                     if options:
-                        self._parse_options(config, options, package, spec_file)
+                        self._parse_options(config, options, component,
+                                spec_file)
 
-                    if cls is AbstractPackage:
+                    if cls is AbstractComponent:
                         break
 
                 unused = config.keys()
@@ -122,7 +123,7 @@ class Specification:
                             "unknown value(s): {0}".format(', '.join(unused)),
                             spec_file, name)
 
-                self.packages.append(package)
+                self.components.append(component)
 
     @staticmethod
     def _value_for_target(value, target):
@@ -164,7 +165,7 @@ class Specification:
         return None
 
     def _plugin_from_file(self, name, plugin_dir):
-        """ Try and load a package plugin from a file. """
+        """ Try and load a component plugin from a file. """
 
         plugin_file = os.path.join(plugin_dir, name + '.py')
         spec = importlib.util.spec_from_file_location(name, plugin_file)
@@ -178,7 +179,7 @@ class Specification:
         return self._plugin_from_module(name, plugin_module)
 
     def _plugin_from_package(self, name, package, package_root):
-        """ Try and load a package plugin from a Python package. """
+        """ Try and load a component plugin from a Python package. """
 
         rel_name = package + '.' + name
 
@@ -195,20 +196,20 @@ class Specification:
 
         fq_name_parts = fq_name.split('.')
 
-        for package_type in plugin_module.__dict__.values():
-            if isinstance(package_type, type):
-                if issubclass(package_type, AbstractPackage):
+        for component_type in plugin_module.__dict__.values():
+            if isinstance(component_type, type):
+                if issubclass(component_type, AbstractComponent):
                     # Make sure the type is defined in the plugin and not
                     # imported by it.  Allow for a plugin implemented as a
                     # sub-package.
-                    if package_type.__module__.split('.')[:len(fq_name_parts)] == fq_name_parts:
-                        return package_type
+                    if component_type.__module__.split('.')[:len(fq_name_parts)] == fq_name_parts:
+                        return component_type
 
         return None
 
-    def _parse_options(self, json_array, options, package, spec_file):
+    def _parse_options(self, json_array, options, component, spec_file):
         """ Parse a JSON array according to a set of options and add the
-        corresponding values as attributes of a package object.
+        corresponding values as attributes of a component object.
         """
 
         for option in options:
@@ -218,7 +219,7 @@ class Specification:
                 if option.required:
                     self._parse_error(
                             "'{0}' has not been specified".format(option.name),
-                            spec_file, package.name)
+                            spec_file, component.name)
 
                 # Create a default value.
                 if option.default is None:
@@ -226,58 +227,58 @@ class Specification:
                 else:
                     value = option.default
             elif not isinstance(value, option.type):
-                self._bad_type(option.name, spec_file, package.name)
+                self._bad_type(option.name, spec_file, component.name)
             elif option.values:
                 if value not in option.values:
                     self._parse_error(
                             "'{0}' must have be one of these values: {1}".format(option.name, ','.join(option.values)),
-                            spec_file, package.name)
+                            spec_file, component.name)
 
-            setattr(package, option.name, value)
+            setattr(component, option.name, value)
 
             try:
                 del json_array[option.name]
             except KeyError:
                 pass
 
-    def _bad_type(self, name, spec_file, package_name=None):
+    def _bad_type(self, name, spec_file, component_name=None):
         """ Raise an exception when an option name has the wrong type. """
 
         self._parse_error("value of '{0}' has an unexpected type".format(name),
-                spec_file, package_name)
+                spec_file, component_name)
 
-    def _parse_error(self, message, spec_file, package_name):
+    def _parse_error(self, message, spec_file, component_name):
         """ Raise an exception for by an error in the specification file. """
 
-        if package_name:
-            exception = "{0}: Package '{1}': {2}".format(spec_file,
-                    package_name, message)
+        if component_name:
+            exception = "{0}: Component '{1}': {2}".format(spec_file,
+                    component_name, message)
         else:
             exception = "{0}: {1}".format(spec_file, message)
 
         raise UserException(exception)
 
-    def show_options(self, packages, message_handler):
-        """ Show the options for a sequence of packages. """
+    def show_options(self, components, message_handler):
+        """ Show the options for a sequence of components. """
 
-        headings = ("Package", "Option [*=required]", "Type", "Description")
+        headings = ("Component", "Option [*=required]", "Type", "Description")
         widths = [len(h) for h in headings]
         options = OrderedDict()
 
-        # Collect the options for each package while working out the required
+        # Collect the options for each component while working out the required
         # column widths.
-        for package in packages:
-            name_len = len(package.name)
+        for component in components:
+            name_len = len(component.name)
             if widths[0] < name_len:
                 widths[0] = name_len
 
             # Allow sub-classes to override super-classes.
-            package_options = OrderedDict()
+            component_options = OrderedDict()
 
-            for cls in type(package).__mro__:
+            for cls in type(component).__mro__:
                 for option in cls.__dict__.get('options', []):
-                    if option.name not in package_options:
-                        package_options[option.name] = option
+                    if option.name not in component_options:
+                        component_options[option.name] = option
 
                         name_len = len(option.name)
                         if option.required:
@@ -286,10 +287,10 @@ class Specification:
                         if widths[1] < name_len:
                             widths[1] = name_len
 
-                if cls is AbstractPackage:
+                if cls is AbstractComponent:
                     break
 
-            options[package.name] = package_options
+            options[component.name] = component_options
 
         # Display the formatted options.
         self._show_row(headings, widths, message_handler)
@@ -305,14 +306,14 @@ class Specification:
 
         avail = max(avail, widths[-1])
 
-        for package_name, package_options in options.items():
-            package_col = package_name
+        for component_name, component_options in options.items():
+            component_col = component_name
 
-            for option_name, option in package_options.items():
+            for option_name, option in component_options.items():
                 if option.required:
                     option_name += '*'
 
-                row = [package_col, option_name]
+                row = [component_col, option_name]
 
                 if option.type is int:
                     type_name = 'int'
@@ -357,8 +358,8 @@ class Specification:
                     row[-1] = line
                     self._show_row(row, widths, message_handler)
 
-                # Don't repeat the package name.
-                package_col = ''
+                # Don't repeat the component name.
+                component_col = ''
 
     @staticmethod
     def _show_row(columns, widths, message_handler):

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,59 +26,69 @@
 
 import os
 
-from ... import AbstractPackage, PackageOption
+from ... import AbstractComponent, ComponentOption
 
 
-class PyQtPurchasingPackage(AbstractPackage):
-    """ The PyQtPurchasing package. """
+class SIPComponent(AbstractComponent):
+    """ The SIP component. """
 
-    # The package-specific options.
+    # The component options.
     options = [
-        PackageOption('source', str, required=True,
-                help="The archive containing the PyQtPurchasing source code."),
+        ComponentOption('source', str, required=True,
+                help="The archive containing the SIP source code."),
     ]
 
     def build(self, sysroot):
-        """ Build PyQtPurchasing for the target. """
+        """ Build SIP for the target. """
 
-        sysroot.progress("Building PyQtPurchasing")
+        sysroot.progress("Building SIP")
 
-        # Unpack the source.
         archive = sysroot.find_file(self.source)
+        self._build_code_generator(sysroot, archive)
+        self._build_module(sysroot, archive)
+
+    def _build_code_generator(self, sysroot, archive):
+        """ Build the code generator for the host. """
+
+        sysroot.build_for_target = False
+
+        sysroot.unpack_archive(archive)
+
+        args = [sysroot.host_python, 'configure.py', '--bindir',
+                sysroot.host_bin_dir]
+
+        sysroot.run(*args)
+
+        os.chdir('sipgen')
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
+        os.chdir('..')
+
+        sysroot.build_for_target = True
+
+    def _build_module(self, sysroot, archive):
+        """ Build the static module for the target. """
+
         sysroot.unpack_archive(archive)
 
         # Create a configuration file.
-        cfg = '''py_platform = {0}
-py_inc_dir = {1}
-py_pylib_dir = {2}
-py_pylib_lib = {3}
-py_sip_dir = {4}
-[PyQt 5]
-module_dir = {5}
-'''.format(sysroot.target_py_platform, sysroot.target_py_include_dir,
-                sysroot.target_lib_dir, sysroot.target_py_lib,
-                sysroot.target_sip_dir,
-                os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
+        cfg = '''py_inc_dir = {0}
+py_pylib_dir = {1}
+sip_module_dir = {2}
+'''.format(sysroot.target_py_include_dir, sysroot.target_lib_dir,
+                sysroot.target_sitepackages_dir)
 
-        disabled_features = sysroot.find_package('pyqt5').disabled_features
-        if disabled_features:
-            cfg += 'pyqt_disabled_features = {0}\n'.format(
-                    ' '.join(disabled_features))
-
-        cfg_name = 'pyqtpurchasing-' + sysroot.target_arch_name + '.cfg'
+        cfg_name = 'sip-' + sysroot.target_arch_name + '.cfg'
 
         with open(cfg_name, 'wt') as cfg_file:
             cfg_file.write(cfg)
 
         # Configure, build and install.
-        args = [sysroot.host_python, 'configure.py', '--static', '--qmake',
-            sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
-            '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
-            cfg_name, '--sip', sysroot.host_sip, '-c']
-
-        if sysroot.verbose_enabled:
-            args.append('--verbose')
+        args = [sysroot.host_python, 'configure.py', '--static', '--sysroot',
+                sysroot.sysroot_dir, '--no-pyi', '--no-tools', '--use-qmake',
+                '--configuration', cfg_name]
 
         sysroot.run(*args)
+        sysroot.run(sysroot.host_qmake)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')

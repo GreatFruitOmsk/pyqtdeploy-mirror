@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,8 @@
 from abc import ABC, abstractmethod
 
 
-class PackageOption:
-    """ Encapsulate an option for the package in the specification file. """
+class ComponentOption:
+    """ Encapsulate an option for the component in the specification file. """
 
     def __init__(self, name, type, required=False, default=None, values=None, help=None):
         """ Initialise the object. """
@@ -59,17 +59,17 @@ class PackageOption:
         return value
 
 
-class AbstractPackage(ABC):
-    """ The base class for the implementation of a package plugin. """
+class AbstractComponent(ABC):
+    """ The base class for the implementation of a component plugin. """
 
-    # A sequence of PackageOption instances describing the options that can be
-    # specified for the package in the specification file.  These are made
+    # A sequence of ComponentOption instances describing the options that can
+    # be specified for the component in the specification file.  These are made
     # available as attributes of the plugin instance.
     options = []
 
     @abstractmethod
     def build(self, sysroot, debug):
-        """ Build the package. """
+        """ Build the component. """
 
     def configure(self, sysroot):
-        """ Complete the configuration of the package. """
+        """ Complete the configuration of the component. """

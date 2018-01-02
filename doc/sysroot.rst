@@ -31,13 +31,13 @@ develop a plugin for a commonly used component then please consider
 contributing it so that it can be included in a future release of
 :program:`pyqtdeploy`.
 
-TODO - building a spec file from scratch
-
 
 Standard Component Plugins
 --------------------------
 
 TODO - describe what comes as standard
+
+TODO - building a spec file from scratch
 
 
 The :program:`pyqt-demo` Sysroot
@@ -55,29 +55,29 @@ The full set of command line options is:
 
     This will display a summary of the command line options.
 
+.. option:: --component COMPONENT
+
+    ``COMPONENT`` is the name of the component (specified in the JSON file)
+    that will be built.  It may be used more than once to build multiple
+    components.  If the option is not specified then all components specified
+    in the JSON file will be built.
+
 .. option:: --no-clean
 
     A temporary build directory (called ``build`` in the sysroot) is created in
-    order to build the required packages.  Normally this is removed
-    automatically after all packages have been built.  Specifying this option
-    leaves the build directory as it is to make debugging package plugins
+    order to build the required components.  Normally this is removed
+    automatically after all components have been built.  Specifying this option
+    leaves the build directory as it is to make debugging component plugins
     easier.
 
 .. option:: --options
 
-    This causes the configurable options of each package specified in the JSON
-    file to be displayed on ``stdout``.  The program will then terminate.
-
-.. option:: --package PACKAGE
-
-    ``PACKAGE`` is the name of the package (specified in the JSON file) that
-    will be built.  It may be used more than once to build multiple packages.
-    If the option is not specified then all packages specified in the JSON file
-    will be built.
+    This causes the configurable options of each component specified in the
+    JSON file to be displayed on ``stdout``.  The program will then terminate.
 
 .. option:: --plugin-dir DIR
 
-    ``DIR`` is added to the list of directories that are searched for package
+    ``DIR`` is added to the list of directories that are searched for component
     plugins.  It may be used more than once to search multiple directories.
     All directories specified in this way will be searched before those
     directories (internal to :program:`pyqtdeploy-sysroot`) searched by
@@ -86,14 +86,14 @@ The full set of command line options is:
 .. option:: --source-dir DIR
 
     ``DIR`` is the name of the directory containing the source archives used to
-    build the packages specified in the JSON file.
+    build the components specified in the JSON file.
 
 .. option:: --sysroot DIR
 
     ``DIR`` is the name of the system root directory.  The default value is
     ``sysroot-`` followed by a target-specific suffix.  Unless the
-    :option:`--package` option is specified any existing sysroot will first be
-    removed and re-created.
+    :option:`--component` option is specified any existing sysroot will first
+    be removed and re-created.
 
 .. option:: --target TARGET
 
@@ -113,10 +113,11 @@ The full set of command line options is:
     This specifies that the version number should be displayed on ``stdout``.
     The program will then terminate.
 
-.. option:: json
+.. option:: specification
 
-    ``json`` is the name of a JSON specification file that defines each package
-    to be included in the sysroot and how each is to be configured.
+    ``specification`` is the name of a JSON specification file that defines
+    each component to be included in the sysroot and how each is to be
+    configured.
 
 
 Writing A Component Plugin
