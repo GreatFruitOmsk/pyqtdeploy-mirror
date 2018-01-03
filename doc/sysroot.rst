@@ -131,7 +131,171 @@ configured specification file, run::
 The :program:`pyqt-demo` Sysroot
 --------------------------------
 
-TODO - walk through the demo spec
+In this section we walk through the sysroot specification file for the
+:program:`pyqt-demo` demo, component by component.
+
+openssl
+.......
+
+::
+
+    "android|macos|win#openssl": {
+        "source":           "openssl-1.0.*.tar.gz",
+        "python_source":    "Python-3.*.tar.xz"
+    },
+
+TODO
+
+
+qt5
+...
+
+::
+
+    "qt5": {
+        "android#qt_dir":           "Qt/*/android_armv7",
+        "ios#qt_dir":               "Qt/*/ios",
+
+        "linux|macos|win#source":   "qt-everywhere-*-src-5.*.tar.xz",
+
+        "android|linux#ssl":        "openssl-runtime",
+        "ios#ssl":                  "securetransport",
+        "macos|win#ssl":            "openssl-linked",
+
+        "static_msvc_runtime":      true
+    },
+
+TODO
+
+
+python
+......
+
+::
+
+    "python": {
+        "build_host_from_source":   false,
+        "build_target_from_source": true,
+        "source":                   "Python-3.*.tar.xz"
+    },
+
+TODO
+
+
+sip
+...
+
+::
+
+    "sip": {
+        "source":   "sip-4.*.tar.gz"
+    },
+
+It is only necessary to specifiy the name of the source archive.
+
+
+pyqt5
+.....
+
+::
+
+    "pyqt5": {
+        "android#disabled_features":    [
+                "PyQt_Desktop_OpenGL", "PyQt_Printer", "PyQt_PrintDialog",
+                "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
+        ],
+        "android#modules":              [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtAndroidExtras"
+        ],
+
+        "ios#disabled_features":        [
+                "PyQt_Desktop_OpenGL", "PyQt_MacOSXOnly",
+                "PyQt_MacCocoaViewContainer", "PyQt_Printer",
+                "PyQt_PrintDialog", "PyQt_PrintPreviewDialog",
+                "PyQt_PrintPreviewWidget", "PyQt_Process",
+                "PyQt_NotBootstrapped"
+        ],
+        "ios|macos#modules":            [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtMacExtras"
+        ],
+
+        "linux#modules":                [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtX11Extras"
+        ],
+
+        "win#disabled_features":        ["PyQt_Desktop_OpenGL"],
+        "win#modules":                  [
+                "QtCore", "QtGui", "QtNetwork", "QtPrintSupport", "QtWidgets",
+                "QtWinExtras"
+        ],
+
+        "source":                   "PyQt5_*-5.*.tar.gz"
+    },
+
+TODO
+
+
+pyqt3D
+......
+
+::
+
+    "pyqt3d": {
+        "source":   "PyQt3D_*-5.*.tar.gz"
+    },
+
+It is only necessary to specifiy the name of the source archive.
+
+
+pyqtchart
+.........
+
+::
+
+    "pyqtchart": {
+        "source":   "PyQtChart_*-5.*.tar.gz"
+    },
+
+It is only necessary to specifiy the name of the source archive.
+
+
+pyqtdatavisualization
+.....................
+
+::
+
+    "pyqtdatavisualization": {
+        "source":   "PyQtDataVisualization_*-5.*.tar.gz"
+    },
+
+It is only necessary to specifiy the name of the source archive.
+
+
+pyqtpurchasing
+..............
+
+::
+
+    "pyqtpurchasing": {
+        "source":   "PyQtPurchasing_*-5.*.tar.gz"
+    },
+
+It is only necessary to specifiy the name of the source archive.
+
+
+qscintilla
+..........
+
+::
+
+    "qscintilla": {
+        "source":   "QScintilla_*-2.*.tar.gz"
+    }
+
+It is only necessary to specifiy the name of the source archive.
 
 
 The Command Line
