@@ -131,8 +131,8 @@ configured specification file, run::
 The :program:`pyqt-demo` Sysroot
 --------------------------------
 
-In this section we walk through the sysroot specification file for the
-:program:`pyqt-demo` demo, component by component.
+In this section we walk through the sysroot specification file for
+:program:`pyqt-demo`, component by component.
 
 openssl
 .......
@@ -144,7 +144,17 @@ openssl
         "python_source":    "Python-3.*.tar.xz"
     },
 
-TODO
+The first thing to notice is that the object name is scoped so that the
+component is only built for Android, macOS and Windows.  On iOS we choose to
+not support SSL from Python and use Qt's SSL support instead (which will use
+Apple's Secure Transport).  On Linux we will use the system versions of the
+OpenSSL libraries.
+
+The Python binary installer for macOS from `www.python.org <www.python.org>`__
+includes a patched version of OpenSSL.  The plugin will apply the same patch to
+OpenSSL (on macOS only) if a Python source archive is specified.  The patch
+applies to a specific version of OpenSSL - which one depends on the version of
+Python.
 
 
 qt5
@@ -165,7 +175,33 @@ qt5
         "static_msvc_runtime":      true
     },
 
-TODO
+The Qt5 component plugin will install Qt into the sysroot from an existing
+installation.  We have chosen to do this for Android and iOS by specifying the
+``qt_dir`` attribute.
+
+The plugin will build Qt from source if the ``source`` attribute is specified.
+We have chosen to do this for Linux, macOS and Windows.
+
+The ``ssl`` attribute specifies how Qt's SSL support is to be implemented.
+
+For Android and Linux we have chosen to dynamically load external OpenSSL
+libraries at runtime.  On Android the external libraries are those built by the
+``openssl`` component plugin and are bundled automaticallly with the
+application executable.  On Linux the external libraries are the system
+versions.
+
+For iOS Qt is dynamically linked to the Secure Transport libraries.
+
+For macOS and Windows we have chosen to link against the static OpenSSL
+libraries built by the ``openssl`` component plugin.
+
+Finally we have specified that (on Windows) we will link to static versions of
+the MSVC runtime libraries.
+
+For simplicity we have chosen to build a full Qt implementation when building
+from source.  We could have chosen to use the ``configure_options``,
+``disabled_features`` and ``skip`` attributes to tailor the Qt build into to
+reduce the time taken to do the build.
 
 
 python
@@ -179,7 +215,16 @@ python
         "source":                   "Python-3.*.tar.xz"
     },
 
-TODO
+The Python component plugin handles installation for both host and target
+architectures.  For the host we choose to use an existing Python installation.
+On Windows the registry is searched for the location of the existing
+installation.  On Linux and macOS the Python interpreter must be on
+:envvar:`PATH`.  For all target architecures we choose to build Python from
+source.
+
+:program:`pyqt-demo` is a very simple application that does not need to
+dynamically load extension modules.  If this was needed then the
+``dynamic_loading`` attribute would be set to ``true``.
 
 
 sip
@@ -235,7 +280,16 @@ pyqt5
         "source":                   "PyQt5_*-5.*.tar.gz"
     },
 
-TODO
+The two attributes used to tailor the build of PyQt5 are ``disabled_features``
+and ``modules``.
+
+Unfortunately the list of features that can be disabled is not properly
+documented and relate to how Qt5 was configured.  However how the attribute is
+set in the above will be appropriate for most cases.
+
+The ``modules`` attribute is used to specify the names of the individual PyQt
+extension modules to be built.  We choose to build only those extension
+modules needed by :program:`pyqt-demo`.
 
 
 pyqt3D
