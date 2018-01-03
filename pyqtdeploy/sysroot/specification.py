@@ -38,27 +38,28 @@ from .component import ComponentBase
 class Specification:
     """ Encapsulate the specification of a system root directory. """
 
-    def __init__(self, spec_file, plugin_dirs, target):
+    def __init__(self, specification_file, plugin_dirs, target):
         """ Initialise the object. """
 
-        self.specification_file = os.path.abspath(spec_file)
+        self._specification_file = specification_file
 
         self.components = []
 
         # Load the JSON file.
-        with open(spec_file) as f:
+        with open(specification_file) as f:
             try:
                 spec = json.load(f)
             except json.JSONDecodeError as e:
                 raise UserException(
-                        "{0}:{1}: {2}".format(spec_file, e.lineno, e.msg))
+                        "{0}:{1}: {2}".format(specification_file, e.lineno,
+                                e.msg))
 
         # Do a high level parse and import the plugins.
         for name, value in spec.items():
             if name == 'Description':
                 # Check its type even though we don't actually use it.
                 if not isinstance(value, str):
-                    self._bad_type(name, spec_file)
+                    self._bad_type(name)
             else:
                 # Allow target-specific plugins.
                 name = self._value_for_target(name, target)
@@ -69,10 +70,11 @@ class Specification:
                 plugin = None
 
                 # Search any user specified directories.
-                for plugin_dir in plugin_dirs:
-                    plugin = self._plugin_from_file(name, plugin_dir)
-                    if plugin is not None:
-                        break
+                if plugin_dirs:
+                    for plugin_dir in plugin_dirs:
+                        plugin = self._plugin_from_file(name, plugin_dir)
+                        if plugin is not None:
+                            break
 
                 # Search the included plugin packages.
                 if plugin is None:
@@ -89,15 +91,11 @@ class Specification:
                                 "unable to find a plugin for '{0}'".format(
                                         name))
 
-                # Create the component plugin.
-                component = plugin()
-                setattr(component, 'name', name)
-
                 # Remove values unrelated to the target.
                 if not isinstance(value, dict):
-                    self._bad_type(name, spec_file)
+                    self._bad_type(name)
 
-                config = {}
+                options_values = {}
                 for opt_name, opt_value in value.items():
                     # Allow target-specific options.
                     opt_name = self._value_for_target(opt_name, target)
@@ -105,25 +103,37 @@ class Specification:
                         continue
 
                     # The value is relevant so save it.
-                    config[opt_name] = opt_value
+                    options_values[opt_name] = opt_value
 
-                # Parse the component-specific options.
-                for cls in plugin.__mro__:
-                    options = cls.__dict__.get('options')
-                    if options:
-                        self._parse_options(config, options, component,
-                                spec_file)
-
-                    if cls is ComponentBase:
-                        break
-
-                unused = config.keys()
-                if unused:
-                    self._parse_error(
-                            "unknown value(s): {0}".format(', '.join(unused)),
-                            spec_file, name)
+                # Create the component plugin.
+                component = plugin()
+                setattr(component, 'name', name)
+                setattr(component, '_options_values', options_values)
 
                 self.components.append(component)
+
+    def parse_options(self):
+        """ Parse all the components' options. """
+
+        for component in self.components:
+            options_values = component._options_values
+
+            # Parse the component-specific options.
+            for cls in plugin.__mro__:
+                options = cls.__dict__.get('options')
+                if options:
+                    self._parse_options(options_values, options, component)
+
+                if cls is ComponentBase:
+                    break
+
+            unused = options_values.keys()
+            if unused:
+                self._parse_error(
+                        "unknown option(s): {0}".format(', '.join(unused)),
+                        component.name)
+
+            del component._options_values
 
     @staticmethod
     def _value_for_target(value, target):
@@ -207,7 +217,7 @@ class Specification:
 
         return None
 
-    def _parse_options(self, json_array, options, component, spec_file):
+    def _parse_options(self, json_array, options, component):
         """ Parse a JSON array according to a set of options and add the
         corresponding values as attributes of a component object.
         """
@@ -219,7 +229,7 @@ class Specification:
                 if option.required:
                     self._parse_error(
                             "'{0}' has not been specified".format(option.name),
-                            spec_file, component.name)
+                            component.name)
 
                 # Create a default value.
                 if option.default is None:
@@ -227,12 +237,12 @@ class Specification:
                 else:
                     value = option.default
             elif not isinstance(value, option.type):
-                self._bad_type(option.name, spec_file, component.name)
+                self._bad_type(option.name, component.name)
             elif option.values:
                 if value not in option.values:
                     self._parse_error(
                             "'{0}' must have be one of these values: {1}".format(option.name, ','.join(option.values)),
-                            spec_file, component.name)
+                            component.name)
 
             setattr(component, option.name, value)
 
@@ -241,20 +251,20 @@ class Specification:
             except KeyError:
                 pass
 
-    def _bad_type(self, name, spec_file, component_name=None):
+    def _bad_type(self, name, component_name=None):
         """ Raise an exception when an option name has the wrong type. """
 
         self._parse_error("value of '{0}' has an unexpected type".format(name),
-                spec_file, component_name)
+                component_name)
 
-    def _parse_error(self, message, spec_file, component_name):
+    def _parse_error(self, message, component_name):
         """ Raise an exception for by an error in the specification file. """
 
         if component_name:
-            exception = "{0}: Component '{1}': {2}".format(spec_file,
-                    component_name, message)
+            exception = "{0}: Component '{1}': {2}".format(
+                    self._specification_file, component_name, message)
         else:
-            exception = "{0}: {1}".format(spec_file, message)
+            exception = "{0}: {1}".format(self._specification_file, message)
 
         raise UserException(exception)
 

@@ -88,10 +88,6 @@ class OpenSSLComponent(ComponentBase):
         if sysroot.target_platform_name == sysroot.host_platform_name:
             # We are building natively.
 
-            if sysroot.target_platform_name == 'linux':
-                self._build_linux(sysroot, common_options)
-                return
-
             if sysroot.target_arch_name == 'macos-64':
                 self._build_macos(sysroot, common_options)
                 return
@@ -170,12 +166,6 @@ class OpenSSLComponent(ComponentBase):
 
             os.remove(installed_lib_so)
             sysroot.copy_file(lib_so, installed_lib_so)
-
-    def _build_linux(self, sysroot, common_options):
-        """ Build OpenSSL for Linux. """
-
-        sysroot.error("building OpenSSL for '{0}' is not yet supported".format(
-                sysroot.target_platform_name))
 
     def _build_macos(self, sysroot, common_options):
         """ Build OpenSSL for 64 bit macOS. """

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,4 +24,4 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from .python import PythonPackage
+from .python import PythonComponent

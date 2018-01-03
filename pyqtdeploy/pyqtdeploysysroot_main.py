@@ -74,7 +74,7 @@ def main():
         if not sysroot_dir:
             sysroot_dir = os.environ.get('SYSROOT')
 
-        sysroot = Sysroot(sysroot_dir, args.specification, args.plugin_path,
+        sysroot = Sysroot(sysroot_dir, args.specification, args.plugin_dir,
                 args.source_dir, args.target, message_handler)
 
         if args.options:

@@ -61,7 +61,7 @@ class Sysroot:
                 self._target)
         self._message_handler = message_handler
 
-        self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(self._specification.specification_file)
+        self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(os.path.abspath(sysroot_json))
 
         self._target_py_version_nr = None
 
@@ -73,6 +73,9 @@ class Sysroot:
         the system image root directory and build everything.  Raise a
         UserException if there is an error.
         """
+
+        # Handle the options now we know they are needed.
+        self._specification.parse_options()
 
         # Allow the components to configure themselves even if they are not
         # being built.
