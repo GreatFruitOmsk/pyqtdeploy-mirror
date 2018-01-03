@@ -149,7 +149,7 @@ class PythonComponent(ComponentBase):
         sysroot.run(*configure)
 
         # For reasons not fully understood, the presence of this environment
-        # variable breaks the build (probably on on macOS).
+        # variable breaks the build (probably only on macOS).
         launcher = os.environ.get('__PYVENV_LAUNCHER__')
         if launcher is not None:
             del os.environ['__PYVENV_LAUNCHER__']
