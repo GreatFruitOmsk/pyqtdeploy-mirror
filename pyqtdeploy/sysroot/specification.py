@@ -119,7 +119,7 @@ class Specification:
             options_values = component._options_values
 
             # Parse the component-specific options.
-            for cls in plugin.__mro__:
+            for cls in type(component).__mro__:
                 options = cls.__dict__.get('options')
                 if options:
                     self._parse_options(options_values, options, component)
