@@ -35,9 +35,97 @@ contributing it so that it can be included in a future release of
 Standard Component Plugins
 --------------------------
 
-TODO - describe what comes as standard
+The following component plugins are included as standard with
+:program:`pyqtdeploy`.
 
-TODO - building a spec file from scratch
+**openssl**
+    This builds the OpenSSL libraries for v1.0.* on Android (dynamically),
+    macOS (statically) and Windows (statically).  It requires ``perl`` to be
+    installed on :envvar:`PATH`.
+
+**pip**
+    This is a meta-component which can install any number of components that
+    can be installed by ``pip``.
+
+**pyqt3d**
+    This builds a static version of the PyQt3D extension modules for all target
+    architectures.  It must be built after PyQt5.
+
+**pyqt5**
+    This builds a static version of the PyQt5 extension modules for all
+    target architectures.  It must be built after sip and Qt5.
+
+**pyqtchart**
+    This builds a static version of the PyQtChart extension module for all
+    target architectures.  It must be built after PyQt5.
+
+**pyqtdatavisualization**
+    This builds a static version of the PyQtDataVisualization extension module
+    for all target architectures.  It must be built after PyQt5.
+
+**pyqtpurchasing**
+    This builds a static version of the PyQtPurchasing extension module for
+    all target architectures.  It must be built after PyQt5.
+
+**python**
+    This will build Python from source, or install it into sysroot from an
+    existing installation, for both the host and target architectures.
+    Building the host version from source is not supported on Windows.
+    Installing the host version from an existing installation is not supported
+    on Android or iOS.  The target version of the Python library and extension
+    modules built from source will be built statically.  Installing the target
+    version from an existing installation is only supported on Windows.  If
+    building the target version from source and SSL support is required then
+    OpenSSL must be built first.
+
+**qscintilla**
+    This builds a static version of the QScintilla library and Python extension
+    module for all target architectures.  It must be built after PyQt5.
+
+**qt5**
+    This will build a static version of Qt5 from source (but not for the
+    Android and iOS targets).  It will also install Qt5 into the sysroot from
+    an existing installation.  When building from source on Windows it requires
+    Python v2.7 to be installed (but it does not need to be on :envvar:`PATH`).
+    If building from source and SSL support using OpenSSL is required then
+    OpenSSL must be built first.
+
+**sip**
+    This builds a static version of the sip extension module for all target
+    architectures.  It also builds the sip code generator for the host
+    platform.  It must be built after Python.
+
+
+Creating a Sysroot Specification File
+-------------------------------------
+
+The following specification file contains an object for each of the standard
+component plugins.  (You can also download a copy of the file from
+:download:`here</examples/skeleton.json>`).  No configuration options have been
+set for any component.
+
+.. literalinclude:: /examples/skeleton.json
+
+The first object, called ``Description``, is simple a way of including a
+comment in the specification and is otherwise ignored.
+
+Using this file, run the following command::
+
+    pyqtdeploy-sysroot --options skeleton.json
+
+You will then see a description of each component's configuration options, the
+type of value expected and whether or not a value is required.  You can then
+add options as attributes to the appropriate objects to meet your requirements.
+
+If your application does not require all of the standard components then simply
+remove the corresponding objects from the specification file.  If your
+application requires additional components then you need to create appropriate
+component plugins and add corresponding objects to the specification file.
+
+To build a native sysroot (i.e. for the host architecture) from a fully
+configured specification file, run::
+
+    pyqtdeploy-sysroot skeleton.json
 
 
 The :program:`pyqt-demo` Sysroot

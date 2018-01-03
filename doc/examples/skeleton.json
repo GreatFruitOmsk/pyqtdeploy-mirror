@@ -1,0 +1,36 @@
+{
+    "Description": "A skeleton sysroot specification.",
+
+    "openssl": {
+    },
+
+    "qt5": {
+    },
+
+    "python": {
+    },
+
+    "sip": {
+    },
+
+    "pyqt5": {
+    },
+
+    "pyqt3d": {
+    },
+
+    "pyqtchart": {
+    },
+
+    "pyqtdatavisualization": {
+    },
+
+    "pyqtpurchasing": {
+    },
+
+    "qscintilla": {
+    },
+
+    "pip":: {
+    }
+}
