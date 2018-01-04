@@ -1,3 +1,12 @@
+v2.0 ??? January 2018
+  - Add pyqtdeploy-build.
+  - Add pyqtdeploy-sysroot.
+  - Removed pyqtdeploycli.
+  - Added support for Python v2.7.14, v3.4.7, v3.5.4, v3.6.1, v3.6.2, v3.6.3
+    and v3.6.4.
+  - Added support for PyQt5.QtAndroidExtras.
+  - Added the pyqt-demo demonstration application.
+
 v1.3.2 4th March 2017
   - Added support for Python v2.7.13, v3.4.6, v3.5.3 and v3.6.0.
   - Added support for PyQt3D.
