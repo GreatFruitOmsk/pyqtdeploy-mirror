@@ -58,7 +58,6 @@ DEFINES += VPATH=\\\".\\\"
 DEFINES += PREFIX=\\\"/\\\"
 DEFINES += EXEC_PREFIX=\\\"/\\\"
 DEFINES += PYTHONPATH=\\\"/lib/python$${PY_MAJOR_VERSION}.$${PY_MINOR_VERSION}\\\"
-DEFINES += WITH_PYMALLOC=\\\"1\\\"
 
 INCLUDEPATH += . Include
 
