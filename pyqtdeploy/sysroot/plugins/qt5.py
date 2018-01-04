@@ -115,7 +115,7 @@ class Qt5Component(ComponentBase):
             new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
 
             # Look in the registry for a Python v2.7 installation.
-            py27 = sysroot.get_python_install_path(0x020700)
+            py_27 = sysroot.get_python_install_path(0x020700)
             new_path.insert(0, py_27)
 
             os.environ['PATH'] = ';'.join(new_path)
