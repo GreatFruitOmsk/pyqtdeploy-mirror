@@ -29,9 +29,9 @@ by a ``-``.  Note that not all platform/word size combinations are supported.
 - :program:`qmake` is the Qt build system that supports cross-compilation to
   multiple targets.
 
-- :program:`rcc` is a utility that converts arbitrary files in C++ code that
-  implements an embedded filesystem that can be linked as part of an
-  application.
+- :program:`rcc` is a utility that converts arbitrary files to C++ data
+  structures that implement an embedded filesystem that can be linked as part
+  of an application.
 
 - The :program:`QtCore` library implements file access APIs that recognise file
   and directory names that refer to the contents of the embedded filesystem
@@ -40,7 +40,7 @@ by a ``-``.  Note that not all platform/word size combinations are supported.
   the embedded filesystem just as if they were being imported from an ordinary
   filesystem.
 
-Note that :program:`pyqtdeploy` does not itself use PyQt.
+Note that :program:`pyqtdeploy` generated code does not itself use PyQt.
 :program:`pyqtdeploy` can be used to deploy non-PyQt applications, including
 simple command line scripts.  However, as every deployed application is linked
 with the :program:`QtCore` library, you should make sure that you application's

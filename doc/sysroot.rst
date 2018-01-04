@@ -44,7 +44,7 @@ The following component plugins are included as standard with
     installed on :envvar:`PATH`.
 
 **pip**
-    This is a meta-component which can install any number of components that
+    This is a meta-component which will install any number of components that
     can be installed by ``pip``.
 
 **pyqt3d**
@@ -154,7 +154,7 @@ The Python binary installer for macOS from `www.python.org <www.python.org>`__
 includes a patched version of OpenSSL.  The plugin will apply the same patch to
 OpenSSL (on macOS only) if a Python source archive is specified.  The patch
 applies to a specific version of OpenSSL - which one depends on the version of
-Python.
+Python being targeted.
 
 
 qt5
@@ -200,8 +200,8 @@ the MSVC runtime libraries.
 
 For simplicity we have chosen to build a full Qt implementation when building
 from source.  We could have chosen to use the ``configure_options``,
-``disabled_features`` and ``skip`` attributes to tailor the Qt build into to
-reduce the time taken to do the build.
+``disabled_features`` and ``skip`` attributes to tailor the Qt build in order
+to reduce the time taken to do the build.
 
 
 python
@@ -216,11 +216,11 @@ python
     },
 
 The Python component plugin handles installation for both host and target
-architectures.  For the host we choose to use an existing Python installation.
-On Windows the registry is searched for the location of the existing
-installation.  On Linux and macOS the Python interpreter must be on
-:envvar:`PATH`.  For all target architecures we choose to build Python from
-source.
+architectures.  For the host we choose to use an existing Python installation
+rather than build from source.  On Windows the registry is searched for the
+location of the existing installation.  On Linux and macOS the Python
+interpreter must be on :envvar:`PATH`.  For all target architecures we choose
+to build Python from source.
 
 :program:`pyqt-demo` is a very simple application that does not need to
 dynamically load extension modules.  If this was needed then the
@@ -284,8 +284,8 @@ The two attributes used to tailor the build of PyQt5 are ``disabled_features``
 and ``modules``.
 
 Unfortunately the list of features that can be disabled is not properly
-documented and relate to how Qt5 was configured.  However how the attribute is
-set in the above will be appropriate for most cases.
+documented and relate to how Qt5 was configured.  However how
+``disabled_features`` is set in the above will be appropriate for most cases.
 
 The ``modules`` attribute is used to specify the names of the individual PyQt
 extension modules to be built.  We choose to build only those extension
@@ -373,7 +373,7 @@ The full set of command line options is:
     A temporary build directory (called ``build`` in the sysroot) is created in
     order to build the required components.  Normally this is removed
     automatically after all components have been built.  Specifying this option
-    leaves the build directory as it is to make debugging component plugins
+    leaves the build directory in place to make debugging component plugins
     easier.
 
 .. option:: --options
@@ -386,8 +386,8 @@ The full set of command line options is:
     ``DIR`` is added to the list of directories that are searched for component
     plugins.  It may be used more than once to search multiple directories.
     All directories specified in this way will be searched before those
-    directories (internal to :program:`pyqtdeploy-sysroot`) searched by
-    default.
+    directories (internal to :program:`pyqtdeploy-sysroot`) that are searched
+    by default.
 
 .. option:: --source-dir DIR
 
@@ -516,12 +516,13 @@ class is.
     .. py:method:: copy_dir(src, dst, ignore=None)
 
         A directory is copied, optionally excluding file and sub-directories
-        that match a number of patterns.  If the destination directory already
-        exists then it is first removed.  Any errors are handled automatically.
+        that match a number of glob patterns.  If the destination directory
+        already exists then it is first removed.  Any errors are handled
+        automatically.
 
         :param str src: is the name of the source directory.
         :param str dst: is the name of the destination directory.
-        :param list[str] ignore: is an optional sequence of patterns that
+        :param list[str] ignore: is an optional sequence of glob patterns that
             specify files and sub-directories that should be ignored.
 
     .. py:method:: create_file(name)
@@ -538,13 +539,13 @@ class is.
         already exist then it is optionally emptied.  Any errors are handled
         automatically.
 
-        :param str name: is the name of the directory
+        :param str name: is the name of the directory.
         :param bool empty: ``True`` if an existing directory should be emptied.
 
     .. py:method:: decode_version_nr(version_nr)
 
         An encoded version number is decoded to a 3-tuple of major version,
-        minor version and maintenance version.
+        minor version and patch version.
 
         :param int version_nr: is the encoded version number.
         :return: the decoded 3-tuple.
@@ -686,7 +687,7 @@ class is.
 
         Convert a string in the form [M[.m[.p]]] to an encoded version number.
 
-        :param str version_str] is the version number to parse.
+        :param str version_str: is the version number to parse.
         :return: an encoded version number.
 
     .. py:method:: pip_install(package)
@@ -779,7 +780,7 @@ class is.
 
     .. py:method:: unpack_archive(archive, chdir=True)
 
-        An archive (i.e. a ``.tar.gz`` or ``.zip`` file) is unpacked in the
+        An archive (e.g. a ``.tar.gz`` or ``.zip`` file) is unpacked in the
         current directory.
 
         :param str archive: the name of the archive.

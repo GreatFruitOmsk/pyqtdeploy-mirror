@@ -5,7 +5,7 @@
 Creating a :program:`pyqtdeploy` Project
 ========================================
 
-The first stage of deploying a PyQt application is to create a
+The next stage of deploying a PyQt application is to create a
 :program:`pyqtdeploy` project for it by running::
 
     pyqtdeploy pyqt-demo.pdy
@@ -125,7 +125,7 @@ The tab for defining the application source is shown below.
         enabled.
 
 **Target Python version**
-    is used to specify version of Python that you are targetting.
+    is used to specify version of Python that you are targeting.
 
 **Target PyQt version**
     is used to specify that the application is either a PyQt4 or a PyQt5
@@ -245,8 +245,8 @@ application is shown below.
 
     - *checked* meaning it is explicitly imported by the application
     - *partially checked* meaning it is implicitly imported by the application
-      because an explicitly imported package depends on it, or the Python
-      interpreter itself imports it
+      because another imported package depends on it, or the Python interpreter
+      itself imports it
     - *unchecked* meaning it is not needed by the application.
 
     You should always check a package if the application explicitly imports it,
@@ -259,7 +259,7 @@ application is shown below.
     :mod:`subprocess` modules (amongst others) have been partially checked
     automatically.
 
-The remaining part of the tab relates to non-system libraries that may need to
+The remaining part of the tab relates to additional libraries that may need to
 be linked with the application.  Typically they correspond to packages in the
 standard library that wrap them.  A tab is provided for each target platform so
 that a library can be handled in a platform-specific manner.  If a library is
@@ -268,8 +268,8 @@ library will be enabled.  The corresponding ``DEFINES``, ``INCLUDEPATH`` and
 ``LIBS`` fields will also be editable allowing those values to be set
 appropriately.  If all of those fields are left blank then the external library
 is effectively disabled.  This can be useful if, for example, the original
-Python package is written to use an external library if it is available but to
-fall back to another implementation if not.
+Python package is written to use an external library if it is available but
+will fall back to another implementation if not.
 
 For example, if you have built a static copy of the library
 then you may need to specify the location of the library's header files in the
@@ -381,15 +381,15 @@ project files that can be used without modification across all supported
 targets.  To this end the values of these :program:`qmake` variables may be
 *scoped* with any supported target architecture or platform name.
 
-The scope is specified immediately before the value and separated by a ``#``.
-A scope can take one of the following forms (where *target* is either a target
-architecture or platform):
+The scope is specified immediately before the value and separated from it by a
+``#``.  A scope can take one of the following forms (where *target* is either a
+target architecture or platform):
 
 - *target* where the value applies for the specified target only
 
 - *!target* where the values applies to all targets except the one specified
 
-- *target|target* where the value applies to all of the targets specified.
+- *target|target|...* where the value applies to all of the targets specified.
 
 The most common requirement is to distinguish between Windows and non-Windows
 targets, therefore the most common scopes used will be ``win`` and ``!win``.
@@ -444,7 +444,7 @@ The tab for defining the locations of various files and directories needed by
     :program:`pyqtdeploy` will interpret it correctly on Windows.  It can be
     overridden by the
     :option:`--python-library <pyqtdeploy-build --python-library>` command line
-    option of :program:`pyqtdeploycli`.
+    option of :program:`pyqtdeploy-build`.
 
 **Standard library directory**
     is used to specify the name of the directory containing the target Python

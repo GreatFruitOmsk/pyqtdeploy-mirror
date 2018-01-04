@@ -47,7 +47,7 @@ Windows  Statically linked OpenSSL          Statically linked OpenSSL
 ======== ================================== ===================================
 
 Before building the demo you must first populate the ``src`` directory with
-appropriate source archives for the following packages:
+appropriate source archives for the following components:
 
 - Python
 - Qt
