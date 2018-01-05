@@ -68,10 +68,9 @@ setup(
         platforms=['X11', 'OS/X', 'Windows'],
         packages=find_packages(),
         package_data={
-            'pyqtdeploy.builder':   ['lib/*.*', 'lib/*/*.*'],
-            'pyqtdeploy.packages':  ['configurations/*/*.*'],
-            'pyqtdeploy.python':    ['configurations/*.*',
-                                     'configurations/*/*.*']
+            'pyqtdeploy.builder': ['lib/*.*', 'lib/*/*.*'],
+            'pyqtdeploy.sysroot.plugins.python': ['configurations/*.*',
+                    'configurations/*/*.*']
         },
         entry_points={
             'console_scripts': [
