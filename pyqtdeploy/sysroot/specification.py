@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+import collections
 import importlib
 import json
 import os
@@ -48,7 +49,7 @@ class Specification:
         # Load the JSON file.
         with open(specification_file) as f:
             try:
-                spec = json.load(f)
+                spec = json.load(f, object_pairs_hook=collections.OrderedDict)
             except json.JSONDecodeError as e:
                 raise UserException(
                         "{0}:{1}: {2}".format(specification_file, e.lineno,
