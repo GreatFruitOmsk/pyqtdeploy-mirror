@@ -85,10 +85,10 @@ The following component plugins are included as standard with
 **qt5**
     This will build a static version of Qt5 from source (but not for the
     Android and iOS targets).  It will also install Qt5 into the sysroot from
-    an existing installation.  When building from source on Windows it requires
-    Python v2.7 to be installed (but it does not need to be on :envvar:`PATH`).
-    If building from source and SSL support using OpenSSL is required then
-    OpenSSL must be built first.
+    an existing installation created by the standard installer.  When building
+    from source on Windows it requires Python v2.7 to be installed (but it does
+    not need to be on :envvar:`PATH`).  If building from source and SSL support
+    using OpenSSL is required then OpenSSL must be built first.
 
 **sip**
     This builds a static version of the sip extension module for all target
