@@ -79,14 +79,16 @@ class Qt5Component(ComponentBase):
             qt_dir = self._build_from_source(sysroot)
 
         # Create a symbolic link to qmake in a standard place in sysroot so
-        # that it can be referred to in cross-target .pdy files.
-        qt_bin_dir = os.path.join(qt_dir, 'bin')
+        # that it can be referred to in cross-target build scripts.
+        qmake = sysroot.host_exe('qmake')
+        qmake_path = os.path.join(qt_dir, 'bin', qmake)
 
-        sysroot.make_symlink(
-                os.path.join(qt_bin_dir, sysroot.host_exe('qmake')),
-                sysroot.host_qmake)
+        sysroot.make_symlink(qmake_path,
+                os.path.join(sysroot.host_bin_dir, qmake))
 
-        # Do the same for androiddeployqt if it exists for user build scripts.
+        sysroot.host_qmake = qmake_path
+
+        # Do the same for androiddeployqt if it exists.
         androiddeployqt = sysroot.host_exe('androiddeployqt')
         androiddeployqt_path = os.path.join(qt_bin_dir, androiddeployqt)
 

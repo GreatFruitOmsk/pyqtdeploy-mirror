@@ -64,6 +64,7 @@ class Sysroot:
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(os.path.abspath(sysroot_json))
 
         self._target_py_version_nr = None
+        self._host_qmake = None
 
         self._target.configure()
         self._building_for_target = True
@@ -459,7 +460,18 @@ class Sysroot:
     def host_qmake(self):
         """ The name of the host qmake executable. """
 
-        return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
+        if self._host_qmake is None:
+            self._missing_component('qt5')
+
+        return self._host_qmake
+
+    @host_qmake.setter
+    def host_qmake(self, qmake):
+        """ Set the name of the host qmake executable.  This should only be
+        used by the Qt component plugin.
+        """
+
+        self._host_qmake = qmake
 
     @property
     def host_sip(self):
