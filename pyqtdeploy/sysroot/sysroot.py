@@ -700,7 +700,9 @@ class Sysroot:
                     "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_root))
 
         # Move the extracted archive.
-        os.rename(archive_root, os.path.join(original_cwd, archive_root))
+        archive_root_path = os.path.join(original_cwd, archive_root)
+        self.delete_dir(archive_root_path)
+        os.rename(archive_root, archive_root_path)
         os.chdir(original_cwd)
 
         # Change to the extracted directory if required.
