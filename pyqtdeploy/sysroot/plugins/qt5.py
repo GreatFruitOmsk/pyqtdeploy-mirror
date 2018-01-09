@@ -57,18 +57,8 @@ class Qt5Component(ComponentBase):
         """ Build Qt5 for the target. """
 
         if self.qt_dir:
-            if self.source:
-                sysroot.error(
-                        "the 'qt_dir' and 'source' options cannot both be specified")
-
             sysroot.progress("Installing an existing Qt5")
-
-            qt_dir = self._install_existing(sysroot)
         else:
-            if not self.source:
-                sysroot.error(
-                        "either the 'qt_dir' or 'source' option must be specified")
-
             sysroot.progress("Building Qt5 from source")
 
             # We don't support cross-compiling Qt.
@@ -76,21 +66,17 @@ class Qt5Component(ComponentBase):
                 sysroot.error(
                         "cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation")
 
-            qt_dir = self._build_from_source(sysroot)
+            self._build_from_source(sysroot)
 
         # Create a symbolic link to qmake in a standard place in sysroot so
         # that it can be referred to in cross-target build scripts.
-        qmake = sysroot.host_exe('qmake')
-        qmake_path = os.path.join(qt_dir, 'bin', qmake)
-
-        sysroot.make_symlink(qmake_path,
-                os.path.join(sysroot.host_bin_dir, qmake))
-
-        sysroot.host_qmake = qmake_path
+        sysroot.make_symlink(sysroot.host_qmake,
+                os.path.join(sysroot.host_bin_dir, sysroot.host_exe('qmake')))
 
         # Do the same for androiddeployqt if it exists.
         androiddeployqt = sysroot.host_exe('androiddeployqt')
-        androiddeployqt_path = os.path.join(qt_bin_dir, androiddeployqt)
+        androiddeployqt_path = os.path.join(self._target_qt_dir, 'bin',
+                androiddeployqt)
 
         if os.path.isfile(androiddeployqt_path):
             sysroot.make_symlink(androiddeployqt_path,
@@ -143,7 +129,7 @@ class Qt5Component(ComponentBase):
 
         license = '-opensource' if '-opensource-' in archive_dir else '-commercial'
 
-        args = [configure, '-prefix', sysroot.target_qt_dir, license,
+        args = [configure, '-prefix', self._target_qt_dir, license,
                 '-confirm-license', '-static', '-release', '-nomake',
                 'examples', '-nomake', 'tools']
 
@@ -196,14 +182,24 @@ class Qt5Component(ComponentBase):
         if original_path is not None:
             os.environ['PATH'] = original_path
 
-        return sysroot.target_qt_dir
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
 
-    def _install_existing(self, sysroot):
-        """ Install Qt5 from an existing installation. """
+        # Determine the qmake location as it may be needed by other components.
+        if self.qt_dir:
+            if self.source:
+                sysroot.error(
+                        "the 'qt_dir' and 'source' options cannot both be specified")
 
-        qt_dir = sysroot.find_file(self.qt_dir)
+            self._target_qt_dir = sysroot.find_file(self.qt_dir)
 
-        if not os.path.isdir(qt_dir):
-            sysroot.error("'{0}' could not be found".format(qt_dir))
+            if not os.path.isdir(self._target_qt_dir):
+                sysroot.error("'{0}' could not be found".format(qt_dir))
+        else:
+            if not self.source:
+                sysroot.error(
+                        "either the 'qt_dir' or 'source' option must be specified")
 
-        return qt_dir
+            self._target_qt_dir = os.path.join(sysroot.sysroot_dir, 'qt')
+
+        sysroot.host_qmake = os.path.join(self._target_qt_dir, 'bin', 'qmake')

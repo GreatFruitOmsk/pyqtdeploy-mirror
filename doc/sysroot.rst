@@ -762,11 +762,6 @@ class is.
         The name of the directory where ``.sip`` files built for the target
         architecture can be found.
 
-    .. py:attribute:: target_qt_dir
-
-        The name of the root directory of the target architecture Qt
-        installation.
-
     .. py:attribute:: target_sitepackages_dir
 
         The name of the ``site-packages`` directory for the target

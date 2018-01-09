@@ -471,7 +471,7 @@ class Sysroot:
         used by the Qt component plugin.
         """
 
-        self._host_qmake = qmake
+        self._host_qmake = self.host_exe(qmake)
 
     @property
     def host_sip(self):
@@ -646,12 +646,6 @@ class Sysroot:
         """ The name of the directory containing the target .sip files. """
 
         return os.path.join(self.sysroot_dir, 'share', 'sip')
-
-    @property
-    def target_qt_dir(self):
-        """ The name of the root directory of the target Qt installation. """
-
-        return os.path.join(self.sysroot_dir, 'qt')
 
     @property
     def target_sitepackages_dir(self):
