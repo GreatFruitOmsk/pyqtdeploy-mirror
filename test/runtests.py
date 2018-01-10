@@ -10,106 +10,105 @@ class UserException(Exception):
     """ An exception used for reporting user-triggered errors. """
 
 
-class TargetSpecifications:
-    """ Encapsulate a set of specifications for a particular target. """
+class TargetTests:
+    """ Encapsulate a set of tests for a particular target. """
 
-    # The root directory.  This will be the current directory when
-    # pyqtdeploy-sysroot is run.
-    _root_dir = os.path.abspath(os.path.dirname(__file__))
-
-    def __init__(self, target, specification=None):
+    def __init__(self, target, test=None):
         """ Initialise the object. """
 
-        specs_dir = os.path.join(self._root_dir, 'specifications')
+        if not target:
+            if sys.platform.startswith('linux'):
+                target = 'linux-64'
+            elif sys.platform == 'win32':
+                target = 'win-{0}'.format(64 if os.environ.get('Platform') == 'X64' else 32)
+            elif sys.platform == 'darwin':
+                target = 'macos-64'
+            else:
+                raise UserException("unsupported host platform")
 
-        if specification:
-            # An specific specification was given.
-            specification = os.path.abspath(specification)
+        self.target = target
 
-            # If there is no explicit target then we assume that the
-            # specification is part of the test suite and the target
-            # corresponds to the directory containing the specification.
-            if not target:
-                target_dir = os.path.dirname(specification)
-                if os.path.dirname(target_dir) != specs_dir:
-                    raise UserException(
-                            "unable to determine the target name for specification '{}'".format(specification))
+        self._tests = [test] if test else self._find_tests()
 
-                target = os.path.basename(target_dir)
+    @classmethod
+    def factory(cls, target, test):
+        """ Create a tests instance for a particular test. """
 
-                if target == 'common':
-                    target = self._default_target
-
-            specifications = [specification]
+        if test.endswith(TargetSysrootTests.test_extension):
+            test_type = TargetSysrootTests
+        elif test.endswith(TargetStdlibTests.test_extension):
+            test_type = TargetStdlibTests
         else:
-            if not target:
-                target = self._default_target
+            raise UserException("unknown test type: {0}".format(test))
 
-            # Search the supported target directories.
-            specifications = []
+        return test_type(target, os.path.abspath(test))
 
-            for target_dir in [target, 'common']:
-                specifications.extend(
-                        glob.glob(
-                                os.path.join(specs_dir, target_dir, '*.json')))
+    def run(self, no_clean, verbose):
+        """ Run the tests. """
 
-        self._specifications = specifications
-        self._target = target
+        for test in self._tests:
+            self.run_test(test, no_clean, verbose)
 
-    def build(self, no_clean, verbose):
-        """ Build the sysroot images. """
+    def run_test(self, test, no_clean, verbose):
+        """ Re-implemented to run a single test. """
 
-        os.chdir(self._root_dir)
+        raise NotImplementedError
 
-        for spec in self._specifications:
-            print("Building sysroot from {}".format(spec))
+    def _find_tests(self):
+        """ Return the sequence of test files. """
 
-            # The name of the sysroot image file to be built.
-            test_name = os.path.basename(spec).split('.')[0]
-            sysroot = os.path.join(self._root_dir, 'sysroot',
-                    '{}-{}'.format(self._target, test_name))
+        # Search the supported target directories.
+        tests = []
 
-            # Build the command line.
-            args = ['pyqtdeploy-sysroot']
+        for target_dir in [self.target, 'common']:
+            tests.extend(
+                    glob.glob(
+                            os.path.join('tests', target_dir,
+                                    '*' + test_extension)))
 
-            if no_clean:
-                args.append('--no-clean')
+        return tests
 
-            if verbose:
-                args.append('--verbose')
 
-            args.extend(['--source-dir',
-                    os.path.join(os.path.dirname(self._root_dir), 'demo',
-                            'src')])
-            args.extend(['--target', self._target])
-            args.extend(['--sysroot', sysroot])
-            args.append(spec)
+class TargetSysrootTests(TargetTests):
+    """ Encapsulate a set of pyqtdeploy-sysroot tests for a particular target.
+    """
 
-            if verbose:
-                print("Running: '{}'".format(' '.join(args)))
+    # The filename exyension of pyqtdeploy-sysroot tests.
+    test_extension = '.json'
 
-            try:
-                subprocess.check_call(args)
-            except subprocess.CalledProcessError:
-                print("Build of sysroot from {} failed".format(spec))
-                break
+    def run_test(self, test, no_clean, verbose):
+        """ Run a pyqtdeploy-sysroot test. """
 
-            print("Build of sysroot from {} successful".format(spec))
+        print("Building sysroot from {}".format(test))
 
-    @property
-    def _default_target(self):
-        """ Return the default target for this platform. """
+        # The name of the sysroot image file to be built.
+        test_name = os.path.basename(test).split('.')[0]
+        sysroot = os.path.join('sysroot',
+                '{}-{}'.format(self.target, test_name))
 
-        if sys.platform.startswith('linux'):
-            target = 'linux-64'
-        elif sys.platform == 'win32':
-            target = 'win-{0}'.format(64 if os.environ.get('Platform') == 'X64' else 32)
-        elif sys.platform == 'darwin':
-            target = 'macos-64'
-        else:
-            raise UserException("unsupported host platform")
+        # Build the command line.
+        args = ['pyqtdeploy-sysroot']
 
-        return target
+        if no_clean:
+            args.append('--no-clean')
+
+        if verbose:
+            args.append('--verbose')
+
+        args.extend(['--source-dir', os.path.join('..', 'demo', 'src')])
+        args.extend(['--target', self.target])
+        args.extend(['--sysroot', sysroot])
+        args.append(test)
+
+        if verbose:
+            print("Running: '{}'".format(' '.join(args)))
+
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            raise UserException("Build of sysroot from {} failed".format(test))
+
+        print("Build of sysroot from {} successful".format(test))
 
 
 if __name__ == '__main__':
@@ -122,13 +121,20 @@ if __name__ == '__main__':
     parser.add_argument('--no-clean',
             help="do not remove the temporary build directories",
             action='store_true')
-    parser.add_argument('--specification', help="the JSON specification file")
+    parser.add_argument('--test',
+            help="the JSON specification file or project file")
     parser.add_argument('--target', help="the target platform")
     parser.add_argument('--verbose', help="enable verbose progress messages",
             action='store_true')
 
     args = parser.parse_args()
 
-    # Build the sysroot images.
-    TargetSpecifications(args.target, args.specification).build(args.no_clean,
-            args.verbose)
+    # Anchor everything from the directory containing this script.
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Run a specific test or all of them.
+    if args.test:
+        TargetTests.factory(args.target, args.test).run(args.no_clean,
+                args.verbose)
+    else:
+        TargetSysrootTests(args.target).run(args.no_clean, args.verbose)
