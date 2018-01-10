@@ -2,6 +2,7 @@
 
 import glob
 import os
+import shutil
 import subprocess
 import sys
 
@@ -29,6 +30,17 @@ class TargetTests:
         self.target = target
 
         self._tests = [test] if test else self._find_tests()
+
+    def call(self, args, verbose, failure_message):
+        """ Call a sub-process. """
+
+        if verbose:
+            print("Running: '{}'".format(' '.join(args)))
+
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            raise UserException(failure_message)
 
     @classmethod
     def factory(cls, target, test):
@@ -81,12 +93,12 @@ class TargetSysrootTests(TargetTests):
 
         print("Building sysroot from {}".format(test))
 
-        # The name of the sysroot image file to be built.
+        # The name of the sysroot directory to be built.
         test_name = os.path.basename(test).split('.')[0]
         sysroot = os.path.join('sysroot',
-                '{}-{}'.format(self.target, test_name))
+                '{0}-{1}'.format(self.target, test_name))
 
-        # Build the command line.
+        # Run pyqtdeploy-sysroot.
         args = ['pyqtdeploy-sysroot']
 
         if no_clean:
@@ -100,15 +112,58 @@ class TargetSysrootTests(TargetTests):
         args.extend(['--sysroot', sysroot])
         args.append(test)
 
-        if verbose:
-            print("Running: '{}'".format(' '.join(args)))
-
-        try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
-            raise UserException("Build of sysroot from {} failed".format(test))
+        self.call(args, verbose,
+                "Build of sysroot from {} failed".format(test))
 
         print("Build of sysroot from {} successful".format(test))
+
+
+class TargetStdlibTests(TargetTests):
+    """ Encapsulate a set of pyqtdeploy-build tests for a particular target.
+    """
+
+    # The filename exyension of pyqtdeploy-build tests.
+    test_extension = '.pdy'
+
+    def run_test(self, test, no_clean, verbose):
+        """ Run a pyqtdeploy-build test. """
+
+        print("Building application from {}".format(test))
+
+        # The name of the sysroot directory to use.
+        sysroot = os.path.join('sysroot',
+                '{}-python_stdlib'.format(self.target))
+
+        # Run pyqtdeploy-build.
+        args = ['pyqtdeploy-build']
+
+        if no_clean:
+            args.append('--no-clean')
+
+        if verbose:
+            args.append('--verbose')
+
+        args.extend(['--target', self.target])
+        args.extend(['--sysroot', sysroot])
+        args.append(test)
+
+        self.call(args, verbose,
+                "pyqtdeploy-build using {} failed".format(test))
+
+        # Change to the build directory and run qmake and make.
+        build_dir = 'build-' + self.target
+        qmake = os.path.abspath(os.path.join(sysroot, 'host', 'bin', 'qmake'))
+        make = 'nmake' if sys.platform == 'win32' else 'make'
+
+        os.chdir(build_dir)
+        self.call([qmake], verbose, "qmake failed")
+        self.call([make], verbose, "make failed")
+        os.chdir('..')
+
+        if not no_clean:
+            shutil.rmtree(build_dir)
+
+        print("Build of application from {} successful".format(test))
 
 
 if __name__ == '__main__':
