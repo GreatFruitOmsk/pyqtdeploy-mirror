@@ -192,4 +192,6 @@ if __name__ == '__main__':
         TargetTests.factory(args.target, args.test).run(args.no_clean,
                 args.verbose)
     else:
+        # The sysroot tests must be run first.
         TargetSysrootTests(args.target).run(args.no_clean, args.verbose)
+        TargetStdlibTests(args.target).run(args.no_clean, args.verbose)
