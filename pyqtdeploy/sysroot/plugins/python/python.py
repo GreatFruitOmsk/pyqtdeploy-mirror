@@ -55,7 +55,8 @@ class PythonComponent(ComponentBase):
         archive = sysroot.find_file(self.source)
         old_wd = os.getcwd()
         os.chdir(sysroot.target_src_dir)
-        sysroot.unpack_archive(archive, chdir=False)
+        sysroot.unpack_archive(archive)
+        self._patch_source_for_target(sysroot)
         os.chdir(old_wd)
 
         # Build the host installation.
@@ -191,6 +192,7 @@ class PythonComponent(ComponentBase):
 
         # Unpack the source.
         sysroot.unpack_archive(archive)
+        self._patch_source_for_target(sysroot)
 
         # Configure for the target.
         configure_python(self.dynamic_loading, sysroot)
@@ -288,6 +290,35 @@ build_time_vars = {
         # The header files.
         sysroot.copy_dir(install_path + 'include',
                 os.path.join(sysroot.target_include_dir, py_subdir))
+
+    def _patch_source_for_target(self, sysroot):
+        """ Patch the source code as necessary for the target. """
+
+        # The only patching needed is for iOS.
+        if sysroot.target_platform_name != 'ios':
+            return
+
+        patch = os.path.join('Modules', 'posixmodule.c')
+        orig = patch + '.orig'
+
+        sysroot.progress("Patching {0}".format(patch))
+
+        # iOS doesn't have system() and the POSIX module uses hard-coded
+        # configurations rather than the normal configure by introspection
+        # process.
+        os.rename(patch, orig)
+
+        orig_file = sysroot.open_file(orig)
+        patch_file = sysroot.create_file(patch)
+
+        for line in orig_file:
+            # Just skip any line that sets HAVE_SYSTEM.
+            minimal = line.strip().replace(' ', '')
+            if minimal != '#defineHAVE_SYSTEM1':
+                patch_file.write(line)
+
+        orig_file.close()
+        patch_file.close()
 
     @staticmethod
     def _major_minor(sysroot):
