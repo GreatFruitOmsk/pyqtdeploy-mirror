@@ -3147,14 +3147,13 @@ _metadata = {
 
     'uuid': (
         PythonModule(version=2,
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'socket',
-                        'time')),
+                deps=('hashlib', 'os', 'random', 're', 'socket', 'time')),
         PythonModule(min_version=3, max_version=(3, 4),
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
-                        'socket', 'time')),
+                deps=('hashlib', 'os', 'random', 're', 'shutil', 'socket',
+                        'time')),
         PythonModule(min_version=(3, 5),
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
-                        'socket', 'subprocess', 'time'))),
+                deps=('hashlib', 'os', 'random', 're', 'shutil', 'socket',
+                        'subprocess', 'time'))),
 
     'warnings': (
         PythonModule(version=2,
