@@ -581,25 +581,28 @@ _metadata = {
                 deps=('collections', '_csv', 'io', 're'))),
 
     'ctypes':
-        PythonModule(deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
+        PythonModule(target='linux|macos|win',
+                deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
                 modules=('ctypes.util', 'ctypes.wintypes')),
 
     'ctypes.util': (
-        PythonModule(max_version=(2, 7, 12),
+        PythonModule(max_version=(2, 7, 12), target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'tempfile')),
         PythonModule(min_version=(2, 7, 13), max_version=(2, 7),
+                target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'subprocess', 'tempfile')),
-        PythonModule(version=(3, 3),
+        PythonModule(version=(3, 3), target='linux|macos|win',
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld', 'errno',
                         'importlib.machinery', 'os', 're', 'struct',
                         'subprocess', 'tempfile')),
         PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
+                target='linux|macos|win',
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld',
                         'importlib.machinery', 'os', 're', 'struct',
                         'subprocess', 'tempfile')),
-        PythonModule(min_version=(3, 5, 3),
+        PythonModule(min_version=(3, 5, 3), target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'importlib.machinery',
                         'os', 're', 'shutil', 'struct', 'subprocess',
                         'tempfile'))),
@@ -3904,7 +3907,7 @@ _metadata = {
         ExtensionModule(internal=True, source='_csv.c'),
 
     '_ctypes':
-        ExtensionModule(internal=True,
+        ExtensionModule(internal=True, target='linux|macos|win',
                 source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
                         '_ctypes/callproc.c', '_ctypes/stgdict.c',
                         '_ctypes/cfield.c',
@@ -3929,7 +3932,7 @@ _metadata = {
                 pyd='_ctypes.pyd'),
 
     'ctypes._endian':
-        PythonModule(internal=True, deps='ctypes'),
+        PythonModule(internal=True, target='linux|macos|win', deps='ctypes'),
 
     'ctypes.macholib':
         PythonModule(internal=True, target='macos', deps='ctypes',
