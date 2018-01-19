@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -92,6 +92,10 @@ pyqt5_metadata = {
     'QtNetwork':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['network']),
 
+    'QtNetworkAuth':
+        PyQt5Metadata(deps=['QtNetwork'], gui=False,
+                qt5=['network', 'networkauth']),
+
     'QtNfc':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['nfc']),
 
@@ -180,6 +184,9 @@ pyqt5_metadata = {
         PyQt5Metadata(group='opengl', deps=['QtGui']),
 
     # Add-on modules.
+
+    'Qt3DAnimation':
+        PyQt5Metadata(group='addon', deps=['Qt3DRender'], qt5=['3danimation']),
 
     'Qt3DCore':
         PyQt5Metadata(group='addon', deps=['QtGui'], qt5=['3dcore']),
