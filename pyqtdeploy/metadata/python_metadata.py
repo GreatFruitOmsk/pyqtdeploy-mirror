@@ -581,25 +581,28 @@ _metadata = {
                 deps=('collections', '_csv', 'io', 're'))),
 
     'ctypes':
-        PythonModule(deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
+        PythonModule(target='linux|macos|win',
+                deps=('_ctypes', 'ctypes._endian', 'os', 'struct'),
                 modules=('ctypes.util', 'ctypes.wintypes')),
 
     'ctypes.util': (
-        PythonModule(max_version=(2, 7, 12),
+        PythonModule(max_version=(2, 7, 12), target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'tempfile')),
         PythonModule(min_version=(2, 7, 13), max_version=(2, 7),
+                target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'errno', 'imp', 'os',
                         're', 'struct', 'subprocess', 'tempfile')),
-        PythonModule(version=(3, 3),
+        PythonModule(version=(3, 3), target='linux|macos|win',
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld', 'errno',
                         'importlib.machinery', 'os', 're', 'struct',
                         'subprocess', 'tempfile')),
         PythonModule(min_version=(3, 4), max_version=(3, 5, 2),
+                target='linux|macos|win',
                 deps=('ctypes', 'contextlib', 'ctypes.macholib.dyld',
                         'importlib.machinery', 'os', 're', 'struct',
                         'subprocess', 'tempfile')),
-        PythonModule(min_version=(3, 5, 3),
+        PythonModule(min_version=(3, 5, 3), target='linux|macos|win',
                 deps=('ctypes', 'ctypes.macholib.dyld', 'importlib.machinery',
                         'os', 're', 'shutil', 'struct', 'subprocess',
                         'tempfile'))),
@@ -3147,14 +3150,13 @@ _metadata = {
 
     'uuid': (
         PythonModule(version=2,
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'socket',
-                        'time')),
+                deps=('hashlib', 'os', 'random', 're', 'socket', 'time')),
         PythonModule(min_version=3, max_version=(3, 4),
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
-                        'socket', 'time')),
+                deps=('hashlib', 'os', 'random', 're', 'shutil', 'socket',
+                        'time')),
         PythonModule(min_version=(3, 5),
-                deps=('ctypes', 'hashlib', 'os', 'random', 're', 'shutil',
-                        'socket', 'subprocess', 'time'))),
+                deps=('hashlib', 'os', 'random', 're', 'shutil', 'socket',
+                        'subprocess', 'time'))),
 
     'warnings': (
         PythonModule(version=2,
@@ -3905,11 +3907,10 @@ _metadata = {
         ExtensionModule(internal=True, source='_csv.c'),
 
     '_ctypes':
-        ExtensionModule(internal=True,
+        ExtensionModule(internal=True, target='linux|macos|win',
                 source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
                         '_ctypes/callproc.c', '_ctypes/stgdict.c',
                         '_ctypes/cfield.c',
-                        '_ctypes/libffi/src/closures.c',
                         'macos#_ctypes/malloc_closure.c',
                         'macos#_ctypes/darwin/dlfcn_simple.c',
                         'macos#_ctypes/libffi_osx/ffi.c',
@@ -3931,7 +3932,7 @@ _metadata = {
                 pyd='_ctypes.pyd'),
 
     'ctypes._endian':
-        PythonModule(internal=True, deps='ctypes'),
+        PythonModule(internal=True, target='linux|macos|win', deps='ctypes'),
 
     'ctypes.macholib':
         PythonModule(internal=True, target='macos', deps='ctypes',
@@ -4522,7 +4523,7 @@ _metadata = {
                 source=('expat/xmlparse.c', 'expat/xmlrole.c',
                         'expat/xmltok.c', 'pyexpat.c'),
                 defines=('XML_STATIC', 'win#COMPILED_FROM_DSP',
-                        '!win#HAVE_EXPAT_CONFIG_H'),
+                        '!win#HAVE_EXPAT_CONFIG_H', '!win#XML_DEV_URANDOM'),
                 includepath='expat',
                 pyd='pyexpat.pyd'),
 

@@ -1,2 +1,3 @@
 include ChangeLog* NEWS THANKS
+graft demo
 graft doc

@@ -64,6 +64,7 @@ class Sysroot:
         self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(os.path.abspath(sysroot_json))
 
         self._target_py_version_nr = None
+        self._host_qmake = None
 
         self._target.configure()
         self._building_for_target = True
@@ -459,7 +460,18 @@ class Sysroot:
     def host_qmake(self):
         """ The name of the host qmake executable. """
 
-        return os.path.join(self.host_bin_dir, self.host_exe('qmake'))
+        if self._host_qmake is None:
+            self._missing_component('qt5')
+
+        return self._host_qmake
+
+    @host_qmake.setter
+    def host_qmake(self, qmake):
+        """ Set the name of the host qmake executable.  This should only be
+        used by the Qt component plugin.
+        """
+
+        self._host_qmake = self.host_exe(qmake)
 
     @property
     def host_sip(self):
@@ -636,12 +648,6 @@ class Sysroot:
         return os.path.join(self.sysroot_dir, 'share', 'sip')
 
     @property
-    def target_qt_dir(self):
-        """ The name of the root directory of the target Qt installation. """
-
-        return os.path.join(self.sysroot_dir, 'qt')
-
-    @property
     def target_sitepackages_dir(self):
         """ The name of the target Python site-packages directory. """
 
@@ -694,7 +700,9 @@ class Sysroot:
                     "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_root))
 
         # Move the extracted archive.
-        os.rename(archive_root, os.path.join(original_cwd, archive_root))
+        archive_root_path = os.path.join(original_cwd, archive_root)
+        self.delete_dir(archive_root_path)
+        os.rename(archive_root, archive_root_path)
         os.chdir(original_cwd)
 
         # Change to the extracted directory if required.

@@ -580,14 +580,14 @@ class Builder:
 
             # See if the extension module should be disabled for a platform
             # because there are no external libraries to link against.
+            skip_module = False
+
             for xlib in project.external_libraries.get(target_platform, ()):
                 if xlib.name == module.xlib:
                     if xlib.defines == '' and xlib.includepath == '' and xlib.libs == '':
                         skip_module = True
 
                     break
-            else:
-                skip_module = False
 
             if skip_module:
                 continue
