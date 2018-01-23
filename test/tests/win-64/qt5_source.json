@@ -6,7 +6,7 @@
     },
 
     "qt5": {
-        "source":   "qt-everywhere-*-src-5.*.tar.xz",
+        "source":   "qt-everywhere*-src-5.*.tar.xz",
         "win#ssl":  "openssl-linked"
     }
 }
