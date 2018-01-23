@@ -76,7 +76,7 @@ class TargetTests:
             tests.extend(
                     glob.glob(
                             os.path.join('tests', target_dir,
-                                    '*' + test_extension)))
+                                    '*' + self.test_extension)))
 
         return tests
 
