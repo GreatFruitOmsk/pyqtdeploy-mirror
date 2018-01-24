@@ -259,7 +259,7 @@ class Builder:
                     project.path_from_user(package.name), job_writer)
 
         # Handle the PyQt package.
-        if len(project.pyqt_modules) != 0:
+        if any([m for m in project.pyqt_modules if m != 'sip']):
             pyqt_subdir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
             pyqt_dst_dir = resources_dir + '/' +  pyqt_subdir
             pyqt_src_dir = standard_library_dir + '/site-packages/' + pyqt_subdir
