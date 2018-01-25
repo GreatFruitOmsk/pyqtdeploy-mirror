@@ -10,7 +10,7 @@
         "android#qt_dir":           "Qt/*/android_armv7",
         "ios#qt_dir":               "Qt/*/ios",
 
-        "linux|macos|win#source":   "qt-everywhere-*-src-5.*.tar.xz",
+        "linux|macos|win#source":   "qt-everywhere*-src-5.*.tar.xz",
 
         "android|linux#ssl":        "openssl-runtime",
         "ios#ssl":                  "securetransport",
