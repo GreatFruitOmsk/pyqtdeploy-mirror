@@ -1,3 +1,7 @@
+v2.1 30th January 2018
+  - Added support for PyQt5.QtNetworkAuth.
+  - Added support for PyQt5.Qt3DAnimation.
+
 v2.0.1 5th January 2018
   - A bug fix only release.
 
