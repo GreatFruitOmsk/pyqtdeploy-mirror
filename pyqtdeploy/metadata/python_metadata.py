@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 _supported_branches = (
     (3, 6, 4),
     (3, 5, 4),
-    (3, 4, 7),
+    (3, 4, 8),
     (3, 3, 7),
     (2, 7, 14))
 
