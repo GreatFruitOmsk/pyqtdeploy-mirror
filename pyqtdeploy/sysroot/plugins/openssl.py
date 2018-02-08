@@ -36,6 +36,8 @@ class OpenSSLComponent(ComponentBase):
 
     # The component options.
     options = [
+        ComponentOption('no_asm', type=bool,
+                help="Disable the use of assembly language speedups."),
         ComponentOption('python_source',
                 help="The archive of the Python source code containing patches to build OpenSSL on macOS."),
         ComponentOption('source', required=True,
@@ -68,8 +70,8 @@ class OpenSSLComponent(ComponentBase):
         if major != '1' or minor != '0':
             sysroot.error("OpenSSL v1.0.* is required")
 
-        # TODO: Need to decide what to do about --openssldir.
-        common_options = (
+        # Determine the options common to all targets.
+        common_options = [
             'no-krb5',
             'no-idea',
             'no-mdc2',
@@ -79,8 +81,12 @@ class OpenSSLComponent(ComponentBase):
             'no-ssl2',
             'no-ssl3',
             'no-ssl3-method',
-            '--prefix=' + sysroot.sysroot_dir,
-        )
+        ]
+
+        if self.no_asm:
+            common_options.append('no-asm')
+
+        common_options.append('--prefix=' + sysroot.sysroot_dir)
 
         # Check the common pre-requisites.
         sysroot.find_exe('perl')
@@ -213,7 +219,7 @@ class OpenSSLComponent(ComponentBase):
             post_config = 'ms\\do_win64a.bat'
         else:
             compiler = 'VC-WIN32'
-            post_config = 'ms\\do_nasm.bat'
+            post_config = 'ms\\do_ms.bat' if self.no_asm else 'ms\\do_nasm.bat'
 
         # Configure, build and install.
         args = ['perl', 'Configure', compiler]
