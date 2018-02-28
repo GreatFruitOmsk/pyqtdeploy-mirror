@@ -44,6 +44,8 @@ class PythonComponent(ComponentBase):
                 help="Build the target Python from source code rather than use an existing installation."),
         ComponentOption('dynamic_loading', type=bool,
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
+        ComponentOption('host_installation_bin_dir',
+                help="The pathname of the directory containing the existing host Python interpreter installation. If it is not specified on Windows then the value found in the registry is used. On other platforms it is assumed to be on PATH."),
         ComponentOption('source', required=True,
                 help="The archive containing the Python source code."),
     ]
@@ -171,7 +173,10 @@ class PythonComponent(ComponentBase):
         and return the absolute pathname of the interpreter.
         """
 
-        install_path = sysroot.get_python_install_path()
+        if self.host_installation_bin_dir:
+            install_path = os.path.expanduser(self.host_installation_bin_dir) + '\\'
+        else:
+            install_path = sysroot.get_python_install_path()
 
         # Copy the DLL.
         dll = 'python' + self._major_minor(sysroot).replace('.', '') + '.dll'
@@ -185,7 +190,14 @@ class PythonComponent(ComponentBase):
         the absolute pathname of the interpreter.
         """
 
-        return sysroot.find_exe('python' + self._major_minor(sysroot))
+        interpreter = 'python' + self._major_minor(sysroot)
+
+        if self.host_installation_bin_dir:
+            return os.path.join(
+                    os.path.expanduser(self.host_installation_bin_dir),
+                    interpreter)
+
+        return sysroot.find_exe(interpreter)
 
     def _build_target_from_source(self, sysroot, archive):
         """ Build the target Python from source. """
