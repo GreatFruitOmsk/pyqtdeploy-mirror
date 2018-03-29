@@ -1,3 +1,9 @@
+v2.2 ??? ??? 2018
+  - Added support for Python v3.4.8 and v3.5.5.
+  - Added the 'no_asm' option to the openssl component plugin.
+  - Added the 'host_installation_bin_dir' option to the python component
+    plugin.
+
 v2.1 30th January 2018
   - Added support for PyQt5.QtNetworkAuth.
   - Added support for PyQt5.Qt3DAnimation.
@@ -6,8 +12,8 @@ v2.0.1 5th January 2018
   - A bug fix only release.
 
 v2.0 5th January 2018
-  - Add pyqtdeploy-build.
-  - Add pyqtdeploy-sysroot.
+  - Added pyqtdeploy-build.
+  - Added pyqtdeploy-sysroot.
   - Removed pyqtdeploycli.
   - Added support for Python v2.7.14, v3.4.7, v3.5.4, v3.6.1, v3.6.2, v3.6.3
     and v3.6.4.
