@@ -16,6 +16,12 @@ Run the ``diff-py-version.py`` script for the new version of Python::
 This will generate a number of standard diffs in the current directory.
 
 
+python_metadata.py
+------------------
+
+Add the new Python version to the appropriate supported branch.
+
+
 Modules
 -------
 
@@ -76,9 +82,3 @@ _bootstrap_external.py
 
 For Python v3, check the ``Lib/importlib/_bootstrap_external.py`` diff for any
 changes and update the builder's version if necessary.
-
-
-python_metadata.py
-------------------
-
-Add the new Python version to the appropriate supported branch.

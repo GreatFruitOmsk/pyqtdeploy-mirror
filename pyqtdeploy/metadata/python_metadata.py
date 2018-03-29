@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 6, 4),
+    (3, 6, 5),
     (3, 5, 5),
     (3, 4, 8),
     (3, 3, 7),
@@ -3983,6 +3983,10 @@ _metadata = {
         PythonModule(version=3,
                 deps=('cgi', 'configparser', 'distutils.cmd', 'os'))),
 
+    '_distutils_findvs':
+        ExtensionModule(min_version=(3, 6, 5), internal=True, target='win',
+                source='../PC/_findvs.cpp', pyd='_distutils_findvs.pyd'),
+
     'distutils.msvc9compiler': (
         PythonModule(version=2,
                 deps=('distutils.ccompiler', 'distutils.errors',
@@ -3998,11 +4002,16 @@ _metadata = {
                 deps=('distutils.ccompiler', 'distutils.errors',
                         'distutils.log', 'distutils.util', 'itertools', 'os',
                         'shutil', 'stat', 'subprocess', 'winreg')),
-        PythonModule(min_version=(3, 6, 3),
+        PythonModule(min_version=(3, 6, 3), max_version=(3, 6, 4),
                 deps=('distutils.ccompiler', 'distutils.errors',
                         'distutils.log', 'distutils.util', '_findvs', 'glob',
                         'itertools', 'os', 'shutil', 'stat', 'subprocess',
-                        'threading', 'winreg'))),
+                        'threading', 'winreg')),
+        PythonModule(min_version=(3, 6, 5),
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        '_distutils_findvs', 'distutils.log', 'distutils.util',
+                        'glob', 'itertools', 'os', 'shutil', 'stat',
+                        'subprocess', 'threading', 'winreg'))),
 
     'distutils.versionpredicate':
         PythonModule(
@@ -4078,8 +4087,9 @@ _metadata = {
         CorePythonModule(version=3, internal=True, deps='encodings')),
 
     '_findvs':
-        ExtensionModule(min_version=(3, 6, 3), internal=True, target='win',
-                source='../PC/_findvs.cpp', pyd='_findvs.pyd'),
+        ExtensionModule(min_version=(3, 6, 3), max_version=(3, 6, 4),
+                internal=True, target='win', source='../PC/_findvs.cpp',
+                pyd='_findvs.pyd'),
 
     '_functools': (
         ExtensionModule(version=2, internal=True, source='_functoolsmodule.c'),

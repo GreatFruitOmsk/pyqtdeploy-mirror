@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -192,6 +192,9 @@ pyconfig = (
 
     # Define to 1 if you have the `copysign' function.
     Config('HAVE_COPYSIGN', default=1),
+
+    # Define to 1 if you have the <crypt.h> header file.
+    Config('HAVE_CRYPT_H', linux=1),
 
     # Define to 1 if you have the `ctermid' function.
     Config('HAVE_CTERMID', default=1, android=None),
