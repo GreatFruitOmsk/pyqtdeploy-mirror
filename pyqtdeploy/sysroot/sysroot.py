@@ -403,7 +403,8 @@ class Sysroot:
         if version_nr is None:
             version_nr = self.target_py_version_nr
 
-        return get_py_install_path(version_nr, self._target)
+        return get_py_install_path(self.decode_version_nr(version_nr),
+                self._target)
 
     @property
     def host_arch_name(self):
