@@ -34,7 +34,7 @@ _supported_branches = (
     (3, 5, 5),
     (3, 4, 8),
     (3, 3, 7),
-    (2, 7, 14))
+    (2, 7, 15))
 
 
 # All supported versions.
