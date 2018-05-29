@@ -4488,7 +4488,7 @@ _metadata = {
         CoreExtensionModule(internal=True, target='win'),
 
     'ntpath':
-        PythonModule(internal=True, target='win',
+        PythonModule(internal=True,
                 deps=('genericpath', 'nt', 'os', 'stat', 'string',
                         'warnings')),
 
