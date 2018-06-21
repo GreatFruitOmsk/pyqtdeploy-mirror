@@ -34,6 +34,8 @@ class SIPComponent(ComponentBase):
 
     # The component options.
     options = [
+        ComponentOption('module_name',
+                help="The qualified name of the sip module."),
         ComponentOption('source', required=True,
                 help="The archive containing the SIP source code."),
     ]
@@ -87,6 +89,9 @@ sip_module_dir = {2}
         args = [sysroot.host_python, 'configure.py', '--static', '--sysroot',
                 sysroot.sysroot_dir, '--no-pyi', '--no-tools', '--use-qmake',
                 '--configuration', cfg_name]
+
+        if self.module_name:
+            args.extend(['--sip-module', self.module_name])
 
         sysroot.run(*args)
         sysroot.run(sysroot.host_qmake)
