@@ -667,18 +667,18 @@ class Sysroot:
         directory (not it's pathname) is returned.
         """
 
-        # Windows (maybe just 32-bits) has a problem extracting the Qt source
-        # archive (maybe the long pathnames).  As a work around we extract it
-        # to the directory containing the archive and then move it later.
-        archive_dir, archive_name = os.path.split(archive)
-        original_cwd = os.getcwd()
-        os.chdir(archive_dir)
+        # Windows has a problem extracting the Qt source archive (probably the
+        # long pathnames).  As a work around we copy it to the current
+        # directory and extract it from there.
+        self.copy_file(archive, '.')
+        archive_name = os.path.basename(archive)
 
         # Unpack the archive.
         try:
             shutil.unpack_archive(archive_name)
         except Exception as e:
-            self.error("unable to unpack {0}".format(archive), detail=str(e))
+            self.error("unable to unpack {0}".format(archive_name),
+                    detail=str(e))
 
         # Assume that the name of the extracted directory is the same as the
         # archive without the extension.
@@ -698,13 +698,10 @@ class Sysroot:
         # Validate the assumption by checking the expected directory exists.
         if not os.path.isdir(archive_root):
             self.error(
-                    "unpacking {0} did not create a directory called '{1}' as expected".format(archive, archive_root))
+                    "unpacking {0} did not create a directory called '{1}' as expected".format(archive_name, archive_root))
 
-        # Move the extracted archive.
-        archive_root_path = os.path.join(original_cwd, archive_root)
-        self.delete_dir(archive_root_path)
-        os.rename(archive_root, archive_root_path)
-        os.chdir(original_cwd)
+        # Delete the copied archive.
+        os.remove(archive_name)
 
         # Change to the extracted directory if required.
         if chdir:
