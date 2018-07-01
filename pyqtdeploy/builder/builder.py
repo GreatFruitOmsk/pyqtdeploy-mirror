@@ -29,12 +29,13 @@ import glob
 import os
 import shlex
 import shutil
+import subprocess
 
 from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
         QFileDevice, QFileInfo, QProcess, QTemporaryDir, QTextCodec)
 
 from ..file_utilities import (create_file, get_embedded_dir,
-        get_embedded_file_for_version, read_embedded_file)
+        get_embedded_file_for_version, parse_version, read_embedded_file)
 from ..metadata import (external_libraries_metadata, get_python_metadata,
         pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
@@ -141,6 +142,20 @@ class Builder:
                         project.python_target_version, self._target) + 'python'
             else:
                 interpreter = 'python{0}.{1}'.format(py_major, py_minor)
+
+        # On Windows the interpreter name is simply 'python'.  So in order to
+        # make the .pdy file more portable we strip any trailing version
+        # number.
+        if self._host.platform.name == 'win':
+            for i in range(len(interpreter) - 1, -1, -1):
+                if interpreter[i] not in '.0123456789':
+                    interpreter = interpreter[:i + 1]
+                    break
+
+        interpreter = QDir.toNativeSeparators(interpreter)
+
+        # Make sure the interpreter being used is the one we are targetting.
+        self._check_interpreter_version(interpreter, py_version)
 
         if python_library is None:
             python_library = project.path_from_user(
@@ -1210,16 +1225,7 @@ static struct _inittab %s[] = {
     def _run_freeze(self, freeze, interpreter, job_filename, opt):
         """ Run the accumlated freeze jobs. """
 
-        # On Windows the interpreter name is simply 'python'.  So in order to
-        # make the .pdy file more portable we strip any trailing version
-        # number.
-        if self._host.platform.name == 'win':
-            for i in range(len(interpreter) - 1, -1, -1):
-                if interpreter[i] not in '.0123456789':
-                    interpreter = interpreter[:i + 1]
-                    break
-
-        argv = [QDir.toNativeSeparators(interpreter)]
+        argv = [interpreter]
 
         if opt == 2:
             argv.append('-OO')
@@ -1330,3 +1336,28 @@ static struct _inittab %s[] = {
             raise UserException(
                     "Unable to create the '{0}' directory".format(dir_name),
                     str(e))
+
+    @staticmethod
+    def _check_interpreter_version(interpreter, py_version):
+        """ Check that the interpreter version matches the target version. """
+
+        argv = [interpreter, '-c', 'import sys; print(sys.version)']
+
+        try:
+            stdout = subprocess.check_output(argv, universal_newlines=True,
+                    stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            try:
+                detail = e.stderr
+            except AttributeError:
+                detail = e.output
+
+            raise UserException("Unable to run '{0}'".format(interpreter),
+                    detail=detail)
+
+        interpreter_version = stdout.strip().split()[0]
+
+        if parse_version(interpreter_version) != py_version:
+            raise UserException(
+                    "The host interpreter version '{0}' does not match the "
+                    "target version".format(interpreter_version))
