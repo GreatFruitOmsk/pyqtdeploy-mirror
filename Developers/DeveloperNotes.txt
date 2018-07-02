@@ -73,12 +73,14 @@ Check the ``Makefile`` diff:
 _bootstrap.py
 -------------
 
-For Python v3, check the ``Lib/importlib/_bootstrap.py`` diff for any
-changes and update the builder's version if necessary.
+For Python v3, check the ``Lib/importlib/_bootstrap.py`` diff.  If there are
+any differences then copy it to the builder with a version dependent name.
 
 
 _bootstrap_external.py
 ----------------------
 
-For Python v3, check the ``Lib/importlib/_bootstrap_external.py`` diff for any
-changes and update the builder's version if necessary.
+For Python v3, check the ``Lib/importlib/_bootstrap_external.py`` diff.  If
+there are any differences then copy it to the builder with a version dependent
+name.  Update the copy with the pyqtdeploy additions (normally just appended to
+the file).
