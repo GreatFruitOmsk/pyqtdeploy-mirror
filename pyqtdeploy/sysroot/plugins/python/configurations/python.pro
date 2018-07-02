@@ -166,6 +166,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         OBJECT_SOURCES += \
             Objects/odictobject.c
     }
+
+    greaterThan(PY_MINOR_VERSION, 6) {
+        OBJECT_SOURCES += \
+            Objects/call.c
+    }
 } else {
     OBJECT_SOURCES += \
         Objects/bufferobject.c \
@@ -196,8 +201,8 @@ PYTHON_SOURCES = \
     Python/importdl.c \
     Python/marshal.c \
     Python/modsupport.c \
-    Python/mystrtoul.c \
     Python/mysnprintf.c \
+    Python/mystrtoul.c \
     Python/peephole.c \
     Python/pyarena.c \
     Python/pyfpe.c \
@@ -207,18 +212,17 @@ PYTHON_SOURCES = \
     Python/structmember.c \
     Python/symtable.c \
     Python/sysmodule.c \
+    Python/thread.c \
     Python/traceback.c \
     Python/getopt.c \
     Python/pystrcmp.c \
     Python/pystrtod.c \
-    Python/formatter_unicode.c \
-    Python/thread.c
+    Python/formatter_unicode.c
 
 greaterThan(PY_MAJOR_VERSION, 2) {
     PYTHON_SOURCES += \
         Python/pyctype.c \
         Python/pytime.c \
-        Python/random.c \
         Python/dtoa.c \
         Python/fileutils.c
 
@@ -232,6 +236,19 @@ greaterThan(PY_MAJOR_VERSION, 2) {
             Python/dynamic_annotations.c \
             Python/pylifecycle.c \
             Python/pystrhex.c
+    }
+
+    greaterThan(PY_MINOR_VERSION, 6) {
+        PYTHON_SOURCES += \
+            Python/ast_opt.c \
+            Python/ast_unparse.c \
+            Python/pathconfig.c \
+            Python/context.c \
+            Python/hamt.c \
+            Python/bootstrap_hash.c
+    } else {
+        PYTHON_SOURCES += \
+            Python/random.c
     }
 } else {
     PYTHON_SOURCES += \
@@ -258,8 +275,6 @@ MODULE_SOURCES = \
 
 greaterThan(PY_MAJOR_VERSION, 2) {
     MOD_SOURCES = \
-        Modules/_threadmodule.c \
-        Modules/signalmodule.c \
         Modules/posixmodule.c \
         Modules/errnomodule.c \
         Modules/_sre.c \
@@ -269,6 +284,8 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         Modules/_collectionsmodule.c \
         Modules/itertoolsmodule.c \
         Modules/atexitmodule.c \
+        Modules/signalmodule.c \
+        Modules/_threadmodule.c \
         Modules/_localemodule.c \
         Modules/_io/_iomodule.c \
         Modules/_io/iobase.c \
@@ -296,6 +313,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     greaterThan(PY_MINOR_VERSION, 5) {
         MOD_SOURCES += \
             Modules/_io/winconsoleio.c
+    }
+
+    greaterThan(PY_MINOR_VERSION, 6) {
+        MOD_SOURCES += \
+            Modules/_abc.c \
+            Modules/timemodule.c \
+            Modules/zipimport.c
     }
 } else {
     MOD_SOURCES = \

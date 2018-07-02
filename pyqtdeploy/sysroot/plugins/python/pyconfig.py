@@ -261,6 +261,9 @@ pyconfig = (
 	# Define to 1 if you have the declaration of `RTLD_LOCAL'.
     Config('HAVE_DECL_RTLD_LOCAL', default=1),
 
+	# Define to 1 if you have the declaration of `RTLD_MEMBER'.
+    Config('HAVE_DECL_RTLD_MEMBER'),
+
 	# Define to 1 if you have the declaration of `RTLD_NODELETE'.
     Config('HAVE_DECL_RTLD_NODELETE', default=1, android=None),
 
@@ -651,6 +654,9 @@ pyconfig = (
     # Define to 1 if you have the <linux/random.h> header file.
     Config('HAVE_LINUX_RANDOM_H', linux=1),
 
+    # Define to 1 if you have the <linux/vm_sockets.h> header file.
+    Config('HAVE_LINUX_VM_SOCKETS_H', linux=1),
+
     # Define to 1 if you have the `lockf' function.
     Config('HAVE_LOCKF', ios=1, linux=1, macos=1),
 
@@ -759,8 +765,17 @@ pyconfig = (
     # Define to 1 if you have the `posix_fallocate' function.
     Config('HAVE_POSIX_FALLOCATE', linux=1),
 
+    # Define to 1 if you have the `posix_spawn' function.
+    Config('HAVE_POSIX_SPAWN', default=1),
+
     # Define to 1 if you have the `pread' function.
     Config('HAVE_PREAD', default=1),
+
+    # Define to 1 if you have the `preadv' function.
+    Config('HAVE_PREADV', linux=1),
+
+    # Define to 1 if you have the `preadv2' function.
+    Config('HAVE_PREADV2'),
 
     # Define if you have the 'prlimit' functions.
     Config('HAVE_PRLIMIT', android=1, linux=1),
@@ -776,6 +791,9 @@ pyconfig = (
 
     # Defined for Solaris 2.6 bug in pthread header.
     Config('HAVE_PTHREAD_DESTRUCTOR'),
+
+    # Define to 1 if you have the `pthread_getcpuclockid' function.
+    Config('HAVE_PTHREAD_GETCPUCLOCKID', linux=1),
 
     # Define to 1 if you have the <pthread.h> header file.
     Config('HAVE_PTHREAD_H', default=1),
@@ -797,6 +815,12 @@ pyconfig = (
 
     # Define to 1 if you have the `pwrite' function.
     Config('HAVE_PWRITE', default=1),
+
+    # Define to 1 if you have the `pwritev' function.
+    Config('HAVE_PWRITEV', linux=1),
+
+    # Define to 1 if you have the `pwritev2' function.
+    Config('HAVE_PWRITEV2'),
 
     # Define if libcrypto has `RAND_egd'.
     Config('HAVE_RAND_EGD', default=1),
@@ -939,6 +963,9 @@ pyconfig = (
 
     # Define to 1 if you have the `sigaltstack' function.
     Config('HAVE_SIGALTSTACK', default=1),
+
+    # Define to 1 if `si_band' is a member of `siginfo_t'.
+    Config('HAVE_SIGINFO_T_SI_BAND', default=1),
 
     # Define to 1 if you have the `siginterrupt' function.
     Config('HAVE_SIGINTERRUPT', default=1),
@@ -1257,6 +1284,21 @@ pyconfig = (
     # Define to 1 if you have the <utime.h> header file.
     Config('HAVE_UTIME_H', default=1),
 
+    # Define if uuid_create() exists.
+    Config('HAVE_UUID_CREATE'),
+
+    # Define if uuid_enc_be() exists.
+    Config('HAVE_UUID_ENC_BE'),
+
+    # Define if uuid_generate_time_safe() exists.
+    Config('HAVE_UUID_GENERATE_TIME_SAFE'),
+
+    # Define to 1 if you have the <uuid.h> header file.
+    Config('HAVE_UUID_H'),
+
+    # Define to 1 if you have the <uuid/uuid.h> header file.
+    Config('HAVE_UUID_UUID_H', ios=1, macos=1),
+
     # Define to 1 if you have the `wait3' function.
     Config('HAVE_WAIT3', default=1, android=None),
 
@@ -1291,6 +1333,9 @@ pyconfig = (
     # Define to 1 if you have the `writev' function.
     Config('HAVE_WRITEV', default=1),
 
+    # Define if libssl has X509_VERIFY_PARAM_set1_host and related function.
+    Config('HAVE_X509_VERIFY_PARAM_SET1_HOST', default=1),
+
     # Define if the zlib library has inflateCopy
     Config('HAVE_ZLIB_COPY', default=1),
 
@@ -1313,11 +1358,17 @@ pyconfig = (
     # Define if POSIX semaphores aren't enabled on your system
     Config('POSIX_SEMAPHORES_NOT_ENABLED'),
 
+    # Define if pthread_key_t is compatible with int.
+    Config('PTHREAD_KEY_T_IS_COMPATIBLE_WITH_INT', android=1, linux=1),
+
     # Defined if PTHREAD_SCOPE_SYSTEM supported.
     Config('PTHREAD_SYSTEM_SCHED_SUPPORTED', default=1),
 
     # Define as the preferred size in bits of long digits
     Config('PYLONG_BITS_IN_DIGIT'),
+
+    # Define if you want to coerce the C locale to a UTF-8 based locale.
+    Config('PY_COERCE_C_LOCALE', default=1),
 
     # Define to printf format modifier for long long type
     Config('PY_FORMAT_LONG_LONG', default='"ll"'),
@@ -1327,6 +1378,16 @@ pyconfig = (
 
     # Define as the integral type used for Unicode representation.
     Config('PY_UNICODE_TYPE', py_major=2, default='unsigned short'),
+
+    # Default cipher suites list for ssl module. 1: Python's preferred
+    # selection, 2: leave OpenSSL defaults untouched, 0: custom string
+    Config('PY_SSL_DEFAULT_CIPHERS', default=1),
+
+    # Cipher suite string for PY_SSL_DEFAULT_CIPHERS=0.
+    Config('PY_SSL_DEFAULT_CIPHER_STRING'),
+
+    # Define to emit a locale compatibility warning in the C locale.
+    Config('PY_WARN_ON_C_LOCALE', default=1),
 
     # Define if you want to build an interpreter with many run-time checks.
     Config('Py_DEBUG'),
@@ -1375,6 +1436,9 @@ pyconfig = (
 
     # The size of `pid_t', as computed by sizeof.
     Config('SIZEOF_PID_T', default=4),
+
+    # The size of `pthread_key_t', as computed by sizeof.
+    Config('SIZEOF_PTHREAD_KEY_T', default=4, ios_64=8, macos_64=8),
 
     # The size of `pthread_t', as computed by sizeof.
     Config('SIZEOF_PTHREAD_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
@@ -1499,6 +1563,9 @@ pyconfig = (
     # Define if you have POSIX threads, and your system does not define that.
     Config('_POSIX_THREADS'),
 
+    # macOS, iOS framework name.
+    Config('_PYTHONFRAMEWORK', default=""),
+
     # Define to force use of thread-safe errno, h_errno, and other functions
     Config('_REENTRANT', android=1, ios=1, macos=1),
 
@@ -1562,15 +1629,6 @@ pyconfig = (
 
     # Define to empty if the keyword does not work.
     Config('volatile'),
-
-    # The following are non-standard additions required by Android prior to
-    # Python v3.6.0.  They are chosen so that the default (i.e. #undef) is
-    # correct for everything else.
-    Config('HAVE_BROKEN_GECOS', android=1),
-    Config('HAVE_BROKEN_GETGRENT', android=1),
-    Config('HAVE_BROKEN_LOCALECONV', android=1),
-    Config('HAVE_VERY_BROKEN_MBSTOWCS', android=1),
-    Config('HAVE_BROKEN_TCDRAIN', android=1),
 )
 
 
@@ -1610,6 +1668,9 @@ def generate_pyconfig_h(pyconfig_h_name, dynamic_loading, sysroot):
             # the file by hand later.
             pyconfig_h.write('/* #define {0} */\n'.format(config.name))
         else:
+            if isinstance(value, str):
+                value = '"' + value + '"'
+
             pyconfig_h.write('#define {0} {1}\n'.format(config.name, value))
 
     if py_major != 0:
