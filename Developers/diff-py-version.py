@@ -174,7 +174,7 @@ def run_diff(flags, name, base_version, py_version, suffix):
 
 
 def process_lib_diff(diff, f):
-    """ If a single lib is relevant that write it to a file. """
+    """ If a single lib is relevant then write it to a file. """
 
     for line in diff:
         if 'import' in line and line[0] in '+-':
