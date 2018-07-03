@@ -274,7 +274,7 @@ _metadata = {
 
     'abc': (
         PythonModule(version=2, deps=('types', '_weakrefset')),
-        PythonModule(min_version=(3, 0), max_version=(3, 6),
+        PythonModule(min_version=3, max_version=(3, 6),
                 deps='_weakrefset'),
         PythonModule(min_version=(3, 7), deps='_abc')),
 
@@ -413,11 +413,11 @@ _metadata = {
         ExtensionModule(version=2, source='bz2module.c', xlib='bz2',
                 pyd='bz2.pyd'),
         PythonModule(min_version=3, max_version=(3, 4),
-                deps=('_thread', '_bz2', 'io', 'warnings')),
+                deps=('_bz2', 'io', 'threading', 'warnings')),
         PythonModule(version=(3, 5),
-                deps=('_compression', '_thread', '_bz2', 'io', 'warnings')),
+                deps=('_compression', '_bz2', 'io', 'threading', 'warnings')),
         PythonModule(min_version=(3, 6),
-                deps=('_compression', '_thread', '_bz2', 'io', 'os',
+                deps=('_compression', '_bz2', 'io', 'os', 'threading',
                         'warnings'))),
 
     'calendar': (
@@ -431,9 +431,13 @@ _metadata = {
                 deps=('cStringIO', 'mimetools', 'operator', 'os', 're',
                         'rfc822', 'tempfile', 'traceback', 'urlparse',
                         'UserDict', 'warnings')),
-        PythonModule(version=3,
+        PythonModule(min_version=3, max_version=(3, 6),
                 deps=('collections', 'email.message', 'email.parser', 'html',
                         'http.client', 'io', 'locale', 'os', 're', 'tempfile',
+                        'traceback', 'urllib.parse', 'warnings')),
+        PythonModule(min_version=(3, 7),
+                deps=('collections.abc', 'email.message', 'email.parser',
+                        'html', 'io', 'locale', 'os', 're', 'tempfile',
                         'traceback', 'urllib.parse', 'warnings'))),
 
     'CGIHTTPServer':
@@ -461,8 +465,9 @@ _metadata = {
 
     'code': (
         PythonModule(max_version=(3, 4), deps=('codeop', 'traceback')),
-        PythonModule(min_version=(3, 5),
-                deps=('argparse', 'codeop', 'traceback'))),
+        PythonModule(min_version=(3, 5), max_version=(3, 6),
+                deps=('argparse', 'codeop', 'traceback')),
+        PythonModule(min_version=(3, 7), deps=('codeop', 'traceback'))),
 
     'codecs':
         PythonModule(deps='_codecs'),
@@ -549,6 +554,9 @@ _metadata = {
                 deps=('abc', 'collections', 'functools')),
         PythonModule(min_version=(3, 6, 2),
                 deps=('abc', 'collections', '_collections_abc', 'functools'))),
+
+    'contextvars':
+        PythonModule(min_version=(3, 7), deps='_contextvars'),
 
     'Cookie':
         PythonModule(version=2,
@@ -641,6 +649,10 @@ _metadata = {
     'curses.textpad':
         PythonModule(target='!win', deps=('curses', 'curses.ascii')),
 
+    'dataclasses':
+        PythonModule(min_version=(3, 7),
+                deps=('copy', 'inspect', 'keyword', 're', 'types')),
+
     'datetime': (
         ExtensionModule(version=2, source=('datetimemodule.c', 'timemodule.c'),
                 deps='_strptime'),
@@ -661,8 +673,11 @@ _metadata = {
                 deps=('dbm', 'collections', 'io', 'os')),
         PythonModule(min_version=(3, 4, 4), max_version=(3, 5),
                 deps=('dbm', 'ast', 'collections', 'io', 'os')),
-        PythonModule(min_version=(3, 6),
-                deps=('dbm', 'ast', 'collections', 'io', 'os', 'warnings'))),
+        PythonModule(version=(3, 6),
+                deps=('dbm', 'ast', 'collections', 'io', 'os', 'warnings')),
+        PythonModule(min_version=(3, 7),
+                deps=('dbm', 'ast', 'collections.abc', 'io', 'os',
+                        'warnings'))),
 
     'dbm.gnu':
         PythonModule(version=3, target='!win', deps=('dbm', '_gdbm')),
@@ -949,13 +964,20 @@ _metadata = {
                         'distutils.log', 'distutils.text_file',
                         'distutils.util', 'glob', 'os', 'string', 'types',
                         'warnings')),
-        PythonModule(min_version=(3, 6),
+        PythonModule(version=(3, 6),
                 deps=('distutils.archive_util', 'distutils.core',
                         'distutils.dep_util', 'distutils.dir_util',
                         'distutils.errors', 'distutils.fancy_getopt',
                         'distutils.file_util', 'distutils.filelist',
                         'distutils.log', 'distutils.text_file',
-                        'distutils.util', 'glob', 'os', 'types', 'warnings'))),
+                        'distutils.util', 'glob', 'os', 'types', 'warnings')),
+        PythonModule(min_version=(3, 7),
+                deps=('distutils.archive_util', 'distutils.core',
+                        'distutils.dir_util',
+                        'distutils.errors', 'distutils.fancy_getopt',
+                        'distutils.file_util', 'distutils.filelist',
+                        'distutils.log', 'distutils.text_file',
+                        'distutils.util', 'glob', 'os', 'warnings'))),
 
     'distutils.command.upload': (
         PythonModule(version=2,
@@ -1315,10 +1337,13 @@ _metadata = {
                         'urllib.parse'))),
 
     'encodings': (
-        PythonModule(max_version=(3, 5), deps=('codecs', 'encodings.aliases'),
+        PythonModule(max_version=(3, 5), deps=('encodings.aliases', 'codecs'),
                 modules=_encodings_modules),
-        PythonModule(min_version=(3, 6),
-                deps=('_bootlocale', 'codecs', 'encodings.aliases'),
+        PythonModule(version=(3, 6),
+                deps=('encodings.aliases', '_bootlocale', 'codecs'),
+                modules=_encodings_modules + ('encodings.oem', )),
+        PythonModule(min_version=(3, 7),
+                deps=('encodings.aliases', 'codecs', '_winapi'),
                 modules=_encodings_modules + ('encodings.oem', ))),
 
     'encodings.ascii': (
@@ -1702,8 +1727,9 @@ _metadata = {
     'enum': (
         PythonModule(min_version=3, max_version=(3, 5),
                 deps=('collections', 'types')),
-        PythonModule(min_version=(3, 6),
-                deps=('_collections', 'functools', 'operator', 'types'))),
+        PythonModule(version=(3, 6),
+                deps=('_collections', 'functools', 'operator', 'types')),
+        PythonModule(min_version=(3, 7), deps=('_collections', 'types'))),
 
     'errno':
         CoreExtensionModule(),
@@ -2845,7 +2871,7 @@ _metadata = {
         PythonModule(version=2,
                 deps=('sqlite3', 'collections', 'datetime', '_sqlite3',
                         'time')),
-        PythonModule(min_version=(3, 0, 0), max_version=(3, 4, 1),
+        PythonModule(min_version=3, max_version=(3, 4, 1),
                 deps=('sqlite3', 'datetime', '_sqlite3', 'time')),
         PythonModule(min_version=(3, 4, 2),
                 deps=('sqlite3', 'collections.abc', 'datetime', '_sqlite3',
@@ -3098,7 +3124,7 @@ _metadata = {
         PythonModule(version=3, deps=('urllib', 'collections', 're')),
 
     'urllib.request': (
-        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
+        PythonModule(min_version=3, max_version=(3, 5, 1),
                 deps=('urllib', 'base64', 'bisect', 'collections',
                         'contextlib', 'email', 'email.utils', 'fnmatch',
                         'ftplib', 'getpass', 'hashlib', 'http.client',
@@ -3225,7 +3251,7 @@ _metadata = {
         PythonModule(version=2,
                 deps=('wsgiref', 'os', 'time', 'traceback', 'types',
                         'wsgiref.headers', 'wsgiref.util')),
-        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
+        PythonModule(min_version=3, max_version=(3, 5, 1),
                 deps=('wsgiref', 'os', 'time', 'traceback', 'wsgiref.headers',
                         'wsgiref.util')),
         PythonModule(min_version=(3, 5, 2),
@@ -3240,7 +3266,7 @@ _metadata = {
         PythonModule(version=2,
                 deps=('wsgiref', 'BaseHTTPServer', 'urllib',
                         'wsgiref.handlers')),
-        PythonModule(min_version=(3, 0, 0), max_version=(3, 5, 1),
+        PythonModule(min_version=3, max_version=(3, 5, 1),
                 deps=('wsgiref', 'http.server', 'platform', 'urllib.parse',
                         'wsgiref.handlers')),
         PythonModule(min_version=(3, 5, 2), max_version=(3, 5),
@@ -4019,6 +4045,10 @@ _metadata = {
                 deps=('concurrent.futures', 'atexit',
                         'concurrent.futures._base', 'itertools', 'os', 'queue',
                         'threading', 'weakref'))),
+
+    '_contextvars':
+        ExtensionModule(min_version=(3, 7), internal=True,
+                source='_contextvarsmodule.c'),
 
     '_crypt':
         ExtensionModule(version=3, internal=True, target='!win',
