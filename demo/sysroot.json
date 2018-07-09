@@ -83,5 +83,9 @@
 
     "qscintilla": {
         "source":   "QScintilla_*-2.*.tar.gz"
+    },
+
+    "zlib": {
+        "source":   "zlib-*.tar.gz"
     }
 }

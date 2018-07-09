@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -73,6 +73,7 @@ external_libraries_metadata = (
     ExternalLibraryMetadata('ssl',
             {'win': '-lssleay32 -llibeay32', '': '-lssl -lcrypto'},
             "SSL encryption"),
+    ExternalLibraryMetadata('zlib', '-lz', "zlib compression"),
     ExternalLibraryMetadata('bz2', '-lbz2', "bz2 compression"),
     ExternalLibraryMetadata('lzma', '-llzma', "LZMA compression"),
     ExternalLibraryMetadata('bsddb', '-ldb', "BSD db database"),

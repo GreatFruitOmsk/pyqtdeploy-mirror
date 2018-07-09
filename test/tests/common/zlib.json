@@ -1,0 +1,7 @@
+{
+    "Description": "Build a static zlib.",
+
+    "zlib": {
+        "source":   "zlib-*.tar.gz"
+    }
+}

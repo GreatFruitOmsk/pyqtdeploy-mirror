@@ -2,7 +2,7 @@
 
 
 ###############################################################################
-# Copyright (c) 2017 Riverbank Computing Limited.
+# Copyright (c) 2018 Riverbank Computing Limited.
 ###############################################################################
 
 
@@ -119,6 +119,16 @@ class Model(QStandardItemModel):
         self.add_value("sys.meta_path", str(sys.meta_path))
 
         self.add_value("Platform module", platform_module)
+
+        avail = "unavailable"
+        try:
+            import zlib
+
+            avail = "available ({0})".format(zlib.ZLIB_VERSION)
+        except ImportError:
+            pass
+
+        self.add_value("zlib support", avail)
 
         avail = "unavailable"
         try:
