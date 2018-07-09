@@ -94,7 +94,11 @@ extern PyObject* PyInit__symtable(void);
 /* -- ADDMODULE MARKER 1 -- */
 
 extern PyObject* PyMarshal_Init(void);
+#if PY_MINOR_VERSION >= 7
+extern PyObject* PyInit__imp(void);
+#else
 extern PyObject* PyInit_imp(void);
+#endif
 extern PyObject* PyInit_gc(void);
 extern PyObject* PyInit__ast(void);
 extern PyObject* _PyWarnings_Init(void);
@@ -149,7 +153,11 @@ struct _inittab _PyImport_Inittab[] = {
     {"marshal", PyMarshal_Init},
 
     /* This lives in import.c */
+#if PY_MINOR_VERSION >= 7
+    {"_imp", PyInit__imp},
+#else
     {"_imp", PyInit_imp},
+#endif
 
     /* This lives in Python/Python-ast.c */
     {"_ast", PyInit__ast},
