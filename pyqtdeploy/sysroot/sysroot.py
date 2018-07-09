@@ -224,7 +224,7 @@ class Sysroot:
     def copy_file(self, src, dst):
         """ Copy a file. """
 
-        self.verbose("Copying {0} to {1}".format(src, dst))
+        self.verbose("Copying {0} to {1}".format(src, os.path.abspath(dst)))
 
         try:
             shutil.copy(src, dst)
@@ -241,7 +241,7 @@ class Sysroot:
         self.delete_dir(dst)
         self.create_dir(os.path.dirname(dst))
 
-        self.verbose("Copying {0} to {1}".format(src, dst))
+        self.verbose("Copying {0} to {1}".format(src, os.path.abspath(dst)))
 
         if ignore is not None:
             ignore = shutil.ignore_patterns(*ignore)
