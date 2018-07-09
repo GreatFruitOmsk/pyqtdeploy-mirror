@@ -1564,7 +1564,7 @@ pyconfig = (
     Config('_POSIX_THREADS'),
 
     # macOS, iOS framework name.
-    Config('_PYTHONFRAMEWORK', default=""),
+    Config('_PYTHONFRAMEWORK', default='""'),
 
     # Define to force use of thread-safe errno, h_errno, and other functions
     Config('_REENTRANT', android=1, ios=1, macos=1),
@@ -1668,9 +1668,6 @@ def generate_pyconfig_h(pyconfig_h_name, dynamic_loading, sysroot):
             # the file by hand later.
             pyconfig_h.write('/* #define {0} */\n'.format(config.name))
         else:
-            if isinstance(value, str):
-                value = '"' + value + '"'
-
             pyconfig_h.write('#define {0} {1}\n'.format(config.name, value))
 
     if py_major != 0:
