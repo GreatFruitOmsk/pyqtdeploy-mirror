@@ -44,5 +44,15 @@ class zlibComponent(ComponentBase):
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
-        sysroot.run(sysroot.host_make, 'install',
-                'prefix=' + sysroot.sysroot_dir)
+        # TODO: android and iOS.
+        if sysroot.target_platform_name == 'win':
+            sysroot.run(sysroot.host_make, '-f', 'win32\\Makefile.msc',
+                    'zlib.lib')
+            sysroot.copy_file('zconf.h', sysroot.target_include_dir)
+            sysroot.copy_file('zlib.h', sysroot.target_include_dir)
+            sysroot.copy_file('zlib.lib', sysroot.target_lib_dir)
+        else:
+            sysroot.run('./configure', '--static',
+                    '--prefix=' + sysroot.sysroot_dir)
+            sysroot.run(sysroot.host_make)
+            sysroot.run(sysroot.host_make, 'install')
