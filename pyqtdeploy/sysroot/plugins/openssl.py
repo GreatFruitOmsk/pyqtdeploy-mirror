@@ -39,7 +39,7 @@ class OpenSSLComponent(ComponentBase):
         ComponentOption('no_asm', type=bool,
                 help="Disable the use of assembly language speedups."),
         ComponentOption('python_source',
-                help="The archive of the Python source code containing patches to build OpenSSL on macOS."),
+                help="The archive of the Python source code containing patches to build OpenSSL on macOS for Python v3.6.4 and earlier."),
         ComponentOption('source', required=True,
                 help="The archive containing the OpenSSL source code."),
     ]
@@ -179,24 +179,19 @@ class OpenSSLComponent(ComponentBase):
         # Check the additional pre-requisites.
         sysroot.find_exe('patch')
 
-        # Find and apply the Python patch.
-        if not self.python_source:
-            sysroot.error("the 'python_source' option must be specified")
+        # Find and apply any Python patch.
+        if self.python_source:
+            python_archive = sysroot.find_file(self.python_source)
+            python_dir = sysroot.unpack_archive(python_archive, chdir=False)
 
-        python_archive = sysroot.find_file(self.python_source)
-        python_dir = sysroot.unpack_archive(python_archive, chdir=False)
+            patches = glob.glob(python_dir + '/Mac/BuildScript/openssl*.patch')
 
-        patches = glob.glob(python_dir + '/Mac/BuildScript/openssl*.patch')
+            if len(patches) > 1:
+                sysroot.error(
+                        "found multiple OpenSSL patches in the Python source tree")
 
-        if len(patches) < 1:
-            sysroot.error(
-                    "unable to find an OpenSSL patch in the Python source tree")
-
-        if len(patches) > 1:
-            sysroot.error(
-                    "found multiple OpenSSL patches in the Python source tree")
-
-        sysroot.run('patch', '-p1', '-i', patches[0])
+            if len(patches) == 1:
+                sysroot.run('patch', '-p1', '-i', patches[0])
 
         # Configure, build and install.
         sdk = sysroot.apple_sdk
