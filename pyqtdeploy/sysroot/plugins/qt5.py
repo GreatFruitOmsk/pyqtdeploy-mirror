@@ -131,7 +131,9 @@ class Qt5Component(ComponentBase):
 
         args = [configure, '-prefix', self._target_qt_dir, license,
                 '-confirm-license', '-static', '-release', '-nomake',
-                'examples', '-nomake', 'tools']
+                'examples', '-nomake', 'tools',
+                '-I', sysroot.target_include_dir,
+                '-L', sysroot.target_lib_dir]
 
         if self.ssl:
             args.append('-ssl')
@@ -141,10 +143,6 @@ class Qt5Component(ComponentBase):
 
             elif self.ssl == 'openssl-linked':
                 args.append('-openssl-linked')
-
-                if sysroot.find_component('openssl', required=False) is not None:
-                    args.extend(['-I', sysroot.target_include_dir])
-                    args.extend(['-L', sysroot.target_lib_dir])
 
                 if sys.platform == 'win32':
                     args.append('OPENSSL_LIBS=-lssleay32 -llibeay32 -lGdi32')
