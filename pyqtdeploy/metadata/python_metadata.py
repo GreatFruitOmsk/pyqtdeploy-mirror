@@ -164,7 +164,8 @@ class ExtensionModule(VersionedModule):
 
 class CoreExtensionModule(ExtensionModule):
     """ Encapsulate the meta-data for an extension module that is always
-    compiled in to the interpreter library.
+    compiled in to the interpreter library.  These are modules that the core
+    relies on and modules that can only be build with Py_BUILD_CORE defined.
     """
 
     def __init__(self, min_version=None, version=None, max_version=None, internal=False, target='', deps=(), hidden_deps=()):
@@ -2295,8 +2296,7 @@ _metadata = {
 
     'mmap': (
         ExtensionModule(max_version=(3, 4), source='mmapmodule.c'),
-        ExtensionModule(min_version=(3, 5), source='mmapmodule.c',
-                defines='Py_BUILD_CORE')),
+        CoreExtensionModule(min_version=(3, 5))),
 
     'modulefinder': (
         PythonModule(version=2,
@@ -2332,8 +2332,7 @@ _metadata = {
     'msvcrt': (
         ExtensionModule(max_version=(3, 4), target='win',
                 source='../PC/msvcrtmodule.c'),
-        ExtensionModule(min_version=(3, 5), target='win',
-                source='../PC/msvcrtmodule.c', defines='Py_BUILD_CORE')),
+        CoreExtensionModule(min_version=(3, 5), target='win')),
 
     'multifile':
         PythonModule(version=2, deps='warnings'),
@@ -3137,8 +3136,7 @@ _metadata = {
     'time': (
         ExtensionModule(max_version=(3, 4), source='timemodule.c',
                 libs='linux#-lm'),
-        ExtensionModule(min_version=(3, 5), source='timemodule.c',
-                defines='Py_BUILD_CORE', libs='linux#-lm')),
+        CoreExtensionModule(min_version=(3, 5))),
 
     'timeit':
         PythonModule(

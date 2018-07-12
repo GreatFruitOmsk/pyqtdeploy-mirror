@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -310,16 +310,21 @@ greaterThan(PY_MAJOR_VERSION, 2) {
         }
     }
 
+    greaterThan(PY_MINOR_VERSION, 4) {
+        MOD_SOURCES += \
+            Modules/mmapmodule.c \
+            Modules/timemodule.c
+    }
+
     greaterThan(PY_MINOR_VERSION, 5) {
         MOD_SOURCES += \
-            Modules/_io/winconsoleio.c
+            Modules/_io/winconsoleio.c \
+            Modules/zipimport.c
     }
 
     greaterThan(PY_MINOR_VERSION, 6) {
         MOD_SOURCES += \
-            Modules/_abc.c \
-            Modules/timemodule.c \
-            Modules/zipimport.c
+            Modules/_abc.c
     }
 } else {
     MOD_SOURCES = \
@@ -342,7 +347,11 @@ win32 {
             PC/winreg.c
 
         greaterThan(PY_MINOR_VERSION, 4) {
-            PYTHON_SOURCES += PC/invalid_parameter_handler.c
+            MOD_SOURCES += \
+                PC/msvcrtmodule.c
+
+            PYTHON_SOURCES += \
+                PC/invalid_parameter_handler.c
         }
     }
 } else {
