@@ -4884,7 +4884,7 @@ _metadata = {
         ExtensionModule(internal=True, source='sha512module.c'),
 
     '_signal':
-        CoreExtensionModule(min_version=(3, 5)),
+        CoreExtensionModule(min_version=(3, 5), internal=True),
 
     '_socket': (
         ExtensionModule(version=2, internal=True,
