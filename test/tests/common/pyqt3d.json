@@ -17,7 +17,8 @@
     },
 
     "sip": {
-        "source":   "sip-4.*.tar.gz"
+        "module_name":  "PyQt5.sip",
+        "source":       "sip-4.*.tar.gz"
     },
 
     "pyqt5": {
