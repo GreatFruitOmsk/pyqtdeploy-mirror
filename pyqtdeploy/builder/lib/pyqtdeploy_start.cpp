@@ -319,14 +319,19 @@ static int handle_exception()
 
             if (code)
             {
+                if (code == Py_None)
+                {
+                    exit_code = 0;
+                    Py_DECREF(code);
+                }
 #if PY_MAJOR_VERSION >= 3
-                if (PyLong_Check(code))
+                else if (PyLong_Check(code))
                 {
                     exit_code = (int)PyLong_AsLong(code);
                     Py_DECREF(code);
                 }
 #else
-                if (PyInt_Check(code))
+                else if (PyInt_Check(code))
                 {
                     exit_code = (int)PyInt_AsLong(code);
                     Py_DECREF(code);
