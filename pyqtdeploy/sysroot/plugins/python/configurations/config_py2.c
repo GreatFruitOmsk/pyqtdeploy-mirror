@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Riverbank Computing Limited
+ * Copyright (c) 2018, Riverbank Computing Limited
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,99 +26,83 @@
  */
 
 
-/* -*- C -*- ***********************************************
-Copyright (c) 2000, BeOpen.com.
-Copyright (c) 1995-2000, Corporation for National Research Initiatives.
-Copyright (c) 1990-1995, Stichting Mathematisch Centrum.
-All rights reserved.
-
-See the file "Misc/COPYRIGHT" for information on usage and
-redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-******************************************************************/
-
-/* Module configuration */
-
-/* !!! !!! !!! This file is edited by the makesetup script !!! !!! !!! */
-
-/* This file contains the table of built-in modules.
-   See init_builtin() in import.c. */
-
-#include "Python.h"
+#include <Python.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-extern void initthread(void);
-extern void initsignal(void);
-#if defined(MS_WINDOWS)
-extern void initnt(void);
-#else
+/*
+ * Declare the module initialisation functions for all core extension modules
+ * (see python_metadata.py).
+ */
+
+/* The public modules. */
+
+extern void initerrno(void);
+extern void initgc(void);
+extern void initimp(void);
+extern void PyMarshal_Init(void);
+#if !defined(MS_WINDOWS)
 extern void initposix(void);
 #endif
-extern void initerrno(void);
 #if !defined(MS_WINDOWS)
 extern void initpwd(void);
 #endif
-extern void init_sre(void);
-extern void init_codecs(void);
-#if PY_MINOR_VERSION >= 7
-extern void init_weakref(void);
-#endif
-extern void init_symtable(void);
-/* -- ADDMODULE MARKER 1 -- */
+extern void initsignal(void);
+extern void initthread(void);
 
-extern void PyMarshal_Init(void);
-extern void initimp(void);
-extern void initgc(void);
+/* The internal modules. */
+
 extern void init_ast(void);
+extern void init_codecs(void);
+#if defined(MS_WINDOWS)
+extern void initnt(void);
+#endif
+extern void init_sre(void);
+extern void init_symtable(void);
 extern void _PyWarnings_Init(void);
+extern void init_weakref(void);
+
+
+/* The corresponding module import table. */
 
 struct _inittab _PyImport_Inittab[] = {
+    /* The public modules. */
 
-{"thread", initthread},
-{"signal", initsignal},
-#if defined(MS_WINDOWS)
-{"nt", initnt},
-#else
-{"posix", initposix},
-#endif
-{"errno", initerrno},
+    {"errno", initerrno},
+    {"exceptions", NULL},
+    {"gc", initgc},
+    {"imp", initimp},
+    {"marshal", PyMarshal_Init},
 #if !defined(MS_WINDOWS)
-{"pwd", initpwd},
+    {"posix", initposix},
 #endif
-{"_sre", init_sre},
-{"_codecs", init_codecs},
-#if PY_MINOR_VERSION >= 7
-{"_weakref", init_weakref},
+#if !defined(MS_WINDOWS)
+    {"pwd", initpwd},
 #endif
-{"_symtable", init_symtable},
-/* -- ADDMODULE MARKER 2 -- */
+    {"signal", initsignal},
+    {"thread", initthread},
 
-	/* This module lives in marshal.c */
-	{"marshal", PyMarshal_Init},
+    /* The internal modules. */
 
-	/* This lives in import.c */
-	{"imp", initimp},
+    {"_ast", init_ast},
+    {"_codecs", init_codecs},
+#if defined(MS_WINDOWS)
+    {"nt", initnt},
+#endif
+    {"_sre", init_sre},
+    {"_symtable", init_symtable},
+    {"_warnings", _PyWarnings_Init},
+    {"_weakref", init_weakref},
 
-	/* This lives in Python/Python-ast.c */
-	{"_ast", init_ast},
+    {"__main__", NULL},
+    {"__builtin__", NULL},
+    {"sys", NULL},
 
-	/* These entries are here for sys.builtin_module_names */
-	{"__main__", NULL},
-	{"__builtin__", NULL},
-	{"sys", NULL},
-	{"exceptions", NULL},
-
-	/* This lives in gcmodule.c */
-	{"gc", initgc},
-
-	/* This lives in _warnings.c */
-	{"_warnings", _PyWarnings_Init},
-
-	/* Sentinel */
-	{0, 0}
+    /* Sentinel. */
+    {0, 0}
 };
 
 
