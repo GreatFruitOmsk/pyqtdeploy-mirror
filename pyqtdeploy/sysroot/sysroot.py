@@ -308,12 +308,12 @@ class Sysroot:
                         detail=str(e))
 
     @staticmethod
-    def error(message, detail=''):
+    def error(message, detail='', exception=None):
         """ Raise an exception that will report an error is a user friendly
         manner.
         """
 
-        raise UserException(message, detail=detail)
+        raise UserException(message, detail=detail) from exception
 
     def extract_version_nr(self, name):
         """ Return an encoded version number from the name of a file or
@@ -747,4 +747,4 @@ class Sysroot:
         """ Raise an exception about a sub-process error. """
 
         self.error("execution of '{0}' failed".format(args[0]),
-                detail=e.stderr)
+                detail=e.stderr, exception=e)

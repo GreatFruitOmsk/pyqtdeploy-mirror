@@ -188,10 +188,14 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     # Run a specific test or all of them.
-    if args.test:
-        TargetTests.factory(args.target, args.test).run(args.no_clean,
-                args.verbose)
-    else:
-        # The sysroot tests must be run first.
-        TargetSysrootTests(args.target).run(args.no_clean, args.verbose)
-        TargetStdlibTests(args.target).run(args.no_clean, args.verbose)
+    try:
+        if args.test:
+            TargetTests.factory(args.target, args.test).run(args.no_clean,
+                    args.verbose)
+        else:
+            # The sysroot tests must be run first.
+            TargetSysrootTests(args.target).run(args.no_clean, args.verbose)
+            TargetStdlibTests(args.target).run(args.no_clean, args.verbose)
+    except UserException as e:
+        print(e)
+        sys.exit(1)
