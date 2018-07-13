@@ -555,12 +555,14 @@ class Sysroot:
                 stdout = subprocess.check_output(args,
                         universal_newlines=True, stderr=subprocess.PIPE)
             except subprocess.CalledProcessError as e:
-                self.error("execution of '{0}' failed".format(args[0]),
-                        detail=e.stderr)
+                self._run_error(args, e)
 
             return stdout.strip()
 
-        subprocess.check_call(args)
+        try:
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError as e:
+            self._run_error(args, e)
 
         return None
 
@@ -740,3 +742,9 @@ class Sysroot:
         """ Raise an exception about a missing component. """
 
         self.error("the sysroot specification must contain an entry for '{0}' before anything that depends on it".format(name))
+
+    def _run_error(self, args, e):
+        """ Raise an exception about a sub-process error. """
+
+        self.error("execution of '{0}' failed".format(args[0]),
+                detail=e.stderr)
