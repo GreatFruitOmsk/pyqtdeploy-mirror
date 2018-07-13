@@ -176,6 +176,7 @@ def extract_version(name):
     else:
         return 0
 
+    # Strip any trailing non-digits.
     while not version_str[-1].isdigit():
         version_str = version_str[:-1]
 
@@ -192,16 +193,26 @@ def parse_version(version_str):
     while len(version_parts) < 3:
         version_parts.append('0')
 
+    # Remove any trailing non-digits in the third part, eg. 'rc1'.
+    micro = ''
+    for ch in version_parts[2]:
+        if ch.is_digit():
+            micro += ch
+        else:
+            break
+
+    version_parts[2] = micro
+
     version = 0
 
-    if len(version_parts) == 3:
-        for part in version_parts:
-            try:
-                part = int(part)
-            except ValueError:
-                version = 0
-                break
+    # Ignore anything after the third part (eg. '.dev').
+    for i in range(3):
+        try:
+            part = int(version_parts[i])
+        except ValueError:
+            version = 0
+            break
 
-            version = (version << 8) + part
+        version = (version << 8) + part
 
     return version
