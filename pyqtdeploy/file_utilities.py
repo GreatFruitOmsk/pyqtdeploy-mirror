@@ -196,7 +196,7 @@ def parse_version(version_str):
     # Remove any trailing non-digits in the third part, eg. 'rc1'.
     micro = ''
     for ch in version_parts[2]:
-        if ch.is_digit():
+        if ch.isdigit():
             micro += ch
         else:
             break
