@@ -57,18 +57,7 @@ class OpenSSLComponent(ComponentBase):
         sysroot.unpack_archive(archive)
 
         # Get the version number.
-        major = minor = None
-        name = os.path.basename(os.getcwd())
-        name_parts = name.split('-')
-        if len(name_parts) == 2:
-            version_parts = name_parts[1].split('.')
-            if len(version_parts) == 3:
-                major, minor, _ = version_parts
-
-        if major is None:
-            sysroot.error(
-                    "unable to extract OpenSSL version number from '{0}'".format(
-                        name))
+        version_nr = sysroot.extract_version_nr(archive)
 
         # Set common options.
         common_options = ['--prefix=' + sysroot.sysroot_dir]
@@ -76,7 +65,7 @@ class OpenSSLComponent(ComponentBase):
         if self.no_asm:
             common_options.append('no-asm')
 
-        if minor == '0':
+        if version_nr < 0x010100:
             built = self._build_1_0(sysroot, common_options)
         else:
             built = self._build_1_1(sysroot, common_options)
