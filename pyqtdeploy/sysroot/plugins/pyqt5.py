@@ -47,8 +47,13 @@ class PyQt5Component(ComponentBase):
 
         sysroot.progress("Building PyQt5")
 
-        # Unpack the source.
         archive = sysroot.find_file(self.source)
+        version_nr = sysroot.extract_version_nr(archive)
+
+        # v5.11.0-2 have too many problems so it's easier to blacklist them.
+        if version_nr >= 0x040b00 and version_nr <= 0x040b02:
+            sysroot.error("Please use PyQt v5.11.3 or later")
+
         sysroot.unpack_archive(archive)
 
         # Copy any license file.
