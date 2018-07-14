@@ -46,10 +46,24 @@ class SIPComponent(ComponentBase):
         sysroot.progress("Building SIP")
 
         archive = sysroot.find_file(self.source)
-        self._build_code_generator(sysroot, archive)
-        self._build_module(sysroot, archive)
+        version_nr = sysroot.extract_version_nr(archive)
 
-    def _build_code_generator(self, sysroot, archive):
+        # v4.19.9-12 have too many problems so it's easier to blacklist them.
+        if version_nr >= 0x041309 and version_nr <= 0x04130c:
+            sysroot.error("Please use SIP v4.19.13 or later")
+
+        build_generator = os.path.join(os.getcwd(), 'sip-generator')
+        build_module = os.path.join(os.getcwd(), 'sip-module')
+
+        os.mkdir(build_generator)
+        os.chdir(build_generator)
+        self._build_code_generator(sysroot, archive, version_nr)
+
+        os.mkdir(build_module)
+        os.chdir(build_module)
+        self._build_module(sysroot, archive, version_nr)
+
+    def _build_code_generator(self, sysroot, archive, version_nr):
         """ Build the code generator for the host. """
 
         sysroot.building_for_target = False
@@ -59,16 +73,19 @@ class SIPComponent(ComponentBase):
         args = [sysroot.host_python, 'configure.py', '--bindir',
                 sysroot.host_bin_dir]
 
-        sysroot.run(*args)
+        if version_nr >= 0x04130c:
+            # From v4.19.12 sip.h is considered part of the tools.
+            args.extend(['--incdir', sysroot.target_py_include_dir,
+                    '--no-module'])
 
+        sysroot.run(*args)
         os.chdir('sipgen')
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
-        os.chdir('..')
 
         sysroot.building_for_target = True
 
-    def _build_module(self, sysroot, archive):
+    def _build_module(self, sysroot, archive, version_nr):
         """ Build the static module for the target. """
 
         sysroot.unpack_archive(archive)
