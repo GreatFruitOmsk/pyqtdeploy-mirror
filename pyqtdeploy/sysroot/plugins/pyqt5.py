@@ -96,6 +96,9 @@ pyqt_modules = {6}
             '--no-qml-plugin', '--no-stubs', '--configuration', cfg_name,
             '--sip', sysroot.host_sip, '--confirm-license', '-c', '-j2']
 
+        if version_nr >= 0x050b00:
+            args.append('--no-dist-info')
+
         if sysroot.verbose_enabled:
             args.append('--verbose')
 

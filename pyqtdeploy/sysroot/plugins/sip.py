@@ -107,6 +107,9 @@ sip_module_dir = {2}
                 sysroot.sysroot_dir, '--no-pyi', '--no-tools', '--use-qmake',
                 '--configuration', cfg_name]
 
+        if version_nr >= 0x041309:
+            args.append('--no-dist-info')
+
         if self.module_name:
             args.extend(['--sip-module', self.module_name])
 

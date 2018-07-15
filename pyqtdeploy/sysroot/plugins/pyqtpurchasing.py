@@ -43,8 +43,9 @@ class PyQtPurchasingComponent(ComponentBase):
 
         sysroot.progress("Building PyQtPurchasing")
 
-        # Unpack the source.
         archive = sysroot.find_file(self.source)
+        version_nr = sysroot.extract_version_nr(archive)
+
         sysroot.unpack_archive(archive)
 
         # Create a configuration file.
@@ -75,6 +76,9 @@ module_dir = {5}
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
             '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
             cfg_name, '--sip', sysroot.host_sip, '-c']
+
+        if version_nr >= 0x050b00:
+            args.append('--no-dist-info')
 
         if sysroot.verbose_enabled:
             args.append('--verbose')

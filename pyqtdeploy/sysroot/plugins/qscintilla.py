@@ -43,8 +43,9 @@ class QScintillaComponent(ComponentBase):
 
         sysroot.progress("Building QScintilla")
 
-        # Unpack the source.
         archive = sysroot.find_file(self.source)
+        version_nr = sysroot.extract_version_nr(archive)
+
         sysroot.unpack_archive(archive)
 
         # Build the static C++ library.
@@ -84,6 +85,9 @@ module_dir = {4}
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
             '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
             cfg_name, '--sip', sysroot.host_sip, '-c', '--pyqt', 'PyQt5']
+
+        if version_nr >= 0x020a05:
+            args.append('--no-dist-info')
 
         if sysroot.verbose_enabled:
             args.append('--verbose')
