@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -212,15 +212,21 @@ class Builder:
                         PYQTDEPLOY_HEXVERSION))
         version_f.close()
 
+        # Determine if there is a private sip module.
+        sip_lib_path = '{0}/site-packages/{1}/{2}'.format(
+                standard_library_dir, self._get_pyqt_package_name(),
+                'sip.lib' if self._target.platform.name == 'win' else 'libsip.a')
+        private_sip = QFile.exists(sip_lib_path)
+
         # Generate the application resource.
         resource_names = self._generate_resource(
                 self._build_dir + '/resources', required_py,
-                standard_library_dir, job_writer, nr_resources)
+                standard_library_dir, private_sip, job_writer, nr_resources)
 
         # Write the .pro file.
         self._write_qmake(py_version, required_ext, required_libraries,
-                include_dir, python_library, standard_library_dir, source_dir,
-                job_writer, opt, resource_names)
+                include_dir, python_library, standard_library_dir, private_sip,
+                source_dir, job_writer, opt, resource_names)
 
         # Run the freeze jobs.
         job_file.close()
@@ -242,7 +248,7 @@ class Builder:
         self._freeze(job_writer, build_dir + '/frozen_' + name + '.h',
                 bootstrap, 'pyqtdeploy_' + name, as_c=True)
 
-    def _generate_resource(self, resources_dir, required_py, standard_library_dir, job_writer, nr_resources):
+    def _generate_resource(self, resources_dir, required_py, standard_library_dir, private_sip, job_writer, nr_resources):
         """ Generate the application resource. """
 
         project = self._project
@@ -274,8 +280,8 @@ class Builder:
                     project.path_from_user(package.name), job_writer)
 
         # Handle the PyQt package.
-        if any([m for m in project.pyqt_modules if m != 'sip']):
-            pyqt_subdir = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
+        if any([m for m in project.pyqt_modules if private_sip or m != 'sip']):
+            pyqt_subdir = self._get_pyqt_package_name()
             pyqt_dst_dir = resources_dir + '/' +  pyqt_subdir
             pyqt_src_dir = standard_library_dir + '/site-packages/' + pyqt_subdir
 
@@ -411,7 +417,7 @@ class Builder:
         ('.y',      'YACCSOURCES')
     )
 
-    def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, source_dir, job_writer, opt, resource_names):
+    def _write_qmake(self, py_version, required_ext, required_libraries, include_dir, python_library, standard_library_dir, private_sip, source_dir, job_writer, opt, resource_names):
         """ Create the .pro file for qmake. """
 
         project = self._project
@@ -502,7 +508,7 @@ class Builder:
 
         # Handle any static PyQt modules.
         site_packages = standard_library_dir + '/site-packages'
-        pyqt_version = 'PyQt5' if project.application_is_pyqt5 else 'PyQt4'
+        pyqt_package = self._get_pyqt_package_name()
 
         for module in self._get_all_pyqt_modules():
             # The uic module is pure Python.
@@ -515,14 +521,14 @@ class Builder:
                 continue
 
             # The sip module is always needed (implicitly or explicitly) if we
-            # have got this far.  We handle it separately as it is in a
+            # have got this far.  We handle it separately when it is in a
             # different directory.
-            if module == 'sip':
+            if module == 'sip' and not private_sip:
                 used_inittab.add(module)
                 used_libs.add('-L' + site_packages)
             else:
-                used_inittab.add(pyqt_version + '.' + module)
-                used_libs.add('-L' + site_packages + '/' + pyqt_version)
+                used_inittab.add(pyqt_package + '.' + module)
+                used_libs.add('-L' + site_packages + '/' + pyqt_package)
 
             lib_name = '-l' + module
             if metadata.needs_suffix:
@@ -766,6 +772,11 @@ class Builder:
 
         # All done.
         f.close()
+
+    def _get_pyqt_package_name(self):
+        """ Return the name of the PyQt package. """
+
+        return 'PyQt5' if self._project.application_is_pyqt5 else 'PyQt4'
 
     @classmethod
     def _write_qt_config(cls, f, name, qt_major, values):
