@@ -43,6 +43,12 @@ class PyQtDataVisualizationComponent(ComponentBase):
 
         sysroot.progress("Building PyQtDataVisualization")
 
+        # Get the PyQt version number.
+        pyqt5 = sysroot.find_component('pyqt5')
+        pyqt5_archive = sysroot.find_file(pyqt5.source)
+        pyqt5_version_nr = sysroot.extract_version_nr(pyqt5_archive)
+
+        # Get this package's source and version number.
         archive = sysroot.find_file(self.source)
         version_nr = sysroot.extract_version_nr(archive)
 
@@ -61,10 +67,12 @@ module_dir = {5}
                 sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
-        disabled_features = sysroot.find_component('pyqt5').disabled_features
-        if disabled_features:
+        if pyqt5.disabled_features:
             cfg += 'pyqt_disabled_features = {0}\n'.format(
-                    ' '.join(disabled_features))
+                    ' '.join(pyqt5.disabled_features))
+
+        if pyqt5_version_nr >= 0x050b00:
+            cfg += 'sip_module = PyQt5.sip\n'
 
         cfg_name = 'pyqtdatavisualization-' + sysroot.target_arch_name + '.cfg'
 
