@@ -73,6 +73,9 @@ extern PyObject *PyInit_time(void);
 #if defined(MS_WINDOWS)
 extern PyObject *PyInit_winreg(void);
 #endif
+#if PY_MINOR_VERSION >= 7
+extern PyObject *PyInit_zipimport(void);
+#endif
 
 /* The internal modules. */
 
@@ -148,6 +151,9 @@ struct _inittab _PyImport_Inittab[] = {
 #endif
 #if defined(MS_WINDOWS)
     {"winreg", PyInit_winreg},
+#endif
+#if PY_MINOR_VERSION >= 7
+    {"zipimport", PyInit_zipimport},
 #endif
 
     /* The internal modules. */

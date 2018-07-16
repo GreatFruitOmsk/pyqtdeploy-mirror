@@ -2032,12 +2032,18 @@ _metadata = {
                 hidden_deps='warnings',
                 modules=('importlib.abc', 'importlib.machinery',
                         'importlib.util')),
-        CorePythonModule(min_version=(3, 5),
+        CorePythonModule(min_version=(3, 5), max_version=(3, 6),
                 deps=('importlib._bootstrap', 'importlib._bootstrap_external',
                         '_imp', 'types'),
                 hidden_deps='warnings',
                 modules=('importlib.abc', 'importlib.machinery',
-                        'importlib.util'))),
+                        'importlib.util')),
+        CorePythonModule(min_version=(3, 7),
+                deps=('importlib._bootstrap', 'importlib._bootstrap_external',
+                        '_imp', 'types'),
+                hidden_deps='warnings',
+                modules=('importlib.abc', 'importlib.machinery',
+                        'importlib.resources', 'importlib.util'))),
 
     'importlib.abc': (
         PythonModule(version=(3, 3),
@@ -3558,8 +3564,9 @@ _metadata = {
                         'stat', 'struct', 'threading', 'time', 'warnings',
                         'zlib'))),
 
-    'zipimport':
-        ExtensionModule(source='zipimport.c', deps='zlib'),
+    'zipimport': (
+        ExtensionModule(max_version=(3, 5), source='zipimport.c', deps='zlib'),
+        CoreExtensionModule(min_version=(3, 6), deps='zlib')),
 
     'zlib': (
         ExtensionModule(max_version=(3, 6),
