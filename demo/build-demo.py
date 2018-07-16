@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 
@@ -105,6 +106,8 @@ if build_sysroot:
     run(args)
 
 # Build the demo.
+shutil.copy('pyqt-demo.py', os.path.join('data', 'pyqt-demo.py.dat'))
+
 run(['pyqtdeploy-build', '--target', target, '--sysroot', sysroot_dir,
             '--build-dir', build_dir, 'pyqt-demo.pdy'])
 

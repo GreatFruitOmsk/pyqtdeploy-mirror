@@ -9,10 +9,10 @@
 import sys
 import sysconfig
 
-from PyQt5.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
+from PyQt5.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QFile, QIODevice
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QApplication, QLabel, QTreeView, QVBoxLayout,
-        QWidget)
+from PyQt5.QtWidgets import (QApplication, QLabel, QMessageBox, QTabWidget,
+        QTreeView, QVBoxLayout, QWidget)
 from sip import SIP_VERSION_STR
 
 try:
@@ -83,13 +83,13 @@ except ImportError:
     pass
 
 
-class View(QTreeView):
+class SummaryView(QTreeView):
     """ A read-only view for displaying a model. """
 
-    def __init__(self, title, model):
+    def __init__(self, model):
         """ Initialise the object. """
 
-        super().__init__(windowTitle=title)
+        super().__init__()
 
         self.setModel(model)
         self.setRootIsDecorated(False)
@@ -168,10 +168,86 @@ class Model(QStandardItemModel):
                 (hexversion >> 16) & 0xff, (hexversion >> 8) & 0xff)
 
 
+def get_source_code():
+    """ Return a copy of this source code. """
+
+    # Use the resources package if the version of Python is new enough.
+    try:
+        from importlib.resources import read_text
+    except ImportError:
+        return get_source_code_using_qt()
+
+    try:
+        source = read_text('data', 'pyqt-demo.py.dat')
+    except FileNotFoundError:
+        # The source file hasn't been copied to the data package so we must be
+        # running in a non-deployed state so use this copy of the source.
+        with open(__file__, encoding='utf-8') as f:
+            source = f.read()
+
+    return source
+
+
+def get_source_code_using_qt():
+    """ Return a copy of this source code using QFile's support for embedded
+    resources.
+    """
+
+    import data
+
+    # Getting the path name of the embedded source file this way means we don't
+    # need to know the path separator.
+    qf = QFile(data.__file__.replace('__init__.pyo', 'pyqt-demo.py.dat'))
+
+    if not qf.exists():
+        # The source file hasn't been copied to the data package so we must be
+        # running in a non-deployed state so use this copy of the source.
+        qf = QFile(__file__)
+
+    if not qf.open(QIODevice.ReadOnly | QIODevice.Text):
+        QMessageBox.critical(None, "File Open Error",
+                "Unable to open '{0}': {1}".format(qf.fileName(),
+                        qf.errorString()),
+                QMessageBox.Close)
+        sys.exit(1)
+
+    source = qf.readAll()
+    qf.close()
+
+    return bytes(source).decode()
+
+
+def create_qscintilla_code_view():
+    """ Create a QScintilla based view containing a copy of this source code.
+    """
+
+    from PyQt5.Qsci import QsciLexerPython, QsciScintilla
+
+    view = QsciScintilla()
+    view.setReadOnly(True)
+    view.setUtf8(True)
+    view.setLexer(QsciLexerPython())
+    view.setText(get_source_code())
+
+    return view
+
+
+def create_fallback_code_view():
+    """ Create a QTextEdit based view containing a copy of this source code.
+    """
+
+    from PyQt5.QtWidgets import QTextEdit
+
+    view = QTextEdit(readOnly=True)
+    view.setPlainText(get_source_code())
+
+    return view
+
+
 # Create the GUI.
 app = QApplication(sys.argv)
 
-shell = QWidget()
+shell = QWidget(windowTitle="PyQt Demo")
 shell_layout = QVBoxLayout()
 
 header = QLabel("""<p>
@@ -190,8 +266,19 @@ header.setOpenExternalLinks(True)
 header.setWordWrap(True)
 shell_layout.addWidget(header)
 
-view = View("PyQt Demo", Model())
-shell_layout.addWidget(view)
+views = QTabWidget()
+
+summary = SummaryView(Model())
+views.addTab(summary, "Summary")
+
+if "QScintilla" in optional_products:
+    code = create_qscintilla_code_view()
+else:
+    code = create_fallback_code_view()
+
+views.addTab(code, "Source Code")
+
+shell_layout.addWidget(views)
 
 if pdy_hexversion != 0:
     footer = QLabel("<p>It is a self-contained executable created using pyqtdeploy v%s.</p>" % Model.from_hexversion(pdy_hexversion))
