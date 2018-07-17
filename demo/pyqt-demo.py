@@ -11,8 +11,8 @@ import sysconfig
 
 from PyQt5.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QFile, QIODevice
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QApplication, QLabel, QMessageBox, QTabWidget,
-        QTreeView, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QApplication, QLabel, QTabWidget, QTreeView,
+        QVBoxLayout, QWidget)
 from sip import SIP_VERSION_STR
 
 try:
@@ -171,19 +171,19 @@ class Model(QStandardItemModel):
 def get_source_code():
     """ Return a copy of this source code. """
 
-    # Use the resources package if the version of Python is new enough.
-    try:
-        from importlib.resources import read_text
-    except ImportError:
-        return get_source_code_using_qt()
-
-    try:
-        source = read_text('data', 'pyqt-demo.py.dat')
-    except FileNotFoundError:
-        # The source file hasn't been copied to the data package so we must be
-        # running in a non-deployed state so use this copy of the source.
+    if pdy_hexversion == 0:
+        # We are running in a non-deployed state so use this copy of the
+        # source.
         with open(__file__, encoding='utf-8') as f:
             source = f.read()
+    else:
+        # Use the resources package if the version of Python is new enough.
+        try:
+            from importlib.resources import read_text
+        except ImportError:
+            source = get_source_code_using_qt()
+        else:
+            source = read_text('data', 'pyqt-demo.py.dat')
 
     return source
 
@@ -199,18 +199,7 @@ def get_source_code_using_qt():
     # need to know the path separator.
     qf = QFile(data.__file__.replace('__init__.pyo', 'pyqt-demo.py.dat'))
 
-    if not qf.exists():
-        # The source file hasn't been copied to the data package so we must be
-        # running in a non-deployed state so use this copy of the source.
-        qf = QFile(__file__)
-
-    if not qf.open(QIODevice.ReadOnly | QIODevice.Text):
-        QMessageBox.critical(None, "File Open Error",
-                "Unable to open '{0}': {1}".format(qf.fileName(),
-                        qf.errorString()),
-                QMessageBox.Close)
-        sys.exit(1)
-
+    qf.open(QIODevice.ReadOnly | QIODevice.Text)
     source = qf.readAll()
     qf.close()
 
