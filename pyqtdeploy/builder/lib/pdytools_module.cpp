@@ -1,4 +1,4 @@
-// Copyright (c) 2015, Riverbank Computing Limited
+// Copyright (c) 2018, Riverbank Computing Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 #include <QByteArray>
 #include <QChar>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QString>
 #include <QStringList>
@@ -93,6 +94,26 @@ static const char extension_module_extension[] = ".so";
 #endif
 
 
+// C linkage forward declarations.
+PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
+
+static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
+static void qrcimporter_dealloc(PyObject *self);
+#if PY_MAJOR_VERSION >= 3
+static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
+#endif
+static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_get_data(PyObject *self, PyObject *args);
+#if PY_VERSION_HEX >= 0x03070000
+static PyObject *qrcimporter_get_resource_reader(PyObject *self,
+        PyObject *arg);
+#endif
+static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args);
+static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
+
+
 // The importer object structure.
 typedef struct _qrcimporter
 {
@@ -106,22 +127,7 @@ typedef struct _qrcimporter
 } QrcImporter;
 
 
-// C linkage forward declarations.
-static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds);
-static void qrcimporter_dealloc(PyObject *self);
-#if PY_MAJOR_VERSION >= 3
-static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args);
-#endif
-static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args);
-static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args);
-static PyObject *qrcimporter_get_data(PyObject *self, PyObject *args);
-static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args);
-static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args);
-static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args);
-PYQTDEPLOY_TYPE PYQTDEPLOY_INIT();
-
-
-// The method table.
+// The importer method table.
 static PyMethodDef qrcimporter_methods[] = {
 #if PY_MAJOR_VERSION >= 3
     {"find_loader", qrcimporter_find_loader, METH_VARARGS, NULL},
@@ -129,6 +135,9 @@ static PyMethodDef qrcimporter_methods[] = {
     {"find_module", qrcimporter_find_module, METH_VARARGS, NULL},
     {"get_code", qrcimporter_get_code, METH_VARARGS, NULL},
     {"get_data", qrcimporter_get_data, METH_VARARGS, NULL},
+#if PY_VERSION_HEX >= 0x03070000
+    {"get_resource_reader", qrcimporter_get_resource_reader, METH_O, NULL},
+#endif
     {"get_source", qrcimporter_get_source, METH_VARARGS, NULL},
     {"is_package", qrcimporter_is_package, METH_VARARGS, NULL},
     {"load_module", qrcimporter_load_module, METH_VARARGS, NULL},
@@ -190,6 +199,181 @@ static PyTypeObject QrcImporter_Type = {
 #endif
 };
 
+
+#if PY_VERSION_HEX >= 0x03070000
+// The reader object structure.
+typedef struct _qrcreader
+{
+    PyObject_HEAD
+
+    // The pathname containing the resources handled by this reader.
+    QString *pathname;
+} QrcReader;
+
+
+// The reader method declarations.
+static int qrcreader_init(PyObject *self, PyObject *args, PyObject *kwds);
+static void qrcreader_dealloc(PyObject *self);
+static PyObject *qrcreader_open_resource(PyObject *self, PyObject *arg);
+
+
+// The reader method table.
+static PyMethodDef qrcreader_methods[] = {
+    {"open_resource", qrcreader_open_resource, METH_O, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+
+// The reader type structure.
+static PyTypeObject QrcReader_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "pdytools.qrcreader",
+    sizeof (QrcReader),
+    0,                                          // tp_itemsize
+    qrcreader_dealloc,                          // tp_dealloc
+    0,                                          // tp_print
+    0,                                          // tp_getattr
+    0,                                          // tp_setattr
+    0,                                          // tp_reserved
+    0,                                          // tp_repr
+    0,                                          // tp_as_number
+    0,                                          // tp_as_sequence
+    0,                                          // tp_as_mapping
+    0,                                          // tp_hash
+    0,                                          // tp_call
+    0,                                          // tp_str
+    0,                                          // tp_getattro
+    0,                                          // tp_setattro
+    0,                                          // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                         // tp_flags
+    0,                                          // tp_doc
+    0,                                          // tp_traverse
+    0,                                          // tp_clear
+    0,                                          // tp_richcompare
+    0,                                          // tp_weaklistoffset
+    0,                                          // tp_iter
+    0,                                          // tp_iternext
+    qrcreader_methods,                          // tp_methods
+    0,                                          // tp_members
+    0,                                          // tp_getset
+    0,                                          // tp_base
+    0,                                          // tp_dict
+    0,                                          // tp_descr_get
+    0,                                          // tp_descr_set
+    0,                                          // tp_dictoffset
+    qrcreader_init,                             // tp_init
+    0,                                          // tp_alloc
+    0,                                          // tp_new
+    0,                                          // tp_free
+    0,                                          // tp_is_gc
+    0,                                          // tp_bases
+    0,                                          // tp_mro
+    0,                                          // tp_cache
+    0,                                          // tp_subclasses
+    0,                                          // tp_weaklist
+    0,                                          // tp_del
+    0,                                          // tp_version_tag
+    0,                                          // tp_finalize
+};
+
+
+// The resource object structure.
+typedef struct _qrcresource
+{
+    PyObject_HEAD
+
+    // The resource itself.
+    QFile *resource;
+} QrcResource;
+
+
+// The resource method declarations.
+static int qrcresource_init(PyObject *self, PyObject *args, PyObject *kwds);
+static void qrcresource_dealloc(PyObject *self);
+static PyObject *qrcresource_close(PyObject *self, PyObject *);
+static PyObject *qrcresource_flush(PyObject *self, PyObject *);
+static PyObject *qrcresource_read(PyObject *self, PyObject *args);
+static PyObject *qrcresource_readable(PyObject *self, PyObject *);
+static PyObject *qrcresource_seekable(PyObject *self, PyObject *);
+static PyObject *qrcresource_writable(PyObject *self, PyObject *);
+
+
+// The resource method table.
+static PyMethodDef qrcresource_methods[] = {
+    {"close", qrcresource_close, METH_NOARGS, NULL},
+    {"flush", qrcresource_flush, METH_NOARGS, NULL},
+    {"read", qrcresource_read, METH_VARARGS, NULL},
+    {"readable", qrcresource_readable, METH_NOARGS, NULL},
+    {"seekable", qrcresource_seekable, METH_NOARGS, NULL},
+    {"writable", qrcresource_writable, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL}
+};
+
+
+// The resource get/set declarations.
+static PyObject *qrcresource_get_closed(PyObject *self, void *);
+
+
+// The resource get/set table.
+static PyGetSetDef qrcresource_getset[] = {
+    {"closed", qrcresource_get_closed, NULL, NULL},
+    {NULL, NULL, NULL, NULL}
+};
+
+
+// The resource type structure.
+static PyTypeObject QrcResource_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "pdytools.qrcresource",
+    sizeof (QrcResource),
+    0,                                          // tp_itemsize
+    qrcresource_dealloc,                        // tp_dealloc
+    0,                                          // tp_print
+    0,                                          // tp_getattr
+    0,                                          // tp_setattr
+    0,                                          // tp_reserved
+    0,                                          // tp_repr
+    0,                                          // tp_as_number
+    0,                                          // tp_as_sequence
+    0,                                          // tp_as_mapping
+    0,                                          // tp_hash
+    0,                                          // tp_call
+    0,                                          // tp_str
+    0,                                          // tp_getattro
+    0,                                          // tp_setattro
+    0,                                          // tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                         // tp_flags
+    0,                                          // tp_doc
+    0,                                          // tp_traverse
+    0,                                          // tp_clear
+    0,                                          // tp_richcompare
+    0,                                          // tp_weaklistoffset
+    0,                                          // tp_iter
+    0,                                          // tp_iternext
+    qrcresource_methods,                        // tp_methods
+    0,                                          // tp_members
+    qrcresource_getset,                         // tp_getset
+    0,                                          // tp_base
+    0,                                          // tp_dict
+    0,                                          // tp_descr_get
+    0,                                          // tp_descr_set
+    0,                                          // tp_dictoffset
+    qrcresource_init,                           // tp_init
+    0,                                          // tp_alloc
+    0,                                          // tp_new
+    0,                                          // tp_free
+    0,                                          // tp_is_gc
+    0,                                          // tp_bases
+    0,                                          // tp_mro
+    0,                                          // tp_cache
+    0,                                          // tp_subclasses
+    0,                                          // tp_weaklist
+    0,                                          // tp_del
+    0,                                          // tp_version_tag
+    0,                                          // tp_finalize
+};
+#endif
+
 }
 
 
@@ -216,6 +400,8 @@ static PyObject *get_code_object(const QString &filename);
 static void raise_import_error(const QString &fqmn);
 static QString str_to_qstring(PyObject *str);
 static PyObject *qstring_to_str(const QString &qstring);
+static bool parse_qstring(PyObject *args, const char *fmt, QString &qstring,
+        PyObject **str_obj = 0);
 
 
 // The directory containing the application executable.
@@ -225,11 +411,11 @@ static QDir *executable_dir = 0;
 // The importer initialisation function.
 static int qrcimporter_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *path;
-
     // It's not clear if this is part of the public API.
     if (!_PyArg_NoKeywords("qrcimporter()", kwds))
         return -1;
+
+    PyObject *path;
 
 #if PY_MAJOR_VERSION >= 3
     if (!PyArg_ParseTuple(args, "O&:qrcimporter", PyUnicode_FSDecoder, &path))
@@ -285,12 +471,11 @@ static void qrcimporter_dealloc(PyObject *self)
 // Implement the standard find_loader() method for the importer.
 static PyObject *qrcimporter_find_loader(PyObject *self, PyObject *args)
 {
-    PyObject *py_fqmn;
+    QString fqmn;
 
-    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.find_loader", &py_fqmn))
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.find_loader", fqmn))
         return NULL;
 
-    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
@@ -403,13 +588,14 @@ static PyObject *qrcimporter_find_module(PyObject *self, PyObject *args)
 // Implement the standard load_module() method for the importer.
 static PyObject *qrcimporter_load_module(PyObject *self, PyObject *args)
 {
-    PyObject *py_fqmn, *code, *py_filename, *mod_dict;
+    QString fqmn;
+    PyObject *py_fqmn;
 
-    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.load_module", &py_fqmn))
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.load_module", fqmn, &py_fqmn))
         return NULL;
 
-    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
+    PyObject *code, *py_filename, *mod_dict;
 
     ModuleType mt = find_module((QrcImporter *)self, fqmn, pathname, filename);
 
@@ -565,12 +751,11 @@ error:
 // Implement the optional get_code() method for the importer.
 static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args)
 {
-    PyObject *py_fqmn;
+    QString fqmn;
 
-    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.get_code", &py_fqmn))
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.get_code", fqmn))
         return NULL;
 
-    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
@@ -594,6 +779,188 @@ static PyObject *qrcimporter_get_code(PyObject *self, PyObject *args)
 }
 
 
+#if PY_VERSION_HEX >= 0x03070000
+// Implement the optional get_resource_reader() method for the importer.
+static PyObject *qrcimporter_get_resource_reader(PyObject *self, PyObject *arg)
+{
+    return PyObject_CallFunctionObjArgs((PyObject *)&QrcReader_Type, self,
+            arg, NULL);
+}
+
+
+// The reader initialisation function.
+static int qrcreader_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    // It's not clear if this is part of the public API.
+    if (!_PyArg_NoKeywords("qrcreader()", kwds))
+        return -1;
+
+    QrcImporter *importer;
+    PyObject *py_package;
+
+    if (!PyArg_ParseTuple(args, "O" PYQTDEPLOY_PARSE_STR ":qrcreader", &importer, &py_package))
+        return NULL;
+
+    QString package = str_to_qstring(py_package);
+    QString pathname, filename;
+
+    if (find_module(importer, package, pathname, filename) != ModuleIsPackage)
+    {
+        PyErr_Format(PyExc_ImportError, "qrcreader: %s is not a package",
+                package.toLatin1().constData());
+
+        return -1;
+    }
+
+    ((QrcReader *)self)->pathname = new QString(pathname);
+
+    return 0;
+}
+
+
+// The reader deallocation function.
+static void qrcreader_dealloc(PyObject *self)
+{
+    if (((QrcReader *)self)->pathname)
+    {
+        delete ((QrcReader *)self)->pathname;
+        ((QrcReader *)self)->pathname = 0;
+    }
+
+    Py_TYPE(self)->tp_free(self);
+}
+
+
+// Implement the open_resource() method for the reader.
+static PyObject *qrcreader_open_resource(PyObject *self, PyObject *arg)
+{
+    // Note that a resource should be able to be specified as a path-like
+    // object but (at the moment) we only support strings.
+    return PyObject_CallFunctionObjArgs((PyObject *)&QrcResource_Type, self,
+            arg, NULL);
+}
+
+
+// The resource initialisation function.
+static int qrcresource_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    // It's not clear if this is part of the public API.
+    if (!_PyArg_NoKeywords("qrcresource()", kwds))
+        return -1;
+
+    QrcReader *reader;
+    PyObject *py_resource;
+
+    if (!PyArg_ParseTuple(args, "O" PYQTDEPLOY_PARSE_STR ":qrcresource", &reader, &py_resource))
+        return -1;
+
+    QString resource_path = QString("%1/%2").arg(*reader->pathname).arg(str_to_qstring(py_resource));
+
+    QFile *resource = new QFile(resource_path);
+
+    if (!resource->open(QIODevice::ReadOnly))
+    {
+        delete resource;
+        return -1;
+    }
+
+    ((QrcResource *)self)->resource = resource;
+
+    return 0;
+}
+
+
+// The resource deallocation function.
+static void qrcresource_dealloc(PyObject *self)
+{
+    QFile *resource = ((QrcResource *)self)->resource;
+
+    if (resource)
+    {
+        if (resource->isOpen())
+            resource->close();
+
+        delete resource;
+        ((QrcResource *)self)->resource = 0;
+    }
+
+    Py_TYPE(self)->tp_free(self);
+}
+
+
+// Implement the close() method for the resource.
+static PyObject *qrcresource_close(PyObject *self, PyObject *)
+{
+    QFile *resource = ((QrcResource *)self)->resource;
+
+    if (resource->isOpen())
+        resource->close();
+
+    Py_RETURN_NONE;
+}
+
+
+// Implement the flush() method for the resource.
+static PyObject *qrcresource_flush(PyObject *self, PyObject *)
+{
+    Py_RETURN_NONE;
+}
+
+
+// Implement the read() method for the resource.
+static PyObject *qrcresource_read(PyObject *self, PyObject *args)
+{
+    Py_ssize_t size = -1;
+
+    if (!PyArg_ParseTuple(args, "|n:qrcresource.read", &size))
+        return NULL;
+
+    QFile *resource = ((QrcResource *)self)->resource;
+
+    QByteArray data = (size < 0 ? resource->readAll() : resource->read(size));
+
+#if PY_MAJOR_VERSION >= 3
+    return PyBytes_FromStringAndSize(data.constData(), data.size());
+#else
+    return PyString_FromStringAndSize(data.constData(), data.size());
+#endif
+}
+
+
+// Implement the readable() method for the resource.
+static PyObject *qrcresource_readable(PyObject *self, PyObject *)
+{
+    Py_RETURN_TRUE;
+}
+
+
+// Implement the seekable() method for the resource.
+static PyObject *qrcresource_seekable(PyObject *self, PyObject *)
+{
+    Py_RETURN_FALSE;
+}
+
+
+// Implement the writable() method for the resource.
+static PyObject *qrcresource_writable(PyObject *self, PyObject *)
+{
+    Py_RETURN_FALSE;
+}
+
+
+// Implement the closed getter for the resource.
+static PyObject *qrcresource_get_closed(PyObject *self, void *)
+{
+    QFile *resource = ((QrcResource *)self)->resource;
+
+    if (resource->isOpen())
+        Py_RETURN_FALSE;
+
+    Py_RETURN_TRUE;
+}
+#endif
+
+
 // Implement the optional get_source() method for the importer.
 static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args)
 {
@@ -604,12 +971,11 @@ static PyObject *qrcimporter_get_source(PyObject *self, PyObject *args)
 // Implement the optional is_package() method for the importer.
 static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args)
 {
-    PyObject *py_fqmn;
+    QString fqmn;
 
-    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.is_package", &py_fqmn))
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.is_package", fqmn))
         return NULL;
 
-    QString fqmn = str_to_qstring(py_fqmn);
     QString pathname, filename;
     PyObject *result;
 
@@ -635,12 +1001,11 @@ static PyObject *qrcimporter_is_package(PyObject *self, PyObject *args)
 // Implement the optional get_data() method for the importer.
 static PyObject *qrcimporter_get_data(PyObject *self, PyObject *args)
 {
-    PyObject *py_filename;
+    QString filename;
 
-    if (!PyArg_ParseTuple(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.get_data", &py_filename))
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcimporter.get_data", filename))
         return NULL;
 
-    QString filename = str_to_qstring(py_filename);
     QByteArray data;
 
     if (!read_data(filename, data))
@@ -751,6 +1116,24 @@ static PyObject *get_code_object(const QString &filename)
 }
 
 
+// Parse an argument tuple for a single QString.
+static bool parse_qstring(PyObject *args, const char *fmt, QString &qstring,
+        PyObject **str_obj)
+{
+    PyObject *py_string;
+
+    if (!PyArg_ParseTuple(args, fmt, &py_string))
+        return false;
+
+    if (str_obj)
+        *str_obj = py_string;
+
+    qstring = str_to_qstring(py_string);
+
+    return true;
+}
+
+
 // Convert a Python str object to a QString.
 static QString str_to_qstring(PyObject *str)
 {
@@ -833,6 +1216,18 @@ PYQTDEPLOY_TYPE PYQTDEPLOY_INIT()
 
     if (PyType_Ready(&QrcImporter_Type) < 0)
         PYQTDEPLOY_FATAL("Failed to initialise pdytools.qrcimporter type");
+
+#if PY_VERSION_HEX >= 0x03070000
+    QrcReader_Type.tp_new = PyType_GenericNew;
+
+    if (PyType_Ready(&QrcReader_Type) < 0)
+        PYQTDEPLOY_FATAL("Failed to initialise pdytools.qrcreader type");
+
+    QrcResource_Type.tp_new = PyType_GenericNew;
+
+    if (PyType_Ready(&QrcResource_Type) < 0)
+        PYQTDEPLOY_FATAL("Failed to initialise pdytools.qrcresource type");
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     mod = PyModule_Create(&pdytoolsmodule);
