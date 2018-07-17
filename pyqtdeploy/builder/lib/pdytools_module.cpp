@@ -214,12 +214,18 @@ typedef struct _qrcreader
 // The reader method declarations.
 static int qrcreader_init(PyObject *self, PyObject *args, PyObject *kwds);
 static void qrcreader_dealloc(PyObject *self);
+static PyObject *qrcreader_contents(PyObject *self, PyObject *);
+static PyObject *qrcreader_is_resource(PyObject *self, PyObject *args);
 static PyObject *qrcreader_open_resource(PyObject *self, PyObject *arg);
+static PyObject *qrcreader_resource_path(PyObject *self, PyObject *arg);
 
 
 // The reader method table.
 static PyMethodDef qrcreader_methods[] = {
+    {"contents", qrcreader_contents, METH_NOARGS, NULL},
+    {"is_resource", qrcreader_is_resource, METH_VARARGS, NULL},
     {"open_resource", qrcreader_open_resource, METH_O, NULL},
+    {"resource_path", qrcreader_resource_path, METH_O, NULL},
     {NULL, NULL, 0, NULL}
 };
 
@@ -402,6 +408,9 @@ static QString str_to_qstring(PyObject *str);
 static PyObject *qstring_to_str(const QString &qstring);
 static bool parse_qstring(PyObject *args, const char *fmt, QString &qstring,
         PyObject **str_obj = 0);
+#if PY_VERSION_HEX >= 0x03070000
+static QString get_resource_path(QrcReader *reader, const QString &resource);
+#endif
 
 
 // The directory containing the application executable.
@@ -831,6 +840,57 @@ static void qrcreader_dealloc(PyObject *self)
 }
 
 
+// Implement the contents() method for the reader.
+static PyObject *qrcreader_contents(PyObject *self, PyObject *)
+{
+    QStringList contents(QDir(*((QrcReader *)self)->pathname).entryList());
+
+    PyObject *py_contents = PyTuple_New(contents.size());
+    if (!py_contents)
+        return NULL;
+
+    for (int i = 0; i < contents.size(); ++i)
+    {
+        PyObject *py_name = qstring_to_str(contents.at(i));
+        if (!py_name)
+        {
+            Py_DECREF(py_contents);
+            return NULL;
+        }
+
+        PyTuple_SET_ITEM(py_contents, i, py_name);
+    }
+
+    return py_contents;
+}
+
+
+// Implement the is_resource() method for the reader.
+static PyObject *qrcreader_is_resource(PyObject *self, PyObject *args)
+{
+    QString resource;
+    PyObject *py_resource;
+
+    if (!parse_qstring(args, PYQTDEPLOY_PARSE_STR ":qrcreader.is_resource", resource, &py_resource))
+        return NULL;
+
+    QFileInfo resource_info(get_resource_path((QrcReader *)self, resource));
+
+    if (!resource_info.exists())
+    {
+        PyErr_Format(PyExc_FileNotFoundError, "%R does not exist",
+                py_resource);
+
+        return NULL;
+    }
+
+    if (resource_info.isFile())
+        Py_RETURN_TRUE;
+
+    Py_RETURN_FALSE;
+}
+
+
 // Implement the open_resource() method for the reader.
 static PyObject *qrcreader_open_resource(PyObject *self, PyObject *arg)
 {
@@ -838,6 +898,15 @@ static PyObject *qrcreader_open_resource(PyObject *self, PyObject *arg)
     // object but (at the moment) we only support strings.
     return PyObject_CallFunctionObjArgs((PyObject *)&QrcResource_Type, self,
             arg, NULL);
+}
+
+
+// Implement the resource_path() method for the reader.
+static PyObject *qrcreader_resource_path(PyObject *self, PyObject *arg)
+{
+    PyErr_Format(PyExc_FileNotFoundError, "%R is not on the file system", arg);
+
+    return NULL;
 }
 
 
@@ -854,9 +923,8 @@ static int qrcresource_init(PyObject *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTuple(args, "O" PYQTDEPLOY_PARSE_STR ":qrcresource", &reader, &py_resource))
         return -1;
 
-    QString resource_path = QString("%1/%2").arg(*reader->pathname).arg(str_to_qstring(py_resource));
-
-    QFile *resource = new QFile(resource_path);
+    QFile *resource = new QFile(
+            get_resource_path(reader, str_to_qstring(py_resource)));
 
     if (!resource->open(QIODevice::ReadOnly))
     {
@@ -957,6 +1025,13 @@ static PyObject *qrcresource_get_closed(PyObject *self, void *)
         Py_RETURN_FALSE;
 
     Py_RETURN_TRUE;
+}
+
+
+// Return the full pathname of a resource.
+static QString get_resource_path(QrcReader *reader, const QString &resource)
+{
+    return QString("%1/%2").arg(*reader->pathname).arg(resource);
 }
 #endif
 
