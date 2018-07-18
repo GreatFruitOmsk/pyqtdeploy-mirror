@@ -6,10 +6,6 @@
         "python_source":    "Python-3.*.tar.xz"
     },
 
-    "zlib": {
-        "source":   "zlib-*.tar.gz"
-    },
-
     "qt5": {
         "android#qt_dir":           "Qt/*/android_armv7",
         "ios#qt_dir":               "Qt/*/ios",

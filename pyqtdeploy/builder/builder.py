@@ -1323,7 +1323,8 @@ static struct _inittab %s[] = {
 
         interpreter_version = stdout.strip().split()[0]
 
-        if parse_version(interpreter_version) != py_version:
+        # We ignore the micro version.
+        if parse_version(interpreter_version) >> 8 != py_version >> 8:
             raise UserException(
                     "The host interpreter version '{0}' does not match the "
                     "target version".format(interpreter_version))
