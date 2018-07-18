@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import (QCheckBox, QGroupBox, QSplitter, QTabWidget,
         QTreeView, QTreeWidget, QTreeWidgetItem, QTreeWidgetItemIterator,
         QVBoxLayout, QWidget)
 
-from ..metadata import external_libraries_metadata, get_python_metadata
+from ..metadata import (external_libraries_metadata, get_python_metadata,
+        get_targeted_value)
 from ..platforms import Architecture, Platform
 from ..project import ExternalLibrary
 
@@ -239,7 +240,7 @@ class _PlatformGui(QWidget):
         super().__init__()
 
         self._project = None
-        self._platform_name = platform_name
+        self._target = Architecture.architecture(platform_name)
 
         self._ignore_extlib_changes = False
 
@@ -272,6 +273,9 @@ class _PlatformGui(QWidget):
         model._items = {}
 
         for extlib in external_libraries_metadata:
+            if extlib.get_libs(self._target.platform.name) is None:
+                continue
+
             name_itm = QStandardItem(extlib.user_name)
 
             items = (name_itm, QStandardItem(), QStandardItem(),
@@ -295,7 +299,7 @@ class _PlatformGui(QWidget):
 
         self._project = project
 
-        platform_name = self._platform_name
+        platform_name = self._target.platform.name
 
         # Update the shared library state.
         blocked = self._pyshlib_cb.blockSignals(True)
@@ -312,6 +316,9 @@ class _PlatformGui(QWidget):
         external_libs = project.external_libraries.get(platform_name, [])
 
         for extlib in external_libraries_metadata:
+            if extlib.get_libs(self._target.platform.name) is None:
+                continue
+
             _, defs, incp, libs = model._items[extlib.name]
 
             for prj_extlib in external_libs:
@@ -330,6 +337,13 @@ class _PlatformGui(QWidget):
     def update_from_required_libraries(self, required_libraries):
         """ Update the GUI as the required external libraries changes. """
 
+        # Only look at required libraries that are targeted for this platform.
+        targeted_libraries = []
+        for required_lib in required_libraries:
+            targeted_lib = get_targeted_value(required_lib, self._target)
+            if targeted_lib is not None:
+                targeted_libraries.append(targeted_lib)
+
         items = self._extlib_edit.model()._items
 
         # Note that we can't simply block the model's signals as this would
@@ -337,7 +351,10 @@ class _PlatformGui(QWidget):
         self._ignore_extlib_changes = True
 
         for extlib in external_libraries_metadata:
-            if extlib.name in required_libraries:
+            if extlib.get_libs(self._target.platform.name) is None:
+                continue
+
+            if extlib.name in targeted_libraries:
                 for idx, itm in enumerate(items[extlib.name]):
                     itm.setFlags(
                             Qt.ItemIsEnabled|Qt.ItemIsEditable if idx != 0
@@ -352,7 +369,7 @@ class _PlatformGui(QWidget):
         """ Invoked when the shared library state changes. """
 
         project = self._project
-        platform_name = self._platform_name
+        platform_name = self._target.platform.name
 
         if state == Qt.Checked:
             project.python_use_platform.append(platform_name)
@@ -370,7 +387,7 @@ class _PlatformGui(QWidget):
         self._ignore_extlib_changes = True
 
         project = self._project
-        platform_name = self._platform_name
+        platform_name = self._target.platform.name
 
         idx = self._extlib_edit.model().indexFromItem(itm)
         extlib = external_libraries_metadata[idx.row()]

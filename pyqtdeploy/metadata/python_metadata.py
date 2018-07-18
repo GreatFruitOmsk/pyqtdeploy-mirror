@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-__all__ = ['ExtensionModule', 'get_python_metadata',
+__all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
         'supported_python_versions']
 
 
@@ -4209,8 +4209,9 @@ _metadata = {
     '_csv':
         ExtensionModule(internal=True, source='_csv.c'),
 
-    '_ctypes':
-        ExtensionModule(internal=True, target='linux|macos|win',
+    '_ctypes': (
+        ExtensionModule(max_version=(3, 6), internal=True,
+                target='linux|macos|win',
                 source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
                         '_ctypes/callproc.c', '_ctypes/stgdict.c',
                         '_ctypes/cfield.c',
@@ -4233,6 +4234,24 @@ _metadata = {
                         'win#_ctypes/libffi_msvc'),
                 libs='linux#-lffi',
                 pyd='_ctypes.pyd'),
+        ExtensionModule(min_version=(3, 7), internal=True,
+                target='linux|macos|win',
+                source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
+                        '_ctypes/callproc.c', '_ctypes/stgdict.c',
+                        '_ctypes/cfield.c',
+                        'macos#_ctypes/malloc_closure.c',
+                        'macos#_ctypes/darwin/dlfcn_simple.c',
+                        'macos#_ctypes/libffi_osx/ffi.c',
+                        'macos#_ctypes/libffi_osx/x86/darwin64.S',
+                        'macos#_ctypes/libffi_osx/x86/x86-darwin.S',
+                        'macos#_ctypes/libffi_osx/x86/x86-ffi_darwin.c',
+                        'macos#_ctypes/libffi_osx/x86/x86-ffi64.c'),
+                defines='macos#MACOSX',
+                includepath=('_ctypes',
+                        'macos#_ctypes/darwin',
+                        'macos#_ctypes/libffi_osx/include'),
+                xlib='linux|win#ffi',
+                pyd='_ctypes.pyd')),
 
     'ctypes._endian':
         PythonModule(internal=True, target='linux|macos|win', deps='ctypes'),
@@ -5067,6 +5086,22 @@ def get_python_metadata(version):
     return version_metadata
 
 
+def get_targeted_value(value, target):
+    """ Given a value that may be scoped by one or more targets, the unscoped
+    value is returned if it is being targeted by the given architecture.  If it
+    isn't then None is returned.
+    """
+
+    parts = value.split('#', maxsplit=1)
+    if len(parts) == 2:
+        scope, value = parts
+
+        if not target.is_targeted(scope):
+            value = None
+
+    return value
+
+
 def _version_from_tuple(version):
     """ Convert a 3-tuple version to an integer. """
 
@@ -5099,13 +5134,13 @@ if __name__ == '__main__':
 
         # Get the meta-data for this version.
         version_metadata = {}
+        version_nr = _version_from_tuple((major, minor, patch))
 
         for name, versions in _metadata.items():
             if not isinstance(versions, tuple):
                 versions = (versions, )
 
             # Check the version numbers.
-            nr = _version_from_tuple((major, minor, patch))
             matches = []
             for module in versions:
                 min_nr = _version_from_tuple(module.min_version)
@@ -5114,7 +5149,7 @@ if __name__ == '__main__':
                 if min_nr > max_nr:
                     print("Module '{0}' version numbers are swapped".format(name))
 
-                if nr >= min_nr and nr <= max_nr:
+                if version_nr >= min_nr and version_nr <= max_nr:
                     matches.append(module)
 
             nr_matches = len(matches)

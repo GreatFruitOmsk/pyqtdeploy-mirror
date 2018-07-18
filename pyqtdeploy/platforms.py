@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2018, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -159,8 +159,51 @@ class Architecture:
             if arch.name == name:
                 return arch
 
+            # If it is a platform then use the first architecture.
+            if arch.platform.name == name:
+                return arch
+
         raise UserException(
                 "'{0}' is not a supported architecture.".format(name))
+
+    def is_targeted(self, targets):
+        """ Returns True if the architecture is covered by a set of targets.
+        If the set of targets has a False value then the architecture is
+        covered.  If the set of targets is a sequence of platform names then
+        the architecture platform must appear in the sequence.  If the set of
+        targets is a string then it is an expression of architecture or
+        platform names which must contain the architecture or platform name.
+        """
+
+        if targets:
+            if isinstance(targets, str):
+                # See if the string is a '|' separated list of targets.
+                targets = targets.split('|')
+                if len(targets) == 1:
+                    # There was no '|' so restore the original string.
+                    targets = targets[0]
+
+            if isinstance(targets, str):
+                # String targets can come from the project file (ie. the user)
+                # and so need to be validated.
+                if targets[0] == '!':
+                    # Note that this assumes that the target is a platform
+                    # rather than an architecture.  If this is incorrect then
+                    # it is a bug in the meta-data somewhere.
+                    platform = Platform.platform(targets[1:])
+                    covered = (self.platform is not platform)
+                elif '-' in targets:
+                    architecture = Architecture.architecture(targets)
+                    covered = (self is architecture)
+                else:
+                    platform = Platform.platform(targets)
+                    covered = (self.platform is platform)
+            else:
+                covered = (self.platform.name in targets)
+        else:
+            covered = True
+
+        return covered
 
 
 class ApplePlatform(Platform):

@@ -51,7 +51,9 @@ class ExternalLibraryMetadata:
         self.user_name = user_name
 
     def get_libs(self, target):
-        """ Get the target specific libs. """
+        """ Get the target specific libs.  If the value is None then the target
+        doesn't support the library.
+        """
 
         if isinstance(self._libs, str):
             # The libs are not target specific.
@@ -63,6 +65,9 @@ class ExternalLibraryMetadata:
             if libs is None:
                 # Get the default value.
                 libs = self._libs.get('')
+
+        if libs == '':
+            return None
 
         return '-L$SYSROOT/lib ' + libs
 
@@ -80,6 +85,9 @@ external_libraries_metadata = (
     ExternalLibraryMetadata('dbm', '-lndbm', "dbm database"),
     ExternalLibraryMetadata('gdbm', '-lgdbm', "gdbm database"),
     ExternalLibraryMetadata('sqlite3', '-lsqlite3', "SQLite database"),
+    ExternalLibraryMetadata('ffi',
+            {'linux': '-lffi', 'win': '-lffi', '': ''},
+            "Foreign Function Interface"),
     ExternalLibraryMetadata('readline', '-lreadline -ltermcap', "readline"),
     ExternalLibraryMetadata('curses', '-lcurses -ltermcap', "Curses"),
     ExternalLibraryMetadata('panel', '-lpanel -lcurses', "Curses panel"),

@@ -37,7 +37,7 @@ from PyQt5.QtCore import (QByteArray, QCoreApplication, QDir, QFile,
 from ..file_utilities import (create_file, get_embedded_dir,
         get_embedded_file_for_version, parse_version, read_embedded_file)
 from ..metadata import (external_libraries_metadata, get_python_metadata,
-        pyqt4_metadata, pyqt5_metadata)
+        get_targeted_value, pyqt4_metadata, pyqt5_metadata)
 from ..project import QrcDirectory
 from ..platforms import Architecture, Platform
 from ..user_exception import UserException
@@ -93,7 +93,7 @@ class Builder:
         for name in required_modules.keys():
             module = metadata[name]
 
-            if module.target and not self._is_targeted(module.target):
+            if module.target and not self._target.is_targeted(module.target):
                 continue
 
             if module.source is None:
@@ -450,7 +450,7 @@ class Builder:
             if metadata.gui:
                 needs_gui = True
 
-            if self._is_targeted(metadata.targets):
+            if self._target.is_targeted(metadata.targets):
                 qmake_qt4.update(metadata.qt4)
                 qmake_config4.update(metadata.config4)
 
@@ -517,7 +517,7 @@ class Builder:
 
             metadata = self._get_pyqt_module_metadata(module)
 
-            if not self._is_targeted(metadata.targets):
+            if not self._target.is_targeted(metadata.targets):
                 continue
 
             # The sip module is always needed (implicitly or explicitly) if we
@@ -596,7 +596,7 @@ class Builder:
 
         # Handle any standard library extension modules.
         for name, module in required_ext.items():
-            if not self._is_targeted(module.target):
+            if not self._target.is_targeted(module.target):
                 continue
 
             # See if the extension module should be disabled for a platform
@@ -605,7 +605,7 @@ class Builder:
 
             for xlib in project.external_libraries.get(target_platform, ()):
                 if xlib.name == module.xlib:
-                    if xlib.defines == '' and xlib.includepath == '' and xlib.libs == '':
+                    if xlib.libs == '':
                         skip_module = True
 
                     break
@@ -652,9 +652,14 @@ class Builder:
         # Handle any required external libraries.
         android_extra_libs = []
 
-        external_libs = project.external_libraries.get(target_platform, [])
+        external_libs = project.external_libraries.get(target_platform, ())
 
         for required_lib in required_libraries:
+            # Skip any external libraries that are not for the current target.
+            required_lib = self._get_scoped_value(required_lib)
+            if required_lib is None:
+                continue
+
             defines = includepath = libs = ''
 
             for xlib in external_libs:
@@ -947,57 +952,7 @@ exists($$PDY_DLL) {
         value isn't valid for the target.
         """
 
-        parts = scoped_value.split('#', maxsplit=1)
-        if len(parts) == 2:
-            scope, value = parts
-
-            if not self._is_targeted(scope):
-                value = None
-        else:
-            # The value is unscoped.
-            value = scoped_value
-
-        return value
-
-    def _is_targeted(self, targets):
-        """ Returns True if the current target is covered by a set of targets.
-        If the set of targets has a False value then the current target is
-        covered.  If the set of targets is a sequence of platform names then
-        the current target platform must appear in the sequence.  If the set of
-        targets is a string then it is an expression of architecture or
-        platform names which must contain the current target architecture or
-        platform name.
-        """
-
-        if targets:
-            if isinstance(targets, str):
-                # See if the string is a '|' separated list of targets.
-                targets = targets.split('|')
-                if len(targets) == 1:
-                    # There was no '|' so restore the original string.
-                    targets = targets[0]
-
-            if isinstance(targets, str):
-                # String targets can come from the project file (ie. the user)
-                # and so need to be validated.
-                if targets[0] == '!':
-                    # Note that this assumes that the target is a platform
-                    # rather than an architecture.  If this is incorrect then
-                    # it is a bug in the metadata somewhere.
-                    platform = Platform.platform(targets[1:])
-                    covered = (self._target.platform is not platform)
-                elif '-' in targets:
-                    architecture = Architecture.architecture(targets)
-                    covered = (self._target is architecture)
-                else:
-                    platform = Platform.platform(targets)
-                    covered = (self._target.platform is platform)
-            else:
-                covered = (self._target.platform.name in targets)
-        else:
-            covered = True
-
-        return covered
+        return get_targeted_value(scoped_value, self._target)
 
     def _get_pyqt_module_metadata(self, module_name):
         """ Get the meta-data for a PyQt module. """
