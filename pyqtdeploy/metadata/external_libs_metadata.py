@@ -51,8 +51,8 @@ class ExternalLibraryMetadata:
         self.user_name = user_name
 
     def get_libs(self, target):
-        """ Get the target specific libs.  If the value is None then the target
-        doesn't support the library.
+        """ Get the target specific libs.  If the value is empty then the
+        target doesn't support the library.
         """
 
         if isinstance(self._libs, str):
@@ -66,10 +66,10 @@ class ExternalLibraryMetadata:
                 # Get the default value.
                 libs = self._libs.get('')
 
-        if libs == '':
-            return None
+        if libs != '':
+            libs = '-L$SYSROOT/lib ' + libs
 
-        return '-L$SYSROOT/lib ' + libs
+        return libs
 
 
 # The meta-data for each external library that might be needed by the Python

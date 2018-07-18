@@ -273,7 +273,7 @@ class _PlatformGui(QWidget):
         model._items = {}
 
         for extlib in external_libraries_metadata:
-            if extlib.get_libs(self._target.platform.name) is None:
+            if extlib.get_libs(self._target.platform.name) == '':
                 continue
 
             name_itm = QStandardItem(extlib.user_name)
@@ -316,7 +316,7 @@ class _PlatformGui(QWidget):
         external_libs = project.external_libraries.get(platform_name, [])
 
         for extlib in external_libraries_metadata:
-            if extlib.get_libs(self._target.platform.name) is None:
+            if extlib.get_libs(self._target.platform.name) == '':
                 continue
 
             _, defs, incp, libs = model._items[extlib.name]
@@ -351,7 +351,7 @@ class _PlatformGui(QWidget):
         self._ignore_extlib_changes = True
 
         for extlib in external_libraries_metadata:
-            if extlib.get_libs(self._target.platform.name) is None:
+            if extlib.get_libs(self._target.platform.name) == '':
                 continue
 
             if extlib.name in targeted_libraries:

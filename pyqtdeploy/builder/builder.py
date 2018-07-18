@@ -605,7 +605,7 @@ class Builder:
 
             for xlib in project.external_libraries.get(target_platform, ()):
                 if xlib.name == module.xlib:
-                    if xlib.libs == '':
+                    if xlib.defines == '' and xlib.includepath == '' and xlib.libs == '':
                         skip_module = True
 
                     break
