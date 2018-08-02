@@ -32,7 +32,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 _supported_branches = (
     (3, 7, 0),
     (3, 6, 6),
-    (3, 5, 5),
+    (3, 5, 6),
     (3, 4, 8),
     (3, 3, 7),
     (2, 7, 15))
