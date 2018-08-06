@@ -306,6 +306,12 @@ class iOS(ApplePlatform):
         self._original_deployment_target = os.environ.get(
                 'IPHONEOS_DEPLOYMENT_TARGET')
 
+    @property
+    def apple_sdk(self):
+        """ The name of the iOS SDK. """
+
+        return self.find_sdk('iPhoneOS')
+
     def configure(self):
         """ Configure the platform for building. """
 

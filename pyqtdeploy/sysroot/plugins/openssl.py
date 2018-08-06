@@ -226,16 +226,16 @@ class OpenSSLComponent(ComponentBase):
                 sysroot.run('patch', '-p1', '-i', patches[0])
 
         # Configure, build and install.
-        sdk = sysroot.apple_sdk
+        sdk_env = 'OSX_SDK=' + sysroot.apple_sdk
 
         args = ['perl', 'Configure',
                 'darwin64-x86_64-cc', 'enable-ec_nistp_64_gcc_128']
         args.extend(common_options)
 
         sysroot.run(*args)
-        sysroot.run(sysroot.host_make, 'depend', 'OSX_SDK=' + sdk)
-        sysroot.run(sysroot.host_make, 'all', 'OSX_SDK=' + sdk)
-        sysroot.run(sysroot.host_make, 'install_sw', 'OSX_SDK=' + sdk)
+        sysroot.run(sysroot.host_make, 'depend', sdk_env)
+        sysroot.run(sysroot.host_make, 'all', sdk_env)
+        sysroot.run(sysroot.host_make, 'install_sw', sdk_env)
 
     def _build_1_0_win(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Windows. """
