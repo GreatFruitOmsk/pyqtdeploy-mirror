@@ -43,10 +43,16 @@ class zlibComponent(ComponentBase):
 
         sysroot.progress("Building zlib")
 
+        # TODO: Consider adding support.  If not then move the zlib.json test
+        # out of the common directory.
+        if sysroot.target_platform_name == 'android':
+            sysroot.error(
+                    "building zlib for {0} is not supported".format(
+                            sysroot.target_platform_name))
+
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
-        # TODO: android.
         if sysroot.target_platform_name == 'win':
             sysroot.run(sysroot.host_make, '-f', 'win32\\Makefile.msc',
                     'zlib.lib')

@@ -72,7 +72,7 @@ class OpenSSLComponent(ComponentBase):
 
         if not built:
             sysroot.error(
-                    "building OpenSSL for '{0}' on '{1}' is not supported".format(
+                    "building OpenSSL for {0} on {1} is not supported".format(
                             sysroot.target_arch_name,
                             sysroot.host_platform_name))
 
@@ -148,6 +148,8 @@ class OpenSSLComponent(ComponentBase):
     def _build_1_0_android(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
+        # TODO: Move some of this (toolchain_bin and toolchain_prefix?) to
+        # sysroot (cf. apple_sdk).
         # Configure the environment.
         android_host = 'darwin' if sysroot.host_platform_name == 'macos' else 'linux'
         android_host += '-x86_64'
