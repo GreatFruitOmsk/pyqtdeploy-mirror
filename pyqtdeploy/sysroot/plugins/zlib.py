@@ -55,7 +55,7 @@ class zlibComponent(ComponentBase):
             sysroot.copy_file('zlib.lib', sysroot.target_lib_dir)
         else:
             if sysroot.target_platform_name == 'ios':
-                os.environ['CFLAGS'] = '-O3 -arch armv7 -arch armv7s -arch arm64 -isysroot ' + sysroot.apple_sdk
+                os.environ['CFLAGS'] = '-O3 -arch arm64 -isysroot ' + sysroot.apple_sdk
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
