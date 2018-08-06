@@ -55,13 +55,13 @@ class TargetTests:
 
         return test_type(target, os.path.abspath(test))
 
-    def run(self, no_clean, verbose):
+    def run(self, source_dirs, no_clean, verbose):
         """ Run the tests. """
 
         for test in self._tests:
-            self.run_test(test, no_clean, verbose)
+            self.run_test(test, source_dirs, no_clean, verbose)
 
-    def run_test(self, test, no_clean, verbose):
+    def run_test(self, test, source_dirs, no_clean, verbose):
         """ Re-implemented to run a single test. """
 
         raise NotImplementedError
@@ -88,7 +88,7 @@ class TargetSysrootTests(TargetTests):
     # The filename exyension of pyqtdeploy-sysroot tests.
     test_extension = '.json'
 
-    def run_test(self, test, no_clean, verbose):
+    def run_test(self, test, source_dirs, no_clean, verbose):
         """ Run a pyqtdeploy-sysroot test. """
 
         print("Building sysroot from {}".format(test))
@@ -107,7 +107,9 @@ class TargetSysrootTests(TargetTests):
         if verbose:
             args.append('--verbose')
 
-        args.extend(['--source-dir', os.path.join('..', 'demo', 'src')])
+        for s in source_dirs:
+            args.extend(['--source-dir', s])
+
         args.extend(['--target', self.target])
         args.extend(['--sysroot', sysroot])
         args.append(test)
@@ -125,7 +127,7 @@ class TargetStdlibTests(TargetTests):
     # The filename exyension of pyqtdeploy-build tests.
     test_extension = '.pdy'
 
-    def run_test(self, test, no_clean, verbose):
+    def run_test(self, test, source_dirs, no_clean, verbose):
         """ Run a pyqtdeploy-build test. """
 
         print("Building application from {}".format(test))
@@ -176,6 +178,9 @@ if __name__ == '__main__':
     parser.add_argument('--no-clean',
             help="do not remove the temporary build directories",
             action='store_true')
+    parser.add_argument('--source-dir',
+            help="a directory containing the source archives",
+            metavar='DIR', dest='source_dirs', action='append')
     parser.add_argument('--test',
             help="the JSON specification file or project file")
     parser.add_argument('--target', help="the target platform")
@@ -184,18 +189,28 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.source_dirs:
+        source_dirs = [os.path.abspath(s) for s in args.source_dirs]
+    else:
+        source_dirs = None
+
     # Anchor everything from the directory containing this script.
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    if not source_dirs:
+        source_dirs = [os.path.join('..', 'demo', 'src')]
 
     # Run a specific test or all of them.
     try:
         if args.test:
-            TargetTests.factory(args.target, args.test).run(args.no_clean,
-                    args.verbose)
+            TargetTests.factory(args.target, args.test).run(source_dirs,
+                    args.no_clean, args.verbose)
         else:
             # The sysroot tests must be run first.
-            TargetSysrootTests(args.target).run(args.no_clean, args.verbose)
-            TargetStdlibTests(args.target).run(args.no_clean, args.verbose)
+            TargetSysrootTests(args.target).run(source_dirs, args.no_clean,
+                    args.verbose)
+            TargetStdlibTests(args.target).run(source_dirs, args.no_clean,
+                    args.verbose)
     except UserException as e:
         print(e)
         sys.exit(1)

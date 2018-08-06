@@ -50,8 +50,8 @@ def main():
             help="search a directory for component plugins", metavar="DIR",
             action='append')
     parser.add_argument('--source-dir',
-            help="the default directory containing the source archives",
-            metavar="DIR")
+            help="a directory containing the source archives",
+            metavar="DIR", dest='source_dirs', action='append')
     parser.add_argument('--sysroot', help="the system image root directory",
             metavar="DIR")
     parser.add_argument('--target', help="the target architecture"),
@@ -75,7 +75,7 @@ def main():
             sysroot_dir = os.environ.get('SYSROOT')
 
         sysroot = Sysroot(sysroot_dir, args.specification, args.plugin_dir,
-                args.source_dir, args.target, message_handler)
+                args.source_dirs, args.target, message_handler)
 
         if args.options:
             sysroot.show_options(args.component)

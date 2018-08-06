@@ -391,8 +391,9 @@ The full set of command line options is:
 
 .. option:: --source-dir DIR
 
-    ``DIR`` is the name of the directory containing the source archives used to
-    build the components specified in the JSON file.
+    ``DIR`` is the name of a directory containing the source archives used to
+    build the components specified in the JSON file.  It may be specified any
+    number of times and each directory will be searched in turn.
 
 .. option:: --sysroot DIR
 

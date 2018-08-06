@@ -45,7 +45,7 @@ from .specification import Specification
 class Sysroot:
     """ Encapsulate a target-specific system root directory. """
 
-    def __init__(self, sysroot_dir, sysroot_json, plugin_dirs, source_dir, target_arch_name, message_handler):
+    def __init__(self, sysroot_dir, sysroot_json, plugin_dirs, source_dirs, target_arch_name, message_handler):
         """ Initialise the object. """
 
         self._host = Architecture.architecture()
@@ -61,7 +61,10 @@ class Sysroot:
                 self._target)
         self._message_handler = message_handler
 
-        self._source_dir = os.path.abspath(source_dir) if source_dir else os.path.dirname(os.path.abspath(sysroot_json))
+        if source_dirs:
+            self._source_dirs = [os.path.abspath(s) for s in source_dirs]
+        else:
+            self._source_dirs = [os.path.dirname(os.path.abspath(sysroot_json))]
 
         self._target_py_version_nr = None
         self._host_qmake = None
@@ -361,7 +364,7 @@ class Sysroot:
     def find_file(self, name, required=True):
         """ Find a file (or directory).  If the name is relative then it is
         relative to the directory specified by the --source-dir command line
-        option.  If this is not specified then the directory containing the
+        options.  If this is not specified then the directory containing the
         JSON specification file is used.  The name may be a glob pattern.  The
         absolute pathname of the file is returned.
         """
@@ -369,18 +372,21 @@ class Sysroot:
         # Convert the name to a normalised absolute pathname.
         name = os.path.expandvars(name)
 
-        if not os.path.isabs(name):
-            name = os.path.join(self._source_dir, name)
+        if os.path.isabs(name):
+            targets = [name]
+        else:
+            targets = [os.path.join(s, name) for s in self._source_dirs]
 
         # Check the name matches exactly one file.
-        names = glob.glob(name)
-        if names:
-            if len(names) > 1:
-                self.error(
-                        "'{0}' matched several files and directories".format(
-                                name))
+        for target in targets:
+            names = glob.glob(target)
+            if names:
+                if len(names) > 1:
+                    self.error(
+                            "'{0}' matched several files and/or directories".format(
+                                    name))
 
-            return os.path.normpath(names[0])
+                return os.path.normpath(names[0])
 
         if required:
             self.error(

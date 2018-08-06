@@ -48,8 +48,9 @@ def run(args):
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
-parser.add_argument('--sources',
-        help="the directory containing the source packages", metavar="DIR")
+parser.add_argument('--source-dir',
+        help="a directory containing the source packages", metavar="DIR",
+        dest='source_dirs', action='append')
 parser.add_argument('--target', help="the target platform", default='')
 parser.add_argument('--quiet', help="disable progress messages",
         action='store_true')
@@ -57,15 +58,15 @@ parser.add_argument('--verbose', help="enable verbose progress messages",
         action='store_true')
 cmd_line_args = parser.parse_args()
 build_sysroot = not cmd_line_args.no_sysroot
-sources = cmd_line_args.sources
+source_dirs = cmd_line_args.source_dirs
 target = cmd_line_args.target
 quiet = cmd_line_args.quiet
 verbose = cmd_line_args.verbose
 
-if sources:
-    sources = os.path.abspath(sources)
+if source_dirs:
+    source_dirs = [os.path.abspath(s) for s in source_dirs]
 else:
-    sources = 'src'
+    source_dirs = ['src']
 
 # Pick a default target if none is specified.
 if not target:
@@ -92,8 +93,11 @@ host_bin_dir = os.path.abspath(os.path.join(sysroot_dir, 'host', 'bin'))
 
 # Build sysroot.
 if build_sysroot:
-    args = ['pyqtdeploy-sysroot', '--target', target, '--sysroot', sysroot_dir,
-            '--source-dir', sources]
+    args = ['pyqtdeploy-sysroot', '--target', target, '--sysroot', sysroot_dir]
+
+    for s in source_dirs:
+        args.append('--source-dir')
+        args.append(s)
 
     if quiet:
         args.append('--quiet')

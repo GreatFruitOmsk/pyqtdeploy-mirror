@@ -22,6 +22,9 @@ The demo consists of:
 
 - ``src`` which is a directory which must contain the source archives of all
   the components that will be built by :program:`pyqtdeploy-sysroot`.
+  Alternatively you may specify the ``--source-dir`` option to
+  ``build-demo.py``.  This option may be specified any number of times and each
+  directory will be searched in turn.
 
 Note that executables can be created for all supported targets without
 requiring any changes to any of the above.
