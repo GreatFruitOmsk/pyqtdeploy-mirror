@@ -2,7 +2,7 @@
     "Description": "Build a host Python from source, and a target Python from source.",
 
     "qt5": {
-        "qt_dir":                   "Qt/*/clang_64"
+        "qt_dir":                   "*/*/clang_64"
     },
 
     "python": {

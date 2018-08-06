@@ -2,7 +2,7 @@
     "Description": "Build a host Python from source, and a target Python from source.",
 
     "qt5": {
-        "qt_dir":                   "Qt/*/android_armv7"
+        "qt_dir":                   "*/*/android_armv7"
     },
 
     "python": {

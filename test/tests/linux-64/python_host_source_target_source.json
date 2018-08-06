@@ -2,7 +2,7 @@
     "Description": "Build a host Python from source, and a target Python from source.",
 
     "qt5": {
-        "qt_dir":                   "Qt/*/gcc_64"
+        "qt_dir":                   "*/*/gcc_64"
     },
 
     "python": {

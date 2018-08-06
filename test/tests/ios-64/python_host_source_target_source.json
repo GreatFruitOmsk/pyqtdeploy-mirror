@@ -2,7 +2,7 @@
     "Description": "Build a host Python from source, and a target Python from source.",
 
     "qt5": {
-        "qt_dir":                   "Qt/*/ios"
+        "qt_dir":                   "*/*/ios"
     },
 
     "python": {
