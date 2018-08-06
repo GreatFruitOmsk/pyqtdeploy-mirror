@@ -148,25 +148,8 @@ class OpenSSLComponent(ComponentBase):
     def _build_1_0_android(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
-        # TODO: Move some of this (toolchain_bin and toolchain_prefix?) to
-        # sysroot (cf. apple_sdk).
         # Configure the environment.
-        android_host = 'darwin' if sysroot.host_platform_name == 'macos' else 'linux'
-        android_host += '-x86_64'
-
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-        ndk_sysroot = os.path.join(ndk_root, 'platforms',
-                'android-{}'.format(sysroot.android_api), 'arch-arm')
-        toolchain_prefix = 'arm-linux-androideabi-'
-
-        toolchain_version = os.environ.get('ANDROID_NDK_TOOLCHAIN_VERSION')
-        if toolchain_version is None:
-            sysroot.error(
-                    "the ANDROID_NDK_TOOLCHAIN_VERSION environment variable must be set to an appropriate value (e.g. '4.9')")
-
-        toolchain_bin = os.path.join(ndk_root, 'toolchains',
-                toolchain_prefix + toolchain_version, 'prebuilt',
-                android_host, 'bin')
+        toolchain_bin = sysroot.android_toolchain_bin
 
         path = os.environ['PATH'].split(os.pathsep)
         if toolchain_bin not in path:
@@ -177,11 +160,12 @@ class OpenSSLComponent(ComponentBase):
         os.environ['RELEASE'] = '2.6.37'
         os.environ['SYSTEM'] = 'android'
         os.environ['ARCH'] = 'arm'
-        os.environ['CROSS_COMPILE'] = toolchain_prefix
+        os.environ['CROSS_COMPILE'] = sysroot.android_toolchain_prefix
 
         # Note that OpenSSL v1.1.0 and later uses CROSS_SYSROOT=ndk_sysroot
         # instead.
-        os.environ['ANDROID_DEV'] = os.path.join(ndk_sysroot, 'usr')
+        os.environ['ANDROID_DEV'] = os.path.join(sysroot.android_ndk_sysroot,
+                'usr')
 
         # Configure, build and install.
         args = ['perl', 'Configure', 'shared', 'android']

@@ -188,6 +188,44 @@ class Sysroot:
         return self._target.platform.android_api
 
     @property
+    def android_ndk_sysroot(self):
+        """ The path of the Android NDK's sysroot directory. """
+
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+
+        return os.path.join(ndk_root, 'platforms',
+                'android-{}'.format(self.android_api), 'arch-arm')
+
+    @property
+    def android_toolchain_bin(self):
+        """ The path of the Android toolchain's bin directory. """
+
+        if self.host_platform_name == 'win':
+            self.error(
+                    "Windows as an Android development host is not supported")
+
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+
+        toolchain_version = os.environ.get('ANDROID_NDK_TOOLCHAIN_VERSION')
+        if toolchain_version is None:
+            sysroot.error(
+                    "the ANDROID_NDK_TOOLCHAIN_VERSION environment variable "
+                    "must be set to an appropriate value (e.g. '4.9')")
+
+        android_host = '{}-x86_64'.format(
+                'darwin' if self.host_platform_name == 'macos' else 'linux')
+
+        return os.path.join(ndk_root, 'toolchains',
+                self.android_toolchain_prefix + toolchain_version, 'prebuilt',
+                android_host, 'bin')
+
+    @property
+    def android_toolchain_prefix(self):
+        """ The name of the Android toolchain's prefix. """
+
+        return 'arm-linux-androideabi-'
+
+    @property
     def apple_sdk(self):
         """ The Apple SDK to use. """
 

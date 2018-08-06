@@ -493,6 +493,18 @@ class is.
 
         The numerical Android API level to use.
 
+    .. py:attribute:: android_ndk_sysroot
+
+        The path of the Android NDK's sysroot directory.
+
+    .. py:attribute:: android_toolchain_bin
+
+        The path of the Android toolchain's bin directory.
+
+    .. py:attribute:: android_toolchain_prefix
+
+        The name of the Android toolchain's prefix.
+
     .. py:attribute:: apple_sdk
 
         The Apple SDK to use.
