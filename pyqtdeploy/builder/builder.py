@@ -707,6 +707,12 @@ class Builder:
             f.write('\n')
             self._write_used_values(f, used_config, 'CONFIG')
 
+        # Python v3.6.0 requires C99 at least.  Note that specifying 'c++11' in
+        # 'CONFIG' doesn't affect 'CFLAGS'.
+        if py_version >= 0x030600:
+            f.write('\n')
+            f.write('QMAKE_CFLAGS += -std=c99\n')
+
         # Specify the resource files.
         f.write('\n')
         f.write('RESOURCES = \\\n')
