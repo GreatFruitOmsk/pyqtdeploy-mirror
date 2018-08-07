@@ -808,7 +808,7 @@ static int qrcreader_init(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *py_package;
 
     if (!PyArg_ParseTuple(args, "O" PYQTDEPLOY_PARSE_STR ":qrcreader", &importer, &py_package))
-        return NULL;
+        return -1;
 
     QString package = str_to_qstring(py_package);
     QString pathname, filename;
