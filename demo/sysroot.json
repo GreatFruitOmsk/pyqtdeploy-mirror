@@ -6,7 +6,7 @@
         "python_source":    "Python-3.*.tar.xz"
     },
 
-    "zlib": {
+    "ios|linux|macos|win#zlib": {
         "source":   "zlib-*.tar.gz"
     },
 
