@@ -417,6 +417,8 @@ class Sysroot:
 
         # Check the name matches exactly one file.
         for target in targets:
+            self.verbose("Looking for '{}'".format(target))
+
             names = glob.glob(target)
             if names:
                 if len(names) > 1:
@@ -424,7 +426,11 @@ class Sysroot:
                             "'{0}' matched several files and/or directories".format(
                                     name))
 
-                return os.path.normpath(names[0])
+                found = os.path.normpath(names[0])
+
+                self.verbose("Found '{}'".format(found))
+
+                return found
 
         if required:
             self.error(
