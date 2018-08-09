@@ -43,13 +43,6 @@ class zlibComponent(ComponentBase):
 
         sysroot.progress("Building zlib")
 
-        # TODO: Consider adding support.  If not then move the zlib.json test
-        # out of the common directory.
-        if sysroot.target_platform_name == 'android':
-            sysroot.error(
-                    "building zlib for {0} is not supported".format(
-                            sysroot.target_platform_name))
-
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
@@ -59,13 +52,35 @@ class zlibComponent(ComponentBase):
             sysroot.copy_file('zconf.h', sysroot.target_include_dir)
             sysroot.copy_file('zlib.h', sysroot.target_include_dir)
             sysroot.copy_file('zlib.lib', sysroot.target_lib_dir)
+
+        elif sysroot.target_platform_name == 'android':
+            # Add the toolchain to PATH if necessary.
+            toolchain_bin = sysroot.android_toolchain_bin
+            path = os.environ['PATH'].split(os.pathsep)
+            if toolchain_bin not in path:
+                path.insert(0, toolchain_bin)
+                os.environ['PATH'] = os.pathsep.join(path)
+
+            os.environ['CROSS_PREFIX'] = sysroot.android_toolchain_prefix
+            os.environ['CC'] = sysroot.android_toolchain_prefix + 'gcc'
+            os.environ['CFLAGS'] = '-march=armv7-a -mfloat-abi=softfp -mfpu=vfp -fno-builtin-memmove -mthumb -Os --sysroot=' + sysroot.android_ndk_sysroot
+
+            sysroot.run('./configure', '--static',
+                    '--prefix=' + sysroot.sysroot_dir)
+            sysroot.run(sysroot.host_make, 'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
+            sysroot.run(sysroot.host_make, 'install')
+
+            del os.environ['CFLAGS']
+            del os.environ['CC']
+            del os.environ['CROSS_PREFIX']
+
         else:
             if sysroot.target_platform_name == 'ios':
                 os.environ['CFLAGS'] = '-O3 -arch arm64 -isysroot ' + sysroot.apple_sdk
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
-            sysroot.run(sysroot.host_make)
+            sysroot.run(sysroot.host_make, 'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
             sysroot.run(sysroot.host_make, 'install')
 
             if sysroot.target_platform_name == 'ios':
