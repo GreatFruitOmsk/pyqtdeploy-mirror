@@ -20,12 +20,6 @@ The demo consists of:
   :program:`pyqtdeploy-sysroot` and :program:`pyqtdeploy-build` to create the
   demo executable
 
-- ``src`` which is a directory which must contain the source archives of all
-  the components that will be built by :program:`pyqtdeploy-sysroot`.
-  Alternatively you may specify the ``--source-dir`` option to
-  ``build-demo.py``.  This option may be specified any number of times and each
-  directory will be searched in turn.
-
 Note that executables can be created for all supported targets without
 requiring any changes to any of the above.
 
@@ -49,12 +43,17 @@ macOS    Statically linked OpenSSL          Statically linked OpenSSL
 Windows  Statically linked OpenSSL          Statically linked OpenSSL
 ======== ================================== ===================================
 
-Before building the demo you must first populate the ``src`` directory with
-appropriate source archives for the following components:
+To build the demo for the native target, run::
+
+    python build-demo.py
+
+This assumes that the current directory contains appropriate source archives
+for the following components:
 
 - Python
 - Qt
 - OpenSSL
+- zlib
 - sip
 - PyQt5
 - PyQt3D
@@ -63,23 +62,26 @@ appropriate source archives for the following components:
 - PyQtPurchasing
 - QScintilla
 
+You may put the source archives elsewhere and use the ``--sources-dir`` option
+to specify their location.  It may be specified any number of times and each
+directory will be searched in turn.
+
 If you don't want to build all of these then edit ``sysroot.json`` and remove
 the ones you don't want.  (The Python, Qt, sip and PyQt5 sources are required.)
-
-If you are building the demo for either Android or iOS then you must also
-install an appropriate version of Qt from an installer from The Qt Company as
-:program:`pyqtdeploy-sysroot` does not support building Qt from source for
-those platforms.  It should be installed in a directory called ``Qt`` in the
-``src`` directory.
-
-To build the demo for the native target, run::
-
-    python build-demo.py
 
 Note that, on Linux, macOS and Windows, Qt will be built from source which can
 take a significant amount of time.
 
-``build-demo.py`` has a number of command line options.  To see them, run::
+If you are building the demo for either Android or iOS then you must also
+install an appropriate version of Qt from an installer from The Qt Company as
+:program:`pyqtdeploy-sysroot` does not support building Qt from source for
+those platforms.  The ``--installed-qt-dir`` option must be used to specify
+where Qt is installed.  The directory's name would normally be the version
+number of Qt and contain the architecture-specific directories (e.g. ``gcc64``,
+``android-arm7``).
+
+``build-demo.py`` has a number of other command line options.  To see them all,
+run::
 
     python build-demo.py --help
 

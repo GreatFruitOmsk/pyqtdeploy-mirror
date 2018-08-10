@@ -46,6 +46,8 @@ def run(args):
 
 # Parse the command line.
 parser = argparse.ArgumentParser()
+parser.add_argument('--installed-qt-dir',
+        help="the name of a directory containing pre-built Qt installations")
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
 parser.add_argument('--source-dir',
@@ -58,15 +60,20 @@ parser.add_argument('--verbose', help="enable verbose progress messages",
         action='store_true')
 cmd_line_args = parser.parse_args()
 build_sysroot = not cmd_line_args.no_sysroot
-source_dirs = cmd_line_args.source_dirs
 target = cmd_line_args.target
 quiet = cmd_line_args.quiet
 verbose = cmd_line_args.verbose
 
-if source_dirs:
-    source_dirs = [os.path.abspath(s) for s in source_dirs]
+# Create the list of directories to search for source packages and Qt.
+if cmd_line_args.source_dirs:
+    source_dirs = cmd_line_args.source_dirs
 else:
-    source_dirs = ['src']
+    source_dirs = ['.']
+
+if cmd_line_args.installed_qt_dir:
+    source_dirs.insert(0, cmd_line_args.installed_qt_dir)
+
+source_dirs = [os.path.abspath(s) for s in source_dirs]
 
 # Pick a default target if none is specified.
 if not target:

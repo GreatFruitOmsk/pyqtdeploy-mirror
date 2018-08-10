@@ -76,6 +76,7 @@ class ExternalLibraryMetadata:
 # standard library.
 external_libraries_metadata = (
     ExternalLibraryMetadata('ssl',
+            # Note that for OpenSSL v1.1 it should be '-llibssl -llibcrypto'.
             {'win': '-lssleay32 -llibeay32', '': '-lssl -lcrypto'},
             "SSL encryption"),
     ExternalLibraryMetadata('zlib', '-lz', "zlib compression"),
