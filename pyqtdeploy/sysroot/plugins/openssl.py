@@ -102,11 +102,30 @@ class OpenSSLComponent(ComponentBase):
             # We are cross-compiling.
 
             if sysroot.target_platform_name == 'android' and sysroot.host_platform_name in ('linux', 'macos'):
-                #self._build_1_0_android(sysroot, common_options)
-                #return True
-                pass
+                self._build_1_1_android(sysroot, common_options)
+                return True
 
         return False
+
+    def _build_1_1_android(self, sysroot, common_options):
+        """ Build OpenSSL v1.1 for Android on either Linux or MacOS hosts. """
+
+        # Configure the environment.
+        toolchain_bin = sysroot.android_toolchain_bin
+
+        path = os.environ['PATH'].split(os.pathsep)
+        if toolchain_bin not in path:
+            path.insert(0, toolchain_bin)
+            os.environ['PATH'] = os.pathsep.join(path)
+
+        os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
+
+        args = ['perl', 'Configure', 'no-shared', 'android', '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
+        args.extend(common_options)
+
+        sysroot.run(*args)
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
 
     def _build_1_0(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for supported platforms.  Return True if it was
@@ -161,9 +180,6 @@ class OpenSSLComponent(ComponentBase):
         os.environ['SYSTEM'] = 'android'
         os.environ['ARCH'] = 'arm'
         os.environ['CROSS_COMPILE'] = sysroot.android_toolchain_prefix
-
-        # Note that OpenSSL v1.1.0 and later uses CROSS_SYSROOT=ndk_sysroot
-        # instead.
         os.environ['ANDROID_DEV'] = os.path.join(sysroot.android_ndk_sysroot,
                 'usr')
 
