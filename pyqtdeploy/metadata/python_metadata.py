@@ -4209,8 +4209,8 @@ _metadata = {
     '_csv':
         ExtensionModule(internal=True, source='_csv.c'),
 
-    '_ctypes': (
-        ExtensionModule(max_version=(3, 6), internal=True,
+    '_ctypes':
+        ExtensionModule(internal=True,
                 target='linux|macos|win',
                 source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
                         '_ctypes/callproc.c', '_ctypes/stgdict.c',
@@ -4234,24 +4234,6 @@ _metadata = {
                         'win#_ctypes/libffi_msvc'),
                 libs='linux#-lffi',
                 pyd='_ctypes.pyd'),
-        ExtensionModule(min_version=(3, 7), internal=True,
-                target='linux|macos|win',
-                source=('_ctypes/_ctypes.c', '_ctypes/callbacks.c',
-                        '_ctypes/callproc.c', '_ctypes/stgdict.c',
-                        '_ctypes/cfield.c',
-                        'macos#_ctypes/malloc_closure.c',
-                        'macos#_ctypes/darwin/dlfcn_simple.c',
-                        'macos#_ctypes/libffi_osx/ffi.c',
-                        'macos#_ctypes/libffi_osx/x86/darwin64.S',
-                        'macos#_ctypes/libffi_osx/x86/x86-darwin.S',
-                        'macos#_ctypes/libffi_osx/x86/x86-ffi_darwin.c',
-                        'macos#_ctypes/libffi_osx/x86/x86-ffi64.c'),
-                defines='macos#MACOSX',
-                includepath=('_ctypes',
-                        'macos#_ctypes/darwin',
-                        'macos#_ctypes/libffi_osx/include'),
-                xlib='linux|win#ffi',
-                pyd='_ctypes.pyd')),
 
     'ctypes._endian':
         PythonModule(internal=True, target='linux|macos|win', deps='ctypes'),

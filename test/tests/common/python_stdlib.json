@@ -1,6 +1,10 @@
 {
     "Description": "This is used to test packages in the Python standard library.",
 
+    "zlib": {
+        "source":   "zlib-*.tar.gz"
+    },
+
     "qt5": {
         "android-32#qt_dir":    "android_armv7",
         "ios-64#qt_dir":        "ios",

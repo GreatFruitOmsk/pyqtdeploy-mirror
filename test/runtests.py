@@ -21,7 +21,18 @@ class TargetTests:
             if sys.platform.startswith('linux'):
                 target = 'linux-64'
             elif sys.platform == 'win32':
-                target = 'win-{0}'.format(64 if os.environ.get('Platform') == 'X64' else 32)
+                # MSVC2015 is v14, MSVC2017 is v15.
+                vs_major = os.environ.get('VisualStudioVersion', '0.0').split('.')[0]
+
+                if vs_major == '15':
+                    is_32 = (os.environ.get('VSCMD_ARG_TGT_ARCH') != 'x64')
+                elif vs_major == '14':
+                    is_32 = (os.environ.get('Platform') != 'X64')
+                else:
+                    # Default to 64 bits.
+                    is_32 = False
+
+                target = 'win-' + ('32' if is_32 else '64')
             elif sys.platform == 'darwin':
                 target = 'macos-64'
             else:
