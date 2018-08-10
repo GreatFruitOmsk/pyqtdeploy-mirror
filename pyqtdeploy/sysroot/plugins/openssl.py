@@ -81,11 +81,13 @@ class OpenSSLComponent(ComponentBase):
         successfully built.
         """
 
+        common_options.append('no-shared')
+
         if sysroot.target_platform_name == sysroot.host_platform_name:
             # We are building natively.
 
             if sysroot.target_arch_name == 'macos-64':
-                args = ['./config', 'no-shared']
+                args = ['./config']
                 args.extend(common_options)
 
                 sysroot.run(*args)
@@ -114,8 +116,24 @@ class OpenSSLComponent(ComponentBase):
         sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
 
-        args = ['perl', 'Configure', 'no-shared', 'android',
+        args = ['perl', 'Configure', 'android',
                 '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
+        args.extend(common_options)
+
+        sysroot.run(*args)
+        sysroot.run(sysroot.host_make)
+        sysroot.run(sysroot.host_make, 'install')
+
+    def _build_1_1_win(self, sysroot, common_options):
+        """ Build OpenSSL v1.1 for Windows. """
+
+        # Set the architecture-specific values.
+        if sysroot.target_arch_name.endswith('-64'):
+            target = 'VC-WIN64A'
+        else:
+            target = 'VC-WIN32'
+
+        args = ['perl', 'Configure', target]
         args.extend(common_options)
 
         sysroot.run(*args)
@@ -233,14 +251,14 @@ class OpenSSLComponent(ComponentBase):
 
         # Set the architecture-specific values.
         if sysroot.target_arch_name.endswith('-64'):
-            compiler = 'VC-WIN64A'
+            target = 'VC-WIN64A'
             post_config = 'ms\\do_win64a.bat'
         else:
-            compiler = 'VC-WIN32'
+            target = 'VC-WIN32'
             post_config = 'ms\\do_ms.bat' if self.no_asm else 'ms\\do_nasm.bat'
 
         # Configure, build and install.
-        args = ['perl', 'Configure', compiler]
+        args = ['perl', 'Configure', target]
         args.extend(common_options)
 
         sysroot.run(*args)
