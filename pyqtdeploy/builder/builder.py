@@ -709,7 +709,7 @@ class Builder:
 
         # Python v3.6.0 requires C99 at least.  Note that specifying 'c++11' in
         # 'CONFIG' doesn't affect 'CFLAGS'.
-        if py_version >= 0x030600:
+        if py_version >= 0x030600 and target_platform != 'win':
             f.write('\n')
             f.write('QMAKE_CFLAGS += -std=c99\n')
 
