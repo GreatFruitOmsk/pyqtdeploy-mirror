@@ -54,13 +54,8 @@ class zlibComponent(ComponentBase):
             sysroot.copy_file('zlib.lib', sysroot.target_lib_dir)
 
         elif sysroot.target_platform_name == 'android':
-            # Add the toolchain to PATH if necessary.
-            toolchain_bin = sysroot.android_toolchain_bin
-            path = os.environ['PATH'].split(os.pathsep)
-            if toolchain_bin not in path:
-                path.insert(0, toolchain_bin)
-                os.environ['PATH'] = os.pathsep.join(path)
-
+            # Configure the environment.
+            sysroot.add_to_path(sysroot.android_toolchain_bin)
             os.environ['CROSS_PREFIX'] = sysroot.android_toolchain_prefix
             os.environ['CC'] = sysroot.android_toolchain_prefix + 'gcc'
             os.environ['CFLAGS'] = '-march=armv7-a -mfloat-abi=softfp -mfpu=vfp -fno-builtin-memmove -mthumb -Os --sysroot=' + sysroot.android_ndk_sysroot

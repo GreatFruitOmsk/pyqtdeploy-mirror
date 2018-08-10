@@ -181,6 +181,18 @@ class Sysroot:
     # The following make up the public API to be used by component plugins.
     ###########################################################################
 
+    @staticmethod
+    def add_to_path(name):
+        """ Add the name of a directory to the start of PATH if it isn't
+        already present.
+        """
+
+        path = os.environ['PATH'].split(os.pathsep)
+
+        if name not in path:
+            path.insert(0, name)
+            os.environ['PATH'] = os.pathsep.join(path)
+
     @property
     def android_api(self):
         """ The Android API to use. """

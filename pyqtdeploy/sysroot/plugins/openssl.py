@@ -111,16 +111,11 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.1 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
-        toolchain_bin = sysroot.android_toolchain_bin
-
-        path = os.environ['PATH'].split(os.pathsep)
-        if toolchain_bin not in path:
-            path.insert(0, toolchain_bin)
-            os.environ['PATH'] = os.pathsep.join(path)
-
+        sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
 
-        args = ['perl', 'Configure', 'no-shared', 'android', '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
+        args = ['perl', 'Configure', 'no-shared', 'android',
+                '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
         args.extend(common_options)
 
         sysroot.run(*args)
@@ -168,13 +163,7 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
-        toolchain_bin = sysroot.android_toolchain_bin
-
-        path = os.environ['PATH'].split(os.pathsep)
-        if toolchain_bin not in path:
-            path.insert(0, toolchain_bin)
-            os.environ['PATH'] = os.pathsep.join(path)
-
+        sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['MACHINE'] = 'arm7'
         os.environ['RELEASE'] = '2.6.37'
         os.environ['SYSTEM'] = 'android'

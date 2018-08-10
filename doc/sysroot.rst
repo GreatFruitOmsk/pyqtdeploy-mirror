@@ -489,6 +489,13 @@ class is.
     are only created by :program:`pyqtdeploy-sysroot` and are passed to the
     plugin when required.
 
+    .. py:method:: add_to_path(name)
+
+        The name of a directory is added to the start of ``PATH`` if it isn't
+        already present.
+
+        :param str name: is the name of the directory.
+
     .. py:attribute:: android_api
 
         The numerical Android API level to use.
