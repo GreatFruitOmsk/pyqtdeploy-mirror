@@ -97,9 +97,8 @@ class OpenSSLComponent(ComponentBase):
                 return True
 
             if sysroot.target_platform_name == 'win':
-                #self._build_1_0_win(sysroot, common_options)
-                #return True
-                pass
+                self._build_1_1_win(sysroot, common_options)
+                return True
         else:
             # We are cross-compiling.
 
@@ -133,7 +132,8 @@ class OpenSSLComponent(ComponentBase):
         else:
             target = 'VC-WIN32'
 
-        args = ['perl', 'Configure', target]
+        args = ['perl', 'Configure', target,
+                '--openssldir=' + sysroot.sysroot_dir + '\\ssl']
         args.extend(common_options)
 
         sysroot.run(*args)
