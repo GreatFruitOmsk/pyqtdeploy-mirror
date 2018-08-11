@@ -75,7 +75,7 @@ class zlibComponent(ComponentBase):
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
-            sysroot.run(sysroot.host_make, 'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
+            sysroot.run(sysroot.host_make)
             sysroot.run(sysroot.host_make, 'install')
 
             if sysroot.target_platform_name == 'ios':
