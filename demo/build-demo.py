@@ -60,20 +60,11 @@ parser.add_argument('--verbose', help="enable verbose progress messages",
         action='store_true')
 cmd_line_args = parser.parse_args()
 build_sysroot = not cmd_line_args.no_sysroot
+installed_qt_dir = cmd_line_args.installed_qt_dir
+source_dirs = cmd_line_args.source_dirs
 target = cmd_line_args.target
 quiet = cmd_line_args.quiet
 verbose = cmd_line_args.verbose
-
-# Create the list of directories to search for source packages and Qt.
-if cmd_line_args.source_dirs:
-    source_dirs = cmd_line_args.source_dirs
-else:
-    source_dirs = ['.']
-
-if cmd_line_args.installed_qt_dir:
-    source_dirs.insert(0, cmd_line_args.installed_qt_dir)
-
-source_dirs = [os.path.abspath(s) for s in source_dirs]
 
 # Pick a default target if none is specified.
 if not target:
@@ -90,6 +81,20 @@ if not target:
     else:
         print("Unsupported platform:", sys.platform, file=sys.stderr)
         sys.exit(2)
+
+# Make sure the Qt directory was specified if it is needed.
+if target in ('android-32', 'ios-64') and not installed_qt_dir:
+    print("--installed-qt-dir must be specified for", target, file=sys.stderr)
+    sys.exit(2)
+
+# Create the list of directories to search for source packages and Qt.
+if not source_dirs:
+    source_dirs = ['.']
+
+if installed_qt_dir:
+    source_dirs.insert(0, installed_qt_dir)
+
+source_dirs = [os.path.abspath(s) for s in source_dirs]
 
 # Anchor everything from the directory containing this script.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
