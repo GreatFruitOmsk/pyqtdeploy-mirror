@@ -184,14 +184,17 @@ class Sysroot:
     @staticmethod
     def add_to_path(name):
         """ Add the name of a directory to the start of PATH if it isn't
-        already present.
+        already present.  The original PATH is returned.
         """
 
-        path = os.environ['PATH'].split(os.pathsep)
+        original_path = os.environ['PATH']
+        path = original_path.split(os.pathsep)
 
         if name not in path:
             path.insert(0, name)
             os.environ['PATH'] = os.pathsep.join(path)
+
+        return original_path
 
     @property
     def android_api(self):

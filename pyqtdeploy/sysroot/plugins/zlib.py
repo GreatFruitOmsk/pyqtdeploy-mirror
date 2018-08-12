@@ -55,7 +55,7 @@ class zlibComponent(ComponentBase):
 
         elif sysroot.target_platform_name == 'android':
             # Configure the environment.
-            sysroot.add_to_path(sysroot.android_toolchain_bin)
+            original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
             os.environ['CROSS_PREFIX'] = sysroot.android_toolchain_prefix
             os.environ['CC'] = sysroot.android_toolchain_prefix + 'gcc'
             os.environ['CFLAGS'] = '-march=armv7-a -mfloat-abi=softfp -mfpu=vfp -fno-builtin-memmove -mthumb -Os --sysroot=' + sysroot.android_ndk_sysroot
@@ -65,9 +65,10 @@ class zlibComponent(ComponentBase):
             sysroot.run(sysroot.host_make, 'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
             sysroot.run(sysroot.host_make, 'install')
 
-            del os.environ['CFLAGS']
-            del os.environ['CC']
             del os.environ['CROSS_PREFIX']
+            del os.environ['CC']
+            del os.environ['CFLAGS']
+            os.environ['PATH'] = original_path
 
         else:
             if sysroot.target_platform_name == 'ios':

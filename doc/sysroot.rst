@@ -495,6 +495,7 @@ class is.
         already present.
 
         :param str name: is the name of the directory.
+        :return: the original value of ``PATH``.
 
     .. py:attribute:: android_api
 

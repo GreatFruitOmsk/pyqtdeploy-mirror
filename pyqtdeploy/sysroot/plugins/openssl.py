@@ -112,7 +112,7 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.1 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
-        sysroot.add_to_path(sysroot.android_toolchain_bin)
+        original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
 
         args = ['perl', 'Configure', 'android',
@@ -122,6 +122,9 @@ class OpenSSLComponent(ComponentBase):
         sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
+
+        del os.environ['CROSS_SYSROOT']
+        os.environ['PATH'] = original_path
 
     def _build_1_1_win(self, sysroot, common_options):
         """ Build OpenSSL v1.1 for Windows. """
@@ -181,7 +184,7 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
-        sysroot.add_to_path(sysroot.android_toolchain_bin)
+        original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['MACHINE'] = 'arm7'
         os.environ['RELEASE'] = '2.6.37'
         os.environ['SYSTEM'] = 'android'
@@ -213,6 +216,14 @@ class OpenSSLComponent(ComponentBase):
 
             os.remove(installed_lib_so)
             sysroot.copy_file(lib_so, installed_lib_so)
+
+        del os.environ['MACHINE']
+        del os.environ['RELEASE']
+        del os.environ['SYSTEM']
+        del os.environ['ARCH']
+        del os.environ['CROSS_COMPILE']
+        del os.environ['ANDROID_DEV']
+        os.environ['PATH'] = original_path
 
     def _build_1_0_macos(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for 64 bit macOS. """
