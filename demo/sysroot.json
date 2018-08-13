@@ -3,7 +3,7 @@
 
     "android|macos|win#openssl": {
         "source":           "openssl-1.1.*.tar.gz",
-        "python_source":    "Python-3.*.tar.xz"
+        "python_source":    "Python-3.7.0.tar.xz"
     },
 
     "ios|linux|macos|win#zlib": {
@@ -26,7 +26,7 @@
     "python": {
         "build_host_from_source":   false,
         "build_target_from_source": true,
-        "source":                   "Python-3.*.tar.xz"
+        "source":                   "Python-3.7.0.tar.xz"
     },
 
     "sip": {
