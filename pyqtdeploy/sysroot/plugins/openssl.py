@@ -81,13 +81,11 @@ class OpenSSLComponent(ComponentBase):
         successfully built.
         """
 
-        common_options.append('no-shared')
-
         if sysroot.target_platform_name == sysroot.host_platform_name:
             # We are building natively.
 
             if sysroot.target_arch_name == 'macos-64':
-                args = ['./config']
+                args = ['./config', 'no-shared']
                 args.extend(common_options)
 
                 sysroot.run(*args)
@@ -135,7 +133,7 @@ class OpenSSLComponent(ComponentBase):
         else:
             target = 'VC-WIN32'
 
-        args = ['perl', 'Configure', target,
+        args = ['perl', 'Configure', target, 'no-shared',
                 '--openssldir=' + sysroot.sysroot_dir + '\\ssl']
         args.extend(common_options)
 
