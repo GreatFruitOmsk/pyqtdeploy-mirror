@@ -1,9 +1,5 @@
 {
-    "Description": "This is used to test packages in the Python standard library.",
-
-    "zlib": {
-        "source":   "zlib-*.tar.gz"
-    },
+    "Description": "Build a host Python v3.7 from an installed version, and a target Python from source.",
 
     "qt5": {
         "android-32#qt_dir":    "android_armv7",
