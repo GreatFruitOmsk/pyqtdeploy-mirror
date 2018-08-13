@@ -12,4 +12,5 @@ demo/src/*.xz
 demo/sysroot-*
 doc/_build
 doc/html
+test/build-*
 test/sysroot
