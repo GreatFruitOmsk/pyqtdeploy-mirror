@@ -2,7 +2,7 @@
     "Description": "Build a static Qt5 from source.",
 
     "openssl": {
-        "source":   "openssl-1.*.tar.gz"
+        "source":   "openssl-1.1.*.tar.gz"
     },
 
     "qt5": {
