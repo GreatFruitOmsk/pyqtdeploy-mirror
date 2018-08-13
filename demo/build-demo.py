@@ -47,7 +47,8 @@ def run(args):
 # Parse the command line.
 parser = argparse.ArgumentParser()
 parser.add_argument('--installed-qt-dir',
-        help="the name of a directory containing pre-built Qt installations")
+        help="the name of a directory containing pre-built Qt installations",
+        metavar="DIR")
 parser.add_argument('--no-sysroot', help="do not build the sysroot",
         action='store_true')
 parser.add_argument('--source-dir',
