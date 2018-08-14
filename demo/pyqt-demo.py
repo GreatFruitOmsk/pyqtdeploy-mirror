@@ -216,6 +216,7 @@ def create_qscintilla_code_view():
     view.setReadOnly(True)
     view.setUtf8(True)
     view.setLexer(QsciLexerPython())
+    view.setFolding(QsciScintilla.PlainFoldStyle)
     view.setText(get_source_code())
 
     return view
