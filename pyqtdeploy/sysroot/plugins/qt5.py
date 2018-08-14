@@ -145,7 +145,18 @@ class Qt5Component(ComponentBase):
                 args.append('-openssl-linked')
 
                 if sys.platform == 'win32':
-                    args.append('OPENSSL_LIBS=-lssleay32 -llibeay32 -lGdi32')
+                    # Get the OpenSSL version number.
+                    openssl = sysroot.find_component('openssl')
+                    openssl_archive = sysroot.find_file(openssl.source)
+                    openssl_version_nr = sysroot.extract_version_nr(
+                            openssl_archive)
+
+                    if openssl_version_nr >= 0x010100:
+                        openssl_libs = '-lssl -lcrypto'
+                    else:
+                        openssl_libs = '-lssleay32 -llibeay32'
+
+                    args.append('OPENSSL_LIBS=' + openssl_libs + '-lGdi32')
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')
