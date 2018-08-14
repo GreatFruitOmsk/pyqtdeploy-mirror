@@ -70,9 +70,18 @@ verbose = cmd_line_args.verbose
 # Pick a default target if none is specified.
 if not target:
     if sys.platform == 'win32':
-        # Look for a 64-bit compiler.
-        arch = '64' if os.environ.get('Platform') == 'X64' else '32'
-        target = 'win-' + arch
+        # MSVC2015 is v14, MSVC2017 is v15.
+        vs_major = os.environ.get('VisualStudioVersion', '0.0').split('.')[0]
+
+        if vs_major == '15':
+            is_32 = (os.environ.get('VSCMD_ARG_TGT_ARCH') != 'x64')
+        elif vs_major == '14':
+            is_32 = (os.environ.get('Platform') != 'X64')
+        else:
+            # Default to 64 bits.
+            is_32 = False
+
+        target = 'win-' + ('32' if is_32 else '64')
     elif sys.platform == 'darwin':
         target = 'macos-64'
     elif sys.platform.startswith('linux'):
