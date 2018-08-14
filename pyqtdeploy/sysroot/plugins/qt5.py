@@ -152,11 +152,11 @@ class Qt5Component(ComponentBase):
                             openssl_archive)
 
                     if openssl_version_nr >= 0x010100:
-                        openssl_libs = '-lssl -lcrypto'
+                        openssl_libs = '-llibssl -llibcrypto'
                     else:
                         openssl_libs = '-lssleay32 -llibeay32'
 
-                    args.append('OPENSSL_LIBS=' + openssl_libs + '-lGdi32')
+                    args.append('OPENSSL_LIBS=' + openssl_libs + ' -lGdi32')
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')
