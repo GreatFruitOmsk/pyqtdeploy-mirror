@@ -19,6 +19,17 @@
         "ios#ssl":                  "securetransport",
         "macos|win#ssl":            "openssl-linked",
 
+        "configure_options":        ["-no-dbus", "-qt-pcre"],
+        "skip":                     [
+                "qtactiveqt", "qtconnectivity", "qtdoc", "qtgamepad",
+                "qtlocation", "qtmultimedia", "qtnetworkauth",
+                "qtquickcontrols", "qtquickcontrols2", "qtremoteobjects",
+                "qtscript", "qtscxml", "qtsensors", "qtserialbus",
+                "qtserialport", "qtspeech", "qtsvg", "qttools",
+                "qttranslations", "qtwayland", "qtwebchannel", "qtwebengine",
+                "qtwebsockets", "qtwebview", "qtxmlpatterns"
+        ],
+
         "static_msvc_runtime":      true
     },
 
