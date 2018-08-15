@@ -19,7 +19,9 @@
         "ios#ssl":                  "securetransport",
         "macos|win#ssl":            "openssl-linked",
 
-        "configure_options":        ["-no-dbus", "-qt-pcre"],
+        "configure_options":        [
+                "-opengl", "desktop", "-no-dbus", "-qt-pcre"
+        ],
         "skip":                     [
                 "qtactiveqt", "qtconnectivity", "qtdoc", "qtgamepad",
                 "qtlocation", "qtmultimedia", "qtnetworkauth",
