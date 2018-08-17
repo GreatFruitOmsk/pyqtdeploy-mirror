@@ -6,7 +6,8 @@
     },
 
     "ios|linux|macos|win#zlib": {
-        "source":   "zlib-*.tar.gz"
+        "source":                   "zlib-*.tar.gz",
+        "static_msvc_runtime":      true
     },
 
     "qt5": {

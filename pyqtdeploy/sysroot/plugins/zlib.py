@@ -36,6 +36,8 @@ class zlibComponent(ComponentBase):
     options = [
         ComponentOption('source', required=True,
                 help="The archive containing the zlib source code."),
+        ComponentOption('static_msvc_runtime', type=bool,
+                help="Set if the MSVC runtime should be statically linked."),
     ]
 
     def build(self, sysroot):
@@ -47,8 +49,14 @@ class zlibComponent(ComponentBase):
         sysroot.unpack_archive(archive)
 
         if sysroot.target_platform_name == 'win':
-            sysroot.run(sysroot.host_make, '-f', 'win32\\Makefile.msc',
-                    'zlib.lib')
+            make_args = [sysroot.host_make, '-f', 'win32\\Makefile.msc',
+                    'zlib.lib']
+
+            if self.static_msvc_runtime:
+                make_args.append('LOC=-MT')
+
+            sysroot.run(*make_args)
+
             sysroot.copy_file('zconf.h', sysroot.target_include_dir)
             sysroot.copy_file('zlib.h', sysroot.target_include_dir)
             sysroot.copy_file('zlib.lib', sysroot.target_lib_dir)
