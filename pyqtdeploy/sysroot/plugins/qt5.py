@@ -107,22 +107,6 @@ class Qt5Component(ComponentBase):
             new_path.insert(0, py_27)
 
             os.environ['PATH'] = ';'.join(new_path)
-
-            if self.static_msvc_runtime:
-                # Patch the mkspec to statically link the MSVC runtime.  This
-                # is the current location (which was changed very recently).
-                conf_name = os.path.join('qtbase', 'mkspecs', 'common',
-                        'msvc-desktop.conf')
-
-                conf_file = open(conf_name, 'rt')
-                conf = conf_file.read()
-                conf_file.close()
-
-                conf = conf.replace(' embed_manifest_dll', '').replace(' embed_manifest_exe', '').replace('-MD', '-MT')
-
-                conf_file = open(conf_name, 'wt')
-                conf_file.write(conf)
-                conf_file.close()
         else:
             configure = './configure'
             original_path = None
@@ -134,6 +118,9 @@ class Qt5Component(ComponentBase):
                 'examples', '-nomake', 'tools',
                 '-I', sysroot.target_include_dir,
                 '-L', sysroot.target_lib_dir]
+
+        if sys.platform == 'win32' and self.static_msvc_runtime:
+            args.append('-static-runtime')
 
         if self.ssl:
             args.append('-ssl')
