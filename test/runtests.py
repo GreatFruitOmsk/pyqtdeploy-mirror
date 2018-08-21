@@ -48,9 +48,38 @@ class TargetTests:
         if verbose:
             print("Running: '{}'".format(' '.join(args)))
 
+        failed = False
+
         try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError:
+            with subprocess.Popen(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True) as process:
+                try:
+                    line = process.stdout.readline()
+
+                    while line:
+                        if verbose:
+                            print(line.rstrip())
+
+                        line = process.stdout.readline()
+
+                    stderr = process.stderr.read().rstrip()
+                    if stderr:
+                        print(stderr)
+
+                    retcode = process.wait()
+                    if retcode != 0:
+                        print("Returned exit code {}".format(retcode))
+                        failed = True
+
+                except Exception as e:
+                    print(process.stderr.read().rstrip())
+                    process.kill()
+                    failed = True
+
+        except Exception as e:
+            print(str(e))
+            failed = True
+
+        if failed:
             raise UserException(failure_message)
 
     @classmethod
