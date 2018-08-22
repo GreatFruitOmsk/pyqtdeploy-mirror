@@ -2,12 +2,12 @@
     "Description": "The sysroot for the demo application.",
 
     "android|macos|win#openssl": {
-        "source":           "openssl-1.1.*.tar.gz"
+        "source":   "openssl-1.1.*.tar.gz"
     },
 
     "ios|linux|macos|win#zlib": {
-        "source":                   "zlib-*.tar.gz",
-        "static_msvc_runtime":      true
+        "source":               "zlib-*.tar.gz",
+        "static_msvc_runtime":  true
     },
 
     "qt5": {
@@ -43,7 +43,7 @@
     },
 
     "sip": {
-        "source":       "sip-4.*.tar.gz"
+        "source":   "sip-4.*.tar.gz"
     },
 
     "pyqt5": {
@@ -79,7 +79,7 @@
                 "QtWinExtras"
         ],
 
-        "source":                   "PyQt5_*-5.*.tar.gz"
+        "source":                       "PyQt5_*-5.*.tar.gz"
     },
 
     "pyqt3d": {

@@ -60,7 +60,7 @@ class OpenSSLComponent(ComponentBase):
         version_nr = sysroot.extract_version_nr(archive)
 
         # Set common options.
-        common_options = ['--prefix=' + sysroot.sysroot_dir]
+        common_options = ['--prefix=' + sysroot.sysroot_dir, 'no-engine']
 
         if self.no_asm:
             common_options.append('no-asm')
@@ -118,6 +118,17 @@ class OpenSSLComponent(ComponentBase):
         args.extend(common_options)
 
         sysroot.run(*args)
+
+        # Fix the Makefile so that it creates .so files without version
+        # numbers for qmake to be able to handle.
+        with open('Makefile', 'rt') as mk:
+            makefile = mk.read()
+
+        makefile = makefile.replace('.$(SHLIB_MAJOR).$(SHLIB_MINOR)', '')
+
+        with open('Makefile', 'wt') as mk:
+            mk.write(makefile)
+
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
