@@ -1,10 +1,22 @@
 v2.2 ??? August 2018
   - Added support for Python v2.7.15, v3.4.8, v3.4.9, v3.5.5, v3.5.6, v3.6.5,
     v3.6.6 and v3.7.0.
+  - Added support for PyQt v5.11.3 and later and private sip modules.  (Earlier
+    versions of PyQt v5.11 are not supported.)
+  - Added support for the 'importlib.resoures' feature added in Python v3.7.
+  - Added the zlib component plugin.
   - Added the 'no_asm' option to the openssl component plugin.
+  - Added support for OpenSSL v1.1 to the openssl component plugin.
   - Added the 'host_installation_bin_dir' option to the python component
     plugin.
-  - The '--sources-dir' of pyqtdeploy-sysroot may now be read-only.
+  - The '--source-dir' option of pyqtdeploy-sysroot may now be read-only.
+  - The '--source-dir' option of pyqtdeploy-sysroot may now be specified any
+    number of times.
+  - The demo now displays the source code of the demo in a separate tab.
+  - The '--source-dir' option of build-demo.py may now be specified any number
+    of times.
+  - The '--installed-qt-dir' option of build-demo.py has been added.
+  - Added 'add_to_path()' to the sysroot API.
 
 v2.1 30th January 2018
   - Added support for PyQt5.QtNetworkAuth.
