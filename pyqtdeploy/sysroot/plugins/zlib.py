@@ -80,7 +80,7 @@ class zlibComponent(ComponentBase):
 
         else:
             if sysroot.target_platform_name == 'ios':
-                os.environ['CFLAGS'] = '-O3 -arch arm64 -isysroot ' + sysroot.apple_sdk
+                os.environ['CFLAGS'] = '-fembed-bitcode -O3 -arch arm64 -isysroot ' + sysroot.apple_sdk
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
