@@ -741,6 +741,8 @@ class Sysroot:
         archive_name = os.path.basename(archive)
 
         # Unpack the archive.
+        self.verbose("Unpacking '{}'".format(archive_name))
+
         try:
             shutil.unpack_archive(archive_name)
         except Exception as e:
