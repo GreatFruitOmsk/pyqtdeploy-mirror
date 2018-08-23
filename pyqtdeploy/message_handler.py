@@ -59,14 +59,14 @@ class MessageHandler:
         message to somewhere other that stdout.
         """
 
-        print(message)
+        print(message, flush=True)
 
     @classmethod
     def error(cls, message):
         """ Handle an error message. """
 
         print("{0}: {1}".format(os.path.basename(sys.argv[0]), message),
-                file=sys.stderr)
+                file=sys.stderr, flush=True)
 
     def exception(self, e):
         """ Handle an exception. """
