@@ -626,10 +626,11 @@ class Sysroot:
                         if not line:
                             continue
 
-                        self._message_handler.verbose_message(line.rstrip())
-
                         if capture:
                             stdout.append(line)
+                        else:
+                            self._message_handler.verbose_message(
+                                    line.rstrip())
 
                     if process.returncode != 0:
                         detail = "returned exit code {}".format(
