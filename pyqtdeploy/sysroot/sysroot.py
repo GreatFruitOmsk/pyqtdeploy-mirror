@@ -615,21 +615,35 @@ class Sysroot:
         self._message_handler.verbose_message(
                 "Running '{0}'".format(' '.join(args)))
 
-        if capture:
-            try:
-                stdout = subprocess.check_output(args,
-                        universal_newlines=True, stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError as e:
-                self._run_error(args, e)
-
-            return stdout.strip()
+        detail = None
+        stdout = []
 
         try:
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError as e:
-            self._run_error(args, e)
+            with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) as process:
+                try:
+                    while process.poll() is None:
+                        line = process.stdout.readline()
+                        if not line:
+                            continue
 
-        return None
+                        self._message_handler.verbose_message(line.rstrip())
+
+                        if capture:
+                            stdout.append(line)
+
+                    if process.returncode != 0:
+                        detail = "returned exit code {}".format(
+                                process.returncode)
+
+                except Exception as e:
+                    process.kill()
+        except Exception as e:
+            detail = str(e)
+
+        if detail:
+            self.error("Execution failed: {}".format(detail))
+
+        return ''.join(stdout).strip() if capture else None
 
     @property
     def target_arch_name(self):
