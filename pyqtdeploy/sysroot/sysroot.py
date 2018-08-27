@@ -109,7 +109,12 @@ class Sysroot:
         os.chdir(cwd)
 
         if not no_clean:
-            self.delete_dir(self._build_dir)
+            # This can fail on Windows (complaining about non-empty
+            # directories).  Therefore we just warn that we couldn't do it.
+            try:
+                self.delete_dir(self._build_dir)
+            except UserException as e:
+                self.verbose("Warning: " + e.text)
 
     def show_options(self, component_names):
         """ Show the options for a sequence of components.  If no names are
