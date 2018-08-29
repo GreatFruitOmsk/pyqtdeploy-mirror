@@ -28,7 +28,6 @@ running on macOS is shown below.
 
 .. image:: /images/pyqt-demo.png
     :align: center
-    :scale: 50
 
 The demo chooses to implement support for SSL for both Python and Qt in ways
 that differ between target platforms.  These are summarised in the table below.
