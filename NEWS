@@ -9,14 +9,16 @@ v2.2 ??? August 2018
   - Added support for OpenSSL v1.1 to the openssl component plugin.
   - Added the 'host_installation_bin_dir' option to the python component
     plugin.
-  - The '--source-dir' option of pyqtdeploy-sysroot may now be read-only.
+  - A directory specified by the '--source-dir' option of pyqtdeploy-sysroot
+    may now be read-only.
   - The '--source-dir' option of pyqtdeploy-sysroot may now be specified any
     number of times.
   - The demo now displays the source code of the demo in a separate tab.
   - The '--source-dir' option of build-demo.py may now be specified any number
     of times.
   - The '--installed-qt-dir' option of build-demo.py has been added.
-  - Added 'add_to_path()' to the sysroot API.
+  - Added 'add_to_path()', 'android_ndk_sysroot' and 'android_toolchain_bin' to
+    the sysroot API.
 
 v2.1 30th January 2018
   - Added support for PyQt5.QtNetworkAuth.
