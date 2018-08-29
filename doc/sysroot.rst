@@ -39,9 +39,9 @@ The following component plugins are included as standard with
 :program:`pyqtdeploy`.
 
 **openssl**
-    This builds the OpenSSL libraries for v1.0.* on Android (dynamically),
-    macOS (statically) and Windows (statically).  It requires ``perl`` to be
-    installed on :envvar:`PATH`.
+    This builds the OpenSSL libraries for v1.0.* and v1.1.* on Android
+    (dynamically), macOS (statically) and Windows (statically).  It requires
+    ``perl`` to be installed on :envvar:`PATH`.
 
 **pip**
     This is a meta-component which will install any number of components that
@@ -76,7 +76,8 @@ The following component plugins are included as standard with
     modules built from source will be built statically.  Installing the target
     version from an existing installation is only supported on Windows.  If
     building the target version from source and SSL support is required then
-    OpenSSL must be built first.
+    OpenSSL must be built first.  If building Python v3.7.0 or later and zlib
+    support is needed then zlib must be built first.
 
 **qscintilla**
     This builds a static version of the QScintilla library and Python extension
@@ -94,6 +95,10 @@ The following component plugins are included as standard with
     This builds a static version of the sip extension module for all target
     architectures.  It also builds the sip code generator for the host
     platform.  It must be built after Python.
+
+**zlib**
+    This builds a static version of the zlib library for all target
+    architectures.
 
 
 Creating a Sysroot Specification File
@@ -140,8 +145,8 @@ openssl
 ::
 
     "android|macos|win#openssl": {
-        "source":           "openssl-1.0.*.tar.gz",
-        "python_source":    "Python-3.*.tar.xz"
+        "android#source":   "openssl-1.0.*.tar.gz",
+        "macos|win#source": "openssl-1.1.*.tar.gz"
     },
 
 The first thing to notice is that the object name is scoped so that the
@@ -150,11 +155,25 @@ not support SSL from Python and use Qt's SSL support instead (which will use
 Apple's Secure Transport).  On Linux we will use the system versions of the
 OpenSSL libraries.
 
-The Python binary installer for macOS from `www.python.org <www.python.org>`__
-includes a patched version of OpenSSL.  The plugin will apply the same patch to
-OpenSSL (on macOS only) if a Python source archive is specified.  The patch
-applies to a specific version of OpenSSL - which one depends on the version of
-Python being targeted.
+On Android we use OpenSSL v1.0 because that is the version used by the
+pre-built binaries provided by the Qt installer.
+
+On macOS and Windows we choose to use OpenSSL v1.1.
+
+
+zlib
+....
+
+::
+
+    "ios|linux|macos|win#zlib": {
+        "source":               "zlib-*.tar.gz",
+        "static_msvc_runtime":  true
+    },
+
+On Android we are using the zlib library provided on the device.  On other
+architectures we choose to use a static version of the library.  On Windows we
+choose to link to static versions of the MSVC runtime libraries.
 
 
 qt5
@@ -163,8 +182,8 @@ qt5
 ::
 
     "qt5": {
-        "android#qt_dir":           "Qt/*/android_armv7",
-        "ios#qt_dir":               "Qt/*/ios",
+        "android#qt_dir":           "android_armv7",
+        "ios#qt_dir":               "ios",
 
         "linux|macos|win#source":   "qt-everywhere-*-src-5.*.tar.xz",
 
@@ -172,12 +191,26 @@ qt5
         "ios#ssl":                  "securetransport",
         "macos|win#ssl":            "openssl-linked",
 
+        "configure_options":        [
+                "-opengl", "desktop", "-no-dbus", "-qt-pcre"
+        ],
+        "skip":                     [
+                "qtactiveqt", "qtconnectivity", "qtdoc", "qtgamepad",
+                "qtlocation", "qtmultimedia", "qtnetworkauth",
+                "qtquickcontrols", "qtquickcontrols2", "qtremoteobjects",
+                "qtscript", "qtscxml", "qtsensors", "qtserialbus",
+                "qtserialport", "qtspeech", "qtsvg", "qttools",
+                "qttranslations", "qtwayland", "qtwebchannel", "qtwebengine",
+                "qtwebsockets", "qtwebview", "qtxmlpatterns"
+        ],
+
         "static_msvc_runtime":      true
     },
 
 The Qt5 component plugin will install Qt into the sysroot from an existing
 installation.  We have chosen to do this for Android and iOS by specifying the
-``qt_dir`` attribute.
+``qt_dir`` attribute.  In the context of the demo this is defined by the
+``--installed-qt-dir`` option of the ``build-demo.py`` script.
 
 The plugin will build Qt from source if the ``source`` attribute is specified.
 We have chosen to do this for Linux, macOS and Windows.
@@ -195,13 +228,11 @@ For iOS Qt is dynamically linked to the Secure Transport libraries.
 For macOS and Windows we have chosen to link against the static OpenSSL
 libraries built by the ``openssl`` component plugin.
 
+Next we use the ``configure_options`` and ``skip`` attributes to tailor the Qt
+build in order to reduce the time taken to do the build.
+
 Finally we have specified that (on Windows) we will link to static versions of
 the MSVC runtime libraries.
-
-For simplicity we have chosen to build a full Qt implementation when building
-from source.  We could have chosen to use the ``configure_options``,
-``disabled_features`` and ``skip`` attributes to tailor the Qt build in order
-to reduce the time taken to do the build.
 
 
 python
@@ -212,7 +243,7 @@ python
     "python": {
         "build_host_from_source":   false,
         "build_target_from_source": true,
-        "source":                   "Python-3.*.tar.xz"
+        "source":                   "Python-3.7.0.tar.xz"
     },
 
 The Python component plugin handles installation for both host and target
@@ -221,6 +252,10 @@ rather than build from source.  On Windows the registry is searched for the
 location of the existing installation.  On Linux and macOS the Python
 interpreter must be on :envvar:`PATH`.  For all target architecures we choose
 to build Python from source.
+
+We have chosen to be very specific about the version number of Python (rather
+than use a pattern) because it must match the version specified in the
+``pyqt-deploy.pdy`` project file.
 
 :program:`pyqt-demo` is a very simple application that does not need to
 dynamically load extension modules.  If this was needed then the
@@ -393,7 +428,8 @@ The full set of command line options is:
 
     ``DIR`` is the name of a directory containing the source archives used to
     build the components specified in the JSON file.  It may be specified any
-    number of times and each directory will be searched in turn.
+    number of times and each directory will be searched in turn.  If it is
+    omitted then the current directory is searched.
 
 .. option:: --sysroot DIR
 

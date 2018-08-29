@@ -23,11 +23,22 @@ The demo consists of:
 Note that executables can be created for all supported targets without
 requiring any changes to any of the above.
 
-When run, the demo displays a GUI table of interesting values.  The demo
-running on macOS is shown below.
+When run, the demo displays a GUI table of interesting values including a copy
+of the source code itself.  The demo running on macOS is shown below.
 
 .. image:: /images/pyqt-demo.png
     :align: center
+
+.. note::
+    It is recommended that, at first, you use the same versions of the
+    different component packages shown above.  Only when you have those working
+    should you then use the versions that you really want to use.  This may
+    require you to modify ``sysroot.json`` and/or ``pyqt-demo.pdy``.
+
+If Python v3.7.0 or later is being used then the demo will use the
+:py:mod:`importlib.resources` module from the standard library to read the
+source code embedded in the executable.  For earlier versions of Python it uses
+PyQt5's :py:class:`~PyQt5.QtCore.QFile` class instead.
 
 The demo chooses to implement support for SSL for both Python and Qt in ways
 that differ between target platforms.  These are summarised in the table below.

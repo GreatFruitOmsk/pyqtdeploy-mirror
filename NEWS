@@ -17,8 +17,8 @@ v2.2 ??? August 2018
   - The '--source-dir' option of build-demo.py may now be specified any number
     of times.
   - The '--installed-qt-dir' option of build-demo.py has been added.
-  - Added 'add_to_path()', 'android_ndk_sysroot' and 'android_toolchain_bin' to
-    the sysroot API.
+  - Added 'add_to_path()', 'android_ndk_sysroot', 'android_toolchain_bin' and
+    'android_toolchain_prefix' to the sysroot API.
 
 v2.1 30th January 2018
   - Added support for PyQt5.QtNetworkAuth.

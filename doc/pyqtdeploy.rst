@@ -39,8 +39,9 @@ Python applications are usually structured in one of the following ways:
   the package and the name of a callable within the module separated by a
   ``:``.
 
-:program:`pyqt-demo` is a single standalone script.  :program:`pyqtdeploy`
-itself uses the :mod:`setuptools` based structure.
+:program:`pyqt-demo` is a single standalone script (but with some additional
+data which is the source code of the script).  :program:`pyqtdeploy` itself
+uses the :mod:`setuptools` based structure.
 
 The tab for defining the application source is shown below.
 
@@ -152,16 +153,13 @@ The tab for defining the application source is shown below.
     part of the application package then it's entry must be explicitly
     unchecked (i.e. excluded).
 
-    .. note::
-        Non-Python (i.e. data) files can also be included in the package.  An
-        application typically accesses such files by using the
-        :func:`QFileInfo.absolutePath` function on the :data:`__file__`
-        attribute of a module to obtain the name of the directory containing
-        the data file.  This approach will also work with deployed applications
-        so long as the file is accessed using the :class:`~PyQt5.QtCore.QFile`
-        class (rather than the standard Python file access functions).  However
-        QML files require slightly different treatment as their locations are
-        specified using a URL.
+    The demo includes a copy of it's source file which is read (when using
+    Python v3.7.0 or later) using the :py:mod:`importlib.resources` module.
+    This is stored in the ``data`` directory.  This directory must be a Python
+    package and so it contains an empty ``__init__.py`` file.  The source file
+    is given a ``.dat`` extension so that it doesn't appear to be a Python
+    source file to :program:`pyqtdeploy-build`.  If we didn't do this then the
+    source file would be replaced by its frozen version.
 
 **Scan...**
     is clicked to specify the name of the directory containing the Python

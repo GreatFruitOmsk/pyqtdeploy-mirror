@@ -1,6 +1,10 @@
 Applications that use :program:`pyrcc`
 ======================================
 
+.. note::
+    For Python v3.7.0 and later it is recomended that the
+    :py:mod:`importlib.resources` module be used to access embedded resources.
+
 The :program:`pyrcc5` and :program:`pyrcc4` programs are the Python equivalents
 (for PyQt5 and PyQt4 respectively) of Qt's :program:`rcc` program.  They
 convert a collection of resource files into a Python source file that is then

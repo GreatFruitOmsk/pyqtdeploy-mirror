@@ -36,15 +36,16 @@ by a ``-``.  Note that not all platform/word size combinations are supported.
 - The :program:`QtCore` library implements file access APIs that recognise file
   and directory names that refer to the contents of the embedded filesystem
   created with :program:`rcc`.  :program:`pyqtdeploy` implements import hooks
-  that use :program:`QtCore` to allow frozen Python modules to be imported from
+  that use :program:`QtCore` so that frozen Python modules can be imported from
   the embedded filesystem just as if they were being imported from an ordinary
   filesystem.
 
 Note that :program:`pyqtdeploy` generated code does not itself use PyQt.
 :program:`pyqtdeploy` can be used to deploy non-PyQt applications, including
 simple command line scripts.  However, as every deployed application is linked
-with the :program:`QtCore` library, you should make sure that you application's
-license is compatible with the license of the version of Qt that you are using.
+with the :program:`QtCore` library, you should make sure that your
+application's license is compatible with the license of the version of Qt that
+you are using.
 
 When an application is made up of a number of third-party components (Python
 packages and extension modules) it is necessary to have these installed in
