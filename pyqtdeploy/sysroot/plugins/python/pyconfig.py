@@ -1386,9 +1386,6 @@ pyconfig = (
     # Cipher suite string for PY_SSL_DEFAULT_CIPHERS=0.
     Config('PY_SSL_DEFAULT_CIPHER_STRING'),
 
-    # Define to emit a locale compatibility warning in the C locale.
-    Config('PY_WARN_ON_C_LOCALE', default=1),
-
     # Define if you want to build an interpreter with many run-time checks.
     Config('Py_DEBUG'),
 
