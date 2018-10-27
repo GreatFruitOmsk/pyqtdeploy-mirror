@@ -31,7 +31,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 # The latest supported version in each minor branch.
 _supported_branches = (
     (3, 7, 0),
-    (3, 6, 6),
+    (3, 6, 7),
     (3, 5, 6),
     (3, 4, 9),
     (3, 3, 7),
