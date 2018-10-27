@@ -206,8 +206,17 @@ class PythonComponent(ComponentBase):
     def _build_target_from_source(self, sysroot):
         """ Build the target Python from source. """
 
-        # Unpack the source.
+        # Unpack the source for any separately compiled internal extension
+        # modules.
         archive = sysroot.find_file(self.source)
+
+        old_wd = os.getcwd()
+        os.chdir(sysroot.target_src_dir)
+        sysroot.unpack_archive(archive)
+        self._patch_source_for_target(sysroot)
+        os.chdir(old_wd)
+
+        # Unpack the source to build from.
         sysroot.unpack_archive(archive)
         self._patch_source_for_target(sysroot)
 
