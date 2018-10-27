@@ -279,7 +279,7 @@ build_time_vars = {
 
             vc_dll = 'vcruntime140.dll'
             sysroot.copy_file(py_dll_dir + vc_dll,
-                    os.path.join(dlls_dir, vc_dll))
+                    os.path.join(sysroot.target_lib_dir, vc_dll))
         else:
             # Check for an installation for all users on 32 bit Windows.
             py_dll_dir = 'C:\\Windows\\System32\\'
@@ -290,7 +290,8 @@ build_time_vars = {
                     # Assume it is an installation for the current user.
                     py_dll_dir = install_path
 
-        sysroot.copy_file(py_dll_dir + py_dll, os.path.join(dlls_dir, py_dll))
+        sysroot.copy_file(py_dll_dir + py_dll,
+                os.path.join(sysroot.target_lib_dir, py_dll))
 
         # The standard library.
         py_subdir = 'python{0}.{1}'.format(py_major, py_minor)
