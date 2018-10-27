@@ -277,6 +277,10 @@ class OpenSSLComponent(ComponentBase):
             target = 'VC-WIN32'
             post_config = 'ms\\do_ms.bat' if self.no_asm else 'ms\\do_nasm.bat'
 
+        # 'no-engine' seems to be broken on Windows.  It (correctly) doesn't
+        # install the header file but tries to build the engines anyway.
+        common_options.remove('no-engine')
+
         # Configure, build and install.
         args = ['perl', 'Configure', target]
         args.extend(common_options)
