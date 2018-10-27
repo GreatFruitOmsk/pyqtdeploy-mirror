@@ -46,20 +46,14 @@ class PythonComponent(ComponentBase):
                 help="Set to enable support for the dynamic loading of extension modules when building from source."),
         ComponentOption('host_installation_bin_dir',
                 help="The pathname of the directory containing the existing host Python interpreter installation. If it is not specified on Windows then the value found in the registry is used. On other platforms it is assumed to be on PATH."),
-        ComponentOption('source', required=True,
+        ComponentOption('source',
                 help="The archive containing the Python source code."),
+        ComponentOption('version',
+                help="The Python version (if not building from source)."),
     ]
 
     def build(self, sysroot):
         """ Build Python for the host and target. """
-
-        # Extract the source code.
-        archive = sysroot.find_file(self.source)
-        old_wd = os.getcwd()
-        os.chdir(sysroot.target_src_dir)
-        sysroot.unpack_archive(archive)
-        self._patch_source_for_target(sysroot)
-        os.chdir(old_wd)
 
         # Build the host installation.
         if self.build_host_from_source:
@@ -68,7 +62,7 @@ class PythonComponent(ComponentBase):
                         "building the host Python from source on Windows is not supported")
 
             sysroot.progress("Building the host Python from source")
-            interpreter = self._build_host_from_source(sysroot, archive)
+            interpreter = self._build_host_from_source(sysroot)
         else:
             sysroot.progress(
                     "Installing an existing Python v{0} as the host Python".format(sysroot.format_version_nr(sysroot.target_py_version_nr)))
@@ -98,7 +92,7 @@ class PythonComponent(ComponentBase):
         # Build the target installation.
         if self.build_target_from_source:
             sysroot.progress("Building the target Python from source")
-            self._build_target_from_source(sysroot, archive)
+            self._build_target_from_source(sysroot)
         else:
             if sys.platform == 'win32':
                 sysroot.progress(
@@ -111,8 +105,17 @@ class PythonComponent(ComponentBase):
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
 
-        archive = sysroot.find_file(self.source)
-        version_nr = sysroot.extract_version_nr(archive)
+        if self.build_host_from_source or self.build_target_from_source:
+            if not self.source:
+                sysroot.error("'source' option must be specified")
+
+            archive = sysroot.find_file(self.source)
+            version_nr = sysroot.extract_version_nr(archive)
+        else:
+            if not self.version:
+                sysroot.error("'version' option must be specified")
+
+            version_nr = sysroot.extract_version_nr(self.version)
 
         if version_nr < 0x020700 or (version_nr >= 0x030000 and version_nr < 0x030300):
             sysroot.error(
@@ -127,7 +130,7 @@ class PythonComponent(ComponentBase):
 
         sysroot.target_py_version_nr = version_nr
 
-    def _build_host_from_source(self, sysroot, archive):
+    def _build_host_from_source(self, sysroot):
         """ Build the host Python from source and return the absolute pathname
         of the interpreter.
         """
@@ -135,6 +138,7 @@ class PythonComponent(ComponentBase):
         sysroot.building_for_target = False
 
         # Unpack the source.
+        archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
         # ensurepip was added in Python v2.7.9 and v3.4.0.
@@ -199,10 +203,11 @@ class PythonComponent(ComponentBase):
 
         return sysroot.find_exe(interpreter)
 
-    def _build_target_from_source(self, sysroot, archive):
+    def _build_target_from_source(self, sysroot):
         """ Build the target Python from source. """
 
         # Unpack the source.
+        archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
         self._patch_source_for_target(sysroot)
 
