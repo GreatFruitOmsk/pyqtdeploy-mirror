@@ -79,9 +79,6 @@ extern PyObject *PyInit_zipimport(void);
 
 /* The internal modules. */
 
-#if defined(MS_WINDOWS) && PY_MINOR_VERSION >= 7
-extern PyObject *PyInit__abc(void);
-#endif
 extern PyObject *PyInit__ast(void);
 extern PyObject *PyInit__codecs(void);
 extern PyObject *PyInit__collections(void);
@@ -109,9 +106,6 @@ extern PyObject *PyInit__sre(void);
 extern PyObject *PyInit__stat(void);
 #endif
 extern PyObject *PyInit__string(void);
-#if defined(MS_WINDOWS) && PY_MINOR_VERSION >= 4 && PY_MINOR_VERSION <= 6
-extern PyObject *PyInit__struct(void);
-#endif
 extern PyObject *PyInit__symtable(void);
 #if PY_MINOR_VERSION >= 4
 extern PyObject *PyInit__tracemalloc(void);
@@ -164,9 +158,6 @@ struct _inittab _PyImport_Inittab[] = {
 
     /* The internal modules. */
 
-#if defined(MS_WINDOWS) && PY_MINOR_VERSION >= 7
-    {"_abc", PyInit__abc},
-#endif
     {"_ast", PyInit__ast},
     {"_codecs", PyInit__codecs},
     {"_collections", PyInit__collections},
@@ -194,9 +185,6 @@ struct _inittab _PyImport_Inittab[] = {
     {"_stat", PyInit__stat},
 #endif
     {"_string", PyInit__string},
-#if defined(MS_WINDOWS) && PY_MINOR_VERSION >= 4 && PY_MINOR_VERSION <= 6
-    {"_struct", PyInit__struct},
-#endif
     {"_symtable", PyInit__symtable},
 #if PY_MINOR_VERSION >= 4
     {"_tracemalloc", PyInit__tracemalloc},
