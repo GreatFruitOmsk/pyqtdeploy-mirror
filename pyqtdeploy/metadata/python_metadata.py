@@ -3581,8 +3581,12 @@ _metadata = {
 
     # These are internal modules.
 
+    # For Python v3.7 and later on Windows this module cannot be linked
+    # separately because of the PyVarObject_HEAD_INIT() bug.  In these cases it
+    # is included in the static Python library build by pyqtdeploy-sysroot.
     '_abc':
-        ExtensionModule(min_version=(3, 7), internal=True, source='_abc.c'),
+        ExtensionModule(min_version=(3, 7), internal=True,
+                source='!win#_abc.c'),
 
     '_abcoll':
         PythonModule(version=2, internal=True, deps='abc'),
@@ -4953,15 +4957,15 @@ _metadata = {
                 deps=('calendar', 'datetime', 'locale', 're', '_thread',
                         'time'))),
 
-    # For Python v3.4 and later assume that the source code is compiled in
-    # elsewhere (eg. by using the python.org Python library, or by using a
-    # static Python library configured by pyqtdeploy).  This is because it
-    # cannot be linked separately on Windows (because of the
-    # PyVarObject_HEAD_INIT() problem).  This is probably a Python bug.
+    # For Python v3.4 to v3.6 on Windows this module cannot be linked
+    # separately because of the PyVarObject_HEAD_INIT() bug.  In these cases it
+    # is included in the static Python library build by pyqtdeploy-sysroot.
     '_struct': (
         ExtensionModule(max_version=(3, 3), internal=True, source='_struct.c'),
-        ExtensionModule(min_version=(3, 4), internal=True,
-                source='!win#_struct.c')),
+        ExtensionModule(min_version=(3, 4), max_version=(3, 6), internal=True,
+                source='!win#_struct.c'),
+        ExtensionModule(min_version=(3, 7), internal=True,
+                source='_struct.c')),
 
     '_subprocess':
         ExtensionModule(version=2, internal=True, target='win',

@@ -304,9 +304,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
             Modules/_tracemalloc.c \
             Modules/hashtable.c
 
-        win32 {
-            # Work around the PyVarObject_HEAD_INIT() problem in Python v3.4.
-            MOD_SOURCES += Modules/_struct.c
+        greaterThan(PY_MINOR_VERSION, 6) {
+        } else {
+            win32 {
+                # Work around the PyVarObject_HEAD_INIT() problem in Python
+                # v3.4 to v3.6 by always compiling this module.
+                MOD_SOURCES += Modules/_struct.c
+            }
         }
     }
 
@@ -323,8 +327,11 @@ greaterThan(PY_MAJOR_VERSION, 2) {
     }
 
     greaterThan(PY_MINOR_VERSION, 6) {
-        MOD_SOURCES += \
-            Modules/_abc.c
+        win32 {
+            # Work around the PyVarObject_HEAD_INIT() problem in Python v3.7
+            # and later by always compiling this module.
+            MOD_SOURCES += Modules/_abc.c
+        }
     }
 } else {
     MOD_SOURCES = \
