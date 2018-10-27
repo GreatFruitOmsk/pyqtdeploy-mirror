@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Project usingdefaultlocations="1" version="7"><Python major="3" minor="7" patch="0" platformpython="win" /><Application entrypoint="" isbundle="0" isconsole="0" ispyqt5="1" name="" script="../common/python_stdlib.py" syspath="" /><StdlibModule name="abc" /><StdlibModule name="uuid" /></Project>
+<Project usingdefaultlocations="1" version="7"><Python major="3" minor="7" patch="1" platformpython="win" /><Application entrypoint="" isbundle="0" isconsole="0" ispyqt5="1" name="" script="../common/python_stdlib.py" syspath="" /><StdlibModule name="abc" /><StdlibModule name="uuid" /></Project>
