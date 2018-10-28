@@ -27,6 +27,7 @@
 import glob
 import os
 import struct
+import subprocess
 import sys
 
 from .user_exception import UserException
@@ -60,16 +61,6 @@ class Platform:
         # This default implementation does not support Android APIs.
         return None
 
-    @property
-    def apple_sdk(self):
-        """ Return the name of the Apple SDK.  None is returned if the platform
-        doesn't have Apple SDKs, otherwise an exception is raised for any other
-        sort of error.
-        """
-
-        # This default implementation does not support Apple SDKs.
-        return None
-
     def configure(self):
         """ Configure the platform for building. """
 
@@ -84,6 +75,15 @@ class Platform:
         """ Convert a generic executable name to a host-specific version. """
 
         return name
+
+    def get_apple_sdk(self, message_handler):
+        """ Return the name of the Apple SDK.  None is returned if the platform
+        doesn't have Apple SDKs, otherwise an exception is raised for any other
+        sort of error.
+        """
+
+        # This default implementation does not support Apple SDKs.
+        return None
 
     @property
     def make(self):
@@ -103,6 +103,42 @@ class Platform:
                 return platform
 
         raise UserException("'{0}' is not a supported platform.".format(name))
+
+    @staticmethod
+    def run(*args, message_handler, capture=False):
+        """ Run a command, optionally capturing stdout. """
+
+        message_handler.verbose_message("Running '{0}'".format(' '.join(args)))
+
+        detail = None
+        stdout = []
+
+        try:
+            with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) as process:
+                try:
+                    while process.poll() is None:
+                        line = process.stdout.readline()
+                        if not line:
+                            continue
+
+                        if capture:
+                            stdout.append(line)
+                        else:
+                            message_handler.verbose_message(line.rstrip())
+
+                    if process.returncode != 0:
+                        detail = "returned exit code {}".format(
+                                process.returncode)
+
+                except Exception as e:
+                    process.kill()
+        except Exception as e:
+            detail = str(e)
+
+        if detail:
+            raise UserException("Execution failed: {}".format(detail))
+
+        return ''.join(stdout).strip() if capture else None
 
 
 class Architecture:
@@ -210,31 +246,13 @@ class ApplePlatform(Platform):
     """ Encapsulate an Apple platform. """
 
     @staticmethod
-    def find_sdk(sdk_name):
+    def find_sdk(sdk_name, message_handler):
         """ Find an SDK to use. """
 
-        sdk_dirs = (
-            '/Applications/Xcode.app/Contents/Developer/Platforms/%s.platform/Developer/SDKs' % sdk_name,
-            '/Developer/SDKs'
-        )
+        sdk = Platform.run('xcrun', '--sdk', sdk_name, '--show-sdk-path',
+                message_handler=message_handler, capture=True)
 
-        pattern = '/%s*.sdk' % sdk_name
-
-        for sdk_dir in sdk_dirs:
-            if os.path.isdir(sdk_dir):
-                # Use the latest SDK we find.
-                sdks = glob.glob(sdk_dir + pattern)
-                if len(sdks) == 0:
-                    sdk = None
-                else:
-                    sdks.sort()
-                    sdk = sdks[-1]
-
-                break
-        else:
-            sdk = None
-
-        if sdk is None:
+        if not sdk:
             raise UserException("A valid SDK could not be found")
 
         return sdk
@@ -306,12 +324,6 @@ class iOS(ApplePlatform):
         self._original_deployment_target = os.environ.get(
                 'IPHONEOS_DEPLOYMENT_TARGET')
 
-    @property
-    def apple_sdk(self):
-        """ The name of the iOS SDK. """
-
-        return self.find_sdk('iPhoneOS')
-
     def configure(self):
         """ Configure the platform for building. """
 
@@ -326,6 +338,11 @@ class iOS(ApplePlatform):
             del os.environ['IPHONEOS_DEPLOYMENT_TARGET']
         else:
             os.environ['IPHONEOS_DEPLOYMENT_TARGET'] = self._original_deployment_target
+
+    def get_apple_sdk(self, message_handler):
+        """ The name of the iOS SDK. """
+
+        return self.find_sdk('iphoneos', message_handler)
 
 iOS()
 
@@ -358,12 +375,6 @@ class macOS(ApplePlatform):
         self._original_deployment_target = os.environ.get(
                 'MACOSX_DEPLOYMENT_TARGET')
 
-    @property
-    def apple_sdk(self):
-        """ The name of the macOS SDK. """
-
-        return self.find_sdk('MacOSX')
-
     def configure(self):
         """ Configure the platform for building. """
 
@@ -378,6 +389,11 @@ class macOS(ApplePlatform):
             del os.environ['MACOSX_DEPLOYMENT_TARGET']
         else:
             os.environ['MACOSX_DEPLOYMENT_TARGET'] = self._original_deployment_target
+
+    def get_apple_sdk(self, message_handler):
+        """ The name of the macOS SDK. """
+
+        return self.find_sdk('macosx', message_handler)
 
     @property
     def make(self):

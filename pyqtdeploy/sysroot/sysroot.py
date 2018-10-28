@@ -27,7 +27,6 @@
 import glob
 import os
 import shutil
-import subprocess
 import sys
 
 from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
@@ -35,7 +34,7 @@ from ..file_utilities import (copy_embedded_file as fu_copy_embedded_file,
         get_embedded_dir as fu_get_embedded_dir,
         get_embedded_file_for_version as fu_get_embedded_file_for_version,
         open_file as fu_open_file, parse_version as fu_parse_version)
-from ..platforms import Architecture
+from ..platforms import Architecture, Platform
 from ..user_exception import UserException
 from ..windows import get_py_install_path
 
@@ -251,7 +250,7 @@ class Sysroot:
 
         arch = self._target if self._building_for_target else self._host
 
-        return arch.platform.apple_sdk
+        return arch.platform.get_apple_sdk(self._message_handler)
 
     @property
     def building_for_target(self):
@@ -617,39 +616,8 @@ class Sysroot:
     def run(self, *args, capture=False):
         """ Run a command, optionally capturing stdout. """
 
-        self._message_handler.verbose_message(
-                "Running '{0}'".format(' '.join(args)))
-
-        detail = None
-        stdout = []
-
-        try:
-            with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) as process:
-                try:
-                    while process.poll() is None:
-                        line = process.stdout.readline()
-                        if not line:
-                            continue
-
-                        if capture:
-                            stdout.append(line)
-                        else:
-                            self._message_handler.verbose_message(
-                                    line.rstrip())
-
-                    if process.returncode != 0:
-                        detail = "returned exit code {}".format(
-                                process.returncode)
-
-                except Exception as e:
-                    process.kill()
-        except Exception as e:
-            detail = str(e)
-
-        if detail:
-            self.error("Execution failed: {}".format(detail))
-
-        return ''.join(stdout).strip() if capture else None
+        return Platform.run(*args, message_handler=self._message_handler,
+                capture=capture)
 
     @property
     def target_arch_name(self):
