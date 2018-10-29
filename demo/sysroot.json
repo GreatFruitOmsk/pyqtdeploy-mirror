@@ -6,7 +6,7 @@
         "macos|win#source": "openssl-1.1.*.tar.gz"
     },
 
-    "ios|linux|macos|win#zlib": {
+    "linux|macos|win#zlib": {
         "source":               "zlib-*.tar.gz",
         "static_msvc_runtime":  true
     },
