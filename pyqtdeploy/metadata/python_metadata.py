@@ -4984,7 +4984,8 @@ _metadata = {
         CoreExtensionModule(min_version=(3, 4), internal=True),
 
     '_uuid':
-        ExtensionModule(min_version=(3, 7), internal=True,
+        # Android doesn't implement uuid_t in uuid.h.
+        ExtensionModule(min_version=(3, 7), internal=True, target='!android',
                 source='_uuidmodule.c'),
 
     '_warnings':
