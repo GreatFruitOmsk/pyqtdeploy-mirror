@@ -80,6 +80,8 @@ class zlibComponent(ComponentBase):
 
         else:
             if sysroot.target_platform_name == 'ios':
+                # Note that this doesn't create a library that can be used with
+                # an x86-based simulator.
                 os.environ['CFLAGS'] = '-fembed-bitcode -O3 -arch arm64 -isysroot ' + sysroot.apple_sdk
 
             sysroot.run('./configure', '--static',
