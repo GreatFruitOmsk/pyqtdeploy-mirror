@@ -1,7 +1,7 @@
 {
     "Description": "This is used to test packages in the Python standard library.",
 
-    "zlib": {
+    "!ios-64#zlib": {
         "source":   "zlib-*.tar.gz"
     },
 
