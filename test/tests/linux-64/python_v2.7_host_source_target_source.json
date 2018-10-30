@@ -2,7 +2,12 @@
     "Description": "Build a host Python v2.7 from source, and a target Python from source.",
 
     "qt5": {
-        "qt_dir":                   "gcc_64"
+        "android-32#qt_dir":    "android_armv7",
+        "ios-64#qt_dir":        "ios",
+        "linux-64#qt_dir":      "gcc_64",
+        "macos-64#qt_dir":      "clang_64",
+        "win-32#qt_dir":        "msvc2015",
+        "win-64#qt_dir":        "msvc2017_64"
     },
 
     "python": {

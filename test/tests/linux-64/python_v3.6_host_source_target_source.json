@@ -1,5 +1,5 @@
 {
-    "Description": "Build a host Python v2.7 from source, and a target Python from source.",
+    "Description": "Build a host Python v3.6 from source, and a target Python from source.",
 
     "qt5": {
         "android-32#qt_dir":    "android_armv7",
@@ -13,6 +13,6 @@
     "python": {
         "build_host_from_source":   true,
         "build_target_from_source": true,
-        "source":                   "Python-2.7.*.tar.xz"
+        "source":                   "Python-3.6.*.tar.xz"
     }
 }
