@@ -4984,9 +4984,10 @@ _metadata = {
         CoreExtensionModule(min_version=(3, 4), internal=True),
 
     '_uuid':
-        # Android doesn't implement uuid_t in uuid.h.
-        ExtensionModule(min_version=(3, 7), internal=True, target='!android',
-                source='_uuidmodule.c'),
+        # Android doesn't implement uuid_t in uuid.h.  Linux (RHEL v7.2)
+        # doesn't have uuid.h.
+        ExtensionModule(min_version=(3, 7), internal=True,
+                target='ios|macos|win', source='_uuidmodule.c'),
 
     '_warnings':
         CoreExtensionModule(internal=True),

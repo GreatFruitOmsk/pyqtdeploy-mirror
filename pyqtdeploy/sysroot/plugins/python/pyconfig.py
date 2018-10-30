@@ -1294,7 +1294,7 @@ pyconfig = (
     Config('HAVE_UUID_GENERATE_TIME_SAFE'),
 
     # Define to 1 if you have the <uuid.h> header file.
-    Config('HAVE_UUID_H'),
+    Config('HAVE_UUID_H', android=1),
 
     # Define to 1 if you have the <uuid/uuid.h> header file.
     Config('HAVE_UUID_UUID_H', ios=1, macos=1),
