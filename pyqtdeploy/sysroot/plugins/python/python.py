@@ -324,22 +324,36 @@ build_time_vars = {
     def _patch_source_for_target(self, sysroot):
         """ Patch the source code as necessary for the target. """
 
-        # The only patching needed is for iOS.
-        if sysroot.target_platform_name != 'ios':
-            return
+        if sysroot.target_platform_name == 'ios':
+           self._patch_source(sysroot,
+                os.path.join('Modules', 'posixmodule.c'), self._patch_for_ios)
+        elif sysroot.target_platform_name == 'win':
+           self._patch_source(sysroot,
+                os.path.join('Modules', '_io', '_iomodule.c'),
+                self._patch_for_win)
 
-        patch = os.path.join('Modules', 'posixmodule.c')
-        orig = patch + '.orig'
+    def _patch_source(self, sysroot, source, patcher):
+        """ Invoke a patcher callable to patch a source file. """
 
-        sysroot.progress("Patching {0}".format(patch))
+        sysroot.progress("Patching {0}".format(source))
 
-        # iOS doesn't have system() and the POSIX module uses hard-coded
-        # configurations rather than the normal configure by introspection
-        # process.
-        os.rename(patch, orig)
+        orig = source + '.orig'
+        os.rename(source, orig)
 
         orig_file = sysroot.open_file(orig)
-        patch_file = sysroot.create_file(patch)
+        patch_file = sysroot.create_file(source)
+
+        patcher(orig_file, patch_file)
+
+        orig_file.close()
+        patch_file.close()
+
+    @staticmethod
+    def _patch_for_ios(orig_file, patch_file):
+        """ iOS doesn't have system() and the POSIX module uses hard-coded
+        configurations rather than the normal configure by introspection
+        process.
+        """
 
         for line in orig_file:
             # Just skip any line that sets HAVE_SYSTEM.
@@ -347,8 +361,14 @@ build_time_vars = {
             if minimal != '#defineHAVE_SYSTEM1':
                 patch_file.write(line)
 
-        orig_file.close()
-        patch_file.close()
+    @staticmethod
+    def _patch_for_win(orig_file, patch_file):
+        """ _iomodule.c in Python v3.6 includes consoleapi.h when it should
+        include windows.h (as it does in Python v3.7).
+        """
+
+        for line in orig_file:
+            patch_file.write(line.replace('consoleapi.h', 'windows.h'))
 
     @classmethod
     def _major_minor(cls, sysroot):
