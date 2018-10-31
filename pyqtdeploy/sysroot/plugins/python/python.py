@@ -170,7 +170,7 @@ class PythonComponent(ComponentBase):
         sysroot.building_for_target = True
 
         return os.path.join(sysroot.host_bin_dir,
-                'python' + self._major_minor(sysroot))
+                'python' + self._major_minor_as_string(sysroot))
 
     def _install_host_from_existing_windows_version(self, sysroot):
         """ Install the host Python from an existing installation on Windows
@@ -182,10 +182,14 @@ class PythonComponent(ComponentBase):
         else:
             install_path = sysroot.get_python_install_path()
 
-        # Copy the DLL.
-        dll = 'python' + self._major_minor(sysroot).replace('.', '') + '.dll'
-        shutil.copyfile(os.path.join(install_path, dll),
-                os.path.join(sysroot.host_bin_dir, dll))
+        # Copy the DLL for Python v3.5 and later.  For earlier versions it will
+        # be in a directory already on PATH so a local copy isn't needed.
+        major, minor = self._major_minor(sysroot)
+
+        if (major, minor) >= (3, 5):
+            dll = 'python' + str(major) + str(minor) + '.dll'
+            shutil.copyfile(os.path.join(install_path, dll),
+                    os.path.join(sysroot.host_bin_dir, dll))
 
         return install_path + 'python.exe'
 
@@ -194,7 +198,7 @@ class PythonComponent(ComponentBase):
         the absolute pathname of the interpreter.
         """
 
-        interpreter = 'python' + self._major_minor(sysroot)
+        interpreter = 'python' + self._major_minor_as_string(sysroot)
 
         if self.host_installation_bin_dir:
             return os.path.join(
@@ -265,17 +269,16 @@ build_time_vars = {
 
         install_path = sysroot.get_python_install_path()
 
-        py_major, py_minor, _ = sysroot.decode_version_nr(
-                sysroot.target_py_version_nr)
+        major, minor = self._major_minor(sysroot)
 
         # The interpreter library.
-        lib_name = 'python{0}{1}.lib'.format(py_major, py_minor)
+        lib_name = 'python{0}{1}.lib'.format(major, minor)
 
         sysroot.copy_file(install_path + 'libs\\' + lib_name,
                 os.path.join(sysroot.target_lib_dir, lib_name))
 
-        if py_major >= 3 and py_minor >= 4:
-            lib_name = 'python{0}.lib'.format(py_major)
+        if (major, minor) >= (3, 4):
+            lib_name = 'python{0}.lib'.format(major)
 
             sysroot.copy_file(install_path + 'libs\\' + lib_name,
                     os.path.join(sysroot.target_lib_dir, lib_name))
@@ -283,12 +286,12 @@ build_time_vars = {
         # The DLLs and extension modules.
         sysroot.copy_dir(install_path + 'DLLs',
                 os.path.join(sysroot.target_lib_dir,
-                        'DLLs{0}.{1}'.format(py_major, py_minor)),
+                        'DLLs{0}.{1}'.format(major, minor)),
                 ignore=('*.ico', 'tcl*.dll', 'tk*.dll', '_tkinter.pyd'))
 
-        py_dll = 'python{0}{1}.dll'.format(py_major, py_minor)
+        py_dll = 'python{0}{1}.dll'.format(major, minor)
 
-        if py_major == 3 and py_minor >= 5:
+        if (major, minor) >= (3, 5):
             py_dll_dir = install_path
 
             vc_dll = 'vcruntime140.dll'
@@ -308,7 +311,7 @@ build_time_vars = {
                 os.path.join(sysroot.target_lib_dir, py_dll))
 
         # The standard library.
-        py_subdir = 'python{0}.{1}'.format(py_major, py_minor)
+        py_subdir = 'python{0}.{1}'.format(major, minor)
 
         sysroot.copy_dir(install_path + 'Lib',
                 os.path.join(sysroot.target_lib_dir, py_subdir),
@@ -347,11 +350,19 @@ build_time_vars = {
         orig_file.close()
         patch_file.close()
 
-    @staticmethod
-    def _major_minor(sysroot):
-        """ Return the Python major.minor as a string. """
+    @classmethod
+    def _major_minor(cls, sysroot):
+        """ Return the Python major.minor as a tuple. """
 
         major, minor, _ = sysroot.decode_version_nr(
                 sysroot.target_py_version_nr)
+
+        return (major, minor)
+
+    @staticmethod
+    def _major_minor_as_string(sysroot):
+        """ Return the Python major.minor as a string. """
+
+        major, minor = cls._major_minor(sysroot)
 
         return str(major) + '.' + str(minor)
