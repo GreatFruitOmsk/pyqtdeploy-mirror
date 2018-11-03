@@ -595,59 +595,10 @@ class Builder:
             py_lib_dir = None
 
         # Handle any standard library extension modules.
-        for name, module in required_ext.items():
-            if not self._target.is_targeted(module.target):
-                continue
-
-            # See if the extension module should be disabled for a platform
-            # because there are no external libraries to link against.
-            skip_module = False
-
-            for xlib in project.external_libraries.get(target_platform, ()):
-                if xlib.name == module.xlib:
-                    if xlib.defines == '' and xlib.includepath == '' and xlib.libs == '':
-                        skip_module = True
-
-                    break
-
-            if skip_module:
-                continue
-
-            used_inittab.add(name)
-
-            for source in module.source:
-                source = self._get_scoped_value(source)
-                if source is not None:
-                    source = self._python_source_file(source_dir, source)
-                    used_sources.add(source)
-
-                    used_includepath.add(source_dir + '/Modules')
-
-            if module.defines is not None:
-                for define in module.defines:
-                    define = self._get_scoped_value(define)
-                    if define is not None:
-                        used_defines.add(define)
-
-            if module.includepath is not None:
-                for includepath in module.includepath:
-                    includepath = self._get_scoped_value(includepath)
-                    if includepath is not None:
-                        includepath = self._python_source_file(source_dir,
-                                includepath)
-                        used_includepath.add(includepath)
-
-            if module.libs is not None:
-                for lib in module.libs:
-                    lib = self._get_scoped_value(lib)
-                    if lib is not None:
-                        used_libs.add(lib)
-
-            if module.pyd is not None and target_platform == 'win':
-                used_dlls.add(module)
-
-        if 'win' not in project.python_use_platform and target_platform == 'win':
-            used_includepath.add(source_dir + '/PC')
+        if target_platform not in project.python_use_platform:
+            self._add_stdlib_extension_modules(project, target_platform,
+                    source_dir, required_ext, used_inittab, used_sources,
+                    used_includepath, used_defines, used_libs, used_dlls)
 
         # Handle any required external libraries.
         android_extra_libs = []
@@ -783,6 +734,63 @@ class Builder:
 
         # All done.
         f.close()
+
+    def _add_stdlib_extension_modules(self, project, target_platform, source_dir, required_ext, used_inittab, used_sources, used_includepath, used_defines, used_libs, used_dlls):
+        """ Add the building of any standard library extension modules. """
+
+        for name, module in required_ext.items():
+            if not self._target.is_targeted(module.target):
+                continue
+
+            # See if the extension module should be disabled for a platform
+            # because there are no external libraries to link against.
+            skip_module = False
+
+            for xlib in project.external_libraries.get(target_platform, ()):
+                if xlib.name == module.xlib:
+                    if xlib.defines == '' and xlib.includepath == '' and xlib.libs == '':
+                        skip_module = True
+
+                    break
+
+            if skip_module:
+                continue
+
+            used_inittab.add(name)
+
+            for source in module.source:
+                source = self._get_scoped_value(source)
+                if source is not None:
+                    source = self._python_source_file(source_dir, source)
+                    used_sources.add(source)
+
+                    used_includepath.add(source_dir + '/Modules')
+
+            if module.defines is not None:
+                for define in module.defines:
+                    define = self._get_scoped_value(define)
+                    if define is not None:
+                        used_defines.add(define)
+
+            if module.includepath is not None:
+                for includepath in module.includepath:
+                    includepath = self._get_scoped_value(includepath)
+                    if includepath is not None:
+                        includepath = self._python_source_file(source_dir,
+                                includepath)
+                        used_includepath.add(includepath)
+
+            if module.libs is not None:
+                for lib in module.libs:
+                    lib = self._get_scoped_value(lib)
+                    if lib is not None:
+                        used_libs.add(lib)
+
+            if module.pyd is not None and target_platform == 'win':
+                used_dlls.add(module)
+
+        if target_platform == 'win':
+            used_includepath.add(source_dir + '/PC')
 
     def _get_pyqt_package_name(self):
         """ Return the name of the PyQt package. """
