@@ -326,11 +326,16 @@ build_time_vars = {
 
         if sysroot.target_platform_name == 'ios':
            self._patch_source(sysroot,
-                os.path.join('Modules', 'posixmodule.c'), self._patch_for_ios)
+                os.path.join('Modules', 'posixmodule.c'),
+                self._patch_for_ios_system)
         elif sysroot.target_platform_name == 'win':
            self._patch_source(sysroot,
                 os.path.join('Modules', '_io', '_iomodule.c'),
-                self._patch_for_win)
+                self._patch_for_win_iomodule)
+
+           self._patch_source(sysroot,
+                os.path.join('Modules', 'expat', 'loadlibrary.c'),
+                self._patch_for_win_loadlibrary)
 
     def _patch_source(self, sysroot, source, patcher):
         """ Invoke a patcher callable to patch a source file. """
@@ -349,7 +354,7 @@ build_time_vars = {
         patch_file.close()
 
     @staticmethod
-    def _patch_for_ios(orig_file, patch_file):
+    def _patch_for_ios_system(orig_file, patch_file):
         """ iOS doesn't have system() and the POSIX module uses hard-coded
         configurations rather than the normal configure by introspection
         process.
@@ -362,13 +367,28 @@ build_time_vars = {
                 patch_file.write(line)
 
     @staticmethod
-    def _patch_for_win(orig_file, patch_file):
+    def _patch_for_win_iomodule(orig_file, patch_file):
         """ _iomodule.c in Python v3.6 includes consoleapi.h when it should
         include windows.h (as it does in Python v3.7).
         """
 
         for line in orig_file:
             patch_file.write(line.replace('consoleapi.h', 'windows.h'))
+
+    @staticmethod
+    def _patch_for_win_loadlibrary(orig_file, patch_file):
+        """ Compiling loadlibrary.c triggers a missing definition of NMHDR.  A
+        regular build from python.orgg doesn't have this problem so it is
+        likely that the qmake build system is either not defining soemthing it
+        should or defining something it shouldn't.  We add a trivial local
+        definition as a hack (suggested by Jacob Kanev).
+        """
+
+        for line in orig_file:
+            if line.strip == '#include<windows.h>':
+                patch_file.write('typedef void *NMHDR;\n\n')
+
+            patch_file.write(line)
 
     @classmethod
     def _major_minor(cls, sysroot):
