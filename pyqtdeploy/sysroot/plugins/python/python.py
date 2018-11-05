@@ -380,13 +380,14 @@ build_time_vars = {
         """ Compiling loadlibrary.c triggers a missing definition of NMHDR.  A
         regular build from python.orgg doesn't have this problem so it is
         likely that the qmake build system is either not defining soemthing it
-        should or defining something it shouldn't.  We add a trivial local
-        definition as a hack (suggested by Jacob Kanev).
+        should or defining something it shouldn't.  Including Python.h seems
+        to work around the problem.
         """
 
         for line in orig_file:
-            if line.strip == '#include<windows.h>':
-                patch_file.write('typedef void *NMHDR;\n\n')
+            minimal = line.strip().replace(' ', '')
+            if minimal == '#include<windows.h>':
+                patch_file.write('#include <Python.h>\n\n')
 
             patch_file.write(line)
 
