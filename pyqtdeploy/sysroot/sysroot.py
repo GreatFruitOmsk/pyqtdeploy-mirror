@@ -227,7 +227,7 @@ class Sysroot:
 
         toolchain_version = os.environ.get('ANDROID_NDK_TOOLCHAIN_VERSION')
         if toolchain_version is None:
-            sysroot.error(
+            self.error(
                     "the ANDROID_NDK_TOOLCHAIN_VERSION environment variable "
                     "must be set to an appropriate value (e.g. '4.9')")
 
