@@ -1,4 +1,4 @@
-v2.3 ??? November 2018
+v2.3 17th November 2018
   - Added support for Python v3.6.7 and v3.7.1.
   - Added the 'version' option to the Python component plugin.
   - The 'source' option of the Python component plugin is now only required if
