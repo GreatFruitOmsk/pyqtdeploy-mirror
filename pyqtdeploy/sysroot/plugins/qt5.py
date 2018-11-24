@@ -39,6 +39,8 @@ class Qt5Component(ComponentBase):
                 help="The additional options to be passed to 'configure' when building from source."),
         ComponentOption('disabled_features', type=list,
                 help="The features that are disabled when building from source."),
+        ComponentOption('edition', values=['commercial', 'opensource'],
+                help="The Qt edition being used when building from source."),
         ComponentOption('qt_dir',
                 help="The pathname of the directory containing an existing Qt5 installation to use. If it is not specified then the installation will be built from source."),
         ComponentOption('ssl',
@@ -86,7 +88,7 @@ class Qt5Component(ComponentBase):
         """ Build Qt5 from source. """
 
         archive = sysroot.find_file(self.source)
-        archive_dir = sysroot.unpack_archive(archive)
+        sysroot.unpack_archive(archive)
 
         if sys.platform == 'win32':
             configure = 'configure.bat'
@@ -111,9 +113,7 @@ class Qt5Component(ComponentBase):
             configure = './configure'
             original_path = None
 
-        license = '-opensource' if '-opensource-' in archive_dir else '-commercial'
-
-        args = [configure, '-prefix', self._target_qt_dir, license,
+        args = [configure, '-prefix', self._target_qt_dir, '-' + self.edition,
                 '-confirm-license', '-static', '-release', '-nomake',
                 'examples', '-nomake', 'tools',
                 '-I', sysroot.target_include_dir,
@@ -192,7 +192,11 @@ class Qt5Component(ComponentBase):
             if not os.path.isdir(self._target_qt_dir):
                 sysroot.error("'{0}' could not be found".format(qt_dir))
         else:
-            if not self.source:
+            if self.source:
+                if not self.edition:
+                    sysroot.error(
+                            "the 'edition' option must be specified when building from source")
+            else:
                 sysroot.error(
                         "either the 'qt_dir' or 'source' option must be specified")
 

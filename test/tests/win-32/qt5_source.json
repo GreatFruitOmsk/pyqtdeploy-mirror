@@ -7,6 +7,7 @@
 
     "qt5": {
         "source":               "qt-everywhere*-src-5.*.tar.xz",
+        "edition":              "opensource",
         "configure_options":    ["-opengl", "desktop"],
         "ssl":                  "openssl-linked"
     }

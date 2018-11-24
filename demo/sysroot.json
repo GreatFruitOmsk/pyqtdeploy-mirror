@@ -16,6 +16,7 @@
         "ios#qt_dir":               "ios",
 
         "linux|macos|win#source":   "qt-everywhere*-src-5.*.tar.xz",
+        "edition":                  "opensource",
 
         "android|linux#ssl":        "openssl-runtime",
         "ios#ssl":                  "securetransport",
