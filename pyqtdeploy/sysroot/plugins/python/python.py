@@ -391,8 +391,8 @@ build_time_vars = {
 
             patch_file.write(line)
 
-    @classmethod
-    def _major_minor(cls, sysroot):
+    @staticmethod
+    def _major_minor(sysroot):
         """ Return the Python major.minor as a tuple. """
 
         major, minor, _ = sysroot.decode_version_nr(
@@ -400,8 +400,8 @@ build_time_vars = {
 
         return (major, minor)
 
-    @staticmethod
-    def _major_minor_as_string(sysroot):
+    @classmethod
+    def _major_minor_as_string(cls, sysroot):
         """ Return the Python major.minor as a string. """
 
         major, minor = cls._major_minor(sysroot)
