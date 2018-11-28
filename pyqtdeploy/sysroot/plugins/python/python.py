@@ -345,6 +345,10 @@ build_time_vars = {
     def _patch_source(self, sysroot, source, patcher):
         """ Invoke a patcher callable to patch a source file. """
 
+        # Ignore if the source file doesn't exist.
+        if not os.path.isfile(source):
+            return
+
         sysroot.progress("Patching {0}".format(source))
 
         orig = source + '.orig'
