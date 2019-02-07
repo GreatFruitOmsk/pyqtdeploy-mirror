@@ -1,5 +1,5 @@
 v2.4 ??? February 2019
-  - Added support for Python v3.6.8.
+  - Added support for Python v3.6.8 and v3.7.2.
 
 v2.3.1 2nd December 2018
   - Added the 'edition' option to the Qt5 component plugin.

@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 7, 1),
+    (3, 7, 2),
     (3, 6, 8),
     (3, 5, 6),
     (3, 4, 9),
@@ -650,9 +650,12 @@ _metadata = {
     'curses.textpad':
         PythonModule(target='!win', deps=('curses', 'curses.ascii')),
 
-    'dataclasses':
-        PythonModule(min_version=(3, 7),
+    'dataclasses': (
+        PythonModule(min_version=(3, 7), max_version=(3, 7, 1),
                 deps=('copy', 'inspect', 'keyword', 're', 'types')),
+        PythonModule(min_version=(3, 7, 2),
+                deps=('copy', 'functools', 'inspect', 'keyword', 're',
+                        '_thread', 'types'))),
 
     'datetime': (
         ExtensionModule(version=2, source=('datetimemodule.c', 'timemodule.c'),
@@ -4292,8 +4295,9 @@ _metadata = {
                 deps=('cgi', 'configparser', 'distutils.cmd', 'os'))),
 
     '_distutils_findvs':
-        ExtensionModule(min_version=(3, 6, 5), internal=True, target='win',
-                source='../PC/_findvs.cpp', pyd='_distutils_findvs.pyd'),
+        ExtensionModule(min_version=(3, 6, 5), max_version=(3, 7, 1),
+                internal=True, target='win', source='../PC/_findvs.cpp',
+                pyd='_distutils_findvs.pyd'),
 
     'distutils.msvc9compiler': (
         PythonModule(version=2,
@@ -4315,11 +4319,16 @@ _metadata = {
                         'distutils.log', 'distutils.util', '_findvs', 'glob',
                         'itertools', 'os', 'shutil', 'stat', 'subprocess',
                         'threading', 'winreg')),
-        PythonModule(min_version=(3, 6, 5),
+        PythonModule(min_version=(3, 6, 5), max_version=(3, 7, 1),
                 deps=('distutils.ccompiler', 'distutils.errors',
                         '_distutils_findvs', 'distutils.log', 'distutils.util',
                         'glob', 'itertools', 'os', 'shutil', 'stat',
-                        'subprocess', 'threading', 'winreg'))),
+                        'subprocess', 'threading', 'winreg')),
+        PythonModule(min_version=(3, 7, 2),
+                deps=('distutils.ccompiler', 'distutils.errors',
+                        'distutils.log', 'distutils.util', 'glob', 'itertools',
+                        'json', 'os', 'shutil', 'stat', 'subprocess',
+                        'winreg'))),
 
     'distutils.versionpredicate':
         PythonModule(
