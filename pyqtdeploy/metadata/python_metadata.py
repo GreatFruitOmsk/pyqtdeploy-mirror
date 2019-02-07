@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 # The latest supported version in each minor branch.
 _supported_branches = (
     (3, 7, 1),
-    (3, 6, 7),
+    (3, 6, 8),
     (3, 5, 6),
     (3, 4, 9),
     (3, 3, 7),
