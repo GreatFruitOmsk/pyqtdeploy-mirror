@@ -3,6 +3,7 @@
 
     "qt5": {
         "source":   "qt-everywhere*-src-5.*.tar.xz",
+        "edition":  "opensource",
         "skip":     ["qtlocation"],
         "ssl":      "openssl-runtime"
     }

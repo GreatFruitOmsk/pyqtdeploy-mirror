@@ -328,6 +328,7 @@ build_time_vars = {
            self._patch_source(sysroot,
                 os.path.join('Modules', 'posixmodule.c'),
                 self._patch_for_ios_system)
+
         elif sysroot.target_platform_name == 'win':
            self._patch_source(sysroot,
                 os.path.join('Modules', '_io', '_iomodule.c'),
@@ -337,8 +338,16 @@ build_time_vars = {
                 os.path.join('Modules', 'expat', 'loadlibrary.c'),
                 self._patch_for_win_loadlibrary)
 
+           self._patch_source(sysroot,
+                os.path.join('Modules', '_winapi.c'),
+                self._patch_for_win_winapi)
+
     def _patch_source(self, sysroot, source, patcher):
         """ Invoke a patcher callable to patch a source file. """
+
+        # Ignore if the source file doesn't exist.
+        if not os.path.isfile(source):
+            return
 
         sysroot.progress("Patching {0}".format(source))
 
@@ -391,8 +400,17 @@ build_time_vars = {
 
             patch_file.write(line)
 
-    @classmethod
-    def _major_minor(cls, sysroot):
+    @staticmethod
+    def _patch_for_win_winapi(orig_file, patch_file):
+        """ Both _winapi.c and overlapped.c define a C structure with the name
+        OverlappedType.  We rename the former.
+        """
+
+        for line in orig_file:
+            patch_file.write(line.replace('OverlappedType', 'OverlappedType_'))
+
+    @staticmethod
+    def _major_minor(sysroot):
         """ Return the Python major.minor as a tuple. """
 
         major, minor, _ = sysroot.decode_version_nr(
@@ -400,8 +418,8 @@ build_time_vars = {
 
         return (major, minor)
 
-    @staticmethod
-    def _major_minor_as_string(sysroot):
+    @classmethod
+    def _major_minor_as_string(cls, sysroot):
         """ Return the Python major.minor as a string. """
 
         major, minor = cls._major_minor(sysroot)
