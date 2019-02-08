@@ -49,6 +49,13 @@ Another companion program :program:`pyqtdeploy-sysroot` provides support for
 creating a system root directory containing target-specific installations of
 certain components (e.g. Python itself and PyQt).
 
+:program:`pyqtdeploy` does not itself generate a final distribution package,
+i.e. one that is handled by a target platform's package management system.
+This is left to the target platform's standard packaging tools.  For desktop
+targets the `fman Build System <https://build-system.fman.io>`__ is an
+alternative solution that includes support for ``.exe`` files (for Windows),
+``.dmg`` files (for macOS) and ``.deb`` and ``.rpm`` files (for Linux).
+
 .. note::
 
     Creating a single executable (particularly one with no external
