@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,9 @@ pyqt5_metadata = {
 
     'QtQuickWidgets':
         PyQt5Metadata(deps=['QtQuick', 'QtWidgets'], qt5=['quickwidgets']),
+
+    'QtRemoteObjects':
+        PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['remoteobjects']),
 
     'QtSensors':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['sensors']),
