@@ -1,5 +1,7 @@
 v2.4 ??? February 2019
   - Added support for Python v3.6.8 and v3.7.2.
+  - Added support for PyQt5.QtRemoteObjects.
+  - Added support for PyQtWebEngine as an add-on package.
 
 v2.3.1 2nd December 2018
   - Added the 'edition' option to the Qt5 component plugin.
