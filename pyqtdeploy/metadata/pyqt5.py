@@ -138,18 +138,6 @@ pyqt5_metadata = {
     'QtWebChannel':
         PyQt5Metadata(deps=['QtCore'], gui=False, qt5=['webchannel']),
 
-    'QtWebEngine':
-        PyQt5Metadata(deps=['QtWebEngineCore'], gui=False, qt5=['webengine']),
-
-    'QtWebEngineCore':
-        PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['webenginecore']),
-
-    'QtWebEngineWidgets':
-        PyQt5Metadata(
-                deps=['QtNetwork', 'QtWebChannel', 'QtWebEngineCore',
-                        'QtWidgets'],
-                cpp11=True, qt5=['webenginewidgets']),
-
     'QtWebSockets':
         PyQt5Metadata(deps=['QtNetwork'], gui=False, qt5=['websockets']),
 
@@ -217,6 +205,20 @@ pyqt5_metadata = {
 
     'QtPurchasing':
         PyQt5Metadata(group='addon', deps=['QtCore'], qt5=['purchasing']),
+
+    'QtWebEngine':
+        PyQt5Metadata(group='addon', deps=['QtWebEngineCore'], gui=False,
+                qt5=['webengine']),
+
+    'QtWebEngineCore':
+        PyQt5Metadata(group='addon', deps=['QtNetwork'], gui=False,
+                qt5=['webenginecore']),
+
+    'QtWebEngineWidgets':
+        PyQt5Metadata(group='addon',
+                deps=['QtNetwork', 'QtWebChannel', 'QtWebEngineCore',
+                        'QtWidgets'],
+                cpp11=True, qt5=['webenginewidgets']),
 
     'Qsci':
         PyQt5Metadata(group='addon', deps=['QtPrintSupport', 'QtWidgets'],
