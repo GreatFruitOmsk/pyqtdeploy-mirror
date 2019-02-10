@@ -4984,7 +4984,7 @@ _metadata = {
         CoreExtensionModule(internal=True),
 
     '_sysconfigdata':
-        PythonModule(max_version=(3, 5), internal=True),
+        PythonModule(max_version=(3, 5), internal=True, target='!win'),
 
     '_sysconfigdata_*':
         PythonModule(min_version=(3, 6), internal=True, target='!win'),
