@@ -154,9 +154,13 @@ class Qt5Component(ComponentBase):
         if self.configure_options:
             args.extend(self.configure_options)
 
+        xcb_enabled = True
         if self.disabled_features:
             for feature in self.disabled_features:
                 args.append('-no-feature-' + feature)
+
+                if feature == 'xcb':
+                    xcb_enabled = False
 
         if self.skip:
             for module in self.skip:
@@ -168,7 +172,7 @@ class Qt5Component(ComponentBase):
             # builds).
             args.append('-skip')
             args.append('qtimageformats')
-        elif sys.platform == 'linux':
+        elif sys.platform == 'linux' and xcb_enabled:
             args.append('-qt-xcb')
 
         sysroot.run(*args)
