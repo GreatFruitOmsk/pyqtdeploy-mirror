@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,8 @@ class Platform:
         self.name = name
 
         # Create the architectures.
-        for arch in archs:
-            Architecture(arch, self)
+        for arch_name, arch_factory in archs:
+            arch_factory(arch_name, self)
 
         self.all_platforms.append(self)
 
@@ -58,7 +58,7 @@ class Platform:
         other sort of error.
         """
 
-        # This default implementation does not support Android APIs.
+        # This default implementation does not support Android.
         return None
 
     def configure(self):
@@ -82,7 +82,7 @@ class Platform:
         sort of error.
         """
 
-        # This default implementation does not support Apple SDKs.
+        # This default implementation does not support Apple.
         return None
 
     @property
@@ -155,15 +155,19 @@ class Architecture:
 
         self.all_architectures.append(self)
 
-    def configure(self):
-        """ Configure the architecture for building. """
+    @property
+    def android_ndk_sysroot(self):
+        """ The path of the Android NDK's sysroot directory. """
 
-        self.platform.configure()
+        # This default implementation does not support Android.
+        return None
 
-    def deconfigure(self):
-        """ Deconfigure the architecture for building. """
+    @property
+    def android_toolchain_prefix(self):
+        """ The name of the Android toolchain's prefix. """
 
-        self.platform.deconfigure()
+        # This default implementation does not support Android.
+        return None
 
     @classmethod
     def architecture(cls, name=None):
@@ -202,6 +206,22 @@ class Architecture:
         raise UserException(
                 "'{0}' is not a supported architecture.".format(name))
 
+    def configure(self):
+        """ Configure the architecture for building. """
+
+        self.platform.configure()
+
+    def deconfigure(self):
+        """ Deconfigure the architecture for building. """
+
+        self.platform.deconfigure()
+
+    def get_android_toolchain_bin(self):
+        """ Return the path of the Android toolchain's bin directory. """
+
+        # This default implementation does not support Android.
+        return None
+
     def is_targeted(self, targets):
         """ Returns True if the architecture is covered by a set of targets.
         If the set of targets has a False value then the architecture is
@@ -235,11 +255,18 @@ class Architecture:
                     platform = Platform.platform(targets)
                     covered = (self.platform is platform)
             else:
-                covered = (self.platform.name in targets)
+                covered = (self.platform_name in targets)
         else:
             covered = True
 
         return covered
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        # This default implementation checks that the architectures are the
+        # same.
+        return target is self
 
 
 class ApplePlatform(Platform):
@@ -258,8 +285,46 @@ class ApplePlatform(Platform):
         return sdk
 
 
-# Define and implement the different platforms.  These should be done in
-# alphabetical order.
+# Define and implement the different platforms and architectures.  These should
+# be done in alphabetical order.
+
+class Android_arm_32(Architecture):
+    """ Encapsulate the Android 32-bit Arm architecture. """
+
+    @property
+    def android_ndk_sysroot(self):
+        """ The path of the Android NDK's sysroot directory. """
+
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+
+        return os.path.join(ndk_root, 'platforms',
+                'android-{}'.format(self.android_api), 'arch-arm')
+
+    @property
+    def android_toolchain_prefix(self):
+        """ The name of the Android toolchain's prefix. """
+
+        return 'arm-linux-androideabi-'
+
+    def get_android_toolchain_bin(self, host):
+        """ Return the path of the Android toolchain's bin directory. """
+
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+        toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+
+        android_host = '{}-x86_64'.format(
+                'darwin' if host.platform.name == 'macos' else 'linux')
+
+        return os.path.join(ndk_root, 'toolchains',
+                self.android_toolchain_prefix + toolchain_version, 'prebuilt',
+                android_host, 'bin')
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        # Android can never be a host.
+        return False
+
 
 class Android(Platform):
     """ Encapsulate the Android platform. """
@@ -268,32 +333,32 @@ class Android(Platform):
     MINIMUM_API = 21
 
     # The environment variables that should be set.
-    REQUIRED_ENV_VARS = ['ANDROID_NDK_ROOT']
+    REQUIRED_ENV_VARS = ('ANDROID_NDK_ROOT', 'ANDROID_NDK_PLATFORM',
+            'ANDROID_NDK_TOOLCHAIN_VERSION')
 
     def __init__(self):
         """ Initialise the object. """
 
-        super().__init__("Android", 'android', ['android-32'])
+        super().__init__("Android", 'android',
+                [('android-32', Android_arm_32]))
 
     @property
     def android_api(self):
         """ The number of the Android API. """
 
+        ndk_platform = os.environ['ANDROID_NDK_PLATFORM']
+
         api = None
+        parts = ndk_platform.split('-')
 
-        ndk_platform = os.environ.get('ANDROID_NDK_PLATFORM')
+        if len(parts) == 2 and parts[0] == 'android':
+            try:
+                api = int(parts[1])
+            except ValueError:
+                api = 0
 
-        if ndk_platform:
-            parts = ndk_platform.split('-')
-
-            if len(parts) == 2 and parts[0] == 'android':
-                try:
-                    api = int(parts[1])
-                except ValueError:
-                    api = 0
-
-                if api < self.MINIMUM_API:
-                    api = None
+            if api < self.MINIMUM_API:
+                api = None
 
         if api is None:
             raise UserException(
@@ -313,13 +378,23 @@ class Android(Platform):
 Android()
 
 
+class iOS_arm_64(Architecture):
+    """ Encapsulate the ios 64-bit Arm architecture. """
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        # iOS can never be a host.
+        return False
+
+
 class iOS(ApplePlatform):
     """ Encapsulate the iOS platform. """
     
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("iOS", 'ios', ['ios-64'])
+        super().__init__("iOS", 'ios', [('ios-64', iOS_arm_64)])
 
         self._original_deployment_target = os.environ.get(
                 'IPHONEOS_DEPLOYMENT_TARGET')
@@ -347,13 +422,32 @@ class iOS(ApplePlatform):
 iOS()
 
 
+class Linux_x86_32(Architecture):
+    """ Encapsulate the Linux 32-bit x86 architecture. """
+
+    pass
+
+
+class Linux_x86_64(Architecture):
+    """ Encapsulate the Linux 64-bit x86 architecture. """
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        if target.platform.name == 'android':
+            return True
+
+        return super().supported_target(target)
+
+
 class Linux(Platform):
     """ Encapsulate the Linux platform. """
     
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("Linux", 'linux', ['linux-32', 'linux-64'])
+        super().__init__("Linux", 'linux',
+                [('linux-32', Linux_x86_32), ('linux-64', Linux_x86_64)])
 
     @property
     def make(self):
@@ -364,13 +458,25 @@ class Linux(Platform):
 Linux()
 
 
+class macOS_x86_64(Architecture):
+    """ Encapsulate the macOS 64-bit x86 architecture. """
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        if target.platform.name in ('android', 'ios'):
+            return True
+
+        return super().supported_target(target)
+
+
 class macOS(ApplePlatform):
     """ Encapsulate the macOS platform. """
     
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("macOS", 'macos', ['macos-64'])
+        super().__init__("macOS", 'macos', [('macos-64', macOS_x86_64)])
 
         self._original_deployment_target = os.environ.get(
                 'MACOSX_DEPLOYMENT_TARGET')
@@ -404,13 +510,23 @@ class macOS(ApplePlatform):
 macOS()
 
 
+class Windows_x86(Architecture):
+    """ Encapsulate any Windows x86 architecture. """
+
+    def supported_target(self, target):
+        """ Check that this architecture can host a target architecture. """
+
+        return target.platform is self.platform
+
+
 class Windows(Platform):
     """ Encapsulate the Windows platform. """
     
     def __init__(self):
         """ Initialise the object. """
         
-        super().__init__("Windows", 'win', ['win-32', 'win-64'])
+        super().__init__("Windows", 'win',
+                [('win-32', Windows_x86), ('win-64', Windows_x86)])
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """

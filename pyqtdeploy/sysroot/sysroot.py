@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,11 @@ class Sysroot:
 
         self._host = Architecture.architecture()
         self._target = Architecture.architecture(target_arch_name)
+
+        if not self._host.supported_target(self._target):
+            raise UserException(
+                    "{0} is not a supported {1} development host".format(
+                            self._host.name, self._target.name))
 
         if not sysroot_dir:
             sysroot_dir = 'sysroot-' + self._target.name
@@ -210,39 +215,19 @@ class Sysroot:
     def android_ndk_sysroot(self):
         """ The path of the Android NDK's sysroot directory. """
 
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-
-        return os.path.join(ndk_root, 'platforms',
-                'android-{}'.format(self.android_api), 'arch-arm')
+        return self._target.android_ndk_sysroot
 
     @property
     def android_toolchain_bin(self):
         """ The path of the Android toolchain's bin directory. """
 
-        if self.host_platform_name == 'win':
-            self.error(
-                    "Windows as an Android development host is not supported")
-
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-
-        toolchain_version = os.environ.get('ANDROID_NDK_TOOLCHAIN_VERSION')
-        if toolchain_version is None:
-            self.error(
-                    "the ANDROID_NDK_TOOLCHAIN_VERSION environment variable "
-                    "must be set to an appropriate value (e.g. '4.9')")
-
-        android_host = '{}-x86_64'.format(
-                'darwin' if self.host_platform_name == 'macos' else 'linux')
-
-        return os.path.join(ndk_root, 'toolchains',
-                self.android_toolchain_prefix + toolchain_version, 'prebuilt',
-                android_host, 'bin')
+        return self._target.android_toolchain_bin
 
     @property
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 
-        return 'arm-linux-androideabi-'
+        return self._target.android_toolchain_prefix
 
     @property
     def apple_sdk(self):
