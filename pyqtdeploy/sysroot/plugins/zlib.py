@@ -71,8 +71,8 @@ class zlibComponent(ComponentBase):
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
             sysroot.run(sysroot.host_make,
-                    'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
-            sysroot.run(sysroot.host_make, 'install')
+                    'AR=' + sysroot.android_toolchain_prefix + 'ar cqs',
+                    'install')
 
             del os.environ['CROSS_PREFIX']
             del os.environ['CC']

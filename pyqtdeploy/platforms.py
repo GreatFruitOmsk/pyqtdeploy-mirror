@@ -290,44 +290,76 @@ class ApplePlatform(Platform):
 class AndroidArchitecture(Architecture):
     """ A base class for any Android architecture. """
 
+    def __init__(self, *args, **kwargs):
+        """ Initialise the object. """
+
+        super().__init__(*args, **kwargs)
+
+        # Set the various property values.
+        ndk_root = os.environ['ANDROID_NDK_ROOT']
+        toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+        toolchain_prefix = self.android_toolchain_prefix
+        android_host = '{}-x86_64'.format(
+                'darwin' if sys.platform == 'darwin' else 'linux')
+
+        self._ndk_sysroot = os.path.join(ndk_root, 'platforms',
+                'android-{}'.format(self.platform.android_api), 'arch-arm')
+
+        # Assume the toolchain is gcc-based (as that is the historical
+        # behaviour).
+        self.android_toolchain_cflags = []
+
+        self._toolchain_bin = os.path.join(ndk_root, 'toolchains',
+                toolchain_prefix + toolchain_version, 'prebuilt',
+                android_host, 'bin')
+
+        self.android_toolchain_cc = toolchain_prefix + 'gcc'
+
+        if os.path.exists(os.path.join(self._toolchain_bin, self.android_toolchain_cc)):
+            # The architecture-neutral C compiler flags.
+            self.android_toolchain_cflags.append(
+                    '--sysroot=' + self._ndk_sysroot)
+
+            self.android_toolchain_cflags.extend(self.gcc_toolchain_cflags)            
+        else:
+            # There is no gcc so assume we have a clang-based toolchain.
+            gcc_toolchain_bin = self._toolchain_bin
+            self._toolchain_bin = os.path.join(ndk_root, 'toolchains', 'llvm',
+                'prebuilt', android_host, 'bin')
+
+            self.android_toolchain_cc = 'clang'
+
+            # The architecture-neutral C compiler flags.
+            self.android_toolchain_cflags.append('-gcc-toolchain')
+            self.android_toolchain_cflags.append(gcc_toolchain_bin)
+
+            sysroot = os.path.join(ndk_root, 'sysroot')
+            self.android_toolchain_cflags.append('--sysroot=' + sysroot)
+
+            self.android_toolchain_cflags.append('-isystem')
+            self.android_toolchain_cflags.append(
+                    os.path.join(sysroot, 'usr', 'include',
+                    toolchain_prefix[:-1]))
+
+            self.android_toolchain_cflags.extend(self.clang_toolchain_cflags)
+
     @property
     def android_ndk_sysroot(self):
         """ The path of the Android NDK's sysroot directory. """
 
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
+        if not os.path.exists(self._ndk_sysroot):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(self._ndk_sysroot))
 
-        sysroot_dir = os.path.join(ndk_root, 'platforms',
-                'android-{}'.format(self.platform.android_api), 'arch-arm')
-
-        if not os.path.exists(sysroot_dir):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(sysroot_dir))
-
-        return sysroot_dir
+        return self._ndk_sysroot
 
     @property
     def android_toolchain_bin(self):
         """ The path of the Android toolchain's bin directory. """
 
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-        toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+        if not os.path.exists(self._toolchain_bin):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set correctly".format(self._toolchain_bin))
 
-        android_host = '{}-x86_64'.format(
-                'darwin' if sys.platform == 'darwin' else 'linux')
-
-        bin_dir = os.path.join(ndk_root, 'toolchains',
-                self.android_toolchain_prefix + toolchain_version, 'prebuilt',
-                android_host, 'bin')
-
-        if not os.path.exists(bin_dir):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set properly".format(bin_dir))
-
-        return bin_dir
-
-    @property
-    def android_toolchain_cc(self):
-        """ The name of the Android toolchain's C compiler. """
-
-        return self.android_toolchain_prefix + 'gcc'
+        return self._toolchain_bin
 
     def supported_target(self, target):
         """ Check that this architecture can host a target architecture. """
@@ -340,18 +372,24 @@ class Android_arm_32(AndroidArchitecture):
     """ Encapsulate the Android 32-bit Arm architecture. """
 
     @property
-    def android_toolchain_cflags(self):
-        """ The list of the Android toolchain's C compiler's flags. """
-
-        return ['-march=armv7-a', '-mfloat-abi=softfp', '-mfpu=vfp',
-                '-fno-builtin-memmove', '-mthumb',
-                '--sysroot=' + self.android_ndk_sysroot]
-
-    @property
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 
         return 'arm-linux-androideabi-'
+
+    @property
+    def clang_toolchain_cflags(self):
+        """ The architecture-specific clang compiler flags. """
+
+        return ['-target', 'armv7-none-linux-androideabi']
+
+
+    @property
+    def gcc_toolchain_cflags(self):
+        """ The architecture-specific gcc compiler flags. """
+
+        return ['-march=armv7-a', '-mfloat-abi=softfp', '-mfpu=vfp',
+                '-fno-builtin-memmove', '-mthumb']
 
 
 class Android(Platform):
