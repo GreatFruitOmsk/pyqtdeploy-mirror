@@ -153,16 +153,25 @@ class Architecture:
 
         raise NotImplementedError
 
+    @property
     def android_toolchain_bin(self):
         """ The path of the Android toolchain's bin directory. """
 
         raise NotImplementedError
 
+    @property
     def android_toolchain_cc(self):
         """ The name of the Android toolchain's C compiler. """
 
         raise NotImplementedError
 
+    @property
+    def android_toolchain_is_clang(self):
+        """ True if the Android toolchain is clang-based. """
+
+        raise NotImplementedError
+
+    @property
     def android_toolchain_cflags(self):
         """ The list of the Android toolchain's C compiler's flags. """
 
@@ -316,12 +325,16 @@ class AndroidArchitecture(Architecture):
         self.android_toolchain_cc = toolchain_prefix + 'gcc'
 
         if os.path.exists(os.path.join(self._toolchain_bin, self.android_toolchain_cc)):
+            self.android_toolchain_is_clang = False
+
             # The architecture-neutral C compiler flags.
             self.android_toolchain_cflags.append(
                     '--sysroot=' + self._ndk_sysroot)
 
-            self.android_toolchain_cflags.extend(self.gcc_toolchain_cflags)            
+            self.android_toolchain_cflags.extend(self.gcc_toolchain_cflags)
         else:
+            self.android_toolchain_is_clang = True
+
             # There is no gcc so assume we have a clang-based toolchain.
             gcc_toolchain_bin = self._toolchain_bin
             self._toolchain_bin = os.path.join(ndk_root, 'toolchains', 'llvm',

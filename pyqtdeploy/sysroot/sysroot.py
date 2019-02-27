@@ -237,6 +237,12 @@ class Sysroot:
         return self._target.android_toolchain_cflags
 
     @property
+    def android_toolchain_is_clang(self):
+        """ True if the Android toolchain is clang-based. """
+
+        return self._target.android_toolchain_is_clang
+
+    @property
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 
