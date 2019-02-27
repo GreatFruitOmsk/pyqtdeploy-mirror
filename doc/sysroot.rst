@@ -545,6 +545,18 @@ class is.
 
         The path of the Android toolchain's bin directory.
 
+    .. py:attribute:: android_toolchain_cc
+
+        .. versionadded:: 2.4
+
+        The name of the Android toolchain's C compiler.
+
+    .. py:attribute:: android_toolchain_cflags
+
+        .. versionadded:: 2.4
+
+        The list of the Android toolchain's C compiler's recommended flags.
+
     .. py:attribute:: android_toolchain_prefix
 
         The name of the Android toolchain's prefix.

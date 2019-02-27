@@ -224,6 +224,19 @@ class Sysroot:
         return self._target.android_toolchain_bin
 
     @property
+    def android_toolchain_cc(self):
+        """ The name of the Android toolchain's C compiler. """
+
+        return self._target.android_toolchain_cc
+
+    @property
+    def android_toolchain_cflags(self):
+        """ The list of the Android toolchain's C compiler's recommended flags.
+        """
+
+        return self._target.android_toolchain_cflags
+
+    @property
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 

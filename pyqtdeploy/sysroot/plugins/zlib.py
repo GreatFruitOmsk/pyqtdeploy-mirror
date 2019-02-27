@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -65,12 +65,13 @@ class zlibComponent(ComponentBase):
             # Configure the environment.
             original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
             os.environ['CROSS_PREFIX'] = sysroot.android_toolchain_prefix
-            os.environ['CC'] = sysroot.android_toolchain_prefix + 'gcc'
-            os.environ['CFLAGS'] = '-march=armv7-a -mfloat-abi=softfp -mfpu=vfp -fno-builtin-memmove -mthumb -Os --sysroot=' + sysroot.android_ndk_sysroot
+            os.environ['CC'] = sysroot.android_toolchain_cc
+            os.environ['CFLAGS'] = ' '.join(sysroot.android_toolchain_cflags)
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
-            sysroot.run(sysroot.host_make, 'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
+            sysroot.run(sysroot.host_make,
+                    'AR=' + sysroot.android_toolchain_prefix + 'ar cqs')
             sysroot.run(sysroot.host_make, 'install')
 
             del os.environ['CROSS_PREFIX']

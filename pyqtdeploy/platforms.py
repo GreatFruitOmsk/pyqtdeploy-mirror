@@ -53,13 +53,9 @@ class Platform:
 
     @property
     def android_api(self):
-        """ The number of the Android API.  None is returned if the platform
-        doesn't have Android APIs, otherwise an exception is raised for any
-        other sort of error.
-        """
+        """ The number of the Android API. """
 
-        # This default implementation does not support Android.
-        return None
+        raise NotImplementedError
 
     def configure(self):
         """ Configure the platform for building. """
@@ -77,20 +73,16 @@ class Platform:
         return name
 
     def get_apple_sdk(self, message_handler):
-        """ Return the name of the Apple SDK.  None is returned if the platform
-        doesn't have Apple SDKs, otherwise an exception is raised for any other
-        sort of error.
-        """
+        """ Return the name of the Apple SDK. """
 
-        # This default implementation does not support Apple.
-        return None
+        raise NotImplementedError
 
     @property
     def make(self):
         """ The name of the make executable including any required path. """
 
         # Platforms that can be hosts must reimplement this.
-        return None
+        raise NotImplementedError
 
     @classmethod
     def platform(cls, name):
@@ -159,15 +151,28 @@ class Architecture:
     def android_ndk_sysroot(self):
         """ The path of the Android NDK's sysroot directory. """
 
-        # This default implementation does not support Android.
-        return None
+        raise NotImplementedError
+
+    def android_toolchain_bin(self):
+        """ The path of the Android toolchain's bin directory. """
+
+        raise NotImplementedError
+
+    def android_toolchain_cc(self):
+        """ The name of the Android toolchain's C compiler. """
+
+        raise NotImplementedError
+
+    def android_toolchain_cflags(self):
+        """ The list of the Android toolchain's C compiler's flags. """
+
+        raise NotImplementedError
 
     @property
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 
-        # This default implementation does not support Android.
-        return None
+        raise NotImplementedError
 
     @classmethod
     def architecture(cls, name=None):
@@ -215,12 +220,6 @@ class Architecture:
         """ Deconfigure the architecture for building. """
 
         self.platform.deconfigure()
-
-    def get_android_toolchain_bin(self):
-        """ Return the path of the Android toolchain's bin directory. """
-
-        # This default implementation does not support Android.
-        return None
 
     def is_targeted(self, targets):
         """ Returns True if the architecture is covered by a set of targets.
@@ -288,8 +287,8 @@ class ApplePlatform(Platform):
 # Define and implement the different platforms and architectures.  These should
 # be done in alphabetical order.
 
-class Android_arm_32(Architecture):
-    """ Encapsulate the Android 32-bit Arm architecture. """
+class AndroidArchitecture(Architecture):
+    """ A base class for any Android architecture. """
 
     @property
     def android_ndk_sysroot(self):
@@ -297,33 +296,62 @@ class Android_arm_32(Architecture):
 
         ndk_root = os.environ['ANDROID_NDK_ROOT']
 
-        return os.path.join(ndk_root, 'platforms',
-                'android-{}'.format(self.android_api), 'arch-arm')
+        sysroot_dir = os.path.join(ndk_root, 'platforms',
+                'android-{}'.format(self.platform.android_api), 'arch-arm')
+
+        if not os.path.exists(sysroot_dir):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(sysroot_dir))
+
+        return sysroot_dir
 
     @property
-    def android_toolchain_prefix(self):
-        """ The name of the Android toolchain's prefix. """
-
-        return 'arm-linux-androideabi-'
-
-    def get_android_toolchain_bin(self, host):
-        """ Return the path of the Android toolchain's bin directory. """
+    def android_toolchain_bin(self):
+        """ The path of the Android toolchain's bin directory. """
 
         ndk_root = os.environ['ANDROID_NDK_ROOT']
         toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
 
         android_host = '{}-x86_64'.format(
-                'darwin' if host.platform.name == 'macos' else 'linux')
+                'darwin' if sys.platform == 'darwin' else 'linux')
 
-        return os.path.join(ndk_root, 'toolchains',
+        bin_dir = os.path.join(ndk_root, 'toolchains',
                 self.android_toolchain_prefix + toolchain_version, 'prebuilt',
                 android_host, 'bin')
+
+        if not os.path.exists(bin_dir):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set properly".format(bin_dir))
+
+        return bin_dir
+
+    @property
+    def android_toolchain_cc(self):
+        """ The name of the Android toolchain's C compiler. """
+
+        return self.android_toolchain_prefix + 'gcc'
 
     def supported_target(self, target):
         """ Check that this architecture can host a target architecture. """
 
         # Android can never be a host.
         return False
+
+
+class Android_arm_32(AndroidArchitecture):
+    """ Encapsulate the Android 32-bit Arm architecture. """
+
+    @property
+    def android_toolchain_cflags(self):
+        """ The list of the Android toolchain's C compiler's flags. """
+
+        return ['-march=armv7-a', '-mfloat-abi=softfp', '-mfpu=vfp',
+                '-fno-builtin-memmove', '-mthumb',
+                '--sysroot=' + self.android_ndk_sysroot]
+
+    @property
+    def android_toolchain_prefix(self):
+        """ The name of the Android toolchain's prefix. """
+
+        return 'arm-linux-androideabi-'
 
 
 class Android(Platform):
@@ -340,7 +368,7 @@ class Android(Platform):
         """ Initialise the object. """
 
         super().__init__("Android", 'android',
-                [('android-32', Android_arm_32]))
+                [('android-32', Android_arm_32)])
 
     @property
     def android_api(self):
