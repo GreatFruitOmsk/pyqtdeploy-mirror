@@ -192,6 +192,10 @@ class OpenSSLComponent(ComponentBase):
     def _build_1_0_android(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
+        # OpenSSL v1.0 does not support building with clang.
+        if sysroot.android_toolchain_is_clang:
+            sysroot.error("building OpenSSL v1.0 with clang is not supported")
+
         # Configure the environment.
         original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['MACHINE'] = 'arm7'
