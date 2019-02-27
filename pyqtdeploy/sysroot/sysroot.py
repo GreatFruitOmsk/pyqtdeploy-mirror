@@ -219,51 +219,51 @@ class Sysroot:
 
         return original_path
 
-    @android_only
     @property
+    @android_only
     def android_api(self):
         """ The Android API to use. """
 
         return self._target.platform.android_api
 
-    @android_only
     @property
+    @android_only
     def android_ndk_sysroot(self):
         """ The path of the Android NDK's sysroot directory. """
 
         return self._target.android_ndk_sysroot
 
-    @android_only
     @property
+    @android_only
     def android_toolchain_bin(self):
         """ The path of the Android toolchain's bin directory. """
 
         return self._target.android_toolchain_bin
 
-    @android_only
     @property
+    @android_only
     def android_toolchain_cc(self):
         """ The name of the Android toolchain's C compiler. """
 
         return self._target.android_toolchain_cc
 
-    @android_only
     @property
+    @android_only
     def android_toolchain_cflags(self):
         """ The list of the Android toolchain's C compiler's recommended flags.
         """
 
         return self._target.android_toolchain_cflags
 
-    @android_only
     @property
+    @android_only
     def android_toolchain_is_clang(self):
         """ True if the Android toolchain is clang-based. """
 
         return self._target.android_toolchain_is_clang
 
-    @android_only
     @property
+    @android_only
     def android_toolchain_prefix(self):
         """ The name of the Android toolchain's prefix. """
 
