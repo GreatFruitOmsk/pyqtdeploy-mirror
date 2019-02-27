@@ -51,12 +51,6 @@ class Platform:
 
         self.all_platforms.append(self)
 
-    @property
-    def android_api(self):
-        """ The number of the Android API. """
-
-        raise NotImplementedError
-
     def configure(self):
         """ Configure the platform for building. """
 
@@ -146,42 +140,6 @@ class Architecture:
         self.platform = platform
 
         self.all_architectures.append(self)
-
-    @property
-    def android_ndk_sysroot(self):
-        """ The path of the Android NDK's sysroot directory. """
-
-        raise NotImplementedError
-
-    @property
-    def android_toolchain_bin(self):
-        """ The path of the Android toolchain's bin directory. """
-
-        raise NotImplementedError
-
-    @property
-    def android_toolchain_cc(self):
-        """ The name of the Android toolchain's C compiler. """
-
-        raise NotImplementedError
-
-    @property
-    def android_toolchain_is_clang(self):
-        """ True if the Android toolchain is clang-based. """
-
-        raise NotImplementedError
-
-    @property
-    def android_toolchain_cflags(self):
-        """ The list of the Android toolchain's C compiler's flags. """
-
-        raise NotImplementedError
-
-    @property
-    def android_toolchain_prefix(self):
-        """ The name of the Android toolchain's prefix. """
-
-        raise NotImplementedError
 
     @classmethod
     def architecture(cls, name=None):
