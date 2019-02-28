@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -65,10 +65,17 @@ class OpenSSLComponent(ComponentBase):
         if self.no_asm:
             common_options.append('no-asm')
 
-        if version_nr < 0x010100:
-            built = self._build_1_0(sysroot, common_options)
-        else:
+        # OpenSSL v1.1.1 (which we don't yet support) supposedly can be built
+        # on Android with clang but earlier versions cannot.
+        if sysroot.target_platform_name == 'android' and sysroot.android_toolchain_is_clang:
+            sysroot.error("building OpenSSL with clang is not supported")
+
+        if version_nr >= 0x010101:
+            sysroot.error("building OpenSSL v1.1.1 is not supported")
+        elif version_nr >= 0x010100:
             built = self._build_1_1(sysroot, common_options)
+        else:
+            built = self._build_1_0(sysroot, common_options)
 
         if not built:
             sysroot.error(
@@ -100,7 +107,7 @@ class OpenSSLComponent(ComponentBase):
         else:
             # We are cross-compiling.
 
-            if sysroot.target_platform_name == 'android' and sysroot.host_platform_name in ('linux', 'macos'):
+            if sysroot.target_platform_name == 'android':
                 self._build_1_1_android(sysroot, common_options)
                 return True
 
@@ -113,9 +120,10 @@ class OpenSSLComponent(ComponentBase):
         original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
 
-        args = ['perl', 'Configure', 'android',
+        args = ['perl', 'Configure',
                 '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
         args.extend(common_options)
+        args.append('android')
 
         sysroot.run(*args)
 
@@ -183,7 +191,7 @@ class OpenSSLComponent(ComponentBase):
         else:
             # We are cross-compiling.
 
-            if sysroot.target_platform_name == 'android' and sysroot.host_platform_name in ('linux', 'macos'):
+            if sysroot.target_platform_name == 'android':
                 self._build_1_0_android(sysroot, common_options)
                 return True
 
@@ -207,8 +215,9 @@ class OpenSSLComponent(ComponentBase):
                 'usr')
 
         # Configure, build and install.
-        args = ['perl', 'Configure', 'shared', 'android']
+        args = ['perl', 'Configure', 'shared']
         args.extend(common_options)
+        args.append('android')
 
         sysroot.run(*args)
         sysroot.run(sysroot.host_make, 'depend')
