@@ -66,9 +66,11 @@ class OpenSSLComponent(ComponentBase):
             common_options.append('no-asm')
 
         # OpenSSL v1.1.1 (which we don't yet support) supposedly can be built
-        # on Android with clang but earlier versions cannot.
-        if sysroot.target_platform_name == 'android' and sysroot.android_toolchain_is_clang:
-            sysroot.error("building OpenSSL with clang is not supported")
+        # on Android with clang but earlier versions cannot.  Note that r18 has
+        # gcc but it is just a trivial wrapper around the (incompatible) clang.
+        if sysroot.target_platform_name == 'android' and sysroot.android_ndk_revision > 17:
+            sysroot.error(
+                    "building OpenSSL with NDK r18 and later is not supported")
 
         if version_nr >= 0x010101:
             sysroot.error("building OpenSSL v1.1.1 is not supported")
@@ -199,10 +201,6 @@ class OpenSSLComponent(ComponentBase):
 
     def _build_1_0_android(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
-
-        # OpenSSL v1.0 does not support building with clang.
-        if sysroot.android_toolchain_is_clang:
-            sysroot.error("building OpenSSL v1.0 with clang is not supported")
 
         # Configure the environment.
         original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)

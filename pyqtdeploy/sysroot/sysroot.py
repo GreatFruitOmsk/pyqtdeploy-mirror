@@ -229,6 +229,18 @@ class Sysroot:
 
     @property
     @android_only
+    def android_ndk_revision(self):
+        """ The revision of the Android NDK. """
+
+        ndk_revision = self._target.android_ndk_revision
+
+        if ndk_revision is None:
+            self.error("unable to determine the NDK revision number")
+
+        return ndk_revision
+
+    @property
+    @android_only
     def android_ndk_sysroot(self):
         """ The path of the Android NDK's sysroot directory. """
 

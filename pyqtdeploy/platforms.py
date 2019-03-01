@@ -272,6 +272,8 @@ class AndroidArchitecture(Architecture):
         self._ndk_sysroot = os.path.join(ndk_root, 'platforms',
                 'android-{}'.format(self.platform.android_api), 'arch-arm')
 
+        self._set_ndk_revision(ndk_root)
+
         # Assume the toolchain is gcc-based (as that is the historical
         # behaviour).
         self.android_toolchain_cflags = []
@@ -337,6 +339,41 @@ class AndroidArchitecture(Architecture):
 
         # Android can never be a host.
         return False
+
+    def _set_ndk_revision(self, ndk_root):
+        """ Set the revision number of the NDK. """
+
+        revision_str = ''
+
+        # source.properties is available from r11.
+        source_properties = os.path.join(ndk_root, 'source.properties')
+        if os.path.isfile(source_properties):
+            with open(source_properties) as f:
+                for line in f:
+                    line = line.replace(' ', '')
+                    parts = line.split('=')
+                    if parts[0] == 'Pkg.Revision' and len(parts) == 2:
+                        revision_str = parts[1].split('.')[0]
+                        break
+        else:
+            # RELEASE.TXT is available in r10 and earlier.
+            release_txt = os.path.join(ndk_root, 'RELEASE.TXT')
+            if os.path.isfile(release_txt):
+                with open(release_txt) as f:
+                    for line in f:
+                        if line.startswith('r'):
+                            line = line[1:]
+                            for i, ch in enumerate(line):
+                                if not ch.isdigit():
+                                    line = line[:i]
+                                    break
+
+                            revision_str = line
+
+        try:
+            self.android_ndk_revision = int(revision_str)
+        except ValueError:
+            self.android_ndk_revision = None
 
 
 class Android_arm_32(AndroidArchitecture):
