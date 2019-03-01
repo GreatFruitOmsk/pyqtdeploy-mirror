@@ -563,12 +563,6 @@ class is.
 
         The list of the Android toolchain's C compiler's recommended flags.
 
-    .. py:attribute:: android_toolchain_is_clang
-
-        .. versionadded:: 2.4
-
-        ``True`` if the Android toolchain is clang-based.
-
     .. py:attribute:: android_toolchain_prefix
 
         The name of the Android toolchain's prefix.
