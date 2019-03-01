@@ -221,7 +221,7 @@ class Architecture:
                     platform = Platform.platform(targets)
                     covered = (self.platform is platform)
             else:
-                covered = (self.platform_name in targets)
+                covered = (self.platform.name in targets)
         else:
             covered = True
 

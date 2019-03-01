@@ -58,7 +58,7 @@ class Config:
 
         # Return None if the targetted Android version is earlier than the one
         # for which the value is defined.
-        if sysroot.android_api is not None and sysroot.android_api < self._api:
+        if plat_name == 'android' and sysroot.android_api < self._api:
             return None
 
         return value

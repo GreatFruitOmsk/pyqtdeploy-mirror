@@ -50,7 +50,8 @@ def android_only(f):
         try:
             return f(*args, **kwargs)
         except AttributeError:
-            Sysroot.error("this is only available for Android targets")
+            Sysroot.error(
+                    "plugin error: attribute is only available for Android targets")
 
     return wrapper
 
