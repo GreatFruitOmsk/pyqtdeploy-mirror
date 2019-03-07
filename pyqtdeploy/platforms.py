@@ -257,44 +257,49 @@ class ApplePlatform(Platform):
 class AndroidArchitecture(Architecture):
     """ A base class for any Android architecture. """
 
-    def __init__(self, *args, **kwargs):
-        """ Initialise the object. """
+    def configure(self):
+        """ Configure the architecture for building. """
 
-        super().__init__(*args, **kwargs)
+        # Configure the platform first.
+        self.platform.configure()
 
         # Set the various property values.
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-        toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+        ndk_root = self.platform.ndk_root
+        toolchain_version = self.platform.ndk_toolchain_version
         toolchain_prefix = self.android_toolchain_prefix
         android_host = '{}-x86_64'.format(
                 'darwin' if sys.platform == 'darwin' else 'linux')
 
-        self._ndk_sysroot = os.path.join(ndk_root, 'platforms',
+        self.android_ndk_sysroot = os.path.join(ndk_root, 'platforms',
                 'android-{}'.format(self.platform.android_api), 'arch-arm')
 
-        self._set_ndk_revision(ndk_root)
+        if not os.path.exists(self.android_ndk_sysroot):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(self.android_ndk_sysroot))
 
         # Assume the toolchain is gcc-based (as that is the historical
         # behaviour).
         self.android_toolchain_cflags = []
 
-        self._toolchain_bin = os.path.join(ndk_root, 'toolchains',
+        self.android_toolchain_bin = os.path.join(ndk_root, 'toolchains',
                 toolchain_prefix + toolchain_version, 'prebuilt',
                 android_host, 'bin')
 
+        if not os.path.exists(self.android_toolchain_bin):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set correctly".format(self.android_toolchain_bin))
+
         self.android_toolchain_cc = toolchain_prefix + 'gcc'
 
-        if os.path.exists(os.path.join(self._toolchain_bin, self.android_toolchain_cc)):
+        if os.path.exists(os.path.join(self.android_toolchain_bin, self.android_toolchain_cc)):
             # The architecture-neutral C compiler flags.
             self.android_toolchain_cflags.append(
-                    '--sysroot=' + self._ndk_sysroot)
+                    '--sysroot=' + self.android_ndk_sysroot)
 
             self.android_toolchain_cflags.extend(self.gcc_toolchain_cflags)
         else:
             # There is no gcc so assume we have a clang-based toolchain.
-            gcc_toolchain_bin = self._toolchain_bin
-            self._toolchain_bin = os.path.join(ndk_root, 'toolchains', 'llvm',
-                'prebuilt', android_host, 'bin')
+            gcc_toolchain_bin = self.android_toolchain_bin
+            self.android_toolchain_bin = os.path.join(ndk_root, 'toolchains',
+                    'llvm', 'prebuilt', android_host, 'bin')
 
             self.android_toolchain_cc = 'clang'
 
@@ -312,64 +317,11 @@ class AndroidArchitecture(Architecture):
 
             self.android_toolchain_cflags.extend(self.clang_toolchain_cflags)
 
-    @property
-    def android_ndk_sysroot(self):
-        """ The path of the Android NDK's sysroot directory. """
-
-        if not os.path.exists(self._ndk_sysroot):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(self._ndk_sysroot))
-
-        return self._ndk_sysroot
-
-    @property
-    def android_toolchain_bin(self):
-        """ The path of the Android toolchain's bin directory. """
-
-        if not os.path.exists(self._toolchain_bin):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set correctly".format(self._toolchain_bin))
-
-        return self._toolchain_bin
-
     def supported_target(self, target):
         """ Check that this architecture can host a target architecture. """
 
         # Android can never be a host.
         return False
-
-    def _set_ndk_revision(self, ndk_root):
-        """ Set the revision number of the NDK. """
-
-        revision_str = ''
-
-        # source.properties is available from r11.
-        source_properties = os.path.join(ndk_root, 'source.properties')
-        if os.path.isfile(source_properties):
-            with open(source_properties) as f:
-                for line in f:
-                    line = line.replace(' ', '')
-                    parts = line.split('=')
-                    if parts[0] == 'Pkg.Revision' and len(parts) == 2:
-                        revision_str = parts[1].split('.')[0]
-                        break
-        else:
-            # RELEASE.TXT is available in r10 and earlier.
-            release_txt = os.path.join(ndk_root, 'RELEASE.TXT')
-            if os.path.isfile(release_txt):
-                with open(release_txt) as f:
-                    for line in f:
-                        if line.startswith('r'):
-                            line = line[1:]
-                            for i, ch in enumerate(line):
-                                if not ch.isdigit():
-                                    line = line[:i]
-                                    break
-
-                            revision_str = line
-
-        try:
-            self.android_ndk_revision = int(revision_str)
-        except ValueError:
-            self.android_ndk_revision = None
 
 
 class Android_arm_32(AndroidArchitecture):
@@ -412,13 +364,40 @@ class Android(Platform):
         super().__init__("Android", 'android',
                 [('android-32', Android_arm_32)])
 
-    @property
-    def android_api(self):
-        """ The number of the Android API. """
+    def configure(self):
+        """ Configure the platform for building. """
+
+        for name in self.REQUIRED_ENV_VARS:
+            if name not in os.environ:
+                raise UserException(
+                        "The {0} environment variable must be set.".format(
+                                name))
+
+        self.ndk_root = os.environ['ANDROID_NDK_ROOT']
+        self.ndk_toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+
+        self._set_api()
+        self._set_ndk_revision()
+
+        # Force the gcc toolchain for r10 and earlier.
+        self._original_qmakespec = os.environ.get('QMAKESPEC')
+        os.environ['QMAKESPEC'] = 'android-g++' if self.android_ndk_revision <= 10 else 'android-clang'
+
+    def deconfigure(self):
+        """ Deconfigure the platform for building. """
+
+        if self._original_qmakespec is None:
+            del os.environ['QMAKESPEC']
+        else:
+            os.environ['QMAKESPEC'] = self._original_qmakespec
+
+    def _set_api(self):
+        """ Set the number of the Android API. """
+
+        api = None
 
         ndk_platform = os.environ['ANDROID_NDK_PLATFORM']
 
-        api = None
         parts = ndk_platform.split('-')
 
         if len(parts) == 2 and parts[0] == 'android':
@@ -434,16 +413,42 @@ class Android(Platform):
             raise UserException(
                     "Use the ANDROID_NDK_PLATFORM environment variable to specify an API level >= {0}.".format(self.MINIMUM_API))
 
-        return api
+        self.android_api = api
 
-    def configure(self):
-        """ Configure the platform for building. """
+    def _set_ndk_revision(self):
+        """ Set the revision number of the NDK. """
 
-        for name in self.REQUIRED_ENV_VARS:
-            if name not in os.environ:
-                raise UserException(
-                        "The {0} environment variable must be set.".format(
-                                name))
+        revision_str = ''
+
+        # source.properties is available from r11.
+        source_properties = os.path.join(self.ndk_root, 'source.properties')
+        if os.path.isfile(source_properties):
+            with open(source_properties) as f:
+                for line in f:
+                    line = line.replace(' ', '')
+                    parts = line.split('=')
+                    if parts[0] == 'Pkg.Revision' and len(parts) == 2:
+                        revision_str = parts[1].split('.')[0]
+                        break
+        else:
+            # RELEASE.TXT is available in r10 and earlier.
+            release_txt = os.path.join(self.ndk_root, 'RELEASE.TXT')
+            if os.path.isfile(release_txt):
+                with open(release_txt) as f:
+                    for line in f:
+                        if line.startswith('r'):
+                            line = line[1:]
+                            for i, ch in enumerate(line):
+                                if not ch.isdigit():
+                                    line = line[:i]
+                                    break
+
+                            revision_str = line
+
+        try:
+            self.android_ndk_revision = int(revision_str)
+        except ValueError:
+            self.android_ndk_revision = None
 
 Android()
 

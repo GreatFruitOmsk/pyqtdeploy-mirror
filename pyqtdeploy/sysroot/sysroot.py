@@ -232,7 +232,7 @@ class Sysroot:
     def android_ndk_revision(self):
         """ The revision of the Android NDK. """
 
-        ndk_revision = self._target.android_ndk_revision
+        ndk_revision = self._target.platform.android_ndk_revision
 
         if ndk_revision is None:
             self.error("unable to determine the NDK revision number")
