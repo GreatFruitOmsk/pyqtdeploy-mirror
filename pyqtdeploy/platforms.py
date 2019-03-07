@@ -379,6 +379,11 @@ class Android(Platform):
         self._set_api()
         self._set_ndk_revision()
 
+        if self.android_ndk_revision <= 10 and self.android_api > 21:
+            raise UserException(
+                    "NDK r{0} does not support API {1}.".format(
+                            self.android_ndk_revision, self.android_api))
+
         # Force the gcc toolchain for r10 and earlier.
         self._original_qmakespec = os.environ.get('QMAKESPEC')
         os.environ['QMAKESPEC'] = 'android-g++' if self.android_ndk_revision <= 10 else 'android-clang'
