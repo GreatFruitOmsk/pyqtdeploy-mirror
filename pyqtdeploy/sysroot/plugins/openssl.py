@@ -68,9 +68,9 @@ class OpenSSLComponent(ComponentBase):
         # OpenSSL v1.1.1 (which we don't yet support) supposedly can be built
         # on Android with clang but earlier versions cannot.  Note that r18 has
         # gcc but it is just a trivial wrapper around the (incompatible) clang.
-        if sysroot.target_platform_name == 'android' and sysroot.android_ndk_revision > 17:
+        if sysroot.target_platform_name == 'android' and sysroot.android_ndk_revision >= 16:
             sysroot.error(
-                    "building OpenSSL with NDK r18 and later is not supported")
+                    "building OpenSSL with NDK r16 and later is not supported")
 
         if version_nr >= 0x010101:
             sysroot.error("building OpenSSL v1.1.1 is not supported")
