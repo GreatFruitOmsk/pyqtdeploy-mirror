@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,14 +43,8 @@ class SIPComponent(ComponentBase):
     def build(self, sysroot):
         """ Build SIP for the target. """
 
-        sysroot.progress("Building SIP")
-
         archive = sysroot.find_file(self.source)
         version_nr = sysroot.extract_version_nr(archive)
-
-        # v4.19.9-12 have too many problems so it's easier to blacklist them.
-        if version_nr >= 0x041309 and version_nr <= 0x04130c:
-            sysroot.error("Please use SIP v4.19.13 or later")
 
         build_generator = os.path.join(os.getcwd(), 'sip-generator')
         build_module = os.path.join(os.getcwd(), 'sip-module')
@@ -62,6 +56,15 @@ class SIPComponent(ComponentBase):
         os.mkdir(build_module)
         os.chdir(build_module)
         self._build_module(sysroot, archive, version_nr)
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        version_nr = sysroot.verify_source(self.source)
+
+        # v4.19.9-12 have too many problems so it's easier to blacklist them.
+        if version_nr >= 0x041309 and version_nr <= 0x04130c:
+            sysroot.error("Please use SIP v4.19.13 or later.")
 
     def _build_code_generator(self, sysroot, archive, version_nr):
         """ Build the code generator for the host. """
