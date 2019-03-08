@@ -351,12 +351,8 @@ class Android_arm_32(AndroidArchitecture):
 class Android(Platform):
     """ Encapsulate the Android platform. """
 
-    # This is the minimum API required by Python v3.6.
-    MINIMUM_API = 21
-
     # The environment variables that should be set.
-    REQUIRED_ENV_VARS = ('ANDROID_NDK_ROOT', 'ANDROID_NDK_PLATFORM',
-            'ANDROID_NDK_TOOLCHAIN_VERSION')
+    REQUIRED_ENV_VARS = ('ANDROID_NDK_ROOT', 'ANDROID_NDK_PLATFORM')
 
     def __init__(self):
         """ Initialise the object. """
@@ -374,7 +370,10 @@ class Android(Platform):
                                 name))
 
         self.ndk_root = os.environ['ANDROID_NDK_ROOT']
-        self.ndk_toolchain_version = os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+
+        self._original_toolchain_version = os.environ.get(
+                'ANDROID_NDK_TOOLCHAIN_VERSION')
+        self.ndk_toolchain_version = '4.9' if self._original_toolchain_version is None else self._original_toolchain_version
 
         self._set_ndk_revision()
         self._set_api()
@@ -391,6 +390,11 @@ class Android(Platform):
         else:
             os.environ['QMAKESPEC'] = self._original_qmakespec
 
+        if self._original_toolchain_version is None:
+            del os.environ['ANDROID_NDK_TOOLCHAIN_VERSION']
+        else:
+            os.environ['ANDROID_NDK_TOOLCHAIN_VERSION'] = self._original_toolchain_version
+
     def _set_api(self):
         """ Set the number of the Android API. """
 
@@ -398,7 +402,7 @@ class Android(Platform):
 
         ndk_platform = os.environ['ANDROID_NDK_PLATFORM']
 
-        if not os.path.isdir(os.path.join(ndk_root, 'platforms', ndk_platform)):
+        if not os.path.isdir(os.path.join(self.ndk_root, 'platforms', ndk_platform)):
             raise UserException(
                     "NDK r{0} does not support {1}.".format(
                             self.android_ndk_revision, ndk_platform))
@@ -409,14 +413,11 @@ class Android(Platform):
             try:
                 api = int(parts[1])
             except ValueError:
-                api = 0
-
-            if api < self.MINIMUM_API:
                 api = None
 
         if api is None:
             raise UserException(
-                    "Use the ANDROID_NDK_PLATFORM environment variable to specify an API level >= {0}.".format(self.MINIMUM_API))
+                    "Unable to determine the API level from the ANDROID_NDK_PLATFORM environment variable.")
 
         self.android_api = api
 
