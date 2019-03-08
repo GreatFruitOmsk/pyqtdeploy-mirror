@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,6 @@ class PyQtDataVisualizationComponent(ComponentBase):
 
     def build(self, sysroot):
         """ Build PyQtDataVisualization for the target. """
-
-        sysroot.progress("Building PyQtDataVisualization")
 
         # Get the PyQt version number.
         pyqt5 = sysroot.find_component('pyqt5')
@@ -94,3 +92,8 @@ module_dir = {5}
         sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        sysroot.verify_source(self.source)

@@ -41,8 +41,6 @@ class PyQtWebEngineComponent(ComponentBase):
     def build(self, sysroot):
         """ Build PyQtWebEngine for the target. """
 
-        sysroot.progress("Building PyQtWebEngine")
-
         # Get the PyQt version number.
         pyqt5 = sysroot.find_component('pyqt5')
         pyqt5_archive = sysroot.find_file(pyqt5.source)
@@ -94,3 +92,8 @@ module_dir = {5}
         sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        sysroot.verify_source(self.source)
