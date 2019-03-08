@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,14 +45,8 @@ class PyQt5Component(ComponentBase):
     def build(self, sysroot):
         """ Build PyQt5 for the target. """
 
-        sysroot.progress("Building PyQt5")
-
         archive = sysroot.find_file(self.source)
         version_nr = sysroot.extract_version_nr(archive)
-
-        # v5.11.0-2 have too many problems so it's easier to blacklist them.
-        if version_nr >= 0x040b00 and version_nr <= 0x040b02:
-            sysroot.error("Please use PyQt v5.11.3 or later")
 
         sysroot.unpack_archive(archive)
 
@@ -108,6 +102,12 @@ pyqt_modules = {6}
 
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
+
+        version_nr = sysroot.verify_source(self.source)
+
+        # v5.11.0-2 have too many problems so it's easier to blacklist them.
+        if version_nr >= 0x040b00 and version_nr <= 0x040b02:
+            sysroot.error("Please use PyQt v5.11.3 or later.")
 
         if not sysroot.find_component('qt5').ssl:
             self.disabled_features.append('PyQt_SSL')
