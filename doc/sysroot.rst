@@ -482,13 +482,6 @@ class is.
 
     This is the base class of all component plugins.
 
-    .. py:attribute:: name
-
-        .. versionadded:: 2.4
-
-        This class attribute is the user friendly name of the component used in
-        messages.
-
     .. py:attribute:: options
 
         This class attribute is a sequence of
