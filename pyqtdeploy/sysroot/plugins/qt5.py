@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -58,16 +58,7 @@ class Qt5Component(ComponentBase):
     def build(self, sysroot):
         """ Build Qt5 for the target. """
 
-        if self.qt_dir:
-            sysroot.progress("Installing an existing Qt5")
-        else:
-            sysroot.progress("Building Qt5 from source")
-
-            # We don't support cross-compiling Qt.
-            if sysroot.host_platform_name != sysroot.target_platform_name:
-                sysroot.error(
-                        "cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation")
-
+        if not self.qt_dir:
             self._build_from_source(sysroot)
 
         # Create a symbolic link to qmake in a standard place in sysroot so
@@ -83,6 +74,39 @@ class Qt5Component(ComponentBase):
         if os.path.isfile(androiddeployqt_path):
             sysroot.make_symlink(androiddeployqt_path,
                     os.path.join(sysroot.host_bin_dir, androiddeployqt))
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        # Determine the qmake location as it may be needed by other components.
+        if self.qt_dir:
+            if self.source:
+                sysroot.error(
+                        "the 'qt_dir' and 'source' options cannot both be specified")
+
+            self._target_qt_dir = sysroot.find_file(self.qt_dir)
+
+            if not os.path.isdir(self._target_qt_dir):
+                sysroot.error("'{0}' could not be found.".format(qt_dir))
+        else:
+            # We don't support cross-compiling Qt.
+            if sysroot.host_platform_name != sysroot.target_platform_name:
+                sysroot.error(
+                        "Cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation.")
+
+            if self.source:
+                if not self.edition:
+                    sysroot.error(
+                            "The 'edition' option must be specified when building from source.")
+
+                sysroot.verify_source(self.source)
+            else:
+                sysroot.error(
+                        "Either the 'qt_dir' or 'source' option must be specified.")
+
+            self._target_qt_dir = os.path.join(sysroot.sysroot_dir, 'qt')
+
+        sysroot.host_qmake = os.path.join(self._target_qt_dir, 'bin', 'qmake')
 
     def _build_from_source(self, sysroot):
         """ Build Qt5 from source. """
@@ -134,9 +158,7 @@ class Qt5Component(ComponentBase):
                 if sys.platform == 'win32':
                     # Get the OpenSSL version number.
                     openssl = sysroot.find_component('openssl')
-                    openssl_archive = sysroot.find_file(openssl.source)
-                    openssl_version_nr = sysroot.extract_version_nr(
-                            openssl_archive)
+                    openssl_version_nr = sysroot.verify_source(openssl.source)
 
                     if openssl_version_nr >= 0x010100:
                         openssl_libs = '-llibssl -llibcrypto'
@@ -181,29 +203,3 @@ class Qt5Component(ComponentBase):
 
         if original_path is not None:
             os.environ['PATH'] = original_path
-
-    def configure(self, sysroot):
-        """ Complete the configuration of the component. """
-
-        # Determine the qmake location as it may be needed by other components.
-        if self.qt_dir:
-            if self.source:
-                sysroot.error(
-                        "the 'qt_dir' and 'source' options cannot both be specified")
-
-            self._target_qt_dir = sysroot.find_file(self.qt_dir)
-
-            if not os.path.isdir(self._target_qt_dir):
-                sysroot.error("'{0}' could not be found".format(qt_dir))
-        else:
-            if self.source:
-                if not self.edition:
-                    sysroot.error(
-                            "the 'edition' option must be specified when building from source")
-            else:
-                sysroot.error(
-                        "either the 'qt_dir' or 'source' option must be specified")
-
-            self._target_qt_dir = os.path.join(sysroot.sysroot_dir, 'qt')
-
-        sysroot.host_qmake = os.path.join(self._target_qt_dir, 'bin', 'qmake')
