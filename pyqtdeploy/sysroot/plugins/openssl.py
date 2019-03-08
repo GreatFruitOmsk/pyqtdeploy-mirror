@@ -47,11 +47,6 @@ class OpenSSLComponent(ComponentBase):
     def build(self, sysroot):
         """ Build OpenSSL for the target. """
 
-        sysroot.progress("Building OpenSSL")
-
-        # Check the common pre-requisites.
-        sysroot.find_exe('perl')
-
 		# Unpack the source.
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
@@ -65,30 +60,47 @@ class OpenSSLComponent(ComponentBase):
         if self.no_asm:
             common_options.append('no-asm')
 
+        if version_nr >= 0x010100:
+            self._build_1_1(sysroot, common_options)
+        else:
+            self._build_1_0(sysroot, common_options)
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        host = sysroot.host_platform_name
+        target = sysroot.target_platform_name
+
         # OpenSSL v1.1.1 (which we don't yet support) supposedly can be built
         # on Android with clang but earlier versions cannot.  Note that r18 has
         # gcc but it is just a trivial wrapper around the (incompatible) clang.
-        if sysroot.target_platform_name == 'android' and sysroot.android_ndk_revision >= 16:
+        if target == 'android' and sysroot.android_ndk_revision >= 16:
             sysroot.error(
                     "building OpenSSL with NDK r16 and later is not supported")
 
+        version_nr = sysroot.verify_source(self.source)
+
         if version_nr >= 0x010101:
             sysroot.error("building OpenSSL v1.1.1 is not supported")
-        elif version_nr >= 0x010100:
-            built = self._build_1_1(sysroot, common_options)
-        else:
-            built = self._build_1_0(sysroot, common_options)
 
-        if not built:
+        if target == host:
+            supported = (target in ('macos', 'win'))
+        else:
+            supported = (target == 'android')
+
+        if not supported:
             sysroot.error(
                     "building OpenSSL for {0} on {1} is not supported".format(
-                            sysroot.target_arch_name,
-                            sysroot.host_platform_name))
+                            target, host))
+
+        # See if we will need to patch the Python source code.
+        if target == 'macos' and (version_nr & 0xffff00) == 0x010000 and self.python_source:
+            sysroot.find_exe('patch')
+
+        sysroot.find_exe('perl')
 
     def _build_1_1(self, sysroot, common_options):
-        """ Build OpenSSL v1.1 for supported platforms.  Return True if it was
-        successfully built.
-        """
+        """ Build OpenSSL v1.1 for supported platforms. """
 
         if sysroot.target_platform_name == sysroot.host_platform_name:
             # We are building natively.
@@ -101,19 +113,13 @@ class OpenSSLComponent(ComponentBase):
                 sysroot.run(sysroot.host_make)
                 sysroot.run(sysroot.host_make, 'install')
 
-                return True
-
-            if sysroot.target_platform_name == 'win':
+            elif sysroot.target_platform_name == 'win':
                 self._build_1_1_win(sysroot, common_options)
-                return True
         else:
             # We are cross-compiling.
 
             if sysroot.target_platform_name == 'android':
                 self._build_1_1_android(sysroot, common_options)
-                return True
-
-        return False
 
     def _build_1_1_android(self, sysroot, common_options):
         """ Build OpenSSL v1.1 for Android on either Linux or MacOS hosts. """
@@ -163,9 +169,7 @@ class OpenSSLComponent(ComponentBase):
         sysroot.run(sysroot.host_make, 'install')
 
     def _build_1_0(self, sysroot, common_options):
-        """ Build OpenSSL v1.0 for supported platforms.  Return True if it was
-        successfully built.
-        """
+        """ Build OpenSSL v1.0 for supported platforms. """
 
         # Add the common options that Python used prior to v3.7.
         common_options.extend([
@@ -185,19 +189,14 @@ class OpenSSLComponent(ComponentBase):
 
             if sysroot.target_arch_name == 'macos-64':
                 self._build_1_0_macos(sysroot, common_options)
-                return True
 
-            if sysroot.target_platform_name == 'win':
+            elif sysroot.target_platform_name == 'win':
                 self._build_1_0_win(sysroot, common_options)
-                return True
         else:
             # We are cross-compiling.
 
             if sysroot.target_platform_name == 'android':
                 self._build_1_0_android(sysroot, common_options)
-                return True
-
-        return False
 
     def _build_1_0_android(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
@@ -247,9 +246,6 @@ class OpenSSLComponent(ComponentBase):
 
     def _build_1_0_macos(self, sysroot, common_options):
         """ Build OpenSSL v1.0 for 64 bit macOS. """
-
-        # Check the additional pre-requisites.
-        sysroot.find_exe('patch')
 
         # Find and apply any Python patch.
         if self.python_source:
