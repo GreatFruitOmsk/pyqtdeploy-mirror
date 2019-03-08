@@ -103,6 +103,7 @@ class Sysroot:
         # Allow the components to configure themselves even if they are not
         # being built.
         for component in self.components:
+            self.progress("Configuring {0}...".format(component.name))
             component.configure(self)
 
         if component_names:
@@ -121,6 +122,7 @@ class Sysroot:
 
         # Build the components.
         for component in components:
+            self.progress("Building {0}...".format(component.name))
             os.chdir(self._build_dir)
             component.build(self)
 
@@ -809,6 +811,14 @@ class Sysroot:
         """ True if verbose messages are being displayed. """
 
         return self._message_handler.verbose
+
+    def verify_source(self, name):
+        """ Verify that a source file exists and return the encoded version
+        number embedded in its name.  See find_file() for how the name is
+        interpreted.
+        """
+
+        return self.extract_version_nr(self.find_file(name))
 
     @property
     def _py_subdir(self):

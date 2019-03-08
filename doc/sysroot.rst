@@ -482,6 +482,13 @@ class is.
 
     This is the base class of all component plugins.
 
+    .. py:attribute:: name
+
+        .. versionadded:: 2.4
+
+        This class attribute is the user friendly name of the component used in
+        messages.
+
     .. py:attribute:: options
 
         This class attribute is a sequence of
@@ -872,3 +879,15 @@ class is.
 
         This is set if the :option:`--verbose <pyqtdeploy-sysroot --verbose>`
         option was specified.
+
+    .. py:method:: verify_source(name)
+
+        .. versionadded:: 2.4
+
+        Verify that a source file or directory exists and return the encoded
+        version number embedded in its name.  See :py:meth:`find_file` for how
+        the name is interpreted.
+
+        :param str name: is the name of the source file or directory.
+        :return: the encoded version number.
+
