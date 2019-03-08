@@ -43,8 +43,6 @@ class zlibComponent(ComponentBase):
     def build(self, sysroot):
         """ Build zlib for the target. """
 
-        sysroot.progress("Building zlib")
-
         archive = sysroot.find_file(self.source)
         sysroot.unpack_archive(archive)
 
@@ -92,3 +90,8 @@ class zlibComponent(ComponentBase):
 
             if sysroot.target_platform_name == 'ios':
                 del os.environ['CFLAGS']
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        sysroot.verify_source(self.source)
