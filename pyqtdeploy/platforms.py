@@ -373,7 +373,12 @@ class Android(Platform):
 
         self._original_toolchain_version = os.environ.get(
                 'ANDROID_NDK_TOOLCHAIN_VERSION')
-        self.ndk_toolchain_version = '4.9' if self._original_toolchain_version is None else self._original_toolchain_version
+
+        if self._original_toolchain_version is None:
+            self.ndk_toolchain_version = '4.9'
+            os.environ['ANDROID_NDK_TOOLCHAIN_VERSION'] = self.ndk_toolchain_version
+        else:
+            self.ndk_toolchain_version = self._original_toolchain_version
 
         self._set_ndk_revision()
         self._set_api()
