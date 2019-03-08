@@ -80,11 +80,15 @@ module_dir = {5}
         # Configure, build and install.
         args = [sysroot.host_python, 'configure.py', '--static', '--qmake',
             sysroot.host_qmake, '--sysroot', sysroot.sysroot_dir,
-            '--no-qsci-api', '--no-sip-files', '--no-stubs', '--configuration',
-            cfg_name, '--sip', sysroot.host_sip, '-c']
+            '--no-qsci-api', '--no-sip-files', '--configuration', cfg_name,
+            '--sip', sysroot.host_sip, '-c']
 
         if version_nr >= 0x050b00:
             args.append('--no-dist-info')
+
+        # A bug in v5.12 meant the stub files options were missing.
+        if version_nr > 0x050c00:
+            args.append('--no-stubs')
 
         if sysroot.verbose_enabled:
             args.append('--verbose')
@@ -95,5 +99,10 @@ module_dir = {5}
 
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
+
+        if sysroot.target_platform_name in ('android', 'ios'):
+            sysroot.error(
+                    "PyQtWebEngine is not supported on {0}.".format(
+                            sysroot.target_platform_name))
 
         sysroot.verify_source(self.source)
