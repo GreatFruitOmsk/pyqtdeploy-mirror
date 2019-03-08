@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -57,16 +57,8 @@ class PythonComponent(ComponentBase):
 
         # Build the host installation.
         if self.build_host_from_source:
-            if sys.platform == 'win32':
-                sysroot.error(
-                        "building the host Python from source on Windows is not supported")
-
-            sysroot.progress("Building the host Python from source")
             interpreter = self._build_host_from_source(sysroot)
         else:
-            sysroot.progress(
-                    "Installing an existing Python v{0} as the host Python".format(sysroot.format_version_nr(sysroot.target_py_version_nr)))
-
             if sys.platform == 'win32':
                 interpreter = self._install_host_from_existing_windows_version(
                         sysroot)
@@ -91,29 +83,21 @@ class PythonComponent(ComponentBase):
 
         # Build the target installation.
         if self.build_target_from_source:
-            sysroot.progress("Building the target Python from source")
             self._build_target_from_source(sysroot)
         else:
-            if sys.platform == 'win32':
-                sysroot.progress(
-                        "Installing an existing Python v{0} as the target Python".format(sysroot.format_version_nr(sysroot.target_py_version_nr)))
-                self._install_target_from_existing_windows_version(sysroot)
-            else:
-                sysroot.error(
-                        "using an existing Python installation is not supported for {0}".format(sysroot.target_arch_name))
+            self._install_target_from_existing_windows_version(sysroot)
 
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
 
         if self.build_host_from_source or self.build_target_from_source:
             if not self.source:
-                sysroot.error("'source' option must be specified")
+                sysroot.error("The 'source' option must be specified.")
 
-            archive = sysroot.find_file(self.source)
-            version_nr = sysroot.extract_version_nr(archive)
+            version_nr = sysroot.verify_source(self.source)
         else:
             if not self.version:
-                sysroot.error("'version' option must be specified")
+                sysroot.error("The 'version' option must be specified.")
 
             version_nr = sysroot.extract_version_nr(self.version)
 
@@ -122,11 +106,22 @@ class PythonComponent(ComponentBase):
                     "Python v{0} is not supported.".format(
                             sysroot.format_version_nr(version_nr)))
 
+        if self.build_host_from_source and sys.platform == 'win32':
+            sysroot.error(
+                    "Building the host Python from source on Windows is not supported.")
+
+        if not self.build_target_from_source and sys.platform != 'win32':
+            sysroot.error(
+                    "Using an existing Python installation is not supported for {0}.".format(sysroot.target_platform_name))
+
         if sysroot.target_platform_name == 'android':
             if version_nr < 0x030600:
                 sysroot.error(
-                        "Python v{0} is not supported on android.".format(
+                        "Python v{0} is not supported on Android.".format(
                                 sysroot.format_version_nr(version_nr)))
+
+            if sysroot.android_api < 21:
+                sysroot.error("Python requires API level 21 or greater.")
 
         sysroot.target_py_version_nr = version_nr
 
@@ -348,8 +343,6 @@ build_time_vars = {
         # Ignore if the source file doesn't exist.
         if not os.path.isfile(source):
             return
-
-        sysroot.progress("Patching {0}".format(source))
 
         orig = source + '.orig'
         os.rename(source, orig)
