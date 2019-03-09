@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,6 @@ class QScintillaComponent(ComponentBase):
 
     def build(self, sysroot):
         """ Build QScintilla for the target. """
-
-        sysroot.progress("Building QScintilla")
 
         # Get the PyQt version number.
         pyqt5 = sysroot.find_component('pyqt5')
@@ -103,3 +101,14 @@ module_dir = {4}
         sysroot.run(*args)
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
+
+    def configure(self, sysroot):
+        """ Complete the configuration of the component. """
+
+        version_nr = sysroot.verify_source(self.source)
+
+        # The Scintilla code in v2.11 uses C++ library functions that are
+        # missing prior to NDK v14.
+        if sysroot.target_platform_name == 'android' and version_nr >= 0x020b00 and sysroot.android_ndk_revision < 14:
+            sysroot.error(
+                    "QScintilla v2.11 and later require NDK r14 or later.")
