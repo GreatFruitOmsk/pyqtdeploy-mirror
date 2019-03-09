@@ -3,7 +3,8 @@
 
     "android|macos|win#openssl": {
         "android#source":   "openssl-1.0.2r.tar.gz",
-        "macos|win#source": "openssl-1.1.0j.tar.gz"
+        "macos|win#source": "openssl-1.1.0j.tar.gz",
+        "win#no_asm":       true
     },
 
     "linux|macos|win#zlib": {
