@@ -99,6 +99,10 @@ class OpenSSLComponent(ComponentBase):
 
         sysroot.find_exe('perl')
 
+        # Check NASM is available if it is required.
+        if sys.platform == 'win' and not self.no_asm:
+            sysroot.find_exe('nasm')
+
     def _build_1_1(self, sysroot, common_options):
         """ Build OpenSSL v1.1 for supported platforms. """
 
