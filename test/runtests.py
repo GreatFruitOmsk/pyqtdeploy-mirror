@@ -43,8 +43,14 @@ def find_tests(test, target):
 
     if test is None:
         test = 'tests'
-    elif not os.path.exists(test):
-        raise UserException("'{0}' does not exist".format(test))
+    elif os.path.isabs(test):
+        raise UserException(
+                "'{0}' must be relative to the 'tests' directory".format(test))
+    else:
+        test = os.path.join('tests', test)
+
+        if not os.path.exists(test):
+            raise UserException("'{0}' does not exist".format(test))
 
     if os.path.isfile(test):
         tests.append(test)
@@ -239,7 +245,7 @@ if __name__ == '__main__':
             help="a directory containing the source archives",
             metavar='DIR', dest='source_dirs', action='append')
     parser.add_argument('--test',
-            help="a test directory, a JSON specification file or project file")
+            help="a test directory, JSON specification file or project file")
     parser.add_argument('--target', help="the target platform")
     parser.add_argument('--verbose', help="enable verbose progress messages",
             action='store_true')
@@ -250,11 +256,6 @@ if __name__ == '__main__':
         source_dirs = [os.path.abspath(s) for s in args.source_dirs]
     else:
         source_dirs = None
-
-    if args.test:
-        test = os.path.abspath(args.test)
-    else:
-        test = None
 
     # Anchor everything from the directory containing this script.
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -269,15 +270,15 @@ if __name__ == '__main__':
         else:
             target = default_target()
 
-        tests = find_tests(test, target)
+        tests = find_tests(args.test, target)
 
         # Any sysroot tests must be run first.
-        for test_case in tests:
+        for test in tests:
             if test.endswith(SysrootTest.test_extension):
                 SysrootTest(test, target).run(source_dirs, args.no_clean,
                         args.verbose)
 
-        for test_case in tests:
+        for test in tests:
             if test.endswith(StdlibTest.test_extension):
                 StdlibTest(test, target).run(source_dirs, args.no_clean,
                         args.verbose)
