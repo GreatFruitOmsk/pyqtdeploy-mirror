@@ -383,6 +383,13 @@ class Android(Platform):
         self._set_ndk_revision()
         self._set_api()
 
+        # Blacklist r11-13 as they have problems finding standard library .h
+        # files.  It is probably something simple, like a missing -I flag.
+        if self.android_ndk_revision in (11, 12, 13):
+            raise UserException(
+                    "NDK r{0} is not supported.".format(
+                            self.android_ndk_revision))
+
         # Force the gcc toolchain for r10 and earlier.
         self._original_qmakespec = os.environ.get('QMAKESPEC')
         os.environ['QMAKESPEC'] = 'android-g++' if self.android_ndk_revision <= 10 else 'android-clang'
