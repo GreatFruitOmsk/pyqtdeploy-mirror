@@ -51,11 +51,7 @@ class PyQt5Component(ComponentBase):
         sysroot.unpack_archive(archive)
 
         # Copy any license file.
-        try:
-            license = sysroot.find_file('pyqt-commercial.sip')
-        except:
-            license = None
-
+        license = sysroot.find_file('pyqt-commercial.sip', required=False)
         if license:
             sysroot.copy_file(license, 'sip')
 
