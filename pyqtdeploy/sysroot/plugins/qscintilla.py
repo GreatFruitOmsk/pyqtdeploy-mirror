@@ -42,7 +42,7 @@ class QScintillaComponent(ComponentBase):
         """ Build QScintilla for the target. """
 
         # Get the PyQt version number.
-        pyqt5_version_nr = sysroot.verify_source(self.pyqt5.source)
+        pyqt5_version_nr = sysroot.verify_source(self._pyqt5.source)
 
         # Get this package's source and version number.
         archive = sysroot.find_file(self.source)
@@ -72,9 +72,9 @@ module_dir = {4}
                 sysroot.target_py_lib, sysroot.target_sip_dir,
                 os.path.join(sysroot.target_sitepackages_dir, 'PyQt5'))
 
-        if self.pyqt5.disabled_features:
+        if self._pyqt5.disabled_features:
             cfg += 'pyqt_disabled_features = {0}\n'.format(
-                    ' '.join(self.pyqt5.disabled_features))
+                    ' '.join(self._pyqt5.disabled_features))
 
         if pyqt5_version_nr >= 0x050b00:
             cfg += 'sip_module = PyQt5.sip\n'
@@ -111,4 +111,4 @@ module_dir = {4}
             sysroot.error(
                     "QScintilla v2.11 and later require NDK r14 or later")
 
-        self.pyqt5 = sysroot.find_component('pyqt5')
+        self._pyqt5 = sysroot.find_component('pyqt5')
