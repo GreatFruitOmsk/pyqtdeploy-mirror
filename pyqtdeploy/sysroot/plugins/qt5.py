@@ -118,6 +118,10 @@ class Qt5Component(ComponentBase):
                             "the 'edition' option must be specified when building from source")
 
                 sysroot.verify_source(self.source)
+
+                # Make sure we have a Python v2.7 installation.
+                if sys.platform == 'win32':
+                    self._py_27 = sysroot.get_python_install_path(0x020700)
             else:
                 sysroot.error(
                         "either the 'qt_dir' or 'source' option must be specified")
@@ -145,10 +149,7 @@ class Qt5Component(ComponentBase):
             new_path = [original_path]
 
             new_path.insert(0, os.path.abspath('gnuwin32\\bin'))
-
-            # Look in the registry for a Python v2.7 installation.
-            py_27 = sysroot.get_python_install_path(0x020700)
-            new_path.insert(0, py_27)
+            new_path.insert(0, self._py_27)
 
             os.environ['PATH'] = ';'.join(new_path)
         else:
