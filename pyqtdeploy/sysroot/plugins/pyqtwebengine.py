@@ -100,7 +100,7 @@ module_dir = {5}
 
         if sysroot.target_platform_name in ('android', 'ios'):
             sysroot.error(
-                    "PyQtWebEngine is not supported on {0}.".format(
+                    "PyQtWebEngine is not supported on {0}".format(
                             sysroot.target_platform_name))
 
         sysroot.verify_source(self.source)

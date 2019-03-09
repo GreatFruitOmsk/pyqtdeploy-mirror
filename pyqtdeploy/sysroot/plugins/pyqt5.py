@@ -107,7 +107,7 @@ pyqt_modules = {6}
 
         # v5.11.0-2 have too many problems so it's easier to blacklist them.
         if version_nr >= 0x040b00 and version_nr <= 0x040b02:
-            sysroot.error("Please use PyQt v5.11.3 or later.")
+            sysroot.error("please use PyQt v5.11.3 or later")
 
         # This is needed by dependent components.
         if not sysroot.find_component('qt5').ssl:

@@ -87,22 +87,22 @@ class Qt5Component(ComponentBase):
             self._target_qt_dir = sysroot.find_file(self.qt_dir)
 
             if not os.path.isdir(self._target_qt_dir):
-                sysroot.error("'{0}' could not be found.".format(qt_dir))
+                sysroot.error("'{0}' could not be found".format(qt_dir))
         else:
             # We don't support cross-compiling Qt.
             if sysroot.host_platform_name != sysroot.target_platform_name:
                 sysroot.error(
-                        "Cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation.")
+                        "cross compiling Qt is not supported - use the 'qt_dir' option to specify an existing Qt5 installation")
 
             if self.source:
                 if not self.edition:
                     sysroot.error(
-                            "The 'edition' option must be specified when building from source.")
+                            "the 'edition' option must be specified when building from source")
 
                 sysroot.verify_source(self.source)
             else:
                 sysroot.error(
-                        "Either the 'qt_dir' or 'source' option must be specified.")
+                        "either the 'qt_dir' or 'source' option must be specified")
 
             self._target_qt_dir = os.path.join(sysroot.sysroot_dir, 'qt')
 

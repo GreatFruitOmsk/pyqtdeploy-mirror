@@ -64,7 +64,7 @@ class SIPComponent(ComponentBase):
 
         # v4.19.9-12 have too many problems so it's easier to blacklist them.
         if version_nr >= 0x041309 and version_nr <= 0x04130c:
-            sysroot.error("Please use SIP v4.19.13 or later.")
+            sysroot.error("please use SIP v4.19.13 or later")
 
     def _build_code_generator(self, sysroot, archive, version_nr):
         """ Build the code generator for the host. """

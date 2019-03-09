@@ -109,6 +109,6 @@ module_dir = {4}
         # missing prior to NDK v14.
         if sysroot.target_platform_name == 'android' and version_nr >= 0x020b00 and sysroot.android_ndk_revision < 14:
             sysroot.error(
-                    "QScintilla v2.11 and later require NDK r14 or later.")
+                    "QScintilla v2.11 and later require NDK r14 or later")
 
         self.pyqt5 = sysroot.find_component('pyqt5')

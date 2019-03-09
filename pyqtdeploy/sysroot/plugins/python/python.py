@@ -92,36 +92,36 @@ class PythonComponent(ComponentBase):
 
         if self.build_host_from_source or self.build_target_from_source:
             if not self.source:
-                sysroot.error("The 'source' option must be specified.")
+                sysroot.error("the 'source' option must be specified")
 
             version_nr = sysroot.verify_source(self.source)
         else:
             if not self.version:
-                sysroot.error("The 'version' option must be specified.")
+                sysroot.error("the 'version' option must be specified")
 
             version_nr = sysroot.extract_version_nr(self.version)
 
         if version_nr < 0x020700 or (version_nr >= 0x030000 and version_nr < 0x030300):
             sysroot.error(
-                    "Python v{0} is not supported.".format(
+                    "Python v{0} is not supported".format(
                             sysroot.format_version_nr(version_nr)))
 
         if self.build_host_from_source and sys.platform == 'win32':
             sysroot.error(
-                    "Building the host Python from source on Windows is not supported.")
+                    "building the host Python from source on Windows is not supported")
 
         if not self.build_target_from_source and sys.platform != 'win32':
             sysroot.error(
-                    "Using an existing Python installation is not supported for {0}.".format(sysroot.target_platform_name))
+                    "using an existing Python installation is not supported for {0}".format(sysroot.target_platform_name))
 
         if sysroot.target_platform_name == 'android':
             if version_nr < 0x030600:
                 sysroot.error(
-                        "Python v{0} is not supported on Android.".format(
+                        "Python v{0} is not supported on Android".format(
                                 sysroot.format_version_nr(version_nr)))
 
             if sysroot.android_api < 21:
-                sysroot.error("Python requires API level 21 or greater.")
+                sysroot.error("Python requires API level 21 or greater")
 
         sysroot.target_py_version_nr = version_nr
 
