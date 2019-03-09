@@ -78,6 +78,13 @@ class Qt5Component(ComponentBase):
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
 
+        # If we are using OpenSSL then get its version number.
+        if self.ssl in ('openssl-linked', 'openssl-runtime'):
+            openssl = sysroot.find_component('openssl')
+            self._openssl_version_nr = sysroot.verify_source(openssl.source)
+        else:
+            self._openssl_version_nr = None
+
         # Determine the qmake location as it may be needed by other components.
         if self.qt_dir:
             if self.source:
@@ -88,6 +95,17 @@ class Qt5Component(ComponentBase):
 
             if not os.path.isdir(self._target_qt_dir):
                 sysroot.error("'{0}' could not be found".format(qt_dir))
+
+            if sysroot.target_platform_name == 'android' and self._openssl_version_nr is not None:
+                # TODO: Check if Qt v5.13 is built against OpenSSL v1.1.*.
+                # Get the Qt version number (assuming a standard installation).
+                #qt_version_nr = sysroot.extract_version_nr(
+                #        os.path.dirname(self._target_qt_dir))
+
+                # The standard Qt build for Android uses OpenSSL v1.0.* so we
+                # must use the same.
+                if self._openssl_version_nr >= 0x010100:
+                    sysroot.error("OpenSSL v1.0.* is required")
         else:
             # We don't support cross-compiling Qt.
             if sysroot.host_platform_name != sysroot.target_platform_name:
@@ -107,11 +125,6 @@ class Qt5Component(ComponentBase):
             self._target_qt_dir = os.path.join(sysroot.sysroot_dir, 'qt')
 
         sysroot.host_qmake = os.path.join(self._target_qt_dir, 'bin', 'qmake')
-
-        if sys.platform == 'win32' and self.ssl == 'openssl-linked':
-            # Get the OpenSSL version number.
-            openssl = sysroot.find_component('openssl')
-            self.openssl_version_nr = sysroot.verify_source(openssl.source)
 
     def _build_from_source(self, sysroot):
         """ Build Qt5 from source. """
@@ -161,7 +174,7 @@ class Qt5Component(ComponentBase):
                 args.append('-openssl-linked')
 
                 if sys.platform == 'win32':
-                    if self.openssl_version_nr >= 0x010100:
+                    if self._openssl_version_nr >= 0x010100:
                         openssl_libs = '-llibssl -llibcrypto'
                     else:
                         openssl_libs = '-lssleay32 -llibeay32'
