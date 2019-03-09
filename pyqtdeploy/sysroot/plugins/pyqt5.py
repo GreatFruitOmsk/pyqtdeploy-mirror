@@ -109,5 +109,6 @@ pyqt_modules = {6}
         if version_nr >= 0x040b00 and version_nr <= 0x040b02:
             sysroot.error("Please use PyQt v5.11.3 or later.")
 
+        # This is needed by dependent components.
         if not sysroot.find_component('qt5').ssl:
             self.disabled_features.append('PyQt_SSL')

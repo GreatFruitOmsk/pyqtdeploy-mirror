@@ -108,6 +108,11 @@ class Qt5Component(ComponentBase):
 
         sysroot.host_qmake = os.path.join(self._target_qt_dir, 'bin', 'qmake')
 
+        if sys.platform == 'win32' and self.ssl == 'openssl-linked':
+            # Get the OpenSSL version number.
+            openssl = sysroot.find_component('openssl')
+            self.openssl_version_nr = sysroot.verify_source(openssl.source)
+
     def _build_from_source(self, sysroot):
         """ Build Qt5 from source. """
 
@@ -156,11 +161,7 @@ class Qt5Component(ComponentBase):
                 args.append('-openssl-linked')
 
                 if sys.platform == 'win32':
-                    # Get the OpenSSL version number.
-                    openssl = sysroot.find_component('openssl')
-                    openssl_version_nr = sysroot.verify_source(openssl.source)
-
-                    if openssl_version_nr >= 0x010100:
+                    if self.openssl_version_nr >= 0x010100:
                         openssl_libs = '-llibssl -llibcrypto'
                     else:
                         openssl_libs = '-lssleay32 -llibeay32'
