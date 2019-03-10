@@ -112,7 +112,7 @@ class PythonComponent(ComponentBase):
 
         if not self.build_target_from_source and sys.platform != 'win32':
             sysroot.error(
-                    "using an existing Python installation is not supported for {0}".format(sysroot.target_platform_name))
+                    "using an existing Python installation for the target is not supported on {0}".format(sysroot.target_platform_name))
 
         if sysroot.target_platform_name == 'android':
             if version_nr < 0x030600:
