@@ -3,7 +3,7 @@ python_v2.7_host_installed_target_source.json:      android-32
 python_v2.7_host_source_target_source.json:         android-32 win-32 win-64
 python_v3.5_host_installed_target_installed.json:   android-32
 python_v3.5_host_installed_target_source.json:      android-32
-python_v3.5_host_source_target_source.json:         win-32 win-64
+python_v3.5_host_source_target_source.json:         android-32 win-32 win-64
 python_v3.6_host_installed_target_installed.json:   android-32
 python_v3.6_host_installed_target_source.json:      android-32
 python_v3.6_host_source_target_source.json:         win-32 win-64
