@@ -101,7 +101,7 @@ class Sysroot:
         self._specification.parse_options()
 
         # Host/target independent configuration checks.
-        self.find_exec(self.host_make)
+        self.find_exe(self.host_make)
 
         # Allow the components to configure themselves even if they are not
         # being built.
