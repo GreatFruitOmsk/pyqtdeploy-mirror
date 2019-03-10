@@ -1,7 +1,0 @@
-{
-    "Description": "Build a dynamic OpenSSL v1.1.*.",
-
-    "openssl": {
-        "source":           "openssl-1.1.*.tar.gz"
-    }
-}

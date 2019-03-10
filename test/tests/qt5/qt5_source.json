@@ -1,0 +1,16 @@
+{
+    "Description": "Build a static Qt5 from source.",
+
+    "win#openssl": {
+        "source":	"openssl-1.1.*.tar.gz"
+    },
+
+    "qt5": {
+        "source":       		"qt-everywhere*-src-5.*.tar.xz",
+        "edition":      		"opensource",
+		"configure_options":	["-opengl", "desktop"],
+        "linux#ssl":    		"openssl-runtime",
+        "macos#ssl":    		"securetransport",
+        "win#ssl":      		"openssl-linked"
+    }
+}
