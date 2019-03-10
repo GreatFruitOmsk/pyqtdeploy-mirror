@@ -79,7 +79,7 @@ def find_tests(test, target):
                         if test_file == '':
                             continue
 
-                        ignore[test_file] = parts[1].strip.split()
+                        ignore[test_file] = parts[1].strip().split()
 
             for fn in filenames:
                 if target in ignore.get(fn, []):
@@ -87,7 +87,7 @@ def find_tests(test, target):
 
                 tests.append(os.path.join(dirpath, fn))
 
-    return tests
+    return sorted(tests)
 
 
 class TestCase:
@@ -241,6 +241,8 @@ if __name__ == '__main__':
     parser.add_argument('--no-clean',
             help="do not remove the temporary build directories",
             action='store_true')
+    parser.add_argument('--show', help="show the tests that would be run",
+            action='store_true')
     parser.add_argument('--source-dir',
             help="a directory containing the source archives",
             metavar='DIR', dest='source_dirs', action='append')
@@ -275,13 +277,19 @@ if __name__ == '__main__':
         # Any sysroot tests must be run first.
         for test in tests:
             if test.endswith(SysrootTest.test_extension):
-                SysrootTest(test, target).run(source_dirs, args.no_clean,
-                        args.verbose)
+                if args.show:
+                    print(test)
+                else:
+                    SysrootTest(test, target).run(source_dirs, args.no_clean,
+                            args.verbose)
 
         for test in tests:
             if test.endswith(StdlibTest.test_extension):
-                StdlibTest(test, target).run(source_dirs, args.no_clean,
-                        args.verbose)
+                if args.show:
+                    print(test)
+                else:
+                    StdlibTest(test, target).run(source_dirs, args.no_clean,
+                            args.verbose)
 
     except UserException as e:
         print(e)
