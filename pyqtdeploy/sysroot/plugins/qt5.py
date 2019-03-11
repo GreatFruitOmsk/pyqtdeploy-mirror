@@ -78,8 +78,8 @@ class Qt5Component(ComponentBase):
     def configure(self, sysroot):
         """ Complete the configuration of the component. """
 
-        # If we are using OpenSSL then get its version number.
-        if self.ssl in ('openssl-linked', 'openssl-runtime'):
+        # If we are linking against OpenSSL then get its version number.
+        if self.ssl in 'openssl-linked':
             openssl = sysroot.find_component('openssl')
             self._openssl_version_nr = sysroot.verify_source(openssl.source)
         else:
