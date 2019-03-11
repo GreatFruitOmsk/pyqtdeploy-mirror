@@ -79,7 +79,7 @@ class Qt5Component(ComponentBase):
         """ Complete the configuration of the component. """
 
         # If we are linking against OpenSSL then get its version number.
-        if self.ssl in 'openssl-linked':
+        if self.ssl == 'openssl-linked':
             openssl = sysroot.find_component('openssl')
             self._openssl_version_nr = sysroot.verify_source(openssl.source)
         else:
