@@ -603,13 +603,51 @@ class macOS(ApplePlatform):
 macOS()
 
 
-class Windows_x86(Architecture):
+class WindowsArchitecture(Architecture):
     """ Encapsulate any Windows x86 architecture. """
 
     def supported_target(self, target):
         """ Check that this architecture can host a target architecture. """
 
         return target.platform is self.platform
+
+    def msvc_32bit_target(self):
+        """ Return True if MSVC is targeting 32-bits and raise an exception
+        if a supported version of MSVC could not be found.
+        """
+
+        # MSVC2015 is v14 and MSVC2017 is v15.
+        vs_major = os.environ.get('VisualStudioVersion', '0.0').split('.')[0]
+
+        if vs_major == '15':
+            is_32 = (os.environ.get('VSCMD_ARG_TGT_ARCH') != 'x64')
+        elif vs_major == '14':
+            is_32 = (os.environ.get('Platform') != 'X64')
+        else:
+            raise UserException("Unable to detect MSVC2015 or MSVC2017.")
+
+        return is_32
+
+
+class Windows_x86_32(WindowsArchitecture):
+    """ Encapsulate the Windows 32-bit x86 architecture. """
+
+    def configure(self):
+        """ Configure the platform for building. """
+
+        if not self.msvc_32bit_target():
+            raise UserException("MSVC is not configured for a 32-bit target.")
+
+
+class Windows_x86_64(WindowsArchitecture):
+    """ Encapsulate the Windows 64-bit x86 architecture. """
+
+    def configure(self):
+        """ Configure the platform for building. """
+
+        if self.msvc_32bit_target():
+            raise UserException("MSVC is not configured for a 64-bit target.")
+
 
 
 class Windows(Platform):
@@ -619,7 +657,7 @@ class Windows(Platform):
         """ Initialise the object. """
         
         super().__init__("Windows", 'win',
-                [('win-32', Windows_x86), ('win-64', Windows_x86)])
+                [('win-32', Windows_x86_32), ('win-64', Windows_x86_64)])
 
     def exe(self, name):
         """ Convert a generic executable name to a host-specific version. """
