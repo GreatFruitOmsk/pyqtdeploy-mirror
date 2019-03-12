@@ -180,7 +180,7 @@ class Qt5Component(ComponentBase):
                     else:
                         openssl_libs = '-lssleay32 -llibeay32'
 
-                    args.append('OPENSSL_LIBS=' + openssl_libs + ' -lGdi32')
+                    args.append('OPENSSL_LIBS=' + openssl_libs + ' -lws2_32 -lgdi32 -ladvapi32 -lcrypt32 -luser32')
 
             elif self.ssl == 'openssl-runtime':
                 args.append('-openssl-runtime')
