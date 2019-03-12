@@ -149,18 +149,22 @@ class Architecture:
         """
 
         if name is None:
-            if sys.platform == 'darwin':
-                name = 'macos'
-            elif sys.platform == 'win32':
-                name = 'win'
-            elif sys.platform.startswith('linux'):
-                name = 'linux'
+            # Note that for Windows the default architecture is determined by
+            # the MSVC target.  On other platforms it is determined by the
+            # Python installation running this script.
+            if sys.platform == 'win32':
+                name = 'win-' + WindowsArchitecture.msvc_target()
             else:
-                raise UserException(
-                        "'{0}' is not a supported host platform.".format(
-                                sys.platform))
+                if sys.platform == 'darwin':
+                    name = 'macos'
+                elif sys.platform.startswith('linux'):
+                    name = 'linux'
+                else:
+                    raise UserException(
+                            "'{0}' is not a supported host platform.".format(
+                                    sys.platform))
 
-            name = '{0}-{1}'.format(name, 8 * struct.calcsize('P'))
+                name = '{0}-{1}'.format(name, 8 * struct.calcsize('P'))
         elif name.startswith('osx-'):
             # Map the deprecated values.  Such values can only come from the
             # command line.
@@ -611,9 +615,11 @@ class WindowsArchitecture(Architecture):
 
         return target.platform is self.platform
 
-    def msvc_32bit_target(self):
-        """ Return True if MSVC is targeting 32-bits and raise an exception
-        if a supported version of MSVC could not be found.
+    @staticmethod
+    def msvc_target():
+        """ Return '32' or 64' depending the architecture being targeted by
+        MSVC and raise an exception if a supported version of MSVC could not be
+        found.
         """
 
         # MSVC2015 is v14 and MSVC2017 is v15.
@@ -626,7 +632,7 @@ class WindowsArchitecture(Architecture):
         else:
             raise UserException("Unable to detect MSVC2015 or MSVC2017.")
 
-        return is_32
+        return '32' if is_32 else '64'
 
 
 class Windows_x86_32(WindowsArchitecture):
@@ -635,7 +641,7 @@ class Windows_x86_32(WindowsArchitecture):
     def configure(self):
         """ Configure the platform for building. """
 
-        if not self.msvc_32bit_target():
+        if self.msvc_target() != '32':
             raise UserException("MSVC is not configured for a 32-bit target.")
 
 
@@ -645,7 +651,7 @@ class Windows_x86_64(WindowsArchitecture):
     def configure(self):
         """ Configure the platform for building. """
 
-        if self.msvc_32bit_target():
+        if self.msvc_target() != '64':
             raise UserException("MSVC is not configured for a 64-bit target.")
 
 
