@@ -33,7 +33,7 @@ _supported_branches = (
     (3, 7, 2),
     (3, 6, 8),
     (3, 5, 7),
-    (3, 4, 9),
+    (3, 4, 10),
     (3, 3, 7),
     (2, 7, 16))
 
@@ -3234,7 +3234,11 @@ _metadata = {
         PythonModule(version=3, deps=('urllib', 'urllib.response')),
 
     'urllib.parse': (
-        PythonModule(min_version=3, max_version=(3, 5, 6),
+        PythonModule(min_version=3, max_version=(3, 4, 9),
+                deps=('urllib', 'collections', 're')),
+        PythonModule(min_version=(3, 4, 10), max_version=(3, 4),
+                deps=('urllib', 'collections', 're', 'unicodedata')),
+        PythonModule(min_version=(3, 5), max_version=(3, 5, 6),
                 deps=('urllib', 'collections', 're')),
         PythonModule(min_version=(3, 5, 7), max_version=(3, 5),
                 deps=('urllib', 'collections', 're', 'unicodedata')),
