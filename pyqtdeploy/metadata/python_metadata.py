@@ -32,7 +32,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 _supported_branches = (
     (3, 7, 2),
     (3, 6, 8),
-    (3, 5, 6),
+    (3, 5, 7),
     (3, 4, 9),
     (3, 3, 7),
     (2, 7, 16))
@@ -3233,8 +3233,13 @@ _metadata = {
     'urllib.error':
         PythonModule(version=3, deps=('urllib', 'urllib.response')),
 
-    'urllib.parse':
-        PythonModule(version=3, deps=('urllib', 'collections', 're')),
+    'urllib.parse': (
+        PythonModule(min_version=3, max_version=(3, 5, 6),
+                deps=('urllib', 'collections', 're')),
+        PythonModule(min_version=(3, 5, 7), max_version=(3, 5),
+                deps=('urllib', 'collections', 're', 'unicodedata')),
+        PythonModule(min_version=(3, 6),
+                deps=('urllib', 'collections', 're'))),
 
     'urllib.request': (
         PythonModule(min_version=3, max_version=(3, 5, 1),
