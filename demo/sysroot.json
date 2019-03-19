@@ -16,7 +16,7 @@
         "android#qt_dir":           "android_armv7",
         "ios#qt_dir":               "ios",
 
-        "linux|macos|win#source":   "qt-everywhere-src-5.12.1.tar.xz",
+        "linux|macos|win#source":   "qt-everywhere-src-5.12.2.tar.xz",
         "edition":                  "opensource",
 
         "android|linux#ssl":        "openssl-runtime",
@@ -47,7 +47,7 @@
 
     "sip": {
         "module_name":  "PyQt5.sip",
-        "source":       "sip-4.19.14.tar.gz"
+        "source":       "sip-4.19.15.tar.gz"
     },
 
     "pyqt5": {
@@ -83,7 +83,7 @@
                 "QtWinExtras"
         ],
 
-        "source":                       "PyQt5_*-5.12.tar.gz"
+        "source":                       "PyQt5_*-5.12.1.tar.gz"
     },
 
     "pyqt3d": {
