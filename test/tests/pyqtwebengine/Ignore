@@ -1,3 +1,1 @@
-# Disable this test until v5.12.1 is released (rather than add ssl to the test.
-#pyqtwebengine.json: android-32 ios-64
-pyqtwebengine.json: android-32 ios-64 linux-64 macos-64 win-32 win-64
+pyqtwebengine.json: android-32 ios-64
