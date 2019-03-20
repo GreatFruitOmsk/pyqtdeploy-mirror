@@ -96,16 +96,39 @@ class Qt5Component(ComponentBase):
             if not os.path.isdir(self._target_qt_dir):
                 sysroot.error("'{0}' could not be found".format(qt_dir))
 
-            if sysroot.target_platform_name == 'android' and self._openssl_version_nr is not None:
-                # TODO: Check if Qt v5.13 is built against OpenSSL v1.1.*.
+            if sysroot.target_platform_name == 'android':
                 # Get the Qt version number (assuming a standard installation).
-                #qt_version_nr = sysroot.extract_version_nr(
-                #        os.path.dirname(self._target_qt_dir))
+                qt_version_nr = sysroot.extract_version_nr(
+                        os.path.dirname(self._target_qt_dir))
 
-                # The standard Qt build for Android uses OpenSSL v1.0.* so we
-                # must use the same.
-                if self._openssl_version_nr >= 0x010100:
-                    sysroot.error("OpenSSL v1.0.* is required")
+                if qt_version_nr >= 0x050c00:
+                    # It's possible that an earlier version will work but we
+                    # haven't tested any.
+                    if sysroot.android_sdk_version < (26, 1, 1):
+                        sysroot.error(
+                                "Qt v5.12 and later require SDK v26.1.1 or later")
+
+                    if sysroot.android_ndk_revision < 19:
+                        sysroot.error(
+                                "Qt v5.12 and later require NDK r19 or later")
+                else:
+                    # The Qt docs say that v25.2.5 is needed by versions
+                    # earlier than v5.9.  It's possible that a later version
+                    # will work with v5.9, v5.10 and v5.11 but we haven't
+                    # tested any (but v26.1.1 certainly doesn't).
+                    if sysroot.android_sdk_version > (25, 2, 5):
+                        sysroot.error(
+                                "Qt v5.11 and earlier require SDK v25.2.5 or earlier")
+
+                    if sysroot.android_ndk_revision != 10:
+                        sysroot.error("Qt v5.11 and earlier require NDK r10")
+
+                if self._openssl_version_nr is not None:
+                    # The standard Qt build for Android uses OpenSSL v1.0.* so
+                    # we must use the same.
+                    # TODO: Check if Qt v5.13 is built against OpenSSL v1.1.*.
+                    if self._openssl_version_nr >= 0x010100:
+                        sysroot.error("OpenSSL v1.0.* is required")
         else:
             # We don't support cross-compiling Qt.
             if sysroot.host_platform_name != sysroot.target_platform_name:
