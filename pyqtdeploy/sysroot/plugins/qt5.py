@@ -123,6 +123,8 @@ class Qt5Component(ComponentBase):
                     if sysroot.android_ndk_revision != 10:
                         sysroot.error("Qt v5.11 and earlier require NDK r10")
 
+                    sysroot.find_exe('ant')
+
                 if self._openssl_version_nr is not None:
                     # The standard Qt build for Android uses OpenSSL v1.0.* so
                     # we must use the same.
