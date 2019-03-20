@@ -116,6 +116,9 @@ class Qt5Component(ComponentBase):
                     # earlier than v5.9.  It's possible that a later version
                     # will work with v5.9, v5.10 and v5.11 but we haven't
                     # tested any (but v26.1.1 certainly doesn't).
+                    # Note: this may have something to do with ant/gradle
+                    # support in androiddeployqt as ant support was removed in
+                    # SDK v25.3.0.
                     if sysroot.android_sdk_version > (25, 2, 5):
                         sysroot.error(
                                 "Qt v5.11 and earlier require SDK v25.2.5 or earlier")
@@ -129,8 +132,6 @@ class Qt5Component(ComponentBase):
                     # TODO: Check if Qt v5.13 is built against OpenSSL v1.1.*.
                     if self._openssl_version_nr >= 0x010100:
                         sysroot.error("OpenSSL v1.0.* is required")
-
-                sysroot.find_exe('ant')
         else:
             # We don't support cross-compiling Qt.
             if sysroot.host_platform_name != sysroot.target_platform_name:
