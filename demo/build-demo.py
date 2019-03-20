@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -151,15 +151,16 @@ else:
     run([make])
 
     if target.startswith('android'):
-        run([make, 'INSTALL_ROOT=deploy', 'install'])
-        run([os.path.join(host_bin_dir, 'androiddeployqt'), '--input',
-                'android-libpyqt-demo.so-deployment-settings.json', '--output',
-                'deploy'])
+        run([make, 'INSTALL_ROOT=pyqt-demo', 'install'])
+        run([os.path.join(host_bin_dir, 'androiddeployqt'), '--gradle',
+                '--input', 'android-libpyqt-demo.so-deployment-settings.json',
+                '--output', 'pyqt-demo'])
 
 # Tell the user where the demo is.
 if target.startswith('android'):
-    apk_dir = os.path.join(build_dir, 'deploy', 'bin')
-    print("""The QtApp-debug.apk file can be found in the '{0}'
+    apk_dir = os.path.join(build_dir, 'pyqt-demo', 'build', 'outputs', 'apk',
+            'debug')
+    print("""The pyqt-demo-debug.apk file can be found in the '{0}'
 directory.  Run adb to install it to a simulator.""".format(apk_dir))
 
 elif target.startswith('ios'):
