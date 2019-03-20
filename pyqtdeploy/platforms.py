@@ -356,7 +356,8 @@ class Android(Platform):
     """ Encapsulate the Android platform. """
 
     # The environment variables that should be set.
-    REQUIRED_ENV_VARS = ('ANDROID_NDK_ROOT', 'ANDROID_NDK_PLATFORM')
+    REQUIRED_ENV_VARS = ('ANDROID_NDK_ROOT', 'ANDROID_NDK_PLATFORM',
+            'ANDROID_SDK_ROOT')
 
     def __init__(self):
         """ Initialise the object. """
@@ -374,6 +375,7 @@ class Android(Platform):
                                 name))
 
         self.ndk_root = os.environ['ANDROID_NDK_ROOT']
+        self.sdk_root = os.environ['ANDROID_SDK_ROOT']
 
         self._original_toolchain_version = os.environ.get(
                 'ANDROID_NDK_TOOLCHAIN_VERSION')
@@ -385,6 +387,7 @@ class Android(Platform):
             self.ndk_toolchain_version = self._original_toolchain_version
 
         self._set_ndk_revision()
+        self._set_sdk_version()
         self._set_api()
 
         # Blacklist r11-13 as they have problems finding standard library .h
@@ -471,6 +474,40 @@ class Android(Platform):
             self.android_ndk_revision = int(revision_str)
         except ValueError:
             self.android_ndk_revision = None
+
+    def _set_sdk_version(self):
+        """ Set the version number of the SDK. """
+
+        self.android_sdk_version = None
+
+        # Assume that source.properties should be available.
+        source_properties = os.path.join(self.sdk_root, 'tools',
+                'source.properties')
+
+        if not os.path.exists(source_properties):
+            raise UserException("'{0}' does not exist, make sure ANDROID_SDK_ROOT is set correctly".format(source_properties))
+
+        with open(source_properties) as f:
+            for line in f:
+                line = line.replace(' ', '')
+                parts = line.split('=')
+                if parts[0] == 'Pkg.Revision' and len(parts) == 2:
+                    version_parts = parts[1].split('.')
+
+                    if len(version_parts) <= 3:
+                        while len(version_parts) < 3:
+                            version_parts.append('0')
+
+                        try:
+                            major = int(version_parts[0])
+                            minor = int(version_parts[1])
+                            maint = int(version_parts[2])
+
+                            self.android_sdk_version = (major, minor, maint)
+                        except ValueError:
+                            pass
+
+                    break
 
 Android()
 

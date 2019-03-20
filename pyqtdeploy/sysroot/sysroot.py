@@ -253,6 +253,18 @@ class Sysroot:
 
     @property
     @android_only
+    def android_sdk_version(self):
+        """ The 3-tuple version number of the Android SDK. """
+
+        sdk_version = self._target.platform.android_sdk_version
+
+        if sdk_version is None:
+            self.error("unable to determine the SDK version number")
+
+        return sdk_version
+
+    @property
+    @android_only
     def android_toolchain_bin(self):
         """ The path of the Android toolchain's bin directory. """
 

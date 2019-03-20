@@ -547,6 +547,12 @@ class is.
 
         The path of the Android NDK's sysroot directory.
 
+    .. py:attribute:: android_sdk_version
+
+        .. versionadded:: 2.4
+
+        The 3-tuple version number of the Android SDK.
+
     .. py:attribute:: android_toolchain_bin
 
         The path of the Android toolchain's bin directory.
