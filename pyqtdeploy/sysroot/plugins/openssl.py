@@ -121,30 +121,55 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.1 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
+        using_clang = (sysroot.android_ndk_version >= (16, 0, 0))
+
         original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
-        os.environ['CROSS_SYSROOT'] = os.path.join(sysroot.android_ndk_sysroot)
 
-        args = ['perl', 'Configure',
-                '--cross-compile-prefix=' + sysroot.android_toolchain_prefix]
-        args.extend(common_options)
-        args.append('android')
+        configure_args = ['perl', 'Configure']
 
-        sysroot.run(*args)
+        if using_clang:
+            os.environ['CC'] = sysroot.android_toolchain_cc
+            os.environ['AR'] = sysroot.android_toolchain_prefix + 'ar'
+            os.environ['RANLIB'] = sysroot.android_toolchain_prefix + 'ranlib'
+        else:
+            configure_args.append('--cross-compile-prefix=' + sysroot.android_toolchain_prefix)
+
+            os.environ['CROSS_SYSROOT'] = os.path.join(
+                    sysroot.android_ndk_sysroot)
+
+        configure_args.extend(common_options)
+        configure_args.append('android')
+
+        sysroot.run(*configure_args)
 
         # Fix the Makefile so that it creates .so files without version
         # numbers for qmake to be able to handle.
-        with open('Makefile', 'rt') as mk:
-            makefile = mk.read()
+        with open('Makefile') as f:
+            mf = f.read()
 
-        makefile = makefile.replace('.$(SHLIB_MAJOR).$(SHLIB_MINOR)', '')
+        mf = mf.replace('.$(SHLIB_MAJOR).$(SHLIB_MINOR)', '')
 
-        with open('Makefile', 'wt') as mk:
-            mk.write(makefile)
+        if using_clang:
+            mf = mf.replace('-mandroid', '')
+            mf = mf.replace('--sysroot=$(CROSS_SYSROOT)', '')
+
+        with open('Makefile', 'w') as f:
+            f.write(mf)
 
         sysroot.run(sysroot.host_make)
         sysroot.run(sysroot.host_make, 'install')
 
-        del os.environ['CROSS_SYSROOT']
+        for lib in ('libcrypto', 'libssl'):
+            # Remove the static library that was also built.
+            os.remove(os.path.join(sysroot.target_lib_dir, lib + '.a'))
+
+        if using_clang:
+            del os.environ['CC']
+            del os.environ['AR']
+            del os.environ['RANLIB']
+        else:
+            del os.environ['CROSS_SYSROOT']
+
         os.environ['PATH'] = original_path
 
     def _build_1_1_win(self, sysroot, common_options):
