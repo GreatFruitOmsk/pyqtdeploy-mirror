@@ -537,15 +537,15 @@ class is.
 
         The numerical Android API level to use.
 
-    .. py:attribute:: android_ndk_revision
-
-        .. versionadded:: 2.4
-
-        The revision number of the Android NDK (excluding any letter suffix).
-
     .. py:attribute:: android_ndk_sysroot
 
         The path of the Android NDK's sysroot directory.
+
+    .. py:attribute:: android_ndk_version
+
+        .. versionadded:: 2.4
+
+        The 3-tuple version number of the Android NDK.
 
     .. py:attribute:: android_sdk_version
 

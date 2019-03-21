@@ -3,7 +3,7 @@ v2.4 ??? March 2019
   - Added support for PyQt5.QtRemoteObjects.
   - Added support for PyQtWebEngine as an add-on package.
   - Added support for clang-based Android toolchains.
-  - Added 'android_ndk_revision', 'android_sdk_version',
+  - Added 'android_ndk_version', 'android_sdk_version',
     'android_toolchain_cc', 'android_toolchain_cflags' and 'verify_source()' to
     the sysroot API.
 

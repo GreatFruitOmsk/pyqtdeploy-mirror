@@ -107,7 +107,7 @@ module_dir = {4}
 
         # The Scintilla code in v2.11 uses C++ library functions that are
         # missing prior to NDK v14.
-        if sysroot.target_platform_name == 'android' and version_nr >= 0x020b00 and sysroot.android_ndk_revision < 14:
+        if sysroot.target_platform_name == 'android' and version_nr >= 0x020b00 and sysroot.android_ndk_version < (14, 0, 0):
             sysroot.error(
                     "QScintilla v2.11 and later require NDK r14 or later")
 

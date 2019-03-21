@@ -108,7 +108,7 @@ class Qt5Component(ComponentBase):
                         sysroot.error(
                                 "Qt v5.12 and later require SDK v26.1.1 or later")
 
-                    if sysroot.android_ndk_revision < 19:
+                    if sysroot.android_ndk_version < (19, 0, 0):
                         sysroot.error(
                                 "Qt v5.12 and later require NDK r19 or later")
                 else:
@@ -123,7 +123,7 @@ class Qt5Component(ComponentBase):
                         sysroot.error(
                                 "Qt v5.11 and earlier require SDK v25.2.5 or earlier")
 
-                    if sysroot.android_ndk_revision != 10:
+                    if sysroot.android_ndk_version[0] != 10:
                         sysroot.error("Qt v5.11 and earlier require NDK r10")
 
                 if self._openssl_version_nr is not None:

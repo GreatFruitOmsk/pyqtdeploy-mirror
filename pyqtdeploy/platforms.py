@@ -386,20 +386,19 @@ class Android(Platform):
         else:
             self.ndk_toolchain_version = self._original_toolchain_version
 
-        self._set_ndk_revision()
+        self._set_ndk_version()
         self._set_sdk_version()
         self._set_api()
 
         # Blacklist r11-13 as they have problems finding standard library .h
         # files.  It is probably something simple, like a missing -I flag.
-        if self.android_ndk_revision in (11, 12, 13):
-            raise UserException(
-                    "NDK r{0} is not supported.".format(
-                            self.android_ndk_revision))
+        revision = self.android.ndk_version[0]
+        if revision in (11, 12, 13):
+            raise UserException("NDK r{0} is not supported.".format(revision))
 
         # Force the gcc toolchain for r10 and earlier.
         self._original_qmakespec = os.environ.get('QMAKESPEC')
-        os.environ['QMAKESPEC'] = 'android-g++' if self.android_ndk_revision <= 10 else 'android-clang'
+        os.environ['QMAKESPEC'] = 'android-g++' if revision <= 10 else 'android-clang'
 
     def deconfigure(self):
         """ Deconfigure the platform for building. """
@@ -424,7 +423,7 @@ class Android(Platform):
         if not os.path.isdir(os.path.join(self.ndk_root, 'platforms', ndk_platform)):
             raise UserException(
                     "NDK r{0} does not support {1}.".format(
-                            self.android_ndk_revision, ndk_platform))
+                            self.android_ndk_version[0], ndk_platform))
 
         parts = ndk_platform.split('-')
 
@@ -440,23 +439,17 @@ class Android(Platform):
 
         self.android_api = api
 
-    def _set_ndk_revision(self):
-        """ Set the revision number of the NDK. """
-
-        revision_str = ''
+    def _set_ndk_version(self):
+        """ Set the version number of the NDK. """
 
         # source.properties is available from r11.
         source_properties = os.path.join(self.ndk_root, 'source.properties')
         if os.path.isfile(source_properties):
-            with open(source_properties) as f:
-                for line in f:
-                    line = line.replace(' ', '')
-                    parts = line.split('=')
-                    if parts[0] == 'Pkg.Revision' and len(parts) == 2:
-                        revision_str = parts[1].split('.')[0]
-                        break
+            self.android_ndk_version = self._get_version(source_properties)
         else:
             # RELEASE.TXT is available in r10 and earlier.
+            self.android_ndk_version = None
+
             release_txt = os.path.join(self.ndk_root, 'RELEASE.TXT')
             if os.path.isfile(release_txt):
                 with open(release_txt) as f:
@@ -468,17 +461,15 @@ class Android(Platform):
                                     line = line[:i]
                                     break
 
-                            revision_str = line
-
-        try:
-            self.android_ndk_revision = int(revision_str)
-        except ValueError:
-            self.android_ndk_revision = None
+                            try:
+                                # Note that we ignore the minor letter.
+                                self.android_ndk_version = (int(line), 0, 0)
+                                break
+                            except ValueError:
+                                pass
 
     def _set_sdk_version(self):
         """ Set the version number of the SDK. """
-
-        self.android_sdk_version = None
 
         # Assume that source.properties should be available.
         source_properties = os.path.join(self.sdk_root, 'tools',
@@ -486,6 +477,14 @@ class Android(Platform):
 
         if not os.path.exists(source_properties):
             raise UserException("'{0}' does not exist, make sure ANDROID_SDK_ROOT is set correctly".format(source_properties))
+
+        self.android_sdk_version = self._get_version(source_properties)
+
+    @staticmethod
+    def _get_version(source_properties):
+        """ Get the 3-tuple version number of a source.properties file. """
+
+        version = None
 
         with open(source_properties) as f:
             for line in f:
@@ -503,11 +502,13 @@ class Android(Platform):
                             minor = int(version_parts[1])
                             maint = int(version_parts[2])
 
-                            self.android_sdk_version = (major, minor, maint)
+                            version = (major, minor, maint)
                         except ValueError:
                             pass
 
                     break
+
+        return version
 
 Android()
 
