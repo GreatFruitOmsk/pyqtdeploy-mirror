@@ -70,14 +70,6 @@ class OpenSSLComponent(ComponentBase):
 
         host = sysroot.host_platform_name
         target = sysroot.target_platform_name
-
-        # OpenSSL v1.1.1 (which we don't yet support) supposedly can be built
-        # on Android with clang but earlier versions cannot.  Note that r18 has
-        # gcc but it is just a trivial wrapper around the (incompatible) clang.
-        if target == 'android' and sysroot.android_ndk_version >= (16, 0, 0):
-            sysroot.error(
-                    "building OpenSSL with NDK r16 and later is not supported")
-
         version_nr = sysroot.verify_source(self.source)
 
         if version_nr >= 0x010101:
@@ -206,14 +198,22 @@ class OpenSSLComponent(ComponentBase):
         """ Build OpenSSL v1.0 for Android on either Linux or MacOS hosts. """
 
         # Configure the environment.
+        using_clang = (sysroot.android_ndk_version >= (16, 0, 0))
+
         original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
         os.environ['MACHINE'] = 'arm7'
         os.environ['RELEASE'] = '2.6.37'
         os.environ['SYSTEM'] = 'android'
         os.environ['ARCH'] = 'arm'
-        os.environ['CROSS_COMPILE'] = sysroot.android_toolchain_prefix
         os.environ['ANDROID_DEV'] = os.path.join(sysroot.android_ndk_sysroot,
                 'usr')
+
+        if using_clang:
+            os.environ['CC'] = sysroot.android_toolchain_cc
+            os.environ['AR'] = sysroot.android_toolchain_prefix + 'ar'
+            os.environ['RANLIB'] = sysroot.android_toolchain_prefix + 'ranlib'
+        else:
+            os.environ['CROSS_COMPILE'] = sysroot.android_toolchain_prefix
 
         # Configure, build and install.
         args = ['perl', 'Configure', 'shared']
@@ -221,6 +221,17 @@ class OpenSSLComponent(ComponentBase):
         args.append('android')
 
         sysroot.run(*args)
+
+        # Patch the Makefile for clang.
+        if using_clang:
+            with open('Makefile') as f:
+                mf = f.read()
+
+            mf = mf.replace('-mandroid', '')
+
+            with open('Makefile', 'w') as f:
+                f.write(mf)
+
         sysroot.run(sysroot.host_make, 'depend')
         sysroot.run(sysroot.host_make,
                 'CALC_VERSIONS="SHLIB_COMPAT=; SHLIB_SOVER="', 'build_libs',
@@ -240,11 +251,17 @@ class OpenSSLComponent(ComponentBase):
             os.remove(installed_lib_so)
             sysroot.copy_file(lib_so, installed_lib_so)
 
+        if using_clang:
+            del os.environ['CC']
+            del os.environ['AR']
+            del os.environ['RANLIB']
+        else:
+            del os.environ['CROSS_COMPILE']
+
         del os.environ['MACHINE']
         del os.environ['RELEASE']
         del os.environ['SYSTEM']
         del os.environ['ARCH']
-        del os.environ['CROSS_COMPILE']
         del os.environ['ANDROID_DEV']
         os.environ['PATH'] = original_path
 
