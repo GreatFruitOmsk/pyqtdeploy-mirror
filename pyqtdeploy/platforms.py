@@ -352,6 +352,35 @@ class Android_arm_32(AndroidArchitecture):
                 '-fno-builtin-memmove', '-mthumb']
 
 
+class Android_arm_64(AndroidArchitecture):
+    """ Encapsulate the Android 64-bit Arm architecture. """
+
+    @property
+    def android_platform_arch(self):
+        """ The name of the Android platform's architecture. """
+
+        return 'arch-arm64'
+
+    @property
+    def android_toolchain_prefix(self):
+        """ The name of the Android toolchain's prefix. """
+
+        return 'aarch64-linux-android-'
+
+    @property
+    def clang_prefix(self):
+        """ The architecture-specific clang prefix. """
+
+        return 'aarch64-linux-android'
+
+    @property
+    def gcc_toolchain_cflags(self):
+        """ The architecture-specific gcc compiler flags. """
+
+        # gcc is never used to for android-64.
+        return []
+
+
 class Android(Platform):
     """ Encapsulate the Android platform. """
 
@@ -363,7 +392,8 @@ class Android(Platform):
         """ Initialise the object. """
 
         super().__init__("Android", 'android',
-                [('android-32', Android_arm_32)])
+                [('android-32', Android_arm_32),
+                        ('android-64', Android_arm_64)])
 
     def configure(self):
         """ Configure the platform for building. """
