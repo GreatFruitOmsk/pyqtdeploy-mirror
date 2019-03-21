@@ -1,13 +1,13 @@
-python_v2.7_host_installed_target_installed.json:   android-32 ios-64 linux-64 macos-64
-python_v2.7_host_installed_target_source.json:      android-32
-python_v2.7_host_source_target_source.json:         android-32 win-32 win-64
-python_v3.5_host_installed_target_installed.json:   android-32 ios-64 linux-64 macos-64
-python_v3.5_host_installed_target_source.json:      android-32
-python_v3.5_host_source_target_source.json:         android-32 win-32 win-64
-python_v3.6_host_installed_target_installed.json:   android-32 ios-64 linux-64 macos-64
-python_v3.6_host_installed_target_source.json:      android-32
+python_v2.7_host_installed_target_installed.json:   android-32 android_64 ios-64 linux-64 macos-64
+python_v2.7_host_installed_target_source.json:      android-32 android_64
+python_v2.7_host_source_target_source.json:         android-32 android-64 win-32 win-64
+python_v3.5_host_installed_target_installed.json:   android-32 android-64 ios-64 linux-64 macos-64
+python_v3.5_host_installed_target_source.json:      android-32 android-64
+python_v3.5_host_source_target_source.json:         android-32 android-64 win-32 win-64
+python_v3.6_host_installed_target_installed.json:   android-32 android-64 ios-64 linux-64 macos-64
+python_v3.6_host_installed_target_source.json:      android-32 android-64
 python_v3.6_host_source_target_source.json:         win-32 win-64
-python_v3.7_host_installed_target_installed.json:   android-32 ios-64 linux-64 macos-64
-python_v3.7_host_installed_target_source.json:      android-32
+python_v3.7_host_installed_target_installed.json:   android-32 android-64 ios-64 linux-64 macos-64
+python_v3.7_host_installed_target_source.json:      android-32 android-64
 python_v3.7_host_source_target_source.json:         win-32 win-64
-stdlib_ctypes.pdy:                                  android-32 ios-64
+stdlib_ctypes.pdy:                                  android-32 android-64 ios-64
