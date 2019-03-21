@@ -392,7 +392,7 @@ class Android(Platform):
 
         # Blacklist r11-13 as they have problems finding standard library .h
         # files.  It is probably something simple, like a missing -I flag.
-        revision = self.android.ndk_version[0]
+        revision = self.android_ndk_version[0]
         if revision in (11, 12, 13):
             raise UserException("NDK r{0} is not supported.".format(revision))
 
