@@ -269,57 +269,45 @@ class AndroidArchitecture(Architecture):
 
         # Set the various property values.
         ndk_root = self.platform.ndk_root
-        toolchain_version = self.platform.ndk_toolchain_version
+        android_api = self.platform.android_api
         toolchain_prefix = self.android_toolchain_prefix
         android_host = '{}-x86_64'.format(
                 'darwin' if sys.platform == 'darwin' else 'linux')
 
         self.android_ndk_sysroot = os.path.join(ndk_root, 'platforms',
-                'android-{}'.format(self.platform.android_api), 'arch-arm')
+                'android-{}'.format(android_api), self.android_platform_arch)
 
-        if not os.path.exists(self.android_ndk_sysroot):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(self.android_ndk_sysroot))
+        self._check_exists(self.android_ndk_sysroot)
 
-        # Assume the toolchain is gcc-based (as that is the historical
-        # behaviour).
-        self.android_toolchain_cflags = []
+        # We use clang for r16 and later.
+        cflags = []
 
-        self.android_toolchain_bin = os.path.join(ndk_root, 'toolchains',
-                toolchain_prefix + toolchain_version, 'prebuilt',
-                android_host, 'bin')
-
-        if not os.path.exists(self.android_toolchain_bin):
-            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_TOOLCHAIN_VERSION are set correctly".format(self.android_toolchain_bin))
-
-        self.android_toolchain_cc = toolchain_prefix + 'gcc'
-
-        if os.path.exists(os.path.join(self.android_toolchain_bin, self.android_toolchain_cc)):
-            # The architecture-neutral C compiler flags.
-            self.android_toolchain_cflags.append(
-                    '--sysroot=' + self.android_ndk_sysroot)
-
-            self.android_toolchain_cflags.extend(self.gcc_toolchain_cflags)
+        if self.platform.android_ndk_version >= (16, 0, 0):
+            self.android_toolchain_cc = '{}{}-clang'.format(self.clang_prefix,
+                    android_api)
+            toolchain_dir = 'llvm'
         else:
-            # There is no gcc so assume we have a clang-based toolchain.
-            gcc_toolchain_bin = self.android_toolchain_bin
-            self.android_toolchain_bin = os.path.join(ndk_root, 'toolchains',
-                    'llvm', 'prebuilt', android_host, 'bin')
+            # The architecture-neutral gcc flags.
+            cflags.append('--sysroot=' + self.android_ndk_sysroot)
 
-            self.android_toolchain_cc = 'clang'
+            cflags.extend(self.gcc_toolchain_cflags)
 
-            # The architecture-neutral C compiler flags.
-            self.android_toolchain_cflags.append('-gcc-toolchain')
-            self.android_toolchain_cflags.append(gcc_toolchain_bin)
+            toolchain_version = self.platform.ndk_toolchain_version
+            self.android_toolchain_cc = toolchain_prefix + 'gcc'
+            toolchain_dir = toolchain_prefix + toolchain_version
 
-            sysroot = os.path.join(ndk_root, 'sysroot')
-            self.android_toolchain_cflags.append('--sysroot=' + sysroot)
+        self.android_toolchain_cflags = cflags
 
-            self.android_toolchain_cflags.append('-isystem')
-            self.android_toolchain_cflags.append(
-                    os.path.join(sysroot, 'usr', 'include',
-                    toolchain_prefix[:-1]))
+        # Check the toolchain bin directory.
+        self.android_toolchain_bin = os.path.join(ndk_root, 'toolchains',
+                toolchain_dir, 'prebuilt', android_host, 'bin')
 
-            self.android_toolchain_cflags.extend(self.clang_toolchain_cflags)
+        self._check_exists(self.android_toolchain_bin)
+
+        # Check the compiler.
+        self._check_exists(
+                os.path.join(self.android_toolchain_bin,
+                        self.android_toolchain_cc))
 
     def supported_target(self, target):
         """ Check that this architecture can host a target architecture. """
@@ -327,9 +315,22 @@ class AndroidArchitecture(Architecture):
         # Android can never be a host.
         return False
 
+    @staticmethod
+    def _check_exists(name):
+        """ Raise an exception if something is missing from the NDK. """
+
+        if not os.path.exists(name):
+            raise UserException("'{0}' does not exist, make sure ANDROID_NDK_ROOT and ANDROID_NDK_PLATFORM are set correctly".format(name))
+
 
 class Android_arm_32(AndroidArchitecture):
     """ Encapsulate the Android 32-bit Arm architecture. """
+
+    @property
+    def android_platform_arch(self):
+        """ The name of the Android platform's architecture. """
+
+        return 'arch-arm'
 
     @property
     def android_toolchain_prefix(self):
@@ -338,11 +339,10 @@ class Android_arm_32(AndroidArchitecture):
         return 'arm-linux-androideabi-'
 
     @property
-    def clang_toolchain_cflags(self):
-        """ The architecture-specific clang compiler flags. """
+    def clang_prefix(self):
+        """ The architecture-specific clang prefix. """
 
-        return ['-target', 'armv7-none-linux-androideabi']
-
+        return 'armv7a-linux-androideabi'
 
     @property
     def gcc_toolchain_cflags(self):
@@ -381,6 +381,7 @@ class Android(Platform):
                 'ANDROID_NDK_TOOLCHAIN_VERSION')
 
         if self._original_toolchain_version is None:
+            # This is only used by a gcc toolchain.
             self.ndk_toolchain_version = '4.9'
             os.environ['ANDROID_NDK_TOOLCHAIN_VERSION'] = self.ndk_toolchain_version
         else:
@@ -391,14 +392,16 @@ class Android(Platform):
         self._set_api()
 
         # Blacklist r11-13 as they have problems finding standard library .h
-        # files.  It is probably something simple, like a missing -I flag.
+        # files.  It is probably something simple, like a missing --sysroot
+        # flag.  Also blacklist r16-18 to avoid having to deal with
+        # make-standalone-toolchain.sh for clang.
         revision = self.android_ndk_version[0]
-        if revision in (11, 12, 13):
+        if revision in (11, 12, 13, 16, 17, 18):
             raise UserException("NDK r{0} is not supported.".format(revision))
 
-        # Force the gcc toolchain for r10 and earlier.
+        # Force the gcc toolchain for r15 and earlier.
         self._original_qmakespec = os.environ.get('QMAKESPEC')
-        os.environ['QMAKESPEC'] = 'android-g++' if revision <= 10 else 'android-clang'
+        os.environ['QMAKESPEC'] = 'android-g++' if revision <= 15 else 'android-clang'
 
     def deconfigure(self):
         """ Deconfigure the platform for building. """
