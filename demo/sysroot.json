@@ -13,7 +13,8 @@
     },
 
     "qt5": {
-        "android#qt_dir":           "android_armv7",
+        "android-32#qt_dir":        "android_armv7",
+        "android-64#qt_dir":        "android_arm64_v8a",
         "ios#qt_dir":               "ios",
 
         "linux|macos|win#source":   "qt-everywhere-src-5.12.2.tar.xz",

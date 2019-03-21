@@ -93,7 +93,7 @@ if not target:
         sys.exit(2)
 
 # Make sure the Qt directory was specified if it is needed.
-if target in ('android-32', 'ios-64') and not installed_qt_dir:
+if target in ('android-32', 'android-64', 'ios-64') and not installed_qt_dir:
     print("--installed-qt-dir must be specified for", target, file=sys.stderr)
     sys.exit(2)
 
