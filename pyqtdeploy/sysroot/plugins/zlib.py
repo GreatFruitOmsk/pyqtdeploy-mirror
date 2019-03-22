@@ -64,7 +64,14 @@ class zlibComponent(ComponentBase):
             original_path = sysroot.add_to_path(sysroot.android_toolchain_bin)
             os.environ['CROSS_PREFIX'] = sysroot.android_toolchain_prefix
             os.environ['CC'] = sysroot.android_toolchain_cc
-            os.environ['CFLAGS'] = ' '.join(sysroot.android_toolchain_cflags)
+
+            cflags = sysroot.android_toolchain_cflags
+
+            # It isn't clear why this is needed, possibly a clang bug.
+            if sysroot.target_arch_name == 'android-32' and sysroot.android_ndk_version >= (16, 0, 0):
+                cflags.append('-fPIC')
+
+            os.environ['CFLAGS'] = ' '.join(cflags)
 
             sysroot.run('./configure', '--static',
                     '--prefix=' + sysroot.sysroot_dir)
