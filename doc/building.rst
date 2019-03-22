@@ -78,9 +78,9 @@ The full set of command line options is:
 .. option:: --resources NUMBER
 
     ``NUMBER`` is the number of Qt ``.qrc`` resource files that are generated.
-    On Windows, MSVC cannot cope with very large resource files and complains
-    of a lack of heap space.  If you run into this problem then try increasing
-    the the number of resource files generated.
+    On Windows, MSVC may not be able to cope with very large resource files and
+    complains of a lack of heap space.  If you run into this problem then try
+    increasing the the number of resource files generated.
 
 .. option:: --source-dir DIR
 
@@ -104,7 +104,8 @@ The full set of command line options is:
 .. option:: --target TARGET
 
     ``TARGET`` is the target architecture.  By default the host architecture is
-    used.
+    used.  On Windows the default is determined by the target architecture of
+    the currently configured compiler.
 
 .. option:: --quiet
 

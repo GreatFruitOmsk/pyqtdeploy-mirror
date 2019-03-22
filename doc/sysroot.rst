@@ -7,19 +7,19 @@ Building a System Root Directory
 
 :program:`pyqtdeploy-sysroot` is used to create a target-specific system root
 directory (*sysroot*) containing the target Python installation and any
-third-party components required by the application.  It's use is optional but
+third-party components required by the application.  Its use is optional but
 highly recommended.
 
 :program:`pyqtdeploy-sysroot` is actually a wrapper around a number of
 component plugins.  A plugin, written in Python, is responsible for building
-and/or installing (in the sysroot) an individual component.  It would normally
-be a Python package or extension module but could just as easily be a
-supporting library.
+and/or installing (in the sysroot) an individual component.  It would often be
+a Python package or extension module but could just as easily be a supporting
+library.
 
-A sysroot is defined by a JSON sysroot specification file.  This contains an
-object for each component to build and/or install.  The attributes of an
-object determine how the component is configured.  Component and attribute
-names may be scoped in the same way as :program:`qmake` variables (described in
+A sysroot is defined by a JSON specification file.  This contains an object for
+each component to build and/or install.  The attributes of an object determine
+how the component is configured.  Component and attribute names may be scoped
+in the same way as :program:`qmake` variables (described in
 :ref:`ref-other-extension-modules`) so that components can be included and
 configured on a target by target basis.
 
@@ -44,16 +44,16 @@ The following component plugins are included as standard with
     ``perl`` to be installed on :envvar:`PATH`.
 
 **pip**
-    This is a meta-component which will install any number of components that
-    can be installed by ``pip``.
+    This is a meta-component which will install any number of components using
+    ``pip``.
 
 **pyqt3d**
     This builds a static version of the PyQt3D extension modules for all target
     architectures.  It must be built after PyQt5.
 
 **pyqt5**
-    This builds a static version of the PyQt5 extension modules for all
-    target architectures.  It must be built after sip and Qt5.
+    This builds a static version of the PyQt5 extension modules for all target
+    architectures.  It must be built after sip and Qt5.
 
 **pyqtchart**
     This builds a static version of the PyQtChart extension module for all
@@ -64,8 +64,12 @@ The following component plugins are included as standard with
     for all target architectures.  It must be built after PyQt5.
 
 **pyqtpurchasing**
-    This builds a static version of the PyQtPurchasing extension module for
-    all target architectures.  It must be built after PyQt5.
+    This builds a static version of the PyQtPurchasing extension module for all
+    target architectures.  It must be built after PyQt5.
+
+**pyqtwebengine**
+    This builds a static version of the PyQtWebEngine extension module for all
+    target architectures.  It must be built after PyQt5.
 
 **python**
     This will build Python from source, or install it into sysroot from an
@@ -145,8 +149,9 @@ openssl
 ::
 
     "android|macos|win#openssl": {
-        "android#source":   "openssl-1.0.*.tar.gz",
-        "macos|win#source": "openssl-1.1.*.tar.gz"
+        "android#source":   "openssl-1.0.2r.tar.gz",
+        "macos|win#source": "openssl-1.1.0j.tar.gz",
+        "win#no_asm":       true
     },
 
 The first thing to notice is that the object name is scoped so that the
@@ -160,6 +165,10 @@ pre-built binaries provided by the Qt installer.
 
 On macOS and Windows we choose to use OpenSSL v1.1.
 
+On Windows we have disabled the used of assember optimisations. They can be
+enabled (with is the default) but the :program:`nasm` assember must be
+installed on :envvar:`PATH`.
+
 
 zlib
 ....
@@ -167,7 +176,7 @@ zlib
 ::
 
     "ios|linux|macos|win#zlib": {
-        "source":               "zlib-*.tar.gz",
+        "source":               "zlib-1.2.11.tar.gz",
         "static_msvc_runtime":  true
     },
 
@@ -182,10 +191,12 @@ qt5
 ::
 
     "qt5": {
-        "android#qt_dir":           "android_armv7",
+        "android-32#qt_dir":        "android_armv7",
+        "android-64#qt_dir":        "android_arm64_v8a",
         "ios#qt_dir":               "ios",
 
-        "linux|macos|win#source":   "qt-everywhere-*-src-5.*.tar.xz",
+        "linux|macos|win#source":   "qt-everywhere-src-5.12.2.tar.xz",
+        "edition":                  "opensource",
 
         "android|linux#ssl":        "openssl-runtime",
         "ios#ssl":                  "securetransport",
@@ -243,7 +254,7 @@ python
     "python": {
         "build_host_from_source":   false,
         "build_target_from_source": true,
-        "source":                   "Python-3.7.0.tar.xz"
+        "source":                   "Python-3.7.2.tar.xz"
     },
 
 The Python component plugin handles installation for both host and target
@@ -253,8 +264,7 @@ location of the existing installation.  On Linux and macOS the Python
 interpreter must be on :envvar:`PATH`.  For all target architecures we choose
 to build Python from source.
 
-We have chosen to be very specific about the version number of Python (rather
-than use a pattern) because it must match the version specified in the
+Note that the version number of Python must match the version specified in the
 ``pyqt-deploy.pdy`` project file.
 
 :program:`pyqt-demo` is a very simple application that does not need to
@@ -268,10 +278,12 @@ sip
 ::
 
     "sip": {
-        "source":   "sip-4.*.tar.gz"
+        "module_name":  "PyQt5.sip",
+        "source":       "sip-4.19.15.tar.gz"
     },
 
-It is only necessary to specifiy the name of the source archive.
+As well as the name of the source archive, it is also necessary to specify the
+name of the :mod:`sip` module.
 
 
 pyqt5
@@ -312,7 +324,7 @@ pyqt5
                 "QtWinExtras"
         ],
 
-        "source":                   "PyQt5_*-5.*.tar.gz"
+        "source":                   "PyQt5_*-5.12.1.tar.gz"
     },
 
 The two attributes used to tailor the build of PyQt5 are ``disabled_features``
@@ -333,7 +345,7 @@ pyqt3D
 ::
 
     "pyqt3d": {
-        "source":   "PyQt3D_*-5.*.tar.gz"
+        "source":   "PyQt3D_*-5.12.tar.gz"
     },
 
 It is only necessary to specifiy the name of the source archive.
@@ -345,7 +357,7 @@ pyqtchart
 ::
 
     "pyqtchart": {
-        "source":   "PyQtChart_*-5.*.tar.gz"
+        "source":   "PyQtChart_*-5.12.tar.gz"
     },
 
 It is only necessary to specifiy the name of the source archive.
@@ -357,7 +369,7 @@ pyqtdatavisualization
 ::
 
     "pyqtdatavisualization": {
-        "source":   "PyQtDataVisualization_*-5.*.tar.gz"
+        "source":   "PyQtDataVisualization_*-5.12.tar.gz"
     },
 
 It is only necessary to specifiy the name of the source archive.
@@ -369,7 +381,7 @@ pyqtpurchasing
 ::
 
     "pyqtpurchasing": {
-        "source":   "PyQtPurchasing_*-5.*.tar.gz"
+        "source":   "PyQtPurchasing_*-5.12.tar.gz"
     },
 
 It is only necessary to specifiy the name of the source archive.
@@ -381,7 +393,7 @@ qscintilla
 ::
 
     "qscintilla": {
-        "source":   "QScintilla_*-2.*.tar.gz"
+        "source":   "QScintilla_*-2.11.1.tar.gz"
     }
 
 It is only necessary to specifiy the name of the source archive.
@@ -441,7 +453,8 @@ The full set of command line options is:
 .. option:: --target TARGET
 
     ``TARGET`` is the target architecture.  By default the host architecture is
-    used.
+    used.  On Windows the default is determined by the target architecture of
+    the currently configured compiler.
 
 .. option:: --quiet
 
@@ -497,7 +510,9 @@ class is.
     .. py:method:: configure(sysroot)
 
         This method is re-implemented to configure the component.  A component
-        will always be configured even if it does not get built.
+        will always be configured even if it does not get built.  The plugin
+        should check that everything is available (e.g. source code, external
+        tools) for a successful build.
 
         :param Sysroot sysroot:  the sysroot being configured.
 
@@ -527,11 +542,11 @@ class is.
 
     .. py:method:: add_to_path(name)
 
-        The name of a directory is added to the start of ``PATH`` if it isn't
-        already present.
+        The name of a directory is added to the start of :envvar:`PATH` if it
+        isn't already present.
 
         :param str name: is the name of the directory.
-        :return: the original value of ``PATH``.
+        :return: the original value of :envvar:`PATH`.
 
     .. py:attribute:: android_api
 

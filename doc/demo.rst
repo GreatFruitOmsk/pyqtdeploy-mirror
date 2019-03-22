@@ -37,23 +37,6 @@ example which we will look at in detail.
     and/or ``pyqt-demo.pdy``.
 
 
-SSL Support
------------
-
-The demo chooses to implement support for SSL for both Python and Qt in ways
-that differ between target platforms.  These are summarised in the table below.
-
-======== ================================== ===================================
-Platform Python                             Qt
-======== ================================== ===================================
-Android  Bundled dynamically linked OpenSSL Bundled dynamically linked OpenSSL
-iOS      Unsupported                        Dynamically linked Secure Transport
-Linux    Dynamically linked OpenSSL         Dynamically linked OpenSSL
-macOS    Statically linked OpenSSL          Statically linked OpenSSL
-Windows  Statically linked OpenSSL          Statically linked OpenSSL
-======== ================================== ===================================
-
-
 Building the Demo
 -----------------
 
@@ -106,7 +89,13 @@ Android
 .. image:: /images/pyqt-demo-android-32.png
     :align: center
 
-TODO
+**Host platform used:** macOS Mojave (v10.14.3)
+
+**Development tools used:** NDK r19c, SDK v26.1.1
+
+**Python SSL support implemented:** dynamically linked bundled OpenSSL.
+
+**Qt SSL support implemented:** dynamically linked bundled OpenSSL.
 
 
 iOS
@@ -115,7 +104,13 @@ iOS
 .. image:: /images/pyqt-demo-ios-64.png
     :align: center
 
-TODO
+**Host platform used:** macOS Mojave (v10.14.3)
+
+**Development tools used:** Xcode v10.1
+
+**Python SSL support implemented:** none.
+
+**Qt SSL support implemented:** dynamically linked Secure Transport.
 
 
 Linux
@@ -124,7 +119,13 @@ Linux
 .. image:: /images/pyqt-demo-linux-64.png
     :align: center
 
-TODO
+**Host platform used:** RHEL v7.6
+
+**Development tools used:** gcc v4.8.5
+
+**Python SSL support implemented:** dynamically linked system OpenSSL
+
+**Qt SSL support implemented:** dynamically linked system OpenSSL
 
 
 macOS
@@ -133,7 +134,13 @@ macOS
 .. image:: /images/pyqt-demo-macos-64.png
     :align: center
 
-TODO
+**Host platform used:** macOS Mojave (v10.14.3)
+
+**Development tools used:** Xcode v10.1
+
+**Python SSL support implemented:** statically linked OpenSSL.
+
+**Qt SSL support implemented:** statically linked OpenSSL.
 
 
 Windows
@@ -142,4 +149,10 @@ Windows
 .. image:: /images/pyqt-demo-win-32.png
     :align: center
 
-TODO
+**Host platform used:** Windows 10 Pro (v1803)
+
+**Development tools used:** Visual Studio Build Tools 2017 (v15.9.6)
+
+**Python SSL support implemented:** statically linked OpenSSL.
+
+**Qt SSL support implemented:** statically linked OpenSSL.

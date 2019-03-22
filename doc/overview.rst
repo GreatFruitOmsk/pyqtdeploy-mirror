@@ -15,6 +15,7 @@ free to keep components external to the executable if required.
 :program:`pyqtdeploy` supports the following target architectures:
 
 - android-32
+- android-64
 - ios-64
 - linux-64
 - macos-64
