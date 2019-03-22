@@ -1,4 +1,4 @@
-v2.4 ??? March 2019
+v2.4 22nd March 2019
   - Added android-64 as a target architecture.
   - Added support for Python v2.7.16, v3.4.10, v3.5.7, v3.6.8 and v3.7.2.
   - Added support for PyQt5.QtRemoteObjects.
