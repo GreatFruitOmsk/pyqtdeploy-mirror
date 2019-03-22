@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1412,14 +1412,15 @@ pyconfig = (
     Config('SIZEOF_FLOAT', default=4),
 
     # The size of `fpos_t', as computed by sizeof.
-    Config('SIZEOF_FPOS_T', android=4, ios=8, linux=16, macos=8),
+    Config('SIZEOF_FPOS_T', android_32=4, android_64=8, ios=8, linux=16,
+            macos=8),
 
     # The size of `int', as computed by sizeof.
     Config('SIZEOF_INT', default=4),
 
     # The size of `long', as computed by sizeof.
-    Config('SIZEOF_LONG', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_LONG', android_32=4, android_64=8, ios_64=8, linux_32=4,
+            linux_64=8, macos_64=8),
 
     # The size of `long double', as computed by sizeof.
     Config('SIZEOF_LONG_DOUBLE', android=8, ios=16, linux_32=12, linux_64=16,
@@ -1429,7 +1430,8 @@ pyconfig = (
     Config('SIZEOF_LONG_LONG', default=8),
 
     # The size of `off_t', as computed by sizeof.
-    Config('SIZEOF_OFF_T', android=4, ios=8, linux=8, macos=8),
+    Config('SIZEOF_OFF_T', android_32=4, android_64=8, ios=8, linux=8,
+            macos=8),
 
     # The size of `pid_t', as computed by sizeof.
     Config('SIZEOF_PID_T', default=4),
@@ -1438,27 +1440,27 @@ pyconfig = (
     Config('SIZEOF_PTHREAD_KEY_T', default=4, ios_64=8, macos_64=8),
 
     # The size of `pthread_t', as computed by sizeof.
-    Config('SIZEOF_PTHREAD_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_PTHREAD_T', android_32=4, android_64=8, ios_64=8,
+            linux_32=4, linux_64=8, macos_64=8),
 
     # The size of `short', as computed by sizeof.
     Config('SIZEOF_SHORT', default=2),
 
     # The size of `size_t', as computed by sizeof.
-    Config('SIZEOF_SIZE_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_SIZE_T', android_32=4, android_64=8, ios_64=8, linux_32=4,
+            linux_64=8, macos_64=8),
 
     # The size of `time_t', as computed by sizeof.
-    Config('SIZEOF_TIME_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_TIME_T', android_32=4, android_64=8, ios_64=8, linux_32=4,
+            linux_64=8, macos_64=8),
 
     # The size of `uintptr_t', as computed by sizeof.
-    Config('SIZEOF_UINTPTR_T', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_UINTPTR_T', android_32=4, android_64=8, ios_64=8,
+            linux_32=4, linux_64=8, macos_64=8),
 
     # The size of `void *', as computed by sizeof.
-    Config('SIZEOF_VOID_P', android_32=4, ios_64=8, linux_32=4, linux_64=8,
-            macos_64=8),
+    Config('SIZEOF_VOID_P', android_32=4, android_64=8, ios_64=8, linux_32=4,
+            linux_64=8, macos_64=8),
 
     # The size of `wchar_t', as computed by sizeof.
     Config('SIZEOF_WCHAR_T', default=4),
