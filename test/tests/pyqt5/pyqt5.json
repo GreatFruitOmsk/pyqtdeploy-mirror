@@ -23,11 +23,11 @@
     },
 
     "pyqt5": {
-        "android-32#disabled_features": [
+        "android#disabled_features": [
                 "PyQt_Desktop_OpenGL", "PyQt_Printer", "PyQt_PrintDialog",
                 "PyQt_PrintPreviewDialog", "PyQt_PrintPreviewWidget"
         ],
-        "android-32#modules":           [
+        "android#modules":           [
                 "QtAndroidExtras", "QtBluetooth", "QtCore", "QtGui", "QtHelp",
                 "QtLocation", "QtMultimedia", "QtMultimediaWidgets",
                 "QtNetwork", "QtNfc", "QtOpenGL", "QtPositioning",
