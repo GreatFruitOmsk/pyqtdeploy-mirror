@@ -196,6 +196,9 @@ pyconfig = (
     # Define to 1 if you have the <crypt.h> header file.
     Config('HAVE_CRYPT_H', linux=1),
 
+    # Define if you have the crypt_r() function.
+    Config('HAVE_CRYPT_R', linux=1),
+
     # Define to 1 if you have the `ctermid' function.
     Config('HAVE_CTERMID', default=1, android=None),
 

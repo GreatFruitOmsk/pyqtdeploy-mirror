@@ -30,7 +30,7 @@ __all__ = ['ExtensionModule', 'get_python_metadata', 'get_targeted_value',
 
 # The latest supported version in each minor branch.
 _supported_branches = (
-    (3, 7, 2),
+    (3, 7, 3),
     (3, 6, 8),
     (3, 5, 7),
     (3, 4, 10),
@@ -3138,9 +3138,12 @@ _metadata = {
         PythonModule(min_version=(3, 4), max_version=(3, 6),
                 deps=('_collections', 'itertools', '_thread', 'time',
                         'traceback', '_weakrefset')),
-        PythonModule(min_version=(3, 7),
+        PythonModule(min_version=(3, 7), max_version=(3, 7, 2),
                 deps=('_collections', 'itertools', 'os', '_thread', 'time',
-                        'traceback', '_weakrefset'))),
+                        'traceback', '_weakrefset')),
+        PythonModule(min_version=(3, 7, 3),
+                deps=('_collections', 'itertools', 'os', '_thread', 'time',
+                        'traceback', 'warnings', '_weakrefset'))),
 
     'time': (
         ExtensionModule(max_version=(3, 4), source='timemodule.c',
@@ -3242,8 +3245,10 @@ _metadata = {
                 deps=('urllib', 'collections', 're')),
         PythonModule(min_version=(3, 5, 7), max_version=(3, 5),
                 deps=('urllib', 'collections', 're', 'unicodedata')),
-        PythonModule(min_version=(3, 6),
-                deps=('urllib', 'collections', 're'))),
+        PythonModule(min_version=(3, 6), max_version=(3, 7, 2),
+                deps=('urllib', 'collections', 're')),
+        PythonModule(min_version=(3, 7, 3),
+                deps=('urllib', 'collections', 're', 'unicodedata'))),
 
     'urllib.request': (
         PythonModule(min_version=3, max_version=(3, 5, 1),
@@ -4093,13 +4098,21 @@ _metadata = {
                         'asyncio.tasks', 'asyncio.windows_utils', 'errno',
                         'math', '_overlapped', 'socket', 'struct', 'weakref',
                         '_winapi')),
-        PythonModule(min_version=(3, 7), internal=True, target='win',
+        PythonModule(min_version=(3, 7), max_version=(3, 7, 2), internal=True,
+                target='win',
                 deps=('asyncio', 'asyncio.events', 'asyncio.base_subprocess',
                         'asyncio.futures', 'asyncio.log',
                         'asyncio.proactor_events', 'asyncio.selector_events',
                         'asyncio.tasks', 'asyncio.windows_utils', 'errno',
                         'math', 'msvcrt', '_overlapped', 'socket', 'struct',
-                        'weakref', '_winapi'))),
+                        'weakref', '_winapi')),
+        PythonModule(min_version=(3, 7, 3), internal=True, target='win',
+                deps=('asyncio', 'asyncio.events', 'asyncio.base_subprocess',
+                        'asyncio.futures', 'asyncio.log',
+                        'asyncio.proactor_events', 'asyncio.selector_events',
+                        'asyncio.tasks', 'asyncio.windows_utils', 'errno',
+                        'math', 'msvcrt', '_overlapped', 'socket', 'struct',
+                        'time', 'weakref', '_winapi'))),
 
     'asyncio.windows_utils': (
         PythonModule(min_version=(3, 4), max_version=(3, 4, 2),
