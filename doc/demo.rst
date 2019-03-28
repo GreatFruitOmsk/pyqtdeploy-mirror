@@ -89,7 +89,7 @@ Android
 .. image:: /images/pyqt-demo-android-32.png
     :align: center
 
-**Host platform used:** macOS Mojave (v10.14.3)
+**Host platform used:** macOS Mojave (v10.14.4)
 
 **Development tools used:** NDK r19c, SDK v26.1.1
 
@@ -104,9 +104,9 @@ iOS
 .. image:: /images/pyqt-demo-ios-64.png
     :align: center
 
-**Host platform used:** macOS Mojave (v10.14.3)
+**Host platform used:** macOS Mojave (v10.14.4)
 
-**Development tools used:** Xcode v10.1
+**Development tools used:** Xcode v10.2
 
 **Python SSL support implemented:** none.
 
@@ -134,9 +134,9 @@ macOS
 .. image:: /images/pyqt-demo-macos-64.png
     :align: center
 
-**Host platform used:** macOS Mojave (v10.14.3)
+**Host platform used:** macOS Mojave (v10.14.4)
 
-**Development tools used:** Xcode v10.1
+**Development tools used:** Xcode v10.2
 
 **Python SSL support implemented:** statically linked OpenSSL.
 
