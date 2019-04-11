@@ -97,6 +97,8 @@ Android
 
 **Qt SSL support implemented:** dynamically linked bundled OpenSSL.
 
+**Environment:** `ANDROID_NDK_PLATFORM=android-24`
+
 
 iOS
 ---
