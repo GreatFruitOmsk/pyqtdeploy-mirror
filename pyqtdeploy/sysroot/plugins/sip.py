@@ -66,6 +66,10 @@ class SIPComponent(ComponentBase):
         if version_nr >= 0x041309 and version_nr <= 0x04130c:
             sysroot.error("please use SIP v4.19.13 or later")
 
+        # v5 is not yet supported.
+        if version_nr >= 0x050000:
+            sysroot.error("SIP v5 is not yet supported")
+
     def _build_code_generator(self, sysroot, archive, version_nr):
         """ Build the code generator for the host. """
 
