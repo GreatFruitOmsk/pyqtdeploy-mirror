@@ -76,8 +76,9 @@ class ExternalLibraryMetadata:
 # standard library.
 external_libraries_metadata = (
     ExternalLibraryMetadata('ssl',
-            # Note that for OpenSSL v1.1 it should be '-llibssl -llibcrypto'.
-            {'win': '-lssleay32 -llibeay32', '': '-lssl -lcrypto'},
+            # Note that for OpenSSL v1.0 (ie. Python v3.6 and earlier) it
+            # should be '-lssleay32 -llibeay32'.
+            {'win': '-llibssl -llibcrypto', '': '-lssl -lcrypto'},
             "SSL encryption"),
     ExternalLibraryMetadata('zlib', {'win': '-lzlib', '': '-lz'},
             "zlib compression"),
