@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Riverbank Computing Limited
+# Copyright (c) 2019, Riverbank Computing Limited
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@ def main():
 
     from PyQt5.QtWidgets import QApplication
 
-    from . import Project
-    from .gui import ProjectGUI
+    from . import Project, UserException
+    from .gui import handle_user_exception, ProjectGUI
 
     app = QApplication(sys.argv, applicationName='pyqtdeploy',
                 organizationDomain='riverbankcomputing.com',
@@ -52,7 +52,12 @@ def main():
         if project is None:
             return 1
 
-    gui = ProjectGUI(project)
+    try:
+        gui = ProjectGUI(project)
+    except UserException as e:
+        handle_user_exception(e, "Unable to Create GUI")
+        return 1
+
     gui.show()
 
     return app.exec()
