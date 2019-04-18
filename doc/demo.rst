@@ -108,7 +108,7 @@ iOS
 
 **Host platform used:** macOS Mojave (v10.14.4)
 
-**Development tools used:** Xcode v10.2
+**Development tools used:** Xcode v10.2.1
 
 **Python SSL support implemented:** none.
 
@@ -138,7 +138,7 @@ macOS
 
 **Host platform used:** macOS Mojave (v10.14.4)
 
-**Development tools used:** Xcode v10.2
+**Development tools used:** Xcode v10.2.1
 
 **Python SSL support implemented:** statically linked OpenSSL.
 
