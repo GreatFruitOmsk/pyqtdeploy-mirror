@@ -3598,12 +3598,14 @@ _metadata = {
 
     # These are internal modules.
 
-    # For Python v3.7 and later on Windows this module cannot be linked
+    # For Python v3.7.0 to v3.7.2 on Windows this module cannot be linked
     # separately because of the PyVarObject_HEAD_INIT() bug.  In these cases it
     # is included in the static Python library build by pyqtdeploy-sysroot.
-    '_abc':
-        ExtensionModule(min_version=(3, 7), internal=True,
-                source='!win#_abc.c'),
+    '_abc': (
+        ExtensionModule(min_version=(3, 7), max_version=(3, 7, 2),
+                internal=True, source='!win#_abc.c'),
+        ExtensionModule(min_version=(3, 7, 3), internal=True,
+                source='_abc.c')),
 
     '_abcoll':
         PythonModule(version=2, internal=True, deps='abc'),

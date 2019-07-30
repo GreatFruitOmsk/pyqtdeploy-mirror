@@ -326,11 +326,13 @@ greaterThan(PY_MAJOR_VERSION, 2) {
             Modules/zipimport.c
     }
 
-    greaterThan(PY_MINOR_VERSION, 6) {
-        win32 {
-            # Work around the PyVarObject_HEAD_INIT() problem in Python v3.7
-            # and later by always compiling this module.
-            MOD_SOURCES += Modules/_abc.c
+    isEqual(PY_MINOR_VERSION, 7) {
+        lessThan(PY_PATCH_VERSION, 3) {
+            win32 {
+                # Work around the PyVarObject_HEAD_INIT() problem in Python
+                # v3.7.0 to v3.7.2 by always compiling this module.
+                MOD_SOURCES += Modules/_abc.c
+            }
         }
     }
 } else {
