@@ -721,7 +721,7 @@ _metadata = {
                 modules=('distutils.archive_util', 'distutils.bcppcompiler',
                         'distutils.ccompiler', 'distutils.cmd',
                         'distutils.command', 'distutils.core',
-                        'distutils.cygwincompiler', 'distutils.debug',
+                        'distutils.cygwinccompiler', 'distutils.debug',
                         'distutils.dep_util', 'distutils.dir_util',
                         'distutils.dist', 'distutils.errors',
                         'distutils.extension', 'distutils.fancy_getopt',
@@ -1005,7 +1005,7 @@ _metadata = {
                         'distutils.dist', 'distutils.errors',
                         'distutils.extension', 'os')),
 
-    'distutils.cygwincompiler': (
+    'distutils.cygwinccompiler': (
         PythonModule(version=2,
                 deps=('copy', 'distutils.ccompiler', 'distutils.errors',
                         'distutils.file_util', 'distutils.log',
