@@ -2959,16 +2959,6 @@ _metadata = {
     'sqlite3':
         PythonModule(deps='sqlite3.dbapi2', modules=('sqlite3.dbapi2')),
 
-    'sqlite3.dbapi2': (
-        PythonModule(version=2,
-                deps=('sqlite3', 'collections', 'datetime', '_sqlite3',
-                        'time')),
-        PythonModule(min_version=3, max_version=(3, 4, 1),
-                deps=('sqlite3', 'datetime', '_sqlite3', 'time')),
-        PythonModule(min_version=(3, 4, 2),
-                deps=('sqlite3', 'collections.abc', 'datetime', '_sqlite3',
-                        'time'))),
-
     'ssl': (
         PythonModule(max_version=(2, 7, 8),
                 deps=('base64', 'errno', 'socket', '_ssl', 'textwrap',
@@ -4948,6 +4938,16 @@ _metadata = {
                         'SQLITE_OMIT_LOAD_EXTENSION'),
                 includepath='_sqlite', xlib='sqlite3', pyd='_sqlite3.pyd',
                 dlls='sqlite3.dll'),
+
+    'sqlite3.dbapi2': (
+        PythonModule(version=2, internal=True,
+                deps=('sqlite3', 'collections', 'datetime', '_sqlite3',
+                        'time')),
+        PythonModule(min_version=3, max_version=(3, 4, 1), internal=True,
+                deps=('sqlite3', 'datetime', '_sqlite3', 'time')),
+        PythonModule(min_version=(3, 4, 2), internal=True,
+                deps=('sqlite3', 'collections.abc', 'datetime', '_sqlite3',
+                        'time'))),
 
     '_sre':
         CoreExtensionModule(internal=True),
