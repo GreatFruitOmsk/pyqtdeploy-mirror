@@ -2328,15 +2328,20 @@ _metadata = {
 
     'msilib': (
         PythonModule(max_version=(2, 7, 11), target='win',
-                deps=('_msi', 'os', 're', 'string', 'tempfile')),
+                deps=('_msi', 'os', 're', 'string', 'tempfile'),
+                modules=()),
         PythonModule(min_version=(2, 7, 12), max_version=2, target='win',
-                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
+                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile'),
+                modules=()),
         PythonModule(min_version=3, max_version=(3, 5, 1), target='win',
-                deps=('_msi', 'os', 're', 'string', 'tempfile')),
+                deps=('_msi', 'os', 're', 'string', 'tempfile'),
+                modules=()),
         PythonModule(min_version=(3, 5, 2), max_version=(3, 5), target='win',
-                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile')),
+                deps=('_msi', 'glob', 'os', 're', 'string', 'tempfile'),
+                modules=()),
         PythonModule(min_version=(3, 6), target='win',
-                deps=('_msi', 'fnmatch', 'os', 're', 'string', 'tempfile'))),
+                deps=('_msi', 'fnmatch', 'os', 're', 'string', 'tempfile'),
+                modules=())),
 
     'msvcrt': (
         ExtensionModule(max_version=(3, 4), target='win',
